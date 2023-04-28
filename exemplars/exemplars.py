@@ -10,8 +10,6 @@ class Exemplar:
         stats,
         inventory=None,
         zone_level=1,
-        level=1,
-        experience=0,
         fishing_level=1,
         fishing_experience=0,
         mining_level=1,
@@ -27,8 +25,8 @@ class Exemplar:
             stats["endurance"],
             stats["attack"],
             stats["defense"],
-            level,
-            experience
+            stats["level"],
+            stats["experience"]
         )
         self.zone_level = zone_level
         self.attack = stats["attack"]
@@ -44,6 +42,7 @@ class Exemplar:
         self.crafting = Crafting()
         self.equipped_weapon = None
         self.equipped_armor = None
+
 
 
     @property

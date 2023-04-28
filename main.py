@@ -118,7 +118,6 @@ class BattleOptions(Select):
         player_data = load_player_data(guild_id)
         player = Exemplar(player_data[author_id]["exemplar"], player_data[author_id]["stats"], player_data[author_id]["inventory"])
 
-
         if self.values[0] == "search_monster":
             zone_level = player.zone_level
             monster = generate_monster(zone_level)
@@ -140,6 +139,8 @@ class BattleOptions(Select):
 
                 experience_gained = zone_level * 10
                 player.stats.experience += experience_gained
+                player_data[author_id]["stats"][
+                    "experience"] = player.stats.experience  # Add this line to update experience in the player_data dictionary
                 player_data[author_id]["stats"].update(player.stats.__dict__)
 
                 await battle_embed.edit(
