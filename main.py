@@ -137,7 +137,7 @@ class BattleOptions(Select):
                         player.inventory.add_item_to_inventory(loot_item)  # Use this line for all other item types
                 player_data[author_id]["inventory"] = player.inventory.to_dict()
 
-                experience_gained = zone_level * 10
+                experience_gained = battle_outcome[4]
                 player.stats.experience += experience_gained
                 player_data[author_id]["stats"][
                     "experience"] = player.stats.experience  # Add this line to update experience in the player_data dictionary

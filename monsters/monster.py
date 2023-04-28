@@ -37,12 +37,11 @@ def generate_monster(zone_level):
     health = monster[1] * zone_level
     strength = monster[2] * zone_level
     endurance = monster[3] * zone_level
-    experience_reward = (strength + endurance) * 5
+    experience_reward = (strength + endurance) * 2
     attack_speed = monster[6]
     max_health = monster[1] * zone_level
 
     return Monster(monster[0], health, max_health, strength, endurance, experience_reward, monster[4], monster[5], attack_speed)
-
 def create_battle_embed(user, player, monster, message=""):
     embed = Embed(title=f"{user.name} encounters a {monster.name}")  # Remove user.mention
     embed.add_field(name="Battle", value=message, inline=False)
@@ -92,6 +91,7 @@ async def monster_battle(user, player, monster, zone_level, message):
 
     if monster.is_defeated():
         loot, loot_messages = generate_zone_loot(zone_level)
-        return (True, total_damage_dealt_to_player, total_damage_dealt_to_monster, loot), loot_messages
+        return (True, total_damage_dealt_to_player, total_damage_dealt_to_monster, loot,
+                monster.experience_reward), loot_messages
     else:
-        return (False, total_damage_dealt_to_player, total_damage_dealt_to_monster, None), None
+        return (False, total_damage_dealt_to_player, total_damage_dealt_to_monster, None, None), None
