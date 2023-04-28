@@ -1,0 +1,81 @@
+{
+    "807063811852206090": {
+        "exemplar": "elf",
+        "stats": {
+            "zone_level": 1,
+            "level": 1,
+            "experience": 10,
+            "health": 95,
+            "max_health": 95,
+            "strength": 20,
+            "endurance": 13,
+            "attack": 20,
+            "defense": 7,
+            "fishing_level": 1,
+            "fishing_experience": 0,
+            "mining_level": 1,
+            "mining_experience": 0,
+            "woodcutting_level": 1,
+            "woodcutting_experience": 0
+        },
+        "inventory": {
+            "gold": 28,
+            "items": [],
+            "herbs": [
+                {
+                    "name": "Ranarr",
+                    "rarity": 1,
+                    "value": 3,
+                    "stack": 8
+                }
+            ],
+            "gems": [
+                {
+                    "name": "Sapphire",
+                    "rarity": 1,
+                    "value": 50,
+                    "stack": 8
+                }
+            ],
+            "potions": [
+                {
+                    "name": "Health Potion",
+                    "rarity": 1,
+                    "value": 10,
+                    "stack": 6
+                },
+                {
+                    "name": "Strength Potion",
+                    "rarity": 2,
+                    "value": 20,
+                    "stack": 1
+                }
+            ],
+            "loot": [
+                {
+                    "name": "Copper Coin",
+                    "description": null,
+                    "value": 2,
+                    "stack": 4
+                },
+                {
+                    "name": "Wooden Amulet",
+                    "description": null,
+                    "value": 8,
+                    "stack": 1
+                },
+                {
+                    "name": "Small Gemstone",
+                    "description": null,
+                    "value": 10,
+                    "stack": 1
+                }
+            ],
+            "limit": 40,
+            "equipped_items": [],
+            "equipped_armor": {},
+            "equipped_weapon": null,
+            "materium_count": 8
+        }
+    }
+}

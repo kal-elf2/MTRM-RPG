@@ -1,0 +1,53 @@
+Metadata-Version: 2.1
+Name: discord-typings
+Version: 0.5.1
+Summary: Maintained typings of payloads that Discord sends
+Keywords: discord,discord-api,discord-api-wrapper,python-3,typing
+Author-email: Bluenix <bluenixdev@gmail.com>
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Natural Language :: English
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Topic :: Software Development :: Libraries
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Typing :: Typed
+Requires-Dist: typing_extensions >= 4.3, <5
+Project-URL: Homepage, https://github.com/Bluenix2/discord-typings/
+Project-URL: Repository, https://github.com/Bluenix2/discord-typings/
+
+# discord-typings
+
+Maintained typings of all payloads that Discord sends as `TypedDict`s.
+
+## Naming and usage
+
+Right now there is no official documentation or API Reference - just start
+importing things and your editor will auto-complete options. This may change in
+the future though.
+
+The naming used is the suffixes `Data`, `Event` and `Command` for the three
+types of payloads. `Event` refers to a gateway event received over the gateway,
+`Command` refers to a gateway command sent over the gateway and `Data` is used
+for any general top-level payloads like `UserData`.
+
+The benefit of using `Data` as a suffix is that in your code you can use
+`from discord_typings import UserData` even if you define a `User` object (as
+is expected to be rather common).
+
+### Exceptions
+
+To differentiate between the data for complete application commands, and the
+data Discord expects to receive to create an application command, there is
+a special-cased `ApplicationCommandPayload`.
+
