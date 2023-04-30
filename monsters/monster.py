@@ -51,12 +51,14 @@ def create_battle_embed(user, player, monster, message=""):
 
 async def player_attack_task(user, player, monster, attack_modifier, message):
     while not monster.is_defeated() and player.stats.health > 0:
-        damage_dealt = int(player.attack * attack_modifier) - monster.defense
+        damage_dealt = int(player.stats.attack * attack_modifier) - monster.defense
         if damage_dealt > 0:
             monster.health = max(monster.health - damage_dealt, 0)  # Ensure health doesn't go below 0
             update_message = f"{user.mention} dealt {damage_dealt} damage to the {monster.name}!"
-            battle_embed = create_battle_embed(user, player, monster, update_message)
-            await message.edit(embed=battle_embed)
+        else:
+            update_message = f"The {monster.name} evaded {user.mention}'s attack!"
+        battle_embed = create_battle_embed(user, player, monster, update_message)
+        await message.edit(embed=battle_embed)
         await asyncio.sleep(player.equipped_weapon.attack_speed if player.equipped_weapon else 1)
 
 async def monster_attack_task(user, player, monster, message):
@@ -65,9 +67,12 @@ async def monster_attack_task(user, player, monster, message):
         if damage_dealt > 0:
             player.stats.health = max(player.stats.health - damage_dealt, 0)  # Ensure health doesn't go below 0
             update_message = f"The {monster.name} dealt {damage_dealt} damage to {user.mention}!"
-            battle_embed = create_battle_embed(user, player, monster, update_message)
-            await message.edit(embed=battle_embed)
+        else:
+            update_message = f"{user.mention} evaded the {monster.name}'s attack!"
+        battle_embed = create_battle_embed(user, player, monster, update_message)
+        await message.edit(embed=battle_embed)
         await asyncio.sleep(monster.attack_speed)
+
 
 async def monster_battle(user, player, monster, zone_level, message):
     player_weapon_type = player.equipped_weapon.type if player.equipped_weapon else None

@@ -3,6 +3,7 @@ from crafting.crafting import Crafting
 import threading
 import random
 
+
 class Exemplar:
     def __init__(
         self,
@@ -10,12 +11,6 @@ class Exemplar:
         stats,
         inventory=None,
         zone_level=1,
-        fishing_level=1,
-        fishing_experience=0,
-        mining_level=1,
-        mining_experience=0,
-        woodcutting_level=1,
-        woodcutting_experience=0,
     ):
         self.name = name
         self.stats = PlayerStats(
@@ -25,24 +20,23 @@ class Exemplar:
             stats["endurance"],
             stats["attack"],
             stats["defense"],
-            stats["level"],
-            stats["experience"]
+            stats["combat_level"],
+            stats["combat_experience"],
+            stats["fishing_level"],
+            stats["fishing_experience"],
+            stats["mining_level"],
+            stats["mining_experience"],
+            stats["woodcutting_level"],
+            stats["woodcutting_experience"],
         )
         self.zone_level = zone_level
-        self.attack = stats["attack"]
-        self.defense = stats["defense"]
-        self.fishing_level = fishing_level
-        self.fishing_experience = fishing_experience
-        self.mining_level = mining_level
-        self.mining_experience = mining_experience
-        self.woodcutting_level = woodcutting_level
-        self.woodcutting_experience = woodcutting_experience
         self.inventory = inventory if inventory else Inventory()
         self.bank = Bank()
         self.crafting = Crafting()
         self.equipped_weapon = None
         self.equipped_armor = None
-
+        self.attack = 0
+        self.defense = 0
 
 
     @property
@@ -53,13 +47,6 @@ class Exemplar:
     def health(self, value):
         self.stats.health = value
 
-    def level_up(self, skill):
-        skill_level_key = f"{skill}_level"
-        skill_exp_key = f"{skill}_experience"
-        while getattr(self, skill_exp_key) >= self.exp_needed_to_reach_next_level(getattr(self, skill_level_key)):
-            setattr(self, skill_level_key, getattr(self, skill_level_key) + 1)
-            self.increase_skill_stats(skill)
-
     def increase_skill_stats(self, skill):
         if skill == "fishing":
             self.stats.update_endurance(1)
@@ -68,40 +55,69 @@ class Exemplar:
         elif skill == "woodcutting":
             self.stats.update_attack(1)
 
-    def level_up_fishing(self):
-        while self.fishing_experience >= self.exp_needed_to_reach_next_level(self.fishing_level):
-            self.fishing_level += 1
+    @staticmethod
+    async def send_level_up_message(interaction, skill, new_level):
+        await interaction.followup.send(
+            f"Congratulations, {interaction.user.mention}! You have reached level {new_level} in {skill}."
+        )
 
-    def exp_needed_to_reach_next_level(self, level=None):
-        if level is None:
-            level = self.stats.level
-        return self.exp_needed_to_level_up(level + 1) * 100
+    async def gain_experience(self, experience_points, experience_type, interaction=None):
+        skill_exp_key = f"{experience_type}_experience"
+        skill_level_key = f"{experience_type}_level"
+        current_exp = getattr(self.stats, skill_exp_key)
+        setattr(self.stats, skill_exp_key, current_exp + experience_points)
+        print(f"You gained {experience_points} {experience_type} experience points.")
 
-    def exp_needed_to_level_up(self, level):
-        return int(25 * (2 ** (level / 7) - 2 ** ((level - 1) / 7)))
+        # Find the level that corresponds to the current experience
+        current_level = getattr(self.stats, skill_level_key)
+        target_level = current_level
+        while self.exp_needed_to_level_up(target_level + 1) <= getattr(self.stats, skill_exp_key):
+            target_level += 1
 
-    def increase_stats(self):
-        raise NotImplementedError("Each race should have a custom increase_stats method")
+        # Set the new level and send a level up message if needed
+        if target_level > current_level:
+            setattr(self.stats, skill_level_key, target_level)
+            if interaction is not None:
+                await self.send_level_up_message(interaction, experience_type, target_level)
+
+    @staticmethod
+    def exp_needed_to_level_up(level):
+        return int(100 * 1.0805 ** (level - 1))
+
+    def exp_needed_to_reach_total(self, level):
+        return sum(self.exp_needed_to_level_up(i) for i in range(1, level))
+
+    def level_up(self, skill):
+        skill_level_key = f"{skill}_level"
+        skill_exp_key = f"{skill}_experience"
+        while getattr(self.stats, skill_exp_key) >= self.exp_needed_to_level_up(getattr(self.stats, skill_level_key)):
+            setattr(self.stats, skill_level_key, getattr(self.stats, skill_level_key) + 1)
+
+            # Handle combat level up separately
+            if skill == "combat":
+                self.stats.combat_level += 1
+                self.increase_combat_stats()
+            else:
+                self.increase_skill_stats(skill)
+
+    @property
+    def max_health(self):
+        return self.stats.max_health
+
+    def increase_combat_stats(self):
+        pass
 
     def level_up_mining(self):  # Add level_up_mining method
-        while self.mining_experience >= self.exp_needed_to_reach_next_level(self.mining_level):
-            self.mining_level += 1
+        while self.stats.mining_experience >= self.exp_needed_to_level_up(self.stats.mining_level):
+            self.stats.mining_level += 1
+
+    def level_up_fishing(self):
+        while self.stats.fishing_experience >= self.exp_needed_to_level_up(self.stats.fishing_level):
+            self.stats.fishing_level += 1
 
     def level_up_woodcutting(self):  # Add level_up_woodcutting method
-        while self.woodcutting_experience >= self.exp_needed_to_reach_next_level(self.woodcutting_level):
-            self.woodcutting_level += 1
-
-    def gain_experience(self, exp, skill):
-        if skill == 'combat':
-            self.stats.experience += exp
-            while self.stats.experience >= self.exp_needed_to_reach_next_level(self.stats.level):
-                self.stats.level += 1
-                self.increase_stats()
-        else:
-            skill_key = f"{skill}_experience"
-            new_exp = getattr(self, skill_key) + exp
-            setattr(self, skill_key, new_exp)
-            self.level_up(skill)
+        while self.stats.woodcutting_experience >= self.exp_needed_to_level_up(self.stats.woodcutting_level):
+            self.stats.woodcutting_level += 1
 
     def can_equip_item(self, item):
         level_requirement = item.stats['level_requirement']
@@ -193,19 +209,39 @@ class Exemplar:
 
             threading.Timer(potion.duration, revert_effect).start()
 
-    def max_health(self):
-        raise NotImplementedError("Each race should have a custom max_health method")
 
 class PlayerStats:
-    def __init__(self, health, max_health, strength, endurance, attack, defense, level=1, experience=0):
+    def __init__(
+        self,
+        health,
+        max_health,
+        strength,
+        endurance,
+        attack,
+        defense,
+        combat_level=1,
+        combat_experience=0,
+        fishing_level=1,
+        fishing_experience=0,
+        mining_level=1,
+        mining_experience=0,
+        woodcutting_level=1,
+        woodcutting_experience=0,
+    ):
         self.health = health
         self.max_health = max_health
         self.strength = strength
         self.endurance = endurance
         self.attack = attack
         self.defense = defense
-        self.level = level
-        self.experience = experience
+        self.combat_level = combat_level
+        self.combat_experience = combat_experience
+        self.fishing_level = fishing_level
+        self.fishing_experience = fishing_experience
+        self.mining_level = mining_level
+        self.mining_experience = mining_experience
+        self.woodcutting_level = woodcutting_level
+        self.woodcutting_experience = woodcutting_experience
 
     def update_health(self, delta):
         self.health = min(self.max_health, max(0, self.health + delta))
@@ -225,7 +261,6 @@ class PlayerStats:
     def update_defense(self, delta):
         self.defense += delta
 
-
 class Human(Exemplar):
     def __init__(self):
         human_stats = {
@@ -235,16 +270,25 @@ class Human(Exemplar):
             "endurance": 12,
             "attack": 6,
             "defense": 6,
+            "combat_level": 1,
+            "combat_experience": 0,
+            "fishing_level": 1,
+            "fishing_experience": 0,
+            "mining_level": 1,
+            "mining_experience": 0,
+            "woodcutting_level": 1,
+            "woodcutting_experience": 0
         }
         super().__init__("Human", stats=human_stats)
 
-    def increase_stats(self):
+    def increase_combat_stats(self):
         self.stats.update_health(10)
+        self.stats.update_max_health(10)
         self.stats.update_strength(5)
         self.stats.update_endurance(5)
+        self.stats.update_attack(2)
+        self.stats.update_defense(2)
 
-    def max_health(self):
-        return self.stats.health + 10 * (self.stats.level - 1)
 class Dwarf(Exemplar):
     def __init__(self):
         dwarf_stats = {
@@ -254,16 +298,25 @@ class Dwarf(Exemplar):
             "endurance": 10,
             "attack": 7,
             "defense": 5,
+            "combat_level": 1,
+            "combat_experience": 0,
+            "fishing_level": 1,
+            "fishing_experience": 0,
+            "mining_level": 1,
+            "mining_experience": 0,
+            "woodcutting_level": 1,
+            "woodcutting_experience": 0
         }
         super().__init__("Dwarf", stats=dwarf_stats)
 
-    def increase_stats(self):
+    def increase_combat_stats(self):
         self.stats.update_health(12)
+        self.stats.update_max_health(12)
         self.stats.update_strength(6)
         self.stats.update_endurance(4)
+        self.stats.update_attack(1)
+        self.stats.update_defense(3)
 
-    def max_health(self):
-        return self.stats.health + 12 * (self.stats.level - 1)
 class Orc(Exemplar):
     def __init__(self):
         orc_stats = {
@@ -273,16 +326,25 @@ class Orc(Exemplar):
             "endurance": 8,
             "attack": 8,
             "defense": 4,
+            "combat_level": 1,
+            "combat_experience": 0,
+            "fishing_level": 1,
+            "fishing_experience": 0,
+            "mining_level": 1,
+            "mining_experience": 0,
+            "woodcutting_level": 1,
+            "woodcutting_experience": 0
         }
         super().__init__("Orc", stats=orc_stats)
 
-    def max_health(self):
-        return self.stats.health + 15 * (self.stats.level - 1)
-
-    def increase_stats(self):
+    def increase_combat_stats(self):
         self.stats.update_health(15)
+        self.stats.update_max_health(15)
         self.stats.update_strength(7)
         self.stats.update_endurance(3)
+        self.stats.update_attack(3)
+        self.stats.update_defense(1)
+
 class Halfling(Exemplar):
     def __init__(self):
         halfling_stats = {
@@ -292,16 +354,24 @@ class Halfling(Exemplar):
             "endurance": 14,
             "attack": 5,
             "defense": 7,
+            "combat_level": 1,
+            "combat_experience": 0,
+            "fishing_level": 1,
+            "fishing_experience": 0,
+            "mining_level": 1,
+            "mining_experience": 0,
+            "woodcutting_level": 1,
+            "woodcutting_experience": 0
         }
         super().__init__("Halfling", stats=halfling_stats)
 
-    def max_health(self):
-        return self.stats.health + 8 * (self.stats.level - 1)
-
-    def increase_stats(self):
+    def increase_combat_stats(self):
         self.stats.update_health(8)
+        self.stats.update_max_health(8)
         self.stats.update_strength(4)
         self.stats.update_endurance(6)
+        self.stats.update_attack(2)
+        self.stats.update_defense(2)
 
 class Elf(Exemplar):
     def __init__(self):
@@ -312,16 +382,25 @@ class Elf(Exemplar):
             "endurance": 13,
             "attack": 6,
             "defense": 7,
+            "combat_level": 1,
+            "combat_experience": 0,
+            "fishing_level": 1,
+            "fishing_experience": 0,
+            "mining_level": 1,
+            "mining_experience": 0,
+            "woodcutting_level": 1,
+            "woodcutting_experience": 0
         }
         super().__init__("Elf", stats=elf_stats)
 
-    def increase_stats(self):
+    def increase_combat_stats(self):
         self.stats.update_health(9)
+        self.stats.update_max_health(9)
         self.stats.update_strength(4)
         self.stats.update_endurance(7)
+        self.stats.update_attack(3)
+        self.stats.update_defense(2)
 
-    def max_health(self):
-        return self.stats.health + 9 * (self.stats.level - 1)
 
 def create_exemplar(exemplar_name):
     exemplar_classes = {
@@ -338,9 +417,32 @@ def create_exemplar(exemplar_name):
     exemplar_instance = exemplar_classes[exemplar_name.lower()]()
     return exemplar_instance
 
-def exp_needed_to_level_up(level):
-    return int(25 * (2 ** (level / 7) - 2 ** ((level - 1) / 7)))
 
-def exp_needed_to_reach_total(level):
-    return sum(exp_needed_to_level_up(i) for i in range(1, level)) * 100
+# class Player:
+#     def __init__(self):
+#         pass
+#
+#     def exp_needed_to_level_up(self, level):
+#         return int(75 * 2 ** ((level - 2) / 7))
+#
+#     def exp_needed_to_reach_total(self, level):
+#         return sum(self.exp_needed_to_level_up(i) for i in range(1, level))
+#
+#     def level_up(self, skill):
+#         skill_level_key = f"{skill}_level"
+#         skill_exp_key = f"{skill}_experience"
+#         while getattr(self, skill_exp_key) >= self.exp_needed_to_level_up(getattr(self, skill_level_key)):
+#             setattr(self, skill_level_key, getattr(self, skill_level_key) + 1)
+#             self.increase_skill_stats(skill)
+#
+# player = Player()
+#
+# print("Level | Experience Needed to Reach Level | Total Experience")
+# print("------+-----------------------------------+----------------")
+#
+# for level in range(1, 101):
+#     exp_needed = player.exp_needed_to_level_up(level)
+#     total_exp = player.exp_needed_to_reach_total(level)
+#     print(f"{level:>5} | {exp_needed:>33} | {total_exp:>14}")
+
 

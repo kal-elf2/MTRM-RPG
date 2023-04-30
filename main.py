@@ -75,20 +75,20 @@ class PickExemplars(Select):
         exemplar_instance = create_exemplar(self.values[0])
         player_data[str(author_id)]["stats"] = {
             "zone_level": exemplar_instance.zone_level,
-            "level": exemplar_instance.level,
-            "experience": exemplar_instance.experience,
             "health": exemplar_instance.stats.health,
             "max_health": exemplar_instance.stats.max_health,
             "strength": exemplar_instance.stats.strength,
             "endurance": exemplar_instance.stats.endurance,
-            "attack": exemplar_instance.stats.attack,  # Add this line
-            "defense": exemplar_instance.stats.defense,  # Add this line
-            "fishing_level": exemplar_instance.fishing_level,
-            "fishing_experience": exemplar_instance.fishing_experience,
-            "mining_level": exemplar_instance.mining_level,
-            "mining_experience": exemplar_instance.mining_experience,
-            "woodcutting_level": exemplar_instance.woodcutting_level,
-            "woodcutting_experience": exemplar_instance.woodcutting_experience,
+            "attack": exemplar_instance.stats.attack,
+            "defense": exemplar_instance.stats.defense,
+            "combat_level": exemplar_instance.stats.combat_level,
+            "combat_experience": exemplar_instance.stats.combat_experience,
+            "fishing_level": exemplar_instance.stats.fishing_level,
+            "fishing_experience": exemplar_instance.stats.fishing_experience,
+            "mining_level": exemplar_instance.stats.mining_level,
+            "mining_experience": exemplar_instance.stats.mining_experience,
+            "woodcutting_level": exemplar_instance.stats.woodcutting_level,
+            "woodcutting_experience": exemplar_instance.stats.woodcutting_experience
         }
 
         player_data[str(author_id)]["inventory"] = Inventory().to_dict()
@@ -126,7 +126,6 @@ class BattleOptions(Select):
             battle_outcome, loot_messages = await monster_battle(interaction.user, player, monster, zone_level,
                                                                  battle_embed)
 
-            # Update the inventory
             if battle_outcome[0]:
                 # Update player health based on damage received
                 player.stats.health -= battle_outcome[1]
@@ -137,11 +136,16 @@ class BattleOptions(Select):
                         player.inventory.add_item_to_inventory(loot_item)  # Use this line for all other item types
                 player_data[author_id]["inventory"] = player.inventory.to_dict()
 
-                experience_gained = battle_outcome[4]
-                player.stats.experience += experience_gained
-                player_data[author_id]["stats"][
-                    "experience"] = player.stats.experience  # Add this line to update experience in the player_data dictionary
+                experience_gained = monster.experience_reward
+                await player.gain_experience(experience_gained, 'combat', interaction)
+
+                player_data[author_id]["stats"]["combat_level"] = player.stats.combat_level
+                player_data[author_id]["stats"]["combat_experience"] = player.stats.combat_experience
+                # Add this line to update experience in the player_data dictionary
                 player_data[author_id]["stats"].update(player.stats.__dict__)
+
+                if player.stats.health <= 0:
+                    player.stats.health = player.stats.max_health
 
                 await battle_embed.edit(
                     embed=create_battle_embed(interaction.user, player, monster,
