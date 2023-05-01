@@ -1,0 +1,302 @@
+{
+    "1": {
+        "total_experience": 0
+    },
+    "2": {
+        "total_experience": 100
+    },
+    "3": {
+        "total_experience": 208
+    },
+    "4": {
+        "total_experience": 324
+    },
+    "5": {
+        "total_experience": 450
+    },
+    "6": {
+        "total_experience": 586
+    },
+    "7": {
+        "total_experience": 733
+    },
+    "8": {
+        "total_experience": 892
+    },
+    "9": {
+        "total_experience": 1063
+    },
+    "10": {
+        "total_experience": 1248
+    },
+    "11": {
+        "total_experience": 1448
+    },
+    "12": {
+        "total_experience": 1664
+    },
+    "13": {
+        "total_experience": 1898
+    },
+    "14": {
+        "total_experience": 2151
+    },
+    "15": {
+        "total_experience": 2424
+    },
+    "16": {
+        "total_experience": 2719
+    },
+    "17": {
+        "total_experience": 3038
+    },
+    "18": {
+        "total_experience": 3383
+    },
+    "19": {
+        "total_experience": 3755
+    },
+    "20": {
+        "total_experience": 4157
+    },
+    "21": {
+        "total_experience": 4592
+    },
+    "22": {
+        "total_experience": 5062
+    },
+    "23": {
+        "total_experience": 5570
+    },
+    "24": {
+        "total_experience": 6119
+    },
+    "25": {
+        "total_experience": 6712
+    },
+    "26": {
+        "total_experience": 7353
+    },
+    "27": {
+        "total_experience": 8045
+    },
+    "28": {
+        "total_experience": 8793
+    },
+    "29": {
+        "total_experience": 9601
+    },
+    "30": {
+        "total_experience": 10474
+    },
+    "31": {
+        "total_experience": 11418
+    },
+    "32": {
+        "total_experience": 12438
+    },
+    "33": {
+        "total_experience": 13540
+    },
+    "34": {
+        "total_experience": 14731
+    },
+    "35": {
+        "total_experience": 16018
+    },
+    "36": {
+        "total_experience": 17408
+    },
+    "37": {
+        "total_experience": 18910
+    },
+    "38": {
+        "total_experience": 20533
+    },
+    "39": {
+        "total_experience": 22287
+    },
+    "40": {
+        "total_experience": 24182
+    },
+    "41": {
+        "total_experience": 26230
+    },
+    "42": {
+        "total_experience": 28443
+    },
+    "43": {
+        "total_experience": 30834
+    },
+    "44": {
+        "total_experience": 33417
+    },
+    "45": {
+        "total_experience": 36208
+    },
+    "46": {
+        "total_experience": 39224
+    },
+    "47": {
+        "total_experience": 42483
+    },
+    "48": {
+        "total_experience": 46004
+    },
+    "49": {
+        "total_experience": 49809
+    },
+    "50": {
+        "total_experience": 53920
+    },
+    "51": {
+        "total_experience": 58362
+    },
+    "52": {
+        "total_experience": 63161
+    },
+    "53": {
+        "total_experience": 68347
+    },
+    "54": {
+        "total_experience": 73950
+    },
+    "55": {
+        "total_experience": 80004
+    },
+    "56": {
+        "total_experience": 86546
+    },
+    "57": {
+        "total_experience": 93615
+    },
+    "58": {
+        "total_experience": 101253
+    },
+    "59": {
+        "total_experience": 109506
+    },
+    "60": {
+        "total_experience": 118423
+    },
+    "61": {
+        "total_experience": 128058
+    },
+    "62": {
+        "total_experience": 138468
+    },
+    "63": {
+        "total_experience": 149716
+    },
+    "64": {
+        "total_experience": 161870
+    },
+    "65": {
+        "total_experience": 175002
+    },
+    "66": {
+        "total_experience": 189192
+    },
+    "67": {
+        "total_experience": 204524
+    },
+    "68": {
+        "total_experience": 221090
+    },
+    "69": {
+        "total_experience": 238990
+    },
+    "70": {
+        "total_experience": 258331
+    },
+    "71": {
+        "total_experience": 279229
+    },
+    "72": {
+        "total_experience": 301809
+    },
+    "73": {
+        "total_experience": 326207
+    },
+    "74": {
+        "total_experience": 352569
+    },
+    "75": {
+        "total_experience": 381053
+    },
+    "76": {
+        "total_experience": 411830
+    },
+    "77": {
+        "total_experience": 445085
+    },
+    "78": {
+        "total_experience": 481017
+    },
+    "79": {
+        "total_experience": 519841
+    },
+    "80": {
+        "total_experience": 561791
+    },
+    "81": {
+        "total_experience": 607117
+    },
+    "82": {
+        "total_experience": 656092
+    },
+    "83": {
+        "total_experience": 709010
+    },
+    "84": {
+        "total_experience": 766188
+    },
+    "85": {
+        "total_experience": 827969
+    },
+    "86": {
+        "total_experience": 894723
+    },
+    "87": {
+        "total_experience": 966851
+    },
+    "88": {
+        "total_experience": 1044785
+    },
+    "89": {
+        "total_experience": 1128993
+    },
+    "90": {
+        "total_experience": 1219980
+    },
+    "91": {
+        "total_experience": 1318291
+    },
+    "92": {
+        "total_experience": 1424516
+    },
+    "93": {
+        "total_experience": 1539292
+    },
+    "94": {
+        "total_experience": 1663308
+    },
+    "95": {
+        "total_experience": 1797307
+    },
+    "96": {
+        "total_experience": 1942093
+    },
+    "97": {
+        "total_experience": 2098534
+    },
+    "98": {
+        "total_experience": 2267569
+    },
+    "99": {
+        "total_experience": 2450211
+    },
+    "100": {
+        "total_experience": 2647556
+    }
+}

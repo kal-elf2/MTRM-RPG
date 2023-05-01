@@ -2,7 +2,10 @@ from resources.inventory import Inventory, Bank
 from crafting.crafting import Crafting
 import threading
 import random
+import json
 
+with open("level_data.json", "r") as f:
+    LEVEL_DATA = json.load(f)
 
 class Exemplar:
     def __init__(
@@ -61,44 +64,49 @@ class Exemplar:
             f"Congratulations, {interaction.user.mention}! You have reached level {new_level} in {skill}."
         )
 
+    @staticmethod
+    def exp_needed_to_level_up(level):
+        return LEVEL_DATA[str(level)]["total_experience"]
+
     async def gain_experience(self, experience_points, experience_type, interaction=None):
         skill_exp_key = f"{experience_type}_experience"
         skill_level_key = f"{experience_type}_level"
         current_exp = getattr(self.stats, skill_exp_key)
-        setattr(self.stats, skill_exp_key, current_exp + experience_points)
+        updated_exp = current_exp + experience_points
+        setattr(self.stats, skill_exp_key, updated_exp)
         print(f"You gained {experience_points} {experience_type} experience points.")
+        print(f"Updated experience: {updated_exp}")
 
-        # Find the level that corresponds to the current experience
-        current_level = getattr(self.stats, skill_level_key)
-        target_level = current_level
-        while self.exp_needed_to_level_up(target_level + 1) <= getattr(self.stats, skill_exp_key):
-            target_level += 1
+        # Call the set_level method after gaining experience
+        previous_level = getattr(self.stats, skill_level_key)
+        print(f'previous_level: {previous_level}')
+        updated_level = self.set_level(experience_type, updated_exp)
+        print(f'updated level: {updated_level }')
 
-        # Set the new level and send a level up message if needed
-        if target_level > current_level:
-            setattr(self.stats, skill_level_key, target_level)
+        # Send a level up message if needed
+        if updated_level > previous_level:
+            setattr(self.stats, skill_level_key, updated_level)
             if interaction is not None:
-                await self.send_level_up_message(interaction, experience_type, target_level)
+                await self.send_level_up_message(interaction, experience_type, updated_level)
 
-    @staticmethod
-    def exp_needed_to_level_up(level):
-        return int(100 * 1.0805 ** (level - 1))
+    def set_level(self, skill, updated_exp):
+        # Find the correct level range based on the player's total experience
+        for level, level_data in LEVEL_DATA.items():
+            if updated_exp <= level_data["total_experience"]:
+                new_level = int(level)
+                break
+        else:
+            new_level = len(LEVEL_DATA)
 
-    def exp_needed_to_reach_total(self, level):
-        return sum(self.exp_needed_to_level_up(i) for i in range(1, level))
+        # Handle combat level up separately
+        if skill == "combat":
+            self.stats.combat_level = new_level
+            self.increase_combat_stats()
+        else:
+            self.increase_skill_stats(skill)
 
-    def level_up(self, skill):
-        skill_level_key = f"{skill}_level"
-        skill_exp_key = f"{skill}_experience"
-        while getattr(self.stats, skill_exp_key) >= self.exp_needed_to_level_up(getattr(self.stats, skill_level_key)):
-            setattr(self.stats, skill_level_key, getattr(self.stats, skill_level_key) + 1)
-
-            # Handle combat level up separately
-            if skill == "combat":
-                self.stats.combat_level += 1
-                self.increase_combat_stats()
-            else:
-                self.increase_skill_stats(skill)
+        print(f'new level: {new_level}')
+        return new_level
 
     @property
     def max_health(self):

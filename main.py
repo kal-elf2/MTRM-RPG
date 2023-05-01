@@ -218,4 +218,32 @@ async def menu(ctx: commands.Context):
 zone_names = ['Forest of Shadows', 'Desert of Doom', 'Icy Tundra', 'Volcanic Wasteland', 'Tower of Eternity']
 zones = [Zone(name, level) for level, name in enumerate(zone_names, 1)]
 
+
+# import json
+#
+# def exp_needed_to_level_up(level):
+#     if level == 1:
+#         return 0
+#     return int(100 * 1.0805 ** (level - 2))
+#
+# def generate_level_data():
+#     level_data = {}
+#     total_exp = 0
+#     for level in range(1, 101):
+#         exp_needed = exp_needed_to_level_up(level)
+#         total_exp += exp_needed
+#         level_data[level] = {
+#             "total_experience": total_exp
+#         }
+#     return level_data
+#
+# level_data = generate_level_data()
+#
+# level_data_json = json.dumps(level_data, indent=4)
+# print(level_data_json)
+
+
+
 bot.run(os.environ["DISCORD_TOKEN"])
+
+
