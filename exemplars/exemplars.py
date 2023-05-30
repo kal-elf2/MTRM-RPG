@@ -74,14 +74,10 @@ class Exemplar:
         current_exp = getattr(self.stats, skill_exp_key)
         updated_exp = current_exp + experience_points
         setattr(self.stats, skill_exp_key, updated_exp)
-        print(f"You gained {experience_points} {experience_type} experience points.")
-        print(f"Updated experience: {updated_exp}")
 
         # Call the set_level method after gaining experience
         previous_level = getattr(self.stats, skill_level_key)
-        print(f'previous_level: {previous_level}')
         updated_level = self.set_level(experience_type, updated_exp)
-        print(f'updated level: {updated_level }')
 
         # Send a level up message if needed
         if updated_level > previous_level:
@@ -104,8 +100,6 @@ class Exemplar:
             self.increase_combat_stats()
         else:
             self.increase_skill_stats(skill)
-
-        print(f'new level: {new_level}')
         return new_level
 
     @property
