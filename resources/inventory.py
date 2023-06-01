@@ -65,6 +65,8 @@ class Inventory:
             self._add_item_to_specific_inventory(item, amount, self.gems)
         elif isinstance(item, Loot):
             self._add_item_to_specific_inventory(item, amount, self.loot)
+        elif isinstance(item, Item):
+            self._add_item_to_specific_inventory(item, amount, self.items)
 
     def _add_item_to_specific_inventory(self, item, amount, item_list):
         existing_item = next((i for i in item_list if i.name == item.name), None)

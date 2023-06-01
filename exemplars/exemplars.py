@@ -41,6 +41,8 @@ class Exemplar:
         self.attack = 0
         self.defense = 0
 
+    def is_defeated(self):
+        return self.health <= 0
 
     @property
     def health(self):

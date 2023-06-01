@@ -5,12 +5,12 @@
             "zone_level": 1,
             "health": 95,
             "max_health": 95,
-            "strength": 11,
-            "endurance": 13,
-            "attack": 6,
-            "defense": 7,
+            "strength": 50,
+            "endurance": 50,
+            "attack": 50,
+            "defense": 50,
             "combat_level": 1,
-            "combat_experience": 0,
+            "combat_experience": 10,
             "fishing_level": 1,
             "fishing_experience": 0,
             "mining_level": 1,
@@ -19,17 +19,68 @@
             "woodcutting_experience": 0
         },
         "inventory": {
-            "gold": 0,
-            "items": [],
-            "herbs": [],
-            "gems": [],
-            "potions": [],
-            "loot": [],
+            "gold": 5,
+            "items": [
+                {
+                    "name": {
+                        "name": "Deer Parts",
+                        "description": null,
+                        "value": null,
+                        "stack": 0
+                    },
+                    "description": null,
+                    "value": 10,
+                    "stack": 2
+                },
+                {
+                    "name": {
+                        "name": "Deer Skins",
+                        "description": null,
+                        "value": null,
+                        "stack": 0
+                    },
+                    "description": null,
+                    "value": 10,
+                    "stack": 3
+                }
+            ],
+            "herbs": [
+                {
+                    "name": "Ranarr",
+                    "rarity": 1,
+                    "value": 3,
+                    "stack": 1
+                }
+            ],
+            "gems": [
+                {
+                    "name": "Sapphire",
+                    "rarity": 1,
+                    "value": 50,
+                    "stack": 1
+                }
+            ],
+            "potions": [
+                {
+                    "name": "Strength Potion",
+                    "rarity": 2,
+                    "value": 20,
+                    "stack": 1
+                }
+            ],
+            "loot": [
+                {
+                    "name": "Copper Coin",
+                    "rarity": 1,
+                    "value": 2,
+                    "stack": 1
+                }
+            ],
             "limit": 40,
             "equipped_items": [],
             "equipped_armor": {},
             "equipped_weapon": null,
-            "materium_count": 0
+            "materium_count": 1
         }
     }
 }

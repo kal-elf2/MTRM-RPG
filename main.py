@@ -129,11 +129,31 @@ class BattleOptions(Select):
             if battle_outcome[0]:
                 # Update player health based on damage received
                 player.stats.health -= battle_outcome[1]
-                for loot_type, loot_item in battle_outcome[3]:
+                for loot_type, loot_items in battle_outcome[3]:
                     if loot_type == 'gold':
-                        player.inventory.add_gold(loot_item)
+                        player.inventory.add_gold(loot_items)
+                    elif loot_type == 'items':
+                        # Check if loot_items is a list of tuples (meaning it's a list of (item, quantity) pairs)
+                        if isinstance(loot_items, list) and all(isinstance(i, tuple) for i in loot_items):
+                            for item, quantity in loot_items:
+                                for _ in range(
+                                        quantity):  # Add each item to the inventory the specified number of times
+                                    player.inventory.add_item_to_inventory(item)
+                        elif isinstance(loot_items, list):  # If it's just a list of items
+                            for item in loot_items:
+                                player.inventory.add_item_to_inventory(item)
+                        else:  # If loot_items is a single object
+                            player.inventory.add_item_to_inventory(loot_items)
                     else:
-                        player.inventory.add_item_to_inventory(loot_item)  # Use this line for all other item types
+                        if isinstance(loot_items, list) and all(isinstance(i, tuple) for i in loot_items):
+                            for item, quantity in loot_items:
+                                for _ in range(quantity):
+                                    player.inventory.add_item_to_inventory(item)
+                        elif isinstance(loot_items, list):  # If it's just a list of items
+                            for item in loot_items:
+                                player.inventory.add_item_to_inventory(item)
+                        else:  # If loot_items is a single object
+                            player.inventory.add_item_to_inventory(loot_items)
                 player_data[author_id]["inventory"] = player.inventory.to_dict()
 
                 experience_gained = monster.experience_reward
@@ -162,6 +182,7 @@ class BattleOptions(Select):
                                               f"You have been defeated by the {monster.name}. Your health has been restored."))
 
             save_player_data(guild_id, player_data)
+
         elif self.values[0] == "enter_dungeon":
             # Handle entering the dungeon
             await interaction.followup.send(

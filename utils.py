@@ -3,7 +3,8 @@ from resources.inventory import Inventory
 from exemplars.exemplars import Exemplar
 from resources.fish import Herb
 from exemplars.exemplars import PlayerStats, Bank
-from crafting.crafting import Crafting, Item
+from crafting.crafting import Crafting
+from resources.item import Item
 from resources.ore import Gem
 
 class ExemplarJSONEncoder(json.JSONEncoder):
@@ -21,12 +22,11 @@ class ExemplarJSONEncoder(json.JSONEncoder):
         elif isinstance(obj, Crafting):
             return obj.__dict__
         elif isinstance(obj, Item):
-            return obj.__dict__
+            return obj.to_dict()
         elif isinstance(obj, Gem):
             return obj.to_dict()
         else:
             return super().default(obj)
-
 
 def load_player_data(guild_id):
     with open(f'server/player_data_{guild_id}.json', 'r') as f:

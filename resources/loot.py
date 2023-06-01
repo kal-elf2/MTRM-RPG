@@ -3,6 +3,7 @@ from resources.ore import GEM_TYPES
 from resources.fish import HERB_TYPES
 from resources.potion import POTION_LIST
 from resources.materium import Materium
+from resources.item import Item
 
 class Loot:
     def __init__(self, name, rarity, value):
@@ -28,6 +29,33 @@ class Loot:
         )
         loot.stack = data["stack"]
         return loot
+
+loot_definitions = {
+    'Rabbit Body': {
+        'description': 'A furry rabbit body, warm to the touch. Can be used for crafting soft armors.',
+        'value': 10
+    },
+    'Deer Part': {
+        'description': 'Various parts of a deer. Some are useful for making tools and weapons.',
+        'value': 20
+    },
+    'Deer Skin': {
+        'description': 'Tough deer skin. Can be used for crafting sturdy armors.',
+        'value': 30
+    },
+    'Wolf Skin': {
+        'description': 'A skin of a wild wolf. Known for its durability and strength.',
+        'value': 50
+    },
+    'Onyx': {
+        'description': 'A precious black gemstone. Used in crafting magical items and potent elixirs.',
+        'value': 100
+    },
+    'Glowing Essence': {
+        'description': 'An ethereal essence that glows faintly. Used in powerful magical rituals and crafting.',
+        'value': 200
+    }
+}
 
 
 loot_list = [
@@ -68,7 +96,7 @@ loot_list = [
     ],
 ]
 
-def generate_zone_loot(zone_level):
+def generate_zone_loot(zone_level, monster_drop=None):
     loot_messages = []
     loot = []
 
@@ -113,16 +141,26 @@ def generate_zone_loot(zone_level):
         loot.append(('loot', loot_dropped))
         loot_messages.append(f"You found a {loot_dropped.name}!")
 
-        # Potion drops
-        potion_drop_rate = 0.99 + (0.05 * zone_level)  # Increase the chance of getting a potion as zone level increases
-        if random.random() < potion_drop_rate:
-            potion_weights = [50, 30, 15, 4, 1][
-                             :len(POTION_LIST)]  # Adjust the weights based on the length of POTION_LIST
-            potion_dropped = random.choices(POTION_LIST, weights=potion_weights, k=1)[0]
-            loot.append(('potion', potion_dropped))
-            loot_messages.append(f"You found a {potion_dropped.name}!")
+    # Potion drops
+    potion_drop_rate = 0.99 + (0.05 * zone_level)  # Increase the chance of getting a potion as zone level increases
+    if random.random() < potion_drop_rate:
+        potion_weights = [50, 30, 15, 4, 1][
+                         :len(POTION_LIST)]  # Adjust the weights based on the length of POTION_LIST
+        potion_dropped = random.choices(POTION_LIST, weights=potion_weights, k=1)[0]
+        loot.append(('potion', potion_dropped))
+        loot_messages.append(f"You found a {potion_dropped.name}!")
 
-    # Return the loot dropped (empty list if no loot is dropped) and the loot messages
+    if monster_drop:
+        for drop, quantity in monster_drop:  # Iterate over each drop item and its quantity
+            if isinstance(drop, str):
+                item = Item(drop)  # Instantiate an Item with the drop name
+            else:
+                item = drop  # Use the drop directly if it's already an instance of Item
+
+            loot.append(('items', [(item, quantity)]))
+            loot_messages.append(f"You found {quantity} {item.name}!")
+
+        # Return the loot dropped (empty list if no loot is dropped) and the loot messages
     return loot, loot_messages
 
 
