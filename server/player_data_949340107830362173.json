@@ -9,8 +9,8 @@
             "endurance": 50,
             "attack": 50,
             "defense": 50,
-            "combat_level": 1,
-            "combat_experience": 10,
+            "combat_level": 2,
+            "combat_experience": 198,
             "fishing_level": 1,
             "fishing_experience": 0,
             "mining_level": 1,
@@ -19,29 +19,31 @@
             "woodcutting_experience": 0
         },
         "inventory": {
-            "gold": 5,
+            "gold": 24,
             "items": [
                 {
-                    "name": {
-                        "name": "Deer Parts",
-                        "description": null,
-                        "value": null,
-                        "stack": 0
-                    },
-                    "description": null,
-                    "value": 10,
-                    "stack": 2
+                    "name": "Onyx",
+                    "description": "A precious black gemstone. Used in crafting magical items and potent elixirs.",
+                    "value": 100,
+                    "stack": 26
                 },
                 {
-                    "name": {
-                        "name": "Deer Skins",
-                        "description": null,
-                        "value": null,
-                        "stack": 0
-                    },
-                    "description": null,
-                    "value": 10,
-                    "stack": 3
+                    "name": "Deer Part",
+                    "description": "Various parts of a deer. Some are useful for making tools and weapons.",
+                    "value": 20,
+                    "stack": 1
+                },
+                {
+                    "name": "Deer Skin",
+                    "description": "Tough deer skin. Can be used for crafting sturdy armors.",
+                    "value": 30,
+                    "stack": 1
+                },
+                {
+                    "name": "Glowing Essence",
+                    "description": "An ethereal essence that glows faintly. Used in powerful magical rituals and crafting.",
+                    "value": 200,
+                    "stack": 1
                 }
             ],
             "herbs": [
@@ -49,7 +51,7 @@
                     "name": "Ranarr",
                     "rarity": 1,
                     "value": 3,
-                    "stack": 1
+                    "stack": 6
                 }
             ],
             "gems": [
@@ -57,22 +59,52 @@
                     "name": "Sapphire",
                     "rarity": 1,
                     "value": 50,
-                    "stack": 1
+                    "stack": 6
                 }
             ],
             "potions": [
                 {
+                    "name": "Defense Potion",
+                    "rarity": 5,
+                    "value": 50,
+                    "stack": 1
+                },
+                {
                     "name": "Strength Potion",
                     "rarity": 2,
                     "value": 20,
-                    "stack": 1
+                    "stack": 2
+                },
+                {
+                    "name": "Health Potion",
+                    "rarity": 1,
+                    "value": 10,
+                    "stack": 3
                 }
             ],
             "loot": [
                 {
+                    "name": "Bronze Bracelet",
+                    "description": null,
+                    "value": 5,
+                    "stack": 2
+                },
+                {
+                    "name": "Wooden Amulet",
+                    "description": null,
+                    "value": 8,
+                    "stack": 1
+                },
+                {
                     "name": "Copper Coin",
-                    "rarity": 1,
+                    "description": null,
                     "value": 2,
+                    "stack": 2
+                },
+                {
+                    "name": "Rusty Longsword",
+                    "rarity": 1,
+                    "value": 20,
                     "stack": 1
                 }
             ],
@@ -80,7 +112,7 @@
             "equipped_items": [],
             "equipped_armor": {},
             "equipped_weapon": null,
-            "materium_count": 1
+            "materium_count": 6
         }
     }
 }

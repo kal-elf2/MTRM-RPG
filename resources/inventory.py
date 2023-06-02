@@ -81,57 +81,6 @@ class Inventory:
                 return False
         return True
 
-    # def _add_loot_to_inventory(self, loot, amount):
-    #     existing_loot = next((i for i in self.loot if isinstance(i, Loot) and i.name == loot.name), None)
-    #     if existing_loot:
-    #         existing_loot.stack += amount
-    #     else:
-    #         if len(self.loot) < self.limit:
-    #             loot.stack = amount
-    #             self.loot.append(loot)
-    #         else:
-    #             print("Your inventory is full. Deposit items at the bank to free up space.")
-    #             return False
-    #     return True
-    #
-    # def _add_gem_to_inventory(self, gem, amount):
-    #     existing_gem = next((i for i in self.gems if i.name == gem.name), None)
-    #     if existing_gem:
-    #         existing_gem.stack += amount
-    #     else:
-    #         if len(self.gems) < self.limit:
-    #             gem.stack = amount
-    #             self.gems.append(gem)
-    #         else:
-    #             print("Your inventory is full. Deposit items at the bank to free up space.")
-    #             return False
-    #     return True
-    #
-    # def _add_herb_to_inventory(self, herb, amount):
-    #     existing_herb = next((i for i in self.herbs if i.name == herb.name), None)
-    #     if existing_herb:
-    #         existing_herb.stack += amount
-    #     else:
-    #         if len(self.herbs) < self.limit:
-    #             herb.stack = amount
-    #             self.herbs.append(herb)
-    #         else:
-    #             print("Your inventory is full. Deposit items at the bank to free up space.")
-    #             return False
-    #     return True
-    #
-    # def _add_potion_to_inventory(self, potion, amount):
-    #     existing_potion = next((i for i in self.potions if i.name == potion.name), None)
-    #     if existing_potion:
-    #         existing_potion.stack += amount
-    #     else:
-    #         if len(self.potions) < self.limit:
-    #             potion.stack = amount
-    #             self.potions.append(potion)
-    #         else:
-    #             print("Your inventory is full. Deposit items at the bank to free up space.")
-    #             return False
-    #     return True
 
     def has(self, item, amount):
         if isinstance(item, Materium):

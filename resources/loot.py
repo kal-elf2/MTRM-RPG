@@ -121,7 +121,7 @@ def generate_zone_loot(zone_level, monster_drop=None):
         herb_weights = [50, 30, 15, 4, 1][:zone_level]  # Adjust the weights based on the zone level
         herb_dropped = random.choices(herb_types_for_zone, weights=herb_weights, k=1)[0]
         loot.append(('herb', herb_dropped))
-        loot_messages.append(f"You found a {herb_dropped.name}!")
+        loot_messages.append(f"You found some {herb_dropped.name}!")
 
     # Materium drops
     materium_drop_rate = 0.99  # 1% chance to drop Materium
@@ -153,9 +153,15 @@ def generate_zone_loot(zone_level, monster_drop=None):
     if monster_drop:
         for drop, quantity in monster_drop:  # Iterate over each drop item and its quantity
             if isinstance(drop, str):
-                item = Item(drop)  # Instantiate an Item with the drop name
+                # If the 'drop' is a string, try to find it in the loot_definitions dictionary
+                # If it's not found, instantiate an Item with default parameters
+                item_data = loot_definitions.get(drop, {})
+                item = Item(drop, description=item_data.get('description'), value=item_data.get('value', 10))
+            elif isinstance(drop, Item):
+                # Use the drop directly if it's already an instance of Item
+                item = drop
             else:
-                item = drop  # Use the drop directly if it's already an instance of Item
+                continue  # Ignore the drop if it's not a string or an Item
 
             loot.append(('items', [(item, quantity)]))
             loot_messages.append(f"You found {quantity} {item.name}!")

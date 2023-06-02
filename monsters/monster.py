@@ -1,6 +1,6 @@
 # monster.py
 import random
-from resources.loot import generate_zone_loot
+from resources.loot import generate_zone_loot, loot_definitions
 from discord import Embed
 import asyncio
 from resources.item import Item
@@ -42,7 +42,7 @@ def generate_monster(zone_level):
     experience_reward = (strength + endurance) * 2
     attack_speed = monster[6]
     max_health = health
-    drop_items = [Item(name=item, description=None, value=10) for item in monster[7]]
+    drop_items = [Item(name=item.name, description=loot_definitions.get(item.name, {}).get('description'), value=loot_definitions.get(item.name, {}).get('value', 10)) for item in monster[7]]
     drop_quantities = monster[8] if isinstance(monster[8], list) else [monster[8]]
     drop = list(zip(drop_items, drop_quantities))
     return Monster(monster[0], health, max_health, strength, endurance, experience_reward, monster[4], monster[5],
