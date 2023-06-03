@@ -25,7 +25,7 @@ class Monster:
 def generate_monster(zone_level):
     monster_types = [
         ('Rabbit', 2, 0, 0, None, None, 0, [Item('Rabbit Body')], [1]),
-        ('Deer', 5, 0, 0, None, None, 0, [Item('Deer Part'), Item('Deer Skin')], [1, 1]),
+        ('Deer', 5, 0, 0, None, None, 0, [Item('Deer Parts'), Item('Deer Skins')], [1, 1]),
         ('Buck', 10, 3, 2, 'longbow', 'warhammer', 3, [Item('Deer Parts'), Item('Deer Skins')], [2, 3]),
         ('Wolf', 20, 5, 4, 'warhammer', 'staff', 3.5, [Item('Wolf Skin')], [1]),
         ('Goblin', 25, 6, 4, 'longsword', 'longbow', 4, [Item('Onyx')], [1]),

@@ -35,11 +35,11 @@ loot_definitions = {
         'description': 'A furry rabbit body, warm to the touch. Can be used for crafting soft armors.',
         'value': 10
     },
-    'Deer Part': {
+    'Deer Parts': {
         'description': 'Various parts of a deer. Some are useful for making tools and weapons.',
         'value': 20
     },
-    'Deer Skin': {
+    'Deer Skins': {
         'description': 'Tough deer skin. Can be used for crafting sturdy armors.',
         'value': 30
     },
