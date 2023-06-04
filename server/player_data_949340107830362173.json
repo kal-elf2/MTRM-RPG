@@ -5,12 +5,12 @@
             "zone_level": 1,
             "health": 95,
             "max_health": 95,
-            "strength": 30,
+            "strength": 10,
             "endurance": 13,
-            "attack": 15,
-            "defense": 50,
-            "combat_level": 4,
-            "combat_experience": 438,
+            "attack": 12,
+            "defense": 12,
+            "combat_level": 5,
+            "combat_experience": 582,
             "fishing_level": 1,
             "fishing_experience": 0,
             "mining_level": 1,
@@ -19,13 +19,13 @@
             "woodcutting_experience": 0
         },
         "inventory": {
-            "gold": 55,
+            "gold": 78,
             "items": [
                 {
                     "name": "Wolf Skin",
                     "description": "A skin of a wild wolf. Known for its durability and strength.",
                     "value": 50,
-                    "stack": 6
+                    "stack": 12
                 },
                 {
                     "name": "Rabbit Body",
@@ -55,7 +55,7 @@
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in crafting magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 45
+                    "stack": 50
                 }
             ],
             "herbs": [
@@ -63,7 +63,7 @@
                     "name": "Ranarr",
                     "rarity": 1,
                     "value": 3,
-                    "stack": 14
+                    "stack": 17
                 }
             ],
             "gems": [
@@ -99,7 +99,7 @@
                     "name": "Bronze Bracelet",
                     "description": null,
                     "value": 5,
-                    "stack": 5
+                    "stack": 6
                 },
                 {
                     "name": "Small Gemstone",

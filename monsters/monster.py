@@ -29,9 +29,9 @@ def generate_monster_by_name(name, zone_level):
         ('Buck', 10, 3, 2, 'longbow', 'warhammer', 3, [Item('Deer Parts'), Item('Deer Skins')], [2, 3]),
         ('Wolf', 20, 5, 4, 'warhammer', 'staff', 3.5, [Item('Wolf Skin')], [1]),
         ('Goblin', 25, 6, 4, 'longsword', 'longbow', 4, [Item('Onyx')], [1]),
-        ('Brute', 50, 10, 8, 'dual_daggers', 'warhammer', 4.5, [Item('Onyx')], [5]),
-        ('Mega Brute', 70, 12, 10, 'longsword', 'staff', 3.5, [Item('Onyx')], [10]),
-        ('Wisp', 100, 15, 12, 'staff', 'longbow', 2.5, [Item('Glowing Essence')], [1]),
+        ('Goblin Hunter', 250, 10, 8, 'dual_daggers', 'warhammer', 4.5, [Item('Onyx')], [5]),
+        ('Mega Brute', 500, 12, 10, 'longsword', 'staff', 3.5, [Item('Onyx')], [10]),
+        ('Wisp', 1000, 15, 12, 'staff', 'longbow', 2.5, [Item('Glowing Essence')], [1]),
     ]
 
     monster = next((m for m in monster_types if m[0] == name), None)
@@ -58,14 +58,14 @@ def generate_monster_list():
         'Buck',
         'Wolf',
         'Goblin',
-        'Brute',
+        'Goblin Hunter',
         'Mega Brute',
         'Wisp',
     ]
     return monster_names
 
 def create_health_bar(current, max_health):
-    bar_length = 16  # Fixed bar length
+    bar_length = 12  # Fixed bar length
     health_percentage = current / max_health
     filled_length = round(bar_length * health_percentage)
 
@@ -83,11 +83,24 @@ def create_battle_embed(user, player, monster, message=""):
     player_health_bar = create_health_bar(player.health, player.stats.max_health)
     monster_health_bar = create_health_bar(monster.health, monster.max_health)
 
+    # Replace spaces with '%20' for URL compatibility
+    monster_name_url = monster.name.replace(" ", "%20")
+    # Construct image URL
+    image_url = f"https://raw.githubusercontent.com/kal-elf2/MTRM-RPG/master/images/{monster_name_url}.png"
+
+    print(image_url)
+
     embed = Embed(title=f"{user.name} encounters a {monster.name}")  # Remove user.mention
     embed.add_field(name="Battle", value=message, inline=False)
     embed.add_field(name=f"{user.name}'s Health", value=f"{player.health}/{player.stats.max_health}\n{player_health_bar}", inline=True)  # Remove user.mention
     embed.add_field(name=f"{monster.name}'s Health", value=f"{monster.health}/{monster.max_health}\n{monster_health_bar}", inline=True)
+
+    # Add image to embed
+    embed.set_image(url=image_url)
+
     return embed
+
+
 
 
 def calculate_hit_probability(attacker_attack, defender_defense):
