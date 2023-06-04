@@ -7,7 +7,7 @@ from discord.ui import Select, View
 from discord.components import SelectOption
 from zones.zone import Zone
 from exemplars.exemplars import create_exemplar, Exemplar
-from monsters.monster import generate_monster, monster_battle, create_battle_embed
+from monsters.monster import generate_monster_list, generate_monster_by_name, monster_battle, create_battle_embed
 from discord import Embed, ui
 from resources.inventory import Inventory
 
@@ -102,13 +102,55 @@ class PickExemplars(Select):
 async def send_message(ctx: commands.Context, embed):
     return await ctx.send(embed=embed)
 
-class BattleOptions(Select):
+class BattleOptions(discord.ui.Select):
     def __init__(self):
         options = [
-            SelectOption(label="Search for monster", value="search_monster"),
-            SelectOption(label="Enter nearby dungeon", value="enter_dungeon")
+            discord.SelectOption(label="Search for monster", value="search_monster"),
+            discord.SelectOption(label="Enter nearby dungeon", value="enter_dungeon")
         ]
         super().__init__(placeholder="Choose an action", options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+        guild_id = interaction.guild.id
+        player_data = load_player_data(guild_id)
+
+        if self.values[0] == "search_monster":
+            monster_list = generate_monster_list()
+            view = discord.ui.View()
+            view.add_item(MonsterOptions(monster_list))
+            save_player_data(guild_id, player_data)
+            await interaction.followup.send("Choose a monster to fight.", view=view, ephemeral=True)
+
+        elif self.values[0] == "enter_dungeon":
+            await interaction.followup.send(
+                f"{interaction.user.mention}, you entered the dungeon! (Feature not implemented yet)")
+
+
+class MonsterOptions(discord.ui.Select):
+    def __init__(self, monster_list, start_index=0, previous_view=None):
+        self.monster_list = monster_list
+        self.start_index = start_index
+        self.previous_view = previous_view
+        options = self.create_options()
+        super().__init__(placeholder="Choose a monster", options=options)
+
+    def create_options(self):
+        # Check if there are more than 5 monsters left. If so, display 4 and the "More" option
+        if len(self.monster_list) > self.start_index + 5:
+            options = [discord.SelectOption(label=monster, value=monster)
+                       for monster in self.monster_list[self.start_index:self.start_index + 4]]
+            options.append(discord.SelectOption(label="More", value="more"))
+        # If there are 5 or fewer monsters left, display them all without the "More" option
+        else:
+            options = [discord.SelectOption(label=monster, value=monster)
+                       for monster in self.monster_list[self.start_index:]]
+
+        # Add "Back" option to the options list if a previous view is provided
+        if self.previous_view is not None:
+            options.append(discord.SelectOption(label="Back", value="back"))
+
+        return options
 
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.defer()
@@ -116,15 +158,38 @@ class BattleOptions(Select):
         author_id = str(interaction.user.id)
         guild_id = interaction.guild.id
         player_data = load_player_data(guild_id)
-        player = Exemplar(player_data[author_id]["exemplar"], player_data[author_id]["stats"], player_data[author_id]["inventory"])
 
-        if self.values[0] == "search_monster":
+        # Check if the player is already in a battle
+        in_battle = player_data[author_id].get("in_battle", False)
+        if in_battle:
+            await interaction.followup.send("You are already in a battle!")
+            return
+
+        player = Exemplar(player_data[author_id]["exemplar"], player_data[author_id]["stats"],
+                          player_data[author_id]["inventory"])
+
+        if self.values[0] == "more":
+            new_list = self.monster_list
+            new_start_index = self.start_index + 4
+            new_view = discord.ui.View()
+            new_view.add_item(MonsterOptions(new_list, new_start_index, self))
+            await interaction.followup.send(content="Choose a monster to fight against.", view=new_view, ephemeral=True)
+
+        elif self.values[0] == "back" and self.previous_view is not None:
+            previous_view = discord.ui.View()
+            previous_view.add_item(self.previous_view)
+            await interaction.followup.send(content="Choose a monster to fight against.", view=previous_view, ephemeral=True)
+
+        else:
+            # Set the in_battle flag before starting the battle
+            player_data[author_id].setdefault("in_battle", False)
+            player_data[author_id]["in_battle"] = True
+            save_player_data(guild_id, player_data)
             zone_level = player.zone_level
-            monster = generate_monster(zone_level)
+            monster = generate_monster_by_name(self.values[0], zone_level)
             battle_embed = await send_message(ctx.channel,
                                               create_battle_embed(interaction.user, player, monster))
-            battle_outcome, loot_messages = await monster_battle(interaction.user, player, monster, zone_level,
-                                                                 battle_embed)
+            battle_outcome, loot_messages = await monster_battle(interaction.user, player, monster, zone_level, battle_embed)
 
             if battle_outcome[0]:
                 # Update player health based on damage received
@@ -136,8 +201,7 @@ class BattleOptions(Select):
                         # Check if loot_items is a list of tuples (meaning it's a list of (item, quantity) pairs)
                         if isinstance(loot_items, list) and all(isinstance(i, tuple) for i in loot_items):
                             for item, quantity in loot_items:
-                                for _ in range(
-                                        quantity):  # Add each item to the inventory the specified number of times
+                                for _ in range(quantity):
                                     player.inventory.add_item_to_inventory(item)
                         elif isinstance(loot_items, list):  # If it's just a list of items
                             for item in loot_items:
@@ -181,12 +245,10 @@ class BattleOptions(Select):
                     embed=create_battle_embed(interaction.user, player, monster,
                                               f"You have been defeated by the {monster.name}. Your health has been restored."))
 
+            # Clear the in_battle flag after the battle ends
+            player_data[author_id]["in_battle"] = False
             save_player_data(guild_id, player_data)
 
-        elif self.values[0] == "enter_dungeon":
-            # Handle entering the dungeon
-            await interaction.followup.send(
-                f"{interaction.user.mention}, you entered the dungeon! (Feature not implemented yet)")
 
 
 @bot.command()
@@ -217,12 +279,11 @@ async def newgame(ctx: commands.Context):
 
 @bot.command()
 async def battle(ctx: commands.Context):
-    # Create and send the Select menu
     view=ui.View(timeout=None)
     view.add_item(BattleOptions())
     await ctx.send("What would you like to do?", view=view)
 
-# Add this function after the newgame command definition
+
 @bot.command()
 async def menu(ctx: commands.Context):
     embed = Embed(title="Main Menu", description="Here are the available commands:", color=0x00ff00)
@@ -238,30 +299,6 @@ async def menu(ctx: commands.Context):
 
 zone_names = ['Forest of Shadows', 'Desert of Doom', 'Icy Tundra', 'Volcanic Wasteland', 'Tower of Eternity']
 zones = [Zone(name, level) for level, name in enumerate(zone_names, 1)]
-
-
-# import json
-#
-# def exp_needed_to_level_up(level):
-#     if level == 1:
-#         return 0
-#     return int(100 * 1.0805 ** (level - 2))
-#
-# def generate_level_data():
-#     level_data = {}
-#     total_exp = 0
-#     for level in range(1, 101):
-#         exp_needed = exp_needed_to_level_up(level)
-#         total_exp += exp_needed
-#         level_data[level] = {
-#             "total_experience": total_exp
-#         }
-#     return level_data
-#
-# level_data = generate_level_data()
-#
-# level_data_json = json.dumps(level_data, indent=4)
-# print(level_data_json)
 
 
 

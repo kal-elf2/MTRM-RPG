@@ -22,20 +22,22 @@ class Monster:
     def is_defeated(self):
         return self.health <= 0
 
-def generate_monster(zone_level):
+def generate_monster_by_name(name, zone_level):
     monster_types = [
         ('Rabbit', 2, 0, 0, None, None, 0, [Item('Rabbit Body')], [1]),
         ('Deer', 5, 0, 0, None, None, 0, [Item('Deer Parts'), Item('Deer Skins')], [1, 1]),
         ('Buck', 10, 3, 2, 'longbow', 'warhammer', 3, [Item('Deer Parts'), Item('Deer Skins')], [2, 3]),
         ('Wolf', 20, 5, 4, 'warhammer', 'staff', 3.5, [Item('Wolf Skin')], [1]),
         ('Goblin', 25, 6, 4, 'longsword', 'longbow', 4, [Item('Onyx')], [1]),
-        ('Goblin Hunter', 35, 8, 6, 'staff', 'dual_daggers', 2.5, [Item('Onyx')], [3]),
         ('Brute', 50, 10, 8, 'dual_daggers', 'warhammer', 4.5, [Item('Onyx')], [5]),
         ('Mega Brute', 70, 12, 10, 'longsword', 'staff', 3.5, [Item('Onyx')], [10]),
         ('Wisp', 100, 15, 12, 'staff', 'longbow', 2.5, [Item('Glowing Essence')], [1]),
     ]
 
-    monster = random.choice(monster_types)
+    monster = next((m for m in monster_types if m[0] == name), None)
+    if not monster:
+        raise ValueError(f"No monster found with name {name}")
+
     health = monster[1] * zone_level
     strength = monster[2] * zone_level
     endurance = monster[3] * zone_level
@@ -45,8 +47,22 @@ def generate_monster(zone_level):
     drop_items = [Item(name=item.name, description=loot_definitions.get(item.name, {}).get('description'), value=loot_definitions.get(item.name, {}).get('value', 10)) for item in monster[7]]
     drop_quantities = monster[8] if isinstance(monster[8], list) else [monster[8]]
     drop = list(zip(drop_items, drop_quantities))
+
     return Monster(monster[0], health, max_health, strength, endurance, experience_reward, monster[4], monster[5],
                    attack_speed, drop)
+
+def generate_monster_list():
+    monster_names = [
+        'Rabbit',
+        'Deer',
+        'Buck',
+        'Wolf',
+        'Goblin',
+        'Brute',
+        'Mega Brute',
+        'Wisp',
+    ]
+    return monster_names
 
 def create_battle_embed(user, player, monster, message=""):
     embed = Embed(title=f"{user.name} encounters a {monster.name}")  # Remove user.mention
@@ -113,3 +129,4 @@ async def monster_battle(user, player, monster, zone_level, message):
                 monster.experience_reward), loot_messages
     else:
         return (False, total_damage_dealt_to_player, total_damage_dealt_to_monster, None, None), None
+
