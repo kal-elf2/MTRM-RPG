@@ -5,12 +5,12 @@
             "zone_level": 1,
             "health": 95,
             "max_health": 95,
-            "strength": 11,
+            "strength": 30,
             "endurance": 13,
-            "attack": 6,
-            "defense": 7,
-            "combat_level": 1,
-            "combat_experience": 46,
+            "attack": 15,
+            "defense": 50,
+            "combat_level": 4,
+            "combat_experience": 438,
             "fishing_level": 1,
             "fishing_experience": 0,
             "mining_level": 1,
@@ -19,12 +19,13 @@
             "woodcutting_experience": 0
         },
         "inventory": {
+            "gold": 55,
             "items": [
                 {
                     "name": "Wolf Skin",
                     "description": "A skin of a wild wolf. Known for its durability and strength.",
                     "value": 50,
-                    "stack": 2
+                    "stack": 6
                 },
                 {
                     "name": "Rabbit Body",
@@ -43,6 +44,18 @@
                     "description": "Tough deer skin. Can be used for crafting sturdy armors.",
                     "value": 30,
                     "stack": 3
+                },
+                {
+                    "name": "Glowing Essence",
+                    "description": "An ethereal essence that glows faintly. Used in powerful magical rituals and crafting.",
+                    "value": 200,
+                    "stack": 2
+                },
+                {
+                    "name": "Onyx",
+                    "description": "A precious black gemstone. Used in crafting magical items and potent elixirs.",
+                    "value": 100,
+                    "stack": 45
                 }
             ],
             "herbs": [
@@ -50,7 +63,7 @@
                     "name": "Ranarr",
                     "rarity": 1,
                     "value": 3,
-                    "stack": 4
+                    "stack": 14
                 }
             ],
             "gems": [
@@ -58,7 +71,7 @@
                     "name": "Sapphire",
                     "rarity": 1,
                     "value": 50,
-                    "stack": 4
+                    "stack": 15
                 }
             ],
             "potions": [
@@ -66,7 +79,19 @@
                     "name": "Health Potion",
                     "rarity": 1,
                     "value": 10,
-                    "stack": 4
+                    "stack": 12
+                },
+                {
+                    "name": "Strength Potion",
+                    "rarity": 2,
+                    "value": 20,
+                    "stack": 2
+                },
+                {
+                    "name": "Endurance Potion",
+                    "rarity": 3,
+                    "value": 30,
+                    "stack": 1
                 }
             ],
             "loot": [
@@ -74,28 +99,27 @@
                     "name": "Bronze Bracelet",
                     "description": null,
                     "value": 5,
-                    "stack": 2
+                    "stack": 5
                 },
                 {
                     "name": "Small Gemstone",
                     "description": null,
                     "value": 10,
-                    "stack": 1
+                    "stack": 3
                 },
                 {
                     "name": "Copper Coin",
                     "description": null,
                     "value": 2,
-                    "stack": 1
+                    "stack": 7
                 }
             ],
-            "equipped_items": [],
             "limit": 40,
+            "equipped_items": [],
             "equipped_armor": {},
             "equipped_weapon": null,
-            "materium_count": 4,
-            "gold": 15
+            "materium_count": 15
         },
-        "in_battle": true
+        "in_battle": false
     }
 }

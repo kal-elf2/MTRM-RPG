@@ -231,12 +231,16 @@ class MonsterOptions(discord.ui.Select):
                 if player.stats.health <= 0:
                     player.stats.health = player.stats.max_health
 
+                loot_message_string = '\n'.join(loot_messages)
+
                 await battle_embed.edit(
                     embed=create_battle_embed(interaction.user, player, monster,
                                               f"You have defeated the {monster.name}! "
                                               f"You dealt {battle_outcome[2]} total damage to the monster and took {battle_outcome[1]} total damage. "
-                                              f"You gained {experience_gained} experience points.\n{' '.join(loot_messages)}")
+                                              f"You gained {experience_gained} experience points.\n{loot_message_string}")
                 )
+
+
             else:
                 player.stats.health = player.stats.max_health
                 player_data[author_id]["stats"].update(player.stats.__dict__)

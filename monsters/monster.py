@@ -64,12 +64,31 @@ def generate_monster_list():
     ]
     return monster_names
 
+def create_health_bar(current, max_health):
+    bar_length = 16  # Fixed bar length
+    health_percentage = current / max_health
+    filled_length = round(bar_length * health_percentage)
+
+    # Calculate how many '▣' symbols to display
+    filled_symbols = '◼' * filled_length
+
+    # Calculate how many '-' symbols to display
+    empty_symbols = '◻' * (bar_length - filled_length)
+
+    return filled_symbols + empty_symbols
+
+
+
 def create_battle_embed(user, player, monster, message=""):
+    player_health_bar = create_health_bar(player.health, player.stats.max_health)
+    monster_health_bar = create_health_bar(monster.health, monster.max_health)
+
     embed = Embed(title=f"{user.name} encounters a {monster.name}")  # Remove user.mention
     embed.add_field(name="Battle", value=message, inline=False)
-    embed.add_field(name=f"{user.name}'s Health", value=f"{player.health}/{player.stats.max_health}", inline=True)  # Remove user.mention
-    embed.add_field(name=f"{monster.name}'s Health", value=f"{monster.health}/{monster.max_health}", inline=True)
+    embed.add_field(name=f"{user.name}'s Health", value=f"{player.health}/{player.stats.max_health}\n{player_health_bar}", inline=True)  # Remove user.mention
+    embed.add_field(name=f"{monster.name}'s Health", value=f"{monster.health}/{monster.max_health}\n{monster_health_bar}", inline=True)
     return embed
+
 
 def calculate_hit_probability(attacker_attack, defender_defense):
     base_hit_probability = 0.75  # base hit chance, can be adjusted as needed
