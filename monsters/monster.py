@@ -88,8 +88,6 @@ def create_battle_embed(user, player, monster, message=""):
     # Construct image URL
     image_url = f"https://raw.githubusercontent.com/kal-elf2/MTRM-RPG/master/images/{monster_name_url}.png"
 
-    print(image_url)
-
     embed = Embed(title=f"{user.name} encounters a {monster.name}")  # Remove user.mention
     embed.add_field(name="Battle", value=message, inline=False)
     embed.add_field(name=f"{user.name}'s Health", value=f"{player.health}/{player.stats.max_health}\n{player_health_bar}", inline=True)  # Remove user.mention

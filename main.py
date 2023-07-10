@@ -140,7 +140,7 @@ class MonsterOptions(discord.ui.Select):
         if len(self.monster_list) > self.start_index + 5:
             options = [discord.SelectOption(label=monster, value=monster)
                        for monster in self.monster_list[self.start_index:self.start_index + 4]]
-            options.append(discord.SelectOption(label="More", value="more"))
+            options.append(discord.SelectOption(label="More ⏩", value="more"))
         # If there are 5 or fewer monsters left, display them all without the "More" option
         else:
             options = [discord.SelectOption(label=monster, value=monster)
@@ -148,7 +148,7 @@ class MonsterOptions(discord.ui.Select):
 
         # Add "Back" option to the options list if a previous view is provided
         if self.previous_view is not None:
-            options.append(discord.SelectOption(label="Back", value="back"))
+            options.append(discord.SelectOption(label="Back ⏪", value="back"))
 
         return options
 
@@ -303,8 +303,6 @@ async def menu(ctx: commands.Context):
 
 zone_names = ['Forest of Shadows', 'Desert of Doom', 'Icy Tundra', 'Volcanic Wasteland', 'Tower of Eternity']
 zones = [Zone(name, level) for level, name in enumerate(zone_names, 1)]
-
-
 
 bot.run(os.environ["DISCORD_TOKEN"])
 

@@ -5,12 +5,12 @@
             "zone_level": 1,
             "health": 95,
             "max_health": 95,
-            "strength": 10,
+            "strength": 11,
             "endurance": 13,
-            "attack": 12,
-            "defense": 12,
-            "combat_level": 5,
-            "combat_experience": 582,
+            "attack": 6,
+            "defense": 7,
+            "combat_level": 1,
+            "combat_experience": 20,
             "fishing_level": 1,
             "fishing_experience": 0,
             "mining_level": 1,
@@ -19,106 +19,36 @@
             "woodcutting_experience": 0
         },
         "inventory": {
-            "gold": 78,
+            "gold": 6,
             "items": [
-                {
-                    "name": "Wolf Skin",
-                    "description": "A skin of a wild wolf. Known for its durability and strength.",
-                    "value": 50,
-                    "stack": 12
-                },
-                {
-                    "name": "Rabbit Body",
-                    "description": "A furry rabbit body, warm to the touch. Can be used for crafting soft armors.",
-                    "value": 10,
-                    "stack": 1
-                },
                 {
                     "name": "Deer Parts",
                     "description": "Various parts of a deer. Some are useful for making tools and weapons.",
                     "value": 20,
-                    "stack": 2
+                    "stack": 1
                 },
                 {
                     "name": "Deer Skins",
                     "description": "Tough deer skin. Can be used for crafting sturdy armors.",
                     "value": 30,
-                    "stack": 3
-                },
-                {
-                    "name": "Glowing Essence",
-                    "description": "An ethereal essence that glows faintly. Used in powerful magical rituals and crafting.",
-                    "value": 200,
-                    "stack": 2
+                    "stack": 1
                 },
                 {
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in crafting magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 50
-                }
-            ],
-            "herbs": [
-                {
-                    "name": "Ranarr",
-                    "rarity": 1,
-                    "value": 3,
-                    "stack": 17
-                }
-            ],
-            "gems": [
-                {
-                    "name": "Sapphire",
-                    "rarity": 1,
-                    "value": 50,
-                    "stack": 15
-                }
-            ],
-            "potions": [
-                {
-                    "name": "Health Potion",
-                    "rarity": 1,
-                    "value": 10,
-                    "stack": 12
-                },
-                {
-                    "name": "Strength Potion",
-                    "rarity": 2,
-                    "value": 20,
-                    "stack": 2
-                },
-                {
-                    "name": "Endurance Potion",
-                    "rarity": 3,
-                    "value": 30,
                     "stack": 1
                 }
             ],
-            "loot": [
-                {
-                    "name": "Bronze Bracelet",
-                    "description": null,
-                    "value": 5,
-                    "stack": 6
-                },
-                {
-                    "name": "Small Gemstone",
-                    "description": null,
-                    "value": 10,
-                    "stack": 3
-                },
-                {
-                    "name": "Copper Coin",
-                    "description": null,
-                    "value": 2,
-                    "stack": 7
-                }
-            ],
+            "herbs": [],
+            "gems": [],
+            "potions": [],
+            "loot": [],
             "limit": 40,
             "equipped_items": [],
             "equipped_armor": {},
             "equipped_weapon": null,
-            "materium_count": 15
+            "materium_count": 0
         },
         "in_battle": false
     }
