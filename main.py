@@ -8,7 +8,7 @@ from discord.components import SelectOption
 from zones.zone import Zone
 from exemplars.exemplars import create_exemplar, Exemplar
 from monsters.monster import generate_monster_list, generate_monster_by_name, monster_battle, create_battle_embed
-from discord import Embed, ui
+from discord import Embed
 from resources.inventory import Inventory
 
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
@@ -101,31 +101,6 @@ class PickExemplars(Select):
 
 async def send_message(ctx: commands.Context, embed):
     return await ctx.send(embed=embed)
-
-class BattleOptions(discord.ui.Select):
-    def __init__(self):
-        options = [
-            discord.SelectOption(label="Search for monster", value="search_monster"),
-            discord.SelectOption(label="Enter nearby dungeon", value="enter_dungeon")
-        ]
-        super().__init__(placeholder="Choose an action", options=options)
-
-    async def callback(self, interaction: discord.Interaction):
-        await interaction.response.defer()
-        guild_id = interaction.guild.id
-        player_data = load_player_data(guild_id)
-
-        if self.values[0] == "search_monster":
-            monster_list = generate_monster_list()
-            view = discord.ui.View()
-            view.add_item(MonsterOptions(monster_list))
-            save_player_data(guild_id, player_data)
-            await interaction.followup.send("Choose a monster to fight.", view=view, ephemeral=True)
-
-        elif self.values[0] == "enter_dungeon":
-            await interaction.followup.send(
-                f"{interaction.user.mention}, you entered the dungeon! (Feature not implemented yet)")
-
 
 class MonsterOptions(discord.ui.Select):
     def __init__(self, monster_list, start_index=0, previous_view=None):
@@ -283,9 +258,10 @@ async def newgame(ctx: commands.Context):
 
 @bot.command()
 async def battle(ctx: commands.Context):
-    view=ui.View(timeout=None)
-    view.add_item(BattleOptions())
-    await ctx.send("What would you like to do?", view=view)
+    monster_list = generate_monster_list()
+    view = discord.ui.View(timeout=None)
+    view.add_item(MonsterOptions(monster_list))
+    await ctx.send("Choose a monster to fight.", view=view)
 
 
 @bot.command()

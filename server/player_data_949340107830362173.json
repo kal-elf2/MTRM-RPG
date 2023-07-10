@@ -5,12 +5,12 @@
             "zone_level": 1,
             "health": 95,
             "max_health": 95,
-            "strength": 11,
-            "endurance": 13,
-            "attack": 6,
-            "defense": 7,
-            "combat_level": 1,
-            "combat_experience": 20,
+            "strength": 15,
+            "endurance": 20,
+            "attack": 9,
+            "defense": 9,
+            "combat_level": 2,
+            "combat_experience": 170,
             "fishing_level": 1,
             "fishing_experience": 0,
             "mining_level": 1,
@@ -19,36 +19,50 @@
             "woodcutting_experience": 0
         },
         "inventory": {
-            "gold": 6,
             "items": [
                 {
                     "name": "Deer Parts",
                     "description": "Various parts of a deer. Some are useful for making tools and weapons.",
                     "value": 20,
-                    "stack": 1
+                    "stack": 6
                 },
                 {
                     "name": "Deer Skins",
                     "description": "Tough deer skin. Can be used for crafting sturdy armors.",
                     "value": 30,
-                    "stack": 1
+                    "stack": 8
                 },
                 {
-                    "name": "Onyx",
-                    "description": "A precious black gemstone. Used in crafting magical items and potent elixirs.",
-                    "value": 100,
+                    "name": "Wolf Skin",
+                    "description": "A skin of a wild wolf. Known for its durability and strength.",
+                    "value": 50,
+                    "stack": 5
+                }
+            ],
+            "herbs": [
+                {
+                    "name": "Ranarr",
+                    "rarity": 1,
+                    "value": 3,
                     "stack": 1
                 }
             ],
-            "herbs": [],
             "gems": [],
             "potions": [],
-            "loot": [],
-            "limit": 40,
+            "loot": [
+                {
+                    "name": "Copper Coin",
+                    "description": null,
+                    "value": 2,
+                    "stack": 2
+                }
+            ],
             "equipped_items": [],
+            "limit": 40,
             "equipped_armor": {},
             "equipped_weapon": null,
-            "materium_count": 0
+            "materium_count": 0,
+            "gold": 33
         },
         "in_battle": false
     }
