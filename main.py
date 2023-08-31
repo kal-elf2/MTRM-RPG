@@ -97,7 +97,7 @@ class PickExemplars(Select):
 
         await interaction.response.send_message(
             f'{interaction.user.mention}, you have chosen the {self.options_dict[self.values[0]]} Exemplar!',
-            ephemeral=True)
+            ephemeral=False)
 
 async def send_message(ctx: commands.Context, embed):
     return await ctx.send(embed=embed)
@@ -164,6 +164,8 @@ class MonsterOptions(discord.ui.Select):
             monster = generate_monster_by_name(self.values[0], zone_level)
             battle_embed = await send_message(ctx.channel,
                                               create_battle_embed(interaction.user, player, monster))
+            # Create an instance of ScalingOptions view and send it along with the message
+            await ctx.send(view=BattleOptions(interaction))
             battle_outcome, loot_messages = await monster_battle(interaction.user, player, monster, zone_level, battle_embed)
 
             if battle_outcome[0]:
@@ -236,6 +238,21 @@ async def newgame(ctx: commands.Context):
     author_id = ctx.author.id
     player_data = load_player_data(guild_id)
 
+    class NewGame(discord.ui.View):
+        def __init__(self):
+            super().__init__(timeout=None)
+
+        @discord.ui.button(label="New Game", custom_id="new_game", style=discord.ButtonStyle.blurple)
+        async def button1(self, button: discord.ui.Button, interaction: discord.Interaction):
+            del player_data[str(author_id)]
+            save_player_data(guild_id, player_data)
+            view = View()
+            view.add_item(PickExemplars())
+            await interaction.response.send_message(
+                f"{ctx.author.mention}, your progress has been erased. Please choose your exemplar from the list below.",
+                view=view)
+
+
     if str(author_id) not in player_data:
         view = View()
         view.add_item(PickExemplars())
@@ -244,17 +261,10 @@ async def newgame(ctx: commands.Context):
         def check(m):
             return m.author.id == author_id and m.channel.id == ctx.channel.id
 
-        await ctx.send(f"{ctx.author.mention}, you already have a game in progress. Do you want to erase your progress and start a new game? Type 'yes' to confirm or 'no' to cancel.")
-        response = await bot.wait_for("message", check=check)
-
-        if response.content.lower() == "yes":
-            del player_data[str(author_id)]
-            save_player_data(guild_id, player_data)
-            view = View()
-            view.add_item(PickExemplars())
-            await ctx.send(f"{ctx.author.mention}, your progress has been erased. Please choose your exemplar from the list below.", view=view)
-        else:
-            await ctx.send(f"{ctx.author.mention}, your progress has not been erased. Continue your adventure!")
+        view = NewGame()
+        await ctx.send(
+            f"{ctx.author.mention}, you already have a game in progress. Do you want to erase your progress and start a new game?",
+            view=view)
 
 @bot.command()
 async def battle(ctx: commands.Context):
@@ -263,6 +273,23 @@ async def battle(ctx: commands.Context):
     view.add_item(MonsterOptions(monster_list))
     await ctx.send("Choose a monster to fight.", view=view)
 
+class BattleOptions(discord.ui.View):
+    def __init__(self, interaction):
+        super().__init__(timeout=None)
+        self.interaction = interaction
+
+    @discord.ui.button(custom_id="attack", style=discord.ButtonStyle.blurple, emoji = '⚔️')
+    async def special_attack(self, button, interaction):
+        pass
+    @discord.ui.button(custom_id="health", style=discord.ButtonStyle.blurple, emoji='<:potion_red:1133946477463482458>')
+    async def health_potion(self, button, interaction):
+        pass
+    @discord.ui.button(custom_id="stamina", style=discord.ButtonStyle.blurple, emoji="<:potion_yellow:1133946478386221237>")
+    async def stamina_potion(self, button, interaction):
+        pass
+    @discord.ui.button(custom_id="run", style=discord.ButtonStyle.blurple, emoji= '💨')
+    async def run_button(self, button, interaction):
+        pass
 
 @bot.command()
 async def menu(ctx: commands.Context):
