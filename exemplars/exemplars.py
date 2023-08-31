@@ -99,7 +99,7 @@ class Exemplar:
         # Handle combat level up separately
         if skill == "combat":
             self.stats.combat_level = new_level
-            self.increase_combat_stats()
+            self.increase_combat_stats(new_level)
         else:
             self.increase_skill_stats(skill)
         return new_level
@@ -108,8 +108,21 @@ class Exemplar:
     def max_health(self):
         return self.stats.max_health
 
-    def increase_combat_stats(self):
-        pass
+    def increase_combat_stats(self, levels):
+        # Define the stat increase values
+        health_increase = 10 * (levels - 1)
+        strength_increase = 5 * (levels - 1)
+        endurance_increase = 5 * (levels - 1)
+        attack_increase = 2 * (levels - 1)
+        defense_increase = 2 * (levels - 1)
+
+        # Update the stats
+        self.stats.update_health(health_increase)
+        self.stats.update_max_health(health_increase)
+        self.stats.update_strength(strength_increase)
+        self.stats.update_endurance(endurance_increase)
+        self.stats.update_attack(attack_increase)
+        self.stats.update_defense(defense_increase)
 
     def level_up_mining(self):  # Add level_up_mining method
         while self.stats.mining_experience >= self.exp_needed_to_level_up(self.stats.mining_level):
@@ -285,13 +298,6 @@ class Human(Exemplar):
         }
         super().__init__("Human", stats=human_stats)
 
-    def increase_combat_stats(self):
-        self.stats.update_health(10)
-        self.stats.update_max_health(10)
-        self.stats.update_strength(5)
-        self.stats.update_endurance(5)
-        self.stats.update_attack(2)
-        self.stats.update_defense(2)
 
 class Dwarf(Exemplar):
     def __init__(self):
@@ -313,13 +319,6 @@ class Dwarf(Exemplar):
         }
         super().__init__("Dwarf", stats=dwarf_stats)
 
-    def increase_combat_stats(self):
-        self.stats.update_health(12)
-        self.stats.update_max_health(12)
-        self.stats.update_strength(6)
-        self.stats.update_endurance(4)
-        self.stats.update_attack(1)
-        self.stats.update_defense(3)
 
 class Orc(Exemplar):
     def __init__(self):
@@ -341,13 +340,6 @@ class Orc(Exemplar):
         }
         super().__init__("Orc", stats=orc_stats)
 
-    def increase_combat_stats(self):
-        self.stats.update_health(15)
-        self.stats.update_max_health(15)
-        self.stats.update_strength(7)
-        self.stats.update_endurance(3)
-        self.stats.update_attack(3)
-        self.stats.update_defense(1)
 
 class Halfling(Exemplar):
     def __init__(self):
@@ -369,13 +361,6 @@ class Halfling(Exemplar):
         }
         super().__init__("Halfling", stats=halfling_stats)
 
-    def increase_combat_stats(self):
-        self.stats.update_health(8)
-        self.stats.update_max_health(8)
-        self.stats.update_strength(4)
-        self.stats.update_endurance(6)
-        self.stats.update_attack(2)
-        self.stats.update_defense(2)
 
 class Elf(Exemplar):
     def __init__(self):
@@ -396,14 +381,6 @@ class Elf(Exemplar):
             "woodcutting_experience": 0
         }
         super().__init__("Elf", stats=elf_stats)
-
-    def increase_combat_stats(self):
-        self.stats.update_health(9)
-        self.stats.update_max_health(9)
-        self.stats.update_strength(4)
-        self.stats.update_endurance(7)
-        self.stats.update_attack(3)
-        self.stats.update_defense(2)
 
 
 def create_exemplar(exemplar_name):
