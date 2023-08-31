@@ -230,10 +230,8 @@ class MonsterOptions(discord.ui.Select):
             player_data[author_id]["in_battle"] = False
             save_player_data(guild_id, player_data)
 
-
-
-@bot.command()
-async def newgame(ctx: commands.Context):
+@bot.slash_command(description="Start a new game.")
+async def newgame(ctx):
     guild_id = ctx.guild.id
     author_id = ctx.author.id
     player_data = load_player_data(guild_id)
@@ -243,7 +241,7 @@ async def newgame(ctx: commands.Context):
             super().__init__(timeout=None)
 
         @discord.ui.button(label="New Game", custom_id="new_game", style=discord.ButtonStyle.blurple)
-        async def button1(self, button: discord.ui.Button, interaction: discord.Interaction):
+        async def button1(self, button, interaction):
             del player_data[str(author_id)]
             save_player_data(guild_id, player_data)
             view = View()
@@ -256,22 +254,22 @@ async def newgame(ctx: commands.Context):
     if str(author_id) not in player_data:
         view = View()
         view.add_item(PickExemplars())
-        await ctx.send(f"{ctx.author.mention}, please choose your exemplar from the list below.", view=view)
+        await ctx.respond(f"{ctx.author.mention}, please choose your exemplar from the list below.", view=view)
     else:
         def check(m):
             return m.author.id == author_id and m.channel.id == ctx.channel.id
 
         view = NewGame()
-        await ctx.send(
+        await ctx.respond(
             f"{ctx.author.mention}, you already have a game in progress. Do you want to erase your progress and start a new game?",
             view=view)
 
-@bot.command()
-async def battle(ctx: commands.Context):
+@bot.slash_command(description= "Battle a monster.")
+async def battle(ctx):
     monster_list = generate_monster_list()
     view = discord.ui.View(timeout=None)
     view.add_item(MonsterOptions(monster_list))
-    await ctx.send("Choose a monster to fight.", view=view)
+    await ctx.respond("Choose a monster to fight.", view=view)
 
 class BattleOptions(discord.ui.View):
     def __init__(self, interaction):
@@ -287,12 +285,12 @@ class BattleOptions(discord.ui.View):
     @discord.ui.button(custom_id="stamina", style=discord.ButtonStyle.blurple, emoji="<:potion_yellow:1133946478386221237>")
     async def stamina_potion(self, button, interaction):
         pass
-    @discord.ui.button(custom_id="run", style=discord.ButtonStyle.blurple, emoji= '💨')
+    @discord.ui.button(label="Run", custom_id="run", style=discord.ButtonStyle.blurple)
     async def run_button(self, button, interaction):
         pass
 
-@bot.command()
-async def menu(ctx: commands.Context):
+@bot.slash_command()
+async def menu(ctx):
     embed = Embed(title="Main Menu", description="Here are the available commands:", color=0x00ff00)
     embed.add_field(name="!battle", value="💀 Fight monsters or search for dungeons", inline=False)
     embed.add_field(name="!gather", value="🎣 Gather resources", inline=False)
@@ -302,7 +300,7 @@ async def menu(ctx: commands.Context):
     embed.add_field(name="!equip", value="🗡️ Equip or unequip items", inline=False)
     embed.add_field(name="!stats", value="📊 Check your character's stats", inline=False)
 
-    await ctx.send(embed=embed)
+    await ctx.respond(embed=embed)
 
 zone_names = ['Forest of Shadows', 'Desert of Doom', 'Icy Tundra', 'Volcanic Wasteland', 'Tower of Eternity']
 zones = [Zone(name, level) for level, name in enumerate(zone_names, 1)]
