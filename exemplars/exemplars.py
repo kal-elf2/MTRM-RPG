@@ -99,7 +99,7 @@ class Exemplar:
         # Handle combat level up separately
         if skill == "combat":
             self.stats.combat_level = new_level
-            self.increase_combat_stats(new_level)
+            self.set_combat_stats(new_level)
         else:
             self.increase_skill_stats(skill)
         return new_level
@@ -108,21 +108,50 @@ class Exemplar:
     def max_health(self):
         return self.stats.max_health
 
-    def increase_combat_stats(self, levels):
-        # Define the stat increase values
-        health_increase = 10 * (levels - 1)
-        strength_increase = 5 * (levels - 1)
-        endurance_increase = 5 * (levels - 1)
-        attack_increase = 2 * (levels - 1)
-        defense_increase = 2 * (levels - 1)
+    def set_combat_stats(self, new_combat_level):
+
+        if self.name == "human":
+            # For the Human exemplar type
+            max_health_update = 100 + (10 * (new_combat_level - 1))
+            strength_update = 12 + (5 * (new_combat_level - 1))
+            endurance_update = 12 + (5 * (new_combat_level - 1))
+            attack_update = 6 + (2 * (new_combat_level - 1))
+            defense_update = 6 + (2 * (new_combat_level - 1))
+        elif self.name == "dwarf":
+            # For the Dwarf exemplar type
+            max_health_update = 110 + (10 * (new_combat_level - 1))
+            strength_update = 14 + (5 * (new_combat_level - 1))
+            endurance_update = 10 + (5 * (new_combat_level - 1))
+            attack_update = 7 + (2 * (new_combat_level - 1))
+            defense_update = 5 + (2 * (new_combat_level - 1))
+        elif self.name == "orc":
+            # For the Orc exemplar type
+            max_health_update = 120 + (10 * (new_combat_level - 1))
+            strength_update = 16 + (5 * (new_combat_level - 1))
+            endurance_update = 8 + (5 * (new_combat_level - 1))
+            attack_update = 8 + (2 * (new_combat_level - 1))
+            defense_update = 4 + (2 * (new_combat_level - 1))
+        elif self.name == "halfling":
+            # For the Halfling exemplar type
+            max_health_update = 90 + (10 * (new_combat_level - 1))
+            strength_update = 10 + (5 * (new_combat_level - 1))
+            endurance_update = 14 + (5 * (new_combat_level - 1))
+            attack_update = 5 + (2 * (new_combat_level - 1))
+            defense_update = 7 + (2 * (new_combat_level - 1))
+        else:
+            # For the Elf exemplar type
+            max_health_update = 95 + (10 * (new_combat_level - 1))
+            strength_update = 11 + (5 * (new_combat_level - 1))
+            endurance_update = 13 + (5 * (new_combat_level - 1))
+            attack_update = 6 + (2 * (new_combat_level - 1))
+            defense_update = 7 + (2 * (new_combat_level - 1))
 
         # Update the stats
-        self.stats.update_health(health_increase)
-        self.stats.update_max_health(health_increase)
-        self.stats.update_strength(strength_increase)
-        self.stats.update_endurance(endurance_increase)
-        self.stats.update_attack(attack_increase)
-        self.stats.update_defense(defense_increase)
+        self.stats.update_max_health(max_health_update)
+        self.stats.update_strength(strength_update)
+        self.stats.update_endurance(endurance_update)
+        self.stats.update_attack(attack_update)
+        self.stats.update_defense(defense_update)
 
     def level_up_mining(self):  # Add level_up_mining method
         while self.stats.mining_experience >= self.exp_needed_to_level_up(self.stats.mining_level):
@@ -263,20 +292,20 @@ class PlayerStats:
     def update_health(self, delta):
         self.health = min(self.max_health, max(0, self.health + delta))
 
-    def update_max_health(self, delta):
-        self.max_health += delta
+    def update_max_health(self, update):
+        self.max_health = update
 
-    def update_strength(self, delta):
-        self.strength += delta
+    def update_strength(self, update):
+        self.strength = update
 
-    def update_endurance(self, delta):
-        self.endurance += delta
+    def update_endurance(self, update):
+        self.endurance = update
 
-    def update_attack(self, delta):
-        self.attack += delta
+    def update_attack(self, update):
+        self.attack = update
 
-    def update_defense(self, delta):
-        self.defense += delta
+    def update_defense(self, update):
+        self.defense = update
 
 class Human(Exemplar):
     def __init__(self):
