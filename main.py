@@ -19,7 +19,7 @@ guild_data = {}
 async def on_ready():
     print(f'We have logged in as {bot.user}')
 
-@bot.command()
+@bot.slash_command()
 async def setchannel(ctx):
     guild_id = ctx.guild.id
 
@@ -34,7 +34,7 @@ async def setchannel(ctx):
     else:
         guild_data[guild_id]["channel_id"] = ctx.channel.id
 
-    await ctx.send(f'{ctx.channel.name} Channel set. Please type "!newgame" to start a new adventure! .')
+    await ctx.respond(f'{ctx.channel.name} Channel set. Please use "newgame" command to start a new adventure! .')
 
 # Exemplars class
 class PickExemplars(Select):
@@ -202,7 +202,7 @@ class MonsterOptions(discord.ui.Select):
 
                 player_data[author_id]["stats"]["combat_level"] = player.stats.combat_level
                 player_data[author_id]["stats"]["combat_experience"] = player.stats.combat_experience
-                # Add this line to update experience in the player_data dictionary
+                #update experience in the player_data dictionary
                 player_data[author_id]["stats"].update(player.stats.__dict__)
 
                 if player.stats.health <= 0:
