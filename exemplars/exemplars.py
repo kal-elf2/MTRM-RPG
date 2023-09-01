@@ -85,6 +85,10 @@ class Exemplar:
         # Send a level up message if needed
         if updated_level > previous_level:
             setattr(self.stats, skill_level_key, updated_level)
+
+            # Reset player's health to max health upon leveling up
+            self.health = self.max_health
+
             if interaction is not None:
                 await self.send_level_up_message(interaction, experience_type, updated_level)
 
