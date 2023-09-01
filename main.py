@@ -170,7 +170,6 @@ class MonsterOptions(discord.ui.Select):
 
             if battle_outcome[0]:
                 # Update player health based on damage received
-                print(f"player health: {player.stats.health}, damage done: {battle_outcome[2]}")
                 for loot_type, loot_items in battle_outcome[3]:
                     if loot_type == 'gold':
                         player.inventory.add_gold(loot_items)

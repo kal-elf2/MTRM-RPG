@@ -178,7 +178,6 @@ async def monster_attack_task(user, player, monster, message):
         if random.random() < hit_probability:
             damage_dealt = calculate_damage(monster.attack, player.stats.defense, is_critical_hit)
             player.stats.damage_taken += damage_dealt
-            print(f"damage dealt: {damage_dealt}, damage_taken: {player.stats.damage_taken}")
             player.stats.health = max(player.stats.health - damage_dealt, 0)
 
             update_message = f"The {monster.name} dealt {damage_dealt} damage to {user.mention}!"
