@@ -4,51 +4,56 @@ from resources.loot import generate_zone_loot, loot_definitions
 from discord import Embed
 import asyncio
 from resources.item import Item
+import math
 
 class Monster:
-    def __init__(self, name, health, max_health, strength, endurance, experience_reward, weak_against, strong_against, attack_speed, drop):
+    def __init__(self, name, health, max_health, attack, endurance, experience_reward, weak_against, strong_against, attack_speed, drop):
         self.name = name
-        self.health = health
-        self.max_health = max_health
-        self.attack = strength
-        self.defense = endurance
-        self.experience_reward = experience_reward
+        self.health = round(health)
+        self.max_health = round(max_health)
+        self.attack = round(attack)
+        self.defense = round(endurance)
+        self.experience_reward = round(experience_reward)
         self.weak_against = weak_against
         self.strong_against = strong_against
         self.attack_speed = attack_speed
         self.drop = drop
 
     def is_defeated(self):
-        return self.health <= 0
+        if self.health <= 0:
+            self.health = 0  # Ensures health does not go below 0
+            return True
+        return False
 
 def generate_monster_by_name(name, zone_level):
     monster_types = [
-        ('Rabbit', 2, 1, 1, None, None, 0, [Item('Rabbit Body')], [1]),
-        ('Deer', 5, 3, 2, None, None, 0, [Item('Deer Parts'), Item('Deer Skins')], [1, 1]),
-        ('Buck', 10, 4, 3, 'longbow', 'warhammer', 2, [Item('Deer Parts'), Item('Deer Skins')], [2, 3]),
-        ('Wolf', 20, 6, 5, 'warhammer', 'staff', 2.5, [Item('Wolf Skin')], [1]),
-        ('Goblin', 35, 10, 8, 'longsword', 'longbow', 3, [Item('Onyx')], [1]),
-        ('Goblin Hunter', 70, 20, 16, 'dual_daggers', 'warhammer', 3.5, [Item('Onyx')], [5]),
-        ('Mega Brute', 200, 30, 26, 'longsword', 'staff', 3, [Item('Onyx')], [10]),
-        ('Wisp', 260, 35, 31, 'staff', 'longbow', 2, [Item('Glowing Essence')], [1]),
+        ('Rabbit', 10, 1, 1, None, None, 1.5, [Item('Rabbit Body')], [1]),
+        ('Deer', 20, 2, 3, None, None, 1.6, [Item('Deer Parts'), Item('Deer Skins')], [1, 1]),
+        ('Buck', 30, 3, 4, 'longbow', 'warhammer', 1.7, [Item('Deer Parts'), Item('Deer Skins')], [2, 3]),
+        ('Wolf', 50, 6, 5, 'warhammer', 'staff', 1.8, [Item('Wolf Skin')], [1]),
+        ('Goblin', 200, 20, 20, 'longsword', 'longbow', 2, [Item('Onyx')], [1]),
+        ('Goblin Hunter', 400, 35, 30, 'dual_daggers', 'warhammer', 2.2, [Item('Onyx')], [5]),
+        ('Mega Brute', 3000, 45, 40, 'longsword', 'staff', 2.5, [Item('Onyx')], [10]),
+        ('Wisp', 3000, 55, 50, 'staff', 'longbow', 2.7, [Item('Glowing Essence')], [1]),
     ]
 
     monster = next((m for m in monster_types if m[0] == name), None)
     if not monster:
         raise ValueError(f"No monster found with name {name}")
 
-    health = monster[1] * zone_level
-    strength = monster[2] * zone_level
-    endurance = monster[3] * zone_level
-    experience_reward = (strength + endurance) * 2
-    attack_speed = monster[6]
+    # Applying zone level scaling
+    health = round(monster[1] * math.sqrt(zone_level))
+    attack = round(monster[2] * math.log2(zone_level + 1))
+    endurance = round(monster[3] * math.log2(zone_level + 1))
+    experience_reward = round((attack + endurance) * 1.5)
+    attack_speed = monster[6] - (0.05 * math.log2(zone_level + 1))  # Making it slightly faster in higher zones
     max_health = health
     drop_items = [Item(name=item.name, description=loot_definitions.get(item.name, {}).get('description'), value=loot_definitions.get(item.name, {}).get('value', 10)) for item in monster[7]]
     drop_quantities = monster[8] if isinstance(monster[8], list) else [monster[8]]
     drop = list(zip(drop_items, drop_quantities))
 
-    return Monster(monster[0], health, max_health, strength, endurance, experience_reward, monster[4], monster[5],
-                   attack_speed, drop)
+    return Monster(monster[0], health, max_health, attack, endurance, experience_reward, monster[4], monster[5], attack_speed, drop)
+
 
 def generate_monster_list():
     monster_names = [
@@ -94,6 +99,10 @@ def create_battle_embed(user, player, monster, message=""):
 
     return embed
 
+# Constants
+CRITICAL_HIT_CHANCE = 0.1  # 10% chance of a critical hit
+CRITICAL_HIT_MULTIPLIER = 1.5  # 1.5 times the damage for a critical hit
+
 def calculate_hit_probability(attacker_attack, defender_defense):
     base_hit_probability = 0.75  # base hit chance, can be adjusted as needed
     attack_defense_ratio = attacker_attack / (defender_defense + 1)  # add 1 to avoid division by zero
@@ -102,43 +111,92 @@ def calculate_hit_probability(attacker_attack, defender_defense):
     max_hit_chance = 0.9  # maximum hit chance regardless of stats
     return min(max(hit_probability, min_hit_chance), max_hit_chance)
 
-def calculate_damage(attacker_attack, defender_defense, defender_health):
-    attack_defense_ratio = attacker_attack / (defender_defense + 1)  # add 1 to avoid division by zero
-    damage_dealt = random.uniform(max(attacker_attack * attack_defense_ratio / 2, 0), attacker_attack * attack_defense_ratio * 1.5)
-    damage_dealt = max(int(damage_dealt) - defender_defense, 0)
-    min_damage = int(defender_health * 0.05)  # minimum damage is 5% of the defender's health
-    max_damage = int(defender_health * 0.2)  # damage cannot exceed 20% of the defender's health
-    return max(min(damage_dealt, max_damage), min_damage)
+def calculate_damage(attacker_attack, defender_defense, is_critical_hit=False):
+    attack_defense_ratio = attacker_attack / (defender_defense + 1)
+
+    # Cap the ratio between 0.5 and 1.5 for more balanced gameplay
+    attack_defense_ratio = max(0.5, min(1.5, attack_defense_ratio))
+
+    # Generate random damage within a range
+    damage = random.uniform(
+        attacker_attack * attack_defense_ratio * 0.9,  # Lower bound
+        attacker_attack * attack_defense_ratio * 1.1  # Upper bound
+    )
+
+    # Round to whole number
+    damage_dealt = round(damage)
+
+    # Apply critical hit multiplier if applicable
+    if is_critical_hit:
+        damage_dealt = round(damage_dealt * CRITICAL_HIT_MULTIPLIER)
+
+    return damage_dealt
+
+def calculate_attack_speed_modifier(attack_value):
+    # Cap the attack speed to a minimum and maximum value
+    return max(1, min(3, 2 - attack_value * 0.05))
 
 async def player_attack_task(user, player, monster, attack_modifier, message):
+    attack_speed_modifier = calculate_attack_speed_modifier(player.stats.attack * attack_modifier)
     while not monster.is_defeated() and not player.is_defeated():
         hit_probability = calculate_hit_probability(player.stats.attack * attack_modifier, monster.defense)
-        if random.random() < hit_probability:  # if the random number is less than the hit probability, the attack hits
-            damage_dealt = calculate_damage(player.stats.attack * attack_modifier, monster.defense, monster.max_health)
-            monster.health = max(monster.health - damage_dealt, 0)  # Ensure health doesn't go below 0
+
+        if random.random() < CRITICAL_HIT_CHANCE:
+            is_critical_hit = True
+        else:
+            is_critical_hit = False
+
+        if random.random() < hit_probability:
+            damage_dealt = calculate_damage(player.stats.attack * attack_modifier, monster.defense, is_critical_hit)
+            monster.health = max(monster.health - damage_dealt, 0)
             update_message = f"{user.mention} dealt {damage_dealt} damage to the {monster.name}!"
+            if is_critical_hit:
+                update_message += " ***Critical hit!***"
         else:
             update_message = f"The {monster.name} evaded {user.mention}'s attack!"
+
         battle_embed = create_battle_embed(user, player, monster, update_message)
         await message.edit(embed=battle_embed)
+
         if monster.is_defeated():
             break
-        await asyncio.sleep(player.equipped_weapon.attack_speed if player.equipped_weapon else 1)
+
+        await asyncio.sleep(attack_speed_modifier)
 
 async def monster_attack_task(user, player, monster, message):
+    attack_speed_modifier = calculate_attack_speed_modifier(monster.attack)
     while not monster.is_defeated() and not player.is_defeated():
         hit_probability = calculate_hit_probability(monster.attack, player.stats.defense)
-        if random.random() < hit_probability:  # if the random number is less than the hit probability, the attack hits
-            damage_dealt = calculate_damage(monster.attack, player.stats.defense, player.stats.max_health)
-            player.stats.health = max(player.stats.health - damage_dealt, 0)  # Ensure health doesn't go below 0
+
+        # Determine if it's a critical hit
+        if random.random() < CRITICAL_HIT_CHANCE:
+            is_critical_hit = True
+        else:
+            is_critical_hit = False
+
+        # Check if the attack hits
+        if random.random() < hit_probability:
+            damage_dealt = calculate_damage(monster.attack, player.stats.defense, is_critical_hit)
+            player.stats.damage_taken += damage_dealt
+            print(f"damage dealt: {damage_dealt}, damage_taken: {player.stats.damage_taken}")
+            player.stats.health = max(player.stats.health - damage_dealt, 0)
+
             update_message = f"The {monster.name} dealt {damage_dealt} damage to {user.mention}!"
+            if is_critical_hit:
+                update_message += " Critical hit!"
         else:
             update_message = f"{user.mention} evaded the {monster.name}'s attack!"
+
+        # Update the battle message
         battle_embed = create_battle_embed(user, player, monster, update_message)
         await message.edit(embed=battle_embed)
+
+        # Break out of loop if the player is defeated
         if player.is_defeated():
             break
-        await asyncio.sleep(monster.attack_speed)
+
+        await asyncio.sleep(attack_speed_modifier)
+
 
 async def monster_battle(user, player, monster, zone_level, message):
     player_weapon_type = player.equipped_weapon.type if player.equipped_weapon else None
@@ -157,13 +215,10 @@ async def monster_battle(user, player, monster, zone_level, message):
 
     await asyncio.gather(player_attack, monster_attack)
 
-    total_damage_dealt_to_player = player.stats.max_health - player.stats.health
-    total_damage_dealt_to_monster = monster.max_health - monster.health
-
     if monster.is_defeated():
         loot, loot_messages = generate_zone_loot(zone_level, monster.drop)
-        return (True, total_damage_dealt_to_player, total_damage_dealt_to_monster, loot,
-                monster.experience_reward), loot_messages
+        return (True, monster.max_health, player.stats.damage_taken, loot, monster.experience_reward), loot_messages
     else:
-        return (False, total_damage_dealt_to_player, total_damage_dealt_to_monster, None, None), None
+        return (False, monster.damage_taken, player.stats.damage_taken, None, None), None
+
 

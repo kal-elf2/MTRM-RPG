@@ -31,6 +31,7 @@ class Exemplar:
             stats["mining_experience"],
             stats["woodcutting_level"],
             stats["woodcutting_experience"],
+            damage_taken=0
         )
         self.zone_level = zone_level
         self.inventory = inventory if inventory else Inventory()
@@ -111,33 +112,33 @@ class Exemplar:
     def set_combat_stats(self, new_combat_level):
 
         if self.name == "human":
-            # For the Human exemplar type
             max_health_update = 100 + (10 * (new_combat_level - 1))
             strength_update = 12 + (5 * (new_combat_level - 1))
             endurance_update = 12 + (5 * (new_combat_level - 1))
             attack_update = 6 + (2 * (new_combat_level - 1))
             defense_update = 6 + (2 * (new_combat_level - 1))
+
         elif self.name == "dwarf":
-            # For the Dwarf exemplar type
             max_health_update = 110 + (10 * (new_combat_level - 1))
             strength_update = 14 + (5 * (new_combat_level - 1))
             endurance_update = 10 + (5 * (new_combat_level - 1))
             attack_update = 7 + (2 * (new_combat_level - 1))
             defense_update = 5 + (2 * (new_combat_level - 1))
+
         elif self.name == "orc":
-            # For the Orc exemplar type
             max_health_update = 120 + (10 * (new_combat_level - 1))
             strength_update = 16 + (5 * (new_combat_level - 1))
             endurance_update = 8 + (5 * (new_combat_level - 1))
             attack_update = 8 + (2 * (new_combat_level - 1))
             defense_update = 4 + (2 * (new_combat_level - 1))
+
         elif self.name == "halfling":
-            # For the Halfling exemplar type
             max_health_update = 90 + (10 * (new_combat_level - 1))
             strength_update = 10 + (5 * (new_combat_level - 1))
             endurance_update = 14 + (5 * (new_combat_level - 1))
             attack_update = 5 + (2 * (new_combat_level - 1))
             defense_update = 7 + (2 * (new_combat_level - 1))
+
         else:
             # For the Elf exemplar type
             max_health_update = 95 + (10 * (new_combat_level - 1))
@@ -153,7 +154,7 @@ class Exemplar:
         self.stats.update_attack(attack_update)
         self.stats.update_defense(defense_update)
 
-    def level_up_mining(self):  # Add level_up_mining method
+    def level_up_mining(self):
         while self.stats.mining_experience >= self.exp_needed_to_level_up(self.stats.mining_level):
             self.stats.mining_level += 1
 
@@ -161,7 +162,7 @@ class Exemplar:
         while self.stats.fishing_experience >= self.exp_needed_to_level_up(self.stats.fishing_level):
             self.stats.fishing_level += 1
 
-    def level_up_woodcutting(self):  # Add level_up_woodcutting method
+    def level_up_woodcutting(self):
         while self.stats.woodcutting_experience >= self.exp_needed_to_level_up(self.stats.woodcutting_level):
             self.stats.woodcutting_level += 1
 
@@ -255,7 +256,6 @@ class Exemplar:
 
             threading.Timer(potion.duration, revert_effect).start()
 
-
 class PlayerStats:
     def __init__(
         self,
@@ -273,6 +273,7 @@ class PlayerStats:
         mining_experience=0,
         woodcutting_level=1,
         woodcutting_experience=0,
+        damage_taken =0
     ):
         self.health = health
         self.max_health = max_health
@@ -288,6 +289,7 @@ class PlayerStats:
         self.mining_experience = mining_experience
         self.woodcutting_level = woodcutting_level
         self.woodcutting_experience = woodcutting_experience
+        self.damage_taken = damage_taken
 
     def update_health(self, delta):
         self.health = min(self.max_health, max(0, self.health + delta))
@@ -327,7 +329,6 @@ class Human(Exemplar):
         }
         super().__init__("Human", stats=human_stats)
 
-
 class Dwarf(Exemplar):
     def __init__(self):
         dwarf_stats = {
@@ -347,7 +348,6 @@ class Dwarf(Exemplar):
             "woodcutting_experience": 0
         }
         super().__init__("Dwarf", stats=dwarf_stats)
-
 
 class Orc(Exemplar):
     def __init__(self):
@@ -369,7 +369,6 @@ class Orc(Exemplar):
         }
         super().__init__("Orc", stats=orc_stats)
 
-
 class Halfling(Exemplar):
     def __init__(self):
         halfling_stats = {
@@ -389,7 +388,6 @@ class Halfling(Exemplar):
             "woodcutting_experience": 0
         }
         super().__init__("Halfling", stats=halfling_stats)
-
 
 class Elf(Exemplar):
     def __init__(self):
@@ -411,7 +409,6 @@ class Elf(Exemplar):
         }
         super().__init__("Elf", stats=elf_stats)
 
-
 def create_exemplar(exemplar_name):
     exemplar_classes = {
         "human": Human,
@@ -426,33 +423,3 @@ def create_exemplar(exemplar_name):
 
     exemplar_instance = exemplar_classes[exemplar_name.lower()]()
     return exemplar_instance
-
-
-# class Player:
-#     def __init__(self):
-#         pass
-#
-#     def exp_needed_to_level_up(self, level):
-#         return int(75 * 2 ** ((level - 2) / 7))
-#
-#     def exp_needed_to_reach_total(self, level):
-#         return sum(self.exp_needed_to_level_up(i) for i in range(1, level))
-#
-#     def level_up(self, skill):
-#         skill_level_key = f"{skill}_level"
-#         skill_exp_key = f"{skill}_experience"
-#         while getattr(self, skill_exp_key) >= self.exp_needed_to_level_up(getattr(self, skill_level_key)):
-#             setattr(self, skill_level_key, getattr(self, skill_level_key) + 1)
-#             self.increase_skill_stats(skill)
-#
-# player = Player()
-#
-# print("Level | Experience Needed to Reach Level | Total Experience")
-# print("------+-----------------------------------+----------------")
-#
-# for level in range(1, 101):
-#     exp_needed = player.exp_needed_to_level_up(level)
-#     total_exp = player.exp_needed_to_reach_total(level)
-#     print(f"{level:>5} | {exp_needed:>33} | {total_exp:>14}")
-
-

@@ -170,7 +170,7 @@ class MonsterOptions(discord.ui.Select):
 
             if battle_outcome[0]:
                 # Update player health based on damage received
-                player.stats.health -= battle_outcome[1]
+                print(f"player health: {player.stats.health}, damage done: {battle_outcome[2]}")
                 for loot_type, loot_items in battle_outcome[3]:
                     if loot_type == 'gold':
                         player.inventory.add_gold(loot_items)
@@ -202,6 +202,7 @@ class MonsterOptions(discord.ui.Select):
 
                 player_data[author_id]["stats"]["combat_level"] = player.stats.combat_level
                 player_data[author_id]["stats"]["combat_experience"] = player.stats.combat_experience
+                player.stats.damage_taken = 0
                 #update experience in the player_data dictionary
                 player_data[author_id]["stats"].update(player.stats.__dict__)
 
@@ -213,17 +214,18 @@ class MonsterOptions(discord.ui.Select):
                 await battle_embed.edit(
                     embed=create_battle_embed(interaction.user, player, monster,
                                               f"You have defeated the {monster.name}! "
-                                              f"You dealt **{battle_outcome[2]} total damage** to the monster and took **{battle_outcome[1]} total damage**. "
+                                              f"You dealt **{battle_outcome[1]} total damage** to the monster and took **{battle_outcome[2]} total damage**. "
                                               f"You gained {experience_gained} experience points.\n"
                                               f"\n"
                                               f"Loot picked up:\n"
                                               f"```{loot_message_string}```")
-
                 )
+
 
 
             else:
                 player.stats.health = player.stats.max_health
+                player.stats.damage_taken = 0
                 player_data[author_id]["stats"].update(player.stats.__dict__)
 
                 await battle_embed.edit(
