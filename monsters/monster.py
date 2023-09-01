@@ -219,6 +219,6 @@ async def monster_battle(user, player, monster, zone_level, message):
         loot, loot_messages = generate_zone_loot(zone_level, monster.drop)
         return (True, monster.max_health, player.stats.damage_taken, loot, monster.experience_reward), loot_messages
     else:
-        return (False, monster.damage_taken, player.stats.damage_taken, None, None), None
+        return (False, monster.max_health, player.stats.damage_taken, None, None), None
 
 
