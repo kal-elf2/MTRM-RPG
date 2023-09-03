@@ -2,6 +2,7 @@ import os
 import json
 import discord
 from discord.ext import commands
+from discord.commands import Option
 from utils import load_player_data, save_player_data
 from discord.ui import Select, View
 from discord.components import SelectOption
@@ -102,138 +103,105 @@ class PickExemplars(Select):
 async def send_message(ctx: commands.Context, embed):
     return await ctx.send(embed=embed)
 
-class MonsterOptions(discord.ui.Select):
-    def __init__(self, monster_list, start_index=0, previous_view=None):
-        self.monster_list = monster_list
-        self.start_index = start_index
-        self.previous_view = previous_view
-        options = self.create_options()
-        super().__init__(placeholder="Choose a monster", options=options)
+@bot.slash_command(description="Battle a monster!")
+async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=generate_monster_list(), required=False, default='')):
+    if not monster:
+        await ctx.respond("Choosing a monster is required to start a battle.", ephemeral=True)
+        return
 
-    def create_options(self):
-        # Check if there are more than 5 monsters left. If so, display 4 and the "More" option
-        if len(self.monster_list) > self.start_index + 5:
-            options = [discord.SelectOption(label=monster, value=monster)
-                       for monster in self.monster_list[self.start_index:self.start_index + 4]]
-            options.append(discord.SelectOption(label="More ⏩", value="more"))
-        # If there are 5 or fewer monsters left, display them all without the "More" option
-        else:
-            options = [discord.SelectOption(label=monster, value=monster)
-                       for monster in self.monster_list[self.start_index:]]
+    guild_id = ctx.guild.id
+    author_id = str(ctx.author.id)
 
-        # Add "Back" option to the options list if a previous view is provided
-        if self.previous_view is not None:
-            options.append(discord.SelectOption(label="Back ⏪", value="back"))
+    player_data = load_player_data(guild_id)
+    in_battle = player_data[author_id].get("in_battle", False)
 
-        return options
+    if in_battle:
+        await ctx.respond("You are already in a battle!")
+        return
 
-    async def callback(self, interaction: discord.Interaction):
-        await interaction.response.defer()
-        ctx = await bot.get_context(interaction.message)
-        author_id = str(interaction.user.id)
-        guild_id = interaction.guild.id
-        player_data = load_player_data(guild_id)
+    player = Exemplar(player_data[author_id]["exemplar"],
+                      player_data[author_id]["stats"],
+                      player_data[author_id]["inventory"])
 
-        # Check if the player is already in a battle
-        in_battle = player_data[author_id].get("in_battle", False)
-        if in_battle:
-            await interaction.followup.send("You are already in a battle!")
-            return
+    # Initialize in_battle flag before starting the battle
+    player_data[author_id].setdefault("in_battle", False)
+    player_data[author_id]["in_battle"] = True
+    save_player_data(guild_id, player_data)
 
-        player = Exemplar(player_data[author_id]["exemplar"], player_data[author_id]["stats"],
-                          player_data[author_id]["inventory"])
+    zone_level = player.zone_level
+    monster = generate_monster_by_name(monster, zone_level)
 
-        if self.values[0] == "more":
-            new_list = self.monster_list
-            new_start_index = self.start_index + 4
-            new_view = discord.ui.View()
-            new_view.add_item(MonsterOptions(new_list, new_start_index, self))
-            await interaction.followup.send(content="Choose a monster to fight against.", view=new_view, ephemeral=True)
+    battle_embed = await send_message(ctx.channel,
+                                      create_battle_embed(ctx.author, player, monster))
+    await ctx.respond(view=BattleOptions(ctx))
 
-        elif self.values[0] == "back" and self.previous_view is not None:
-            previous_view = discord.ui.View()
-            previous_view.add_item(self.previous_view)
-            await interaction.followup.send(content="Choose a monster to fight against.", view=previous_view, ephemeral=True)
-
-        else:
-            # Set the in_battle flag before starting the battle
-            player_data[author_id].setdefault("in_battle", False)
-            player_data[author_id]["in_battle"] = True
-            save_player_data(guild_id, player_data)
-            zone_level = player.zone_level
-            monster = generate_monster_by_name(self.values[0], zone_level)
-            battle_embed = await send_message(ctx.channel,
-                                              create_battle_embed(interaction.user, player, monster))
-            # Create an instance of ScalingOptions view and send it along with the message
-            await ctx.send(view=BattleOptions(interaction))
-            battle_outcome, loot_messages = await monster_battle(interaction.user, player, monster, zone_level, battle_embed)
-
-            if battle_outcome[0]:
-                # Update player health based on damage received
-                for loot_type, loot_items in battle_outcome[3]:
-                    if loot_type == 'gold':
-                        player.inventory.add_gold(loot_items)
-                    elif loot_type == 'items':
-                        # Check if loot_items is a list of tuples (meaning it's a list of (item, quantity) pairs)
-                        if isinstance(loot_items, list) and all(isinstance(i, tuple) for i in loot_items):
-                            for item, quantity in loot_items:
-                                for _ in range(quantity):
-                                    player.inventory.add_item_to_inventory(item)
-                        elif isinstance(loot_items, list):  # If it's just a list of items
-                            for item in loot_items:
-                                player.inventory.add_item_to_inventory(item)
-                        else:  # If loot_items is a single object
-                            player.inventory.add_item_to_inventory(loot_items)
-                    else:
-                        if isinstance(loot_items, list) and all(isinstance(i, tuple) for i in loot_items):
-                            for item, quantity in loot_items:
-                                for _ in range(quantity):
-                                    player.inventory.add_item_to_inventory(item)
-                        elif isinstance(loot_items, list):  # If it's just a list of items
-                            for item in loot_items:
-                                player.inventory.add_item_to_inventory(item)
-                        else:  # If loot_items is a single object
-                            player.inventory.add_item_to_inventory(loot_items)
-                player_data[author_id]["inventory"] = player.inventory.to_dict()
-
-                experience_gained = monster.experience_reward
-                await player.gain_experience(experience_gained, 'combat', interaction)
-
-                player_data[author_id]["stats"]["combat_level"] = player.stats.combat_level
-                player_data[author_id]["stats"]["combat_experience"] = player.stats.combat_experience
-                player.stats.damage_taken = 0
-                #update experience in the player_data dictionary
-                player_data[author_id]["stats"].update(player.stats.__dict__)
-
-                if player.stats.health <= 0:
-                    player.stats.health = player.stats.max_health
-
-                loot_message_string = '\n'.join(loot_messages)
-
-                await battle_embed.edit(
-                    embed=create_battle_embed(interaction.user, player, monster,
-                                              f"You have defeated the {monster.name}! "
-                                              f"You dealt **{battle_outcome[1]} total damage** to the monster and took **{battle_outcome[2]} total damage**. "
-                                              f"You gained {experience_gained} experience points.\n"
-                                              f"\n"
-                                              f"Loot picked up:\n"
-                                              f"```{loot_message_string}```")
-                )
-
-
-
+    battle_outcome, loot_messages = await monster_battle(ctx.author, player, monster, zone_level, battle_embed)
+    if battle_outcome[0]:
+        # Update player health based on damage received
+        for loot_type, loot_items in battle_outcome[3]:
+            if loot_type == 'gold':
+                player.inventory.add_gold(loot_items)
+            elif loot_type == 'items':
+                # Check if loot_items is a list of tuples (meaning it's a list of (item, quantity) pairs)
+                if isinstance(loot_items, list) and all(isinstance(i, tuple) for i in loot_items):
+                    for item, quantity in loot_items:
+                        for _ in range(quantity):
+                            player.inventory.add_item_to_inventory(item)
+                elif isinstance(loot_items, list):  # If it's just a list of items
+                    for item in loot_items:
+                        player.inventory.add_item_to_inventory(item)
+                else:  # If loot_items is a single object
+                    player.inventory.add_item_to_inventory(loot_items)
             else:
-                player.stats.health = player.stats.max_health
-                player.stats.damage_taken = 0
-                player_data[author_id]["stats"].update(player.stats.__dict__)
+                if isinstance(loot_items, list) and all(isinstance(i, tuple) for i in loot_items):
+                    for item, quantity in loot_items:
+                        for _ in range(quantity):
+                            player.inventory.add_item_to_inventory(item)
+                elif isinstance(loot_items, list):  # If it's just a list of items
+                    for item in loot_items:
+                        player.inventory.add_item_to_inventory(item)
+                else:  # If loot_items is a single object
+                    player.inventory.add_item_to_inventory(loot_items)
+        player_data[author_id]["inventory"] = player.inventory.to_dict()
 
-                await battle_embed.edit(
-                    embed=create_battle_embed(interaction.user, player, monster,
-                                              f"You have been defeated by the {monster.name}. Your health has been restored."))
+        experience_gained = monster.experience_reward
+        await player.gain_experience(experience_gained, 'combat', ctx)
 
-            # Clear the in_battle flag after the battle ends
-            player_data[author_id]["in_battle"] = False
-            save_player_data(guild_id, player_data)
+        player_data[author_id]["stats"]["combat_level"] = player.stats.combat_level
+        player_data[author_id]["stats"]["combat_experience"] = player.stats.combat_experience
+        player.stats.damage_taken = 0
+        # update experience in the player_data dictionary
+        player_data[author_id]["stats"].update(player.stats.__dict__)
+
+        if player.stats.health <= 0:
+            player.stats.health = player.stats.max_health
+
+        loot_message_string = '\n'.join(loot_messages)
+
+        await battle_embed.edit(
+            embed=create_battle_embed(ctx.user, player, monster,
+                                      f"You have defeated the {monster.name}! "
+                                      f"You dealt **{battle_outcome[1]} total damage** to the monster and took **{battle_outcome[2]} total damage**. "
+                                      f"You gained {experience_gained} experience points.\n"
+                                      f"\n"
+                                      f"Loot picked up:\n"
+                                      f"```{loot_message_string}```")
+        )
+
+
+
+    else:
+        player.stats.health = player.stats.max_health
+        player.stats.damage_taken = 0
+        player_data[author_id]["stats"].update(player.stats.__dict__)
+
+        await battle_embed.edit(
+            embed=create_battle_embed(ctx.user, player, monster,
+                                      f"You have been defeated by the {monster.name}. Your health has been restored."))
+
+    # Clear the in_battle flag after the battle ends
+    player_data[author_id]["in_battle"] = False
+    save_player_data(guild_id, player_data)
 
 @bot.slash_command(description="Start a new game.")
 async def newgame(ctx):
@@ -268,13 +236,6 @@ async def newgame(ctx):
         await ctx.respond(
             f"{ctx.author.mention}, you already have a game in progress. Do you want to erase your progress and start a new game?",
             view=view)
-
-@bot.slash_command(description= "Battle a monster.")
-async def battle(ctx):
-    monster_list = generate_monster_list()
-    view = discord.ui.View(timeout=None)
-    view.add_item(MonsterOptions(monster_list))
-    await ctx.respond("Choose a monster to fight.", view=view)
 
 class BattleOptions(discord.ui.View):
     def __init__(self, interaction):
