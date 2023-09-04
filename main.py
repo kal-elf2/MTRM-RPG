@@ -133,7 +133,8 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
 
     battle_embed = await send_message(ctx.channel,
                                       create_battle_embed(ctx.author, player, monster))
-    await ctx.respond(view=BattleOptions(ctx))
+    await ctx.respond(f"{ctx.author.mention} encounters a {monster.name}")
+    await ctx.send(view=BattleOptions(ctx))
 
     battle_outcome, loot_messages = await monster_battle(ctx.author, player, monster, zone_level, battle_embed)
     if battle_outcome[0]:
@@ -180,11 +181,11 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
 
         await battle_embed.edit(
             embed=create_battle_embed(ctx.user, player, monster,
-                                      f"You have defeated the {monster.name}! "
-                                      f"You dealt **{battle_outcome[1]} total damage** to the monster and took **{battle_outcome[2]} total damage**. "
-                                      f"You gained {experience_gained} experience points.\n"
+                                      f"You have **DEFEATED** the {monster.name}!\n\n"
+                                      f"You dealt **{battle_outcome[1]} damage** to the monster and took **{battle_outcome[2]} damage**. "
+                                      f"You gained {experience_gained} combat XP.\n"
                                       f"\n"
-                                      f"Loot picked up:\n"
+                                      f"__**Loot picked up:**__\n"
                                       f"```{loot_message_string}```")
         )
 
