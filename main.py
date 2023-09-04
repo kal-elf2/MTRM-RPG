@@ -12,7 +12,9 @@ from monsters.monster import generate_monster_list, generate_monster_by_name, mo
 from discord import Embed
 from resources.inventory import Inventory
 
-bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
+bot = commands.Bot(command_prefix="/", intents=discord.Intents.all())
+# Add the cog to your bot
+bot.load_extension("stats")
 
 guild_data = {}
 

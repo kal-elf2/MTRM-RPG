@@ -493,10 +493,5 @@
         "level": 99,
         "experience_needed": 197345,
         "total_experience": 2647556
-    },
-    "100": {
-        "level": 100,
-        "experience_needed": 213231,
-        "total_experience": 2860787
     }
 }
