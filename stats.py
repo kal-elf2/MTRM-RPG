@@ -13,17 +13,23 @@ def experience_needed_to_next_level(current_level, current_exp, level_data):
         return level_data[str(current_level)]['total_experience'] - current_exp
     return None
 
+
 def create_progress_bar(current_exp, current_level, level_data):
     bar_length = 16  # Fixed bar length
+    current_level_str = str(current_level)
     next_level_str = str(int(current_level) + 1)
 
     if next_level_str not in level_data:
         return "Max Level Reached", "N/A"
 
-    exp_needed_this_level = level_data[next_level_str]['experience_needed']
+    exp_needed_this_level = level_data[current_level_str]['experience_needed']
+    exp_needed_to_next_level = experience_needed_to_next_level(current_level, current_exp, level_data)
 
-    # Calculate progress as the ratio of current_exp to exp_needed_this_level
-    progress = current_exp / exp_needed_this_level
+    # Calculate experience earned since the last level
+    exp_earned_this_level = exp_needed_this_level - exp_needed_to_next_level
+
+    # Calculate progress as the ratio of exp_earned_this_level to exp_needed_this_level
+    progress = exp_earned_this_level / exp_needed_this_level
 
     # Calculate the number of filled and empty symbols needed
     filled_length = round(bar_length * progress)
