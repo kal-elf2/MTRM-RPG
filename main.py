@@ -11,6 +11,7 @@ from exemplars.exemplars import create_exemplar, Exemplar
 from monsters.monster import generate_monster_list, generate_monster_by_name, monster_battle, create_battle_embed
 from discord import Embed
 from resources.inventory import Inventory
+from stats import ResurrectOptions
 
 bot = commands.Bot(command_prefix="/", intents=discord.Intents.all())
 # Add the cog to your bot
@@ -136,7 +137,9 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
     battle_embed = await send_message(ctx.channel,
                                       create_battle_embed(ctx.author, player, monster))
     await ctx.respond(f"{ctx.author.mention} encounters a {monster.name}")
-    await ctx.send(view=BattleOptions(ctx))
+
+    # Store the message object that is sent
+    battle_options_msg = await ctx.send(view=BattleOptions(ctx))
 
     battle_outcome, loot_messages = await monster_battle(ctx.author, player, monster, zone_level, battle_embed)
     if battle_outcome[0]:
@@ -193,14 +196,26 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
 
 
 
-    else:
-        player.stats.health = player.stats.max_health
-        player.stats.damage_taken = 0
-        player_data[author_id]["stats"].update(player.stats.__dict__)
 
-        await battle_embed.edit(
-            embed=create_battle_embed(ctx.user, player, monster,
-                                      f"You have been defeated by the {monster.name}. Your health has been restored."))
+
+    else:
+        mtrm_emoji = '<:mtrm:1148449848085979167>'
+        # Create a new embed with the defeat message
+        new_embed = create_battle_embed(ctx.user, player, monster,
+
+        f"☠️ You have been **DEFEATED** by the **{monster.name}**! 💀\n"
+        f"🪦 *Your spirit lingers, seeking renewal.* 🪦\n\n"
+        f"__**Options for Revival:**__\n"
+        f"1. Use {mtrm_emoji} to revive without penalty.\n"
+        f"2. Resurrect with 2.5% penalty to all skills.")
+
+        # Clear the previous BattleOptions view
+        await battle_options_msg.delete()
+
+        # Add the "dead.png" image to the embed
+        new_embed.set_image(url="https://raw.githubusercontent.com/kal-elf2/MTRM-RPG/master/images/dead.png")
+        # Update the message with the new embed and view
+        await battle_embed.edit(embed=new_embed, view=ResurrectOptions(ctx, player_data, author_id, new_embed))
 
     # Clear the in_battle flag after the battle ends
     player_data[author_id]["in_battle"] = False
