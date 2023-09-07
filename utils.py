@@ -1,7 +1,7 @@
 import json
 from resources.inventory import Inventory
 from exemplars.exemplars import Exemplar
-from resources.fish import Herb
+from resources.herb import Herb
 from exemplars.exemplars import PlayerStats, Bank
 from crafting.crafting import Crafting
 from resources.item import Item

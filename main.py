@@ -87,8 +87,6 @@ class PickExemplars(Select):
             "defense": exemplar_instance.stats.defense,
             "combat_level": exemplar_instance.stats.combat_level,
             "combat_experience": exemplar_instance.stats.combat_experience,
-            "fishing_level": exemplar_instance.stats.fishing_level,
-            "fishing_experience": exemplar_instance.stats.fishing_experience,
             "mining_level": exemplar_instance.stats.mining_level,
             "mining_experience": exemplar_instance.stats.mining_experience,
             "woodcutting_level": exemplar_instance.stats.woodcutting_level,
@@ -125,6 +123,12 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
     player = Exemplar(player_data[author_id]["exemplar"],
                       player_data[author_id]["stats"],
                       player_data[author_id]["inventory"])
+
+    # Check the player's health before starting a battle
+    if player.stats.health <= 0:
+        # Direct them to resurrection options instead of starting a new battle
+        await ctx.respond("⚰️ You must first ***/travel***  to the nearest 🪦 cemetery to reenter the realm of the living. ⚰️")
+        return
 
     # Initialize in_battle flag before starting the battle
     player_data[author_id].setdefault("in_battle", False)
@@ -199,6 +203,10 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
 
 
     else:
+        # The player is defeated
+        player.stats.health = 0  # Set player's health to 0
+        player_data[author_id]["stats"]["health"] = 0
+
         mtrm_emoji = '<:mtrm:1148449848085979167>'
         # Create a new embed with the defeat message
         new_embed = create_battle_embed(ctx.user, player, monster,

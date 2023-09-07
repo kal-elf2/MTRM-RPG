@@ -1,5 +1,5 @@
 from resources.materium import Materium
-from resources.fish import Herb
+from resources.herb import Herb
 from resources.potion import Potion
 from resources.item import Item
 from crafting.weapon import Weapon

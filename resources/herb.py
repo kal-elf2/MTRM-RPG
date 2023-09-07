@@ -1,21 +1,4 @@
-class Fish:
-    def __init__(self, name, rarity, base_catch_time, healing):
-        self.name = name
-        self.rarity = rarity
-        self.base_catch_time = base_catch_time
-        self.healing = healing
 
-    def catch_time(self, player_fishing_level):
-        catch_time = self.base_catch_time - (player_fishing_level - 1) * 0.5
-        return max(catch_time, 1)  # The catch time should not be less than 1 second.
-
-FISH_TYPES = [
-    Fish("Sardine", 1, 10, 5),
-    Fish("Herring", 2, 15, 10),
-    Fish("Trout", 3, 20, 15),
-    Fish("Salmon", 4, 25, 20),
-    Fish("Tuna", 5, 30, 25),
-]
 
 class Herb:
     def __init__(self, name, rarity, value):

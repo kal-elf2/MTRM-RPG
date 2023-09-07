@@ -49,7 +49,7 @@ class StatsCog(commands.Cog):
 
     @commands.slash_command(description="View your stats")
     async def stats(self, ctx, progress: Option(str, "Choose a subgroup to view details",
-                                                choices=['Combat Level', 'Fishing', 'Mining', 'Woodcutting'],
+                                                choices=['Combat Level', 'Mining', 'Woodcutting'],
                                                 required=False,
                                                 default=None)):
         guild_id = ctx.guild.id
@@ -70,7 +70,6 @@ class StatsCog(commands.Cog):
             🏃️ **Endurance**: {str(player['endurance'])}
             🗡️ **Attack**: {str(player['attack'])}
             🛡️ **Defense**: {str(player['defense'])}
-            🎣 **Fishing Level**: {str(player['fishing_level'])}
             ⛏️ **Mining Level**: {str(player['mining_level'])}
             🪓 **Woodcutting Level**: {str(player['woodcutting_level'])}"""
 
@@ -81,10 +80,6 @@ class StatsCog(commands.Cog):
                 display = '⚔️ Combat Level ⚔️'
                 level = player['combat_level']
                 current_exp = player['combat_experience']
-            elif progress == 'Fishing':
-                display = '🎣 Fishing Level 🎣'
-                level = player['fishing_level']
-                current_exp = player['fishing_experience']
             elif progress == 'Mining':
                 display = '⛏️ Mining Level ⛏️'
                 level = player['mining_level']
@@ -157,7 +152,6 @@ class ResurrectOptions(discord.ui.View):
             # Define emojis for skills
             skill_emojis = {
                 "combat": "⚔️",
-                "fishing": "🎣",
                 "woodcutting": "🪓",
                 "mining": "⛏️"
             }
@@ -195,7 +189,6 @@ class ResurrectOptions(discord.ui.View):
         # Define emojis for skills
         skill_emojis = {
             "combat": "⚔️",
-            "fishing": "🎣",
             "woodcutting": "🪓",
             "mining": "⛏️"
         }
@@ -220,7 +213,7 @@ class ResurrectOptions(discord.ui.View):
 async def apply_penalty(player_data, author_id, interaction):
     stats = player_data[author_id]["stats"]
     levels_decreased = {}
-    for skill in ["combat_experience", "fishing_experience", "woodcutting_experience", "mining_experience"]:
+    for skill in ["combat_experience", "woodcutting_experience", "mining_experience"]:
         original_skill_name = skill[:-11]  # Remove '_experience' from the skill name
         original_level = stats[f"{original_skill_name}_level"]
 

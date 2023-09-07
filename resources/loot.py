@@ -1,6 +1,6 @@
 import random
 from resources.ore import GEM_TYPES
-from resources.fish import HERB_TYPES
+from resources.herb import HERB_TYPES
 from resources.potion import POTION_LIST
 from resources.materium import Materium
 from resources.item import Item

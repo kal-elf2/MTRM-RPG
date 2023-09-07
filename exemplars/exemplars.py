@@ -25,8 +25,6 @@ class Exemplar:
             stats["defense"],
             stats["combat_level"],
             stats["combat_experience"],
-            stats["fishing_level"],
-            stats["fishing_experience"],
             stats["mining_level"],
             stats["mining_experience"],
             stats["woodcutting_level"],
@@ -54,9 +52,7 @@ class Exemplar:
         self.stats.health = value
 
     def increase_skill_stats(self, skill):
-        if skill == "fishing":
-            self.stats.update_endurance(1)
-        elif skill == "mining":
+        if skill == "mining":
             self.stats.update_strength(1)
         elif skill == "woodcutting":
             self.stats.update_attack(1)
@@ -161,10 +157,6 @@ class Exemplar:
     def level_up_mining(self):
         while self.stats.mining_experience >= self.exp_needed_to_level_up(self.stats.mining_level):
             self.stats.mining_level += 1
-
-    def level_up_fishing(self):
-        while self.stats.fishing_experience >= self.exp_needed_to_level_up(self.stats.fishing_level):
-            self.stats.fishing_level += 1
 
     def level_up_woodcutting(self):
         while self.stats.woodcutting_experience >= self.exp_needed_to_level_up(self.stats.woodcutting_level):
@@ -271,8 +263,6 @@ class PlayerStats:
         defense,
         combat_level=1,
         combat_experience=0,
-        fishing_level=1,
-        fishing_experience=0,
         mining_level=1,
         mining_experience=0,
         woodcutting_level=1,
@@ -287,8 +277,6 @@ class PlayerStats:
         self.defense = defense
         self.combat_level = combat_level
         self.combat_experience = combat_experience
-        self.fishing_level = fishing_level
-        self.fishing_experience = fishing_experience
         self.mining_level = mining_level
         self.mining_experience = mining_experience
         self.woodcutting_level = woodcutting_level
@@ -324,8 +312,6 @@ class Human(Exemplar):
             "defense": 6,
             "combat_level": 1,
             "combat_experience": 0,
-            "fishing_level": 1,
-            "fishing_experience": 0,
             "mining_level": 1,
             "mining_experience": 0,
             "woodcutting_level": 1,
@@ -344,8 +330,6 @@ class Dwarf(Exemplar):
             "defense": 5,
             "combat_level": 1,
             "combat_experience": 0,
-            "fishing_level": 1,
-            "fishing_experience": 0,
             "mining_level": 1,
             "mining_experience": 0,
             "woodcutting_level": 1,
@@ -364,8 +348,6 @@ class Orc(Exemplar):
             "defense": 4,
             "combat_level": 1,
             "combat_experience": 0,
-            "fishing_level": 1,
-            "fishing_experience": 0,
             "mining_level": 1,
             "mining_experience": 0,
             "woodcutting_level": 1,
@@ -384,8 +366,6 @@ class Halfling(Exemplar):
             "defense": 7,
             "combat_level": 1,
             "combat_experience": 0,
-            "fishing_level": 1,
-            "fishing_experience": 0,
             "mining_level": 1,
             "mining_experience": 0,
             "woodcutting_level": 1,
@@ -404,8 +384,6 @@ class Elf(Exemplar):
             "defense": 7,
             "combat_level": 1,
             "combat_experience": 0,
-            "fishing_level": 1,
-            "fishing_experience": 0,
             "mining_level": 1,
             "mining_experience": 0,
             "woodcutting_level": 1,

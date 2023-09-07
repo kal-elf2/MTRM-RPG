@@ -1,5 +1,5 @@
 from resources.item import Item
-from resources.fish import Herb
+from resources.herb import Herb
 from resources.materium import Materium
 
 class Potion(Item):
