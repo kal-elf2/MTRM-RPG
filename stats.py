@@ -107,7 +107,7 @@ class StatsCog(commands.Cog):
 
 class ResurrectOptions(discord.ui.View):
     def __init__(self, interaction, player_data, author_id, battle_embed):
-        super().__init__(timeout=1800)  # 30 minutes
+        super().__init__(timeout=None)
         self.interaction = interaction
         self.player_data = player_data
         self.author_id = author_id

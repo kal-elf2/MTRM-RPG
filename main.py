@@ -146,61 +146,86 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
     battle_options_msg = await ctx.send(view=BattleOptions(ctx))
 
     battle_outcome, loot_messages = await monster_battle(ctx.author, player, monster, zone_level, battle_embed)
+
+    class LootOptions(discord.ui.View):
+        def __init__(self, interaction, player, monster, battle_embed, player_data, author_id, battle_outcome):
+            super().__init__(timeout=None)
+            self.interaction_ = interaction
+            self.player_ = player
+            self.monster_ = monster
+            self.battle_embed_ = battle_embed
+            self.player_data_ = player_data
+            self.author_id_ = author_id
+            self.battle_outcome_ = battle_outcome
+
+        @discord.ui.button(custom_id="loot", label="Loot", style=discord.ButtonStyle.blurple)
+        async def collect_loot(self, button, interaction):
+            for loot_type, loot_items in battle_outcome[3]:
+                if loot_type == 'gold':
+                    player.inventory.add_gold(loot_items)
+                elif loot_type == 'items':
+                    # Check if loot_items is a list of tuples (meaning it's a list of (item, quantity) pairs)
+                    if isinstance(loot_items, list) and all(isinstance(i, tuple) for i in loot_items):
+                        for item, quantity in loot_items:
+                            for _ in range(quantity):
+                                player.inventory.add_item_to_inventory(item)
+                    elif isinstance(loot_items, list):  # If it's just a list of items
+                        for item in loot_items:
+                            player.inventory.add_item_to_inventory(item)
+                    else:  # If loot_items is a single object
+                        player.inventory.add_item_to_inventory(loot_items)
+                else:
+                    if isinstance(loot_items, list) and all(isinstance(i, tuple) for i in loot_items):
+                        for item, quantity in loot_items:
+                            for _ in range(quantity):
+                                player.inventory.add_item_to_inventory(item)
+                    elif isinstance(loot_items, list):  # If it's just a list of items
+                        for item in loot_items:
+                            player.inventory.add_item_to_inventory(item)
+                    else:  # If loot_items is a single object
+                        player.inventory.add_item_to_inventory(loot_items)
+            player_data[author_id]["inventory"] = player.inventory.to_dict()
+
+            loot_message_string = '\n'.join(loot_messages)
+
+            final_embed = create_battle_embed(ctx.user, player, monster,
+                                          f"You have **DEFEATED** the {monster.name}!\n\n"
+                                          f"You dealt **{battle_outcome[1]} damage** to the monster and took **{battle_outcome[2]} damage**. "
+                                          f"You gained {experience_gained} combat XP.\n"
+                                          f"\n"
+                                          f"__**Loot picked up:**__\n"
+                                          f"```{loot_message_string}```")
+            save_player_data(guild_id, player_data)
+            # Edit the message to remove the button by not passing a view
+            await interaction.message.edit(embed=final_embed, view=None)
+
+
     if battle_outcome[0]:
-        # Update player health based on damage received
-        for loot_type, loot_items in battle_outcome[3]:
-            if loot_type == 'gold':
-                player.inventory.add_gold(loot_items)
-            elif loot_type == 'items':
-                # Check if loot_items is a list of tuples (meaning it's a list of (item, quantity) pairs)
-                if isinstance(loot_items, list) and all(isinstance(i, tuple) for i in loot_items):
-                    for item, quantity in loot_items:
-                        for _ in range(quantity):
-                            player.inventory.add_item_to_inventory(item)
-                elif isinstance(loot_items, list):  # If it's just a list of items
-                    for item in loot_items:
-                        player.inventory.add_item_to_inventory(item)
-                else:  # If loot_items is a single object
-                    player.inventory.add_item_to_inventory(loot_items)
-            else:
-                if isinstance(loot_items, list) and all(isinstance(i, tuple) for i in loot_items):
-                    for item, quantity in loot_items:
-                        for _ in range(quantity):
-                            player.inventory.add_item_to_inventory(item)
-                elif isinstance(loot_items, list):  # If it's just a list of items
-                    for item in loot_items:
-                        player.inventory.add_item_to_inventory(item)
-                else:  # If loot_items is a single object
-                    player.inventory.add_item_to_inventory(loot_items)
-        player_data[author_id]["inventory"] = player.inventory.to_dict()
 
         experience_gained = monster.experience_reward
         await player.gain_experience(experience_gained, 'combat', ctx)
-
         player_data[author_id]["stats"]["combat_level"] = player.stats.combat_level
         player_data[author_id]["stats"]["combat_experience"] = player.stats.combat_experience
         player.stats.damage_taken = 0
-        # update experience in the player_data dictionary
         player_data[author_id]["stats"].update(player.stats.__dict__)
 
         if player.stats.health <= 0:
             player.stats.health = player.stats.max_health
 
-        loot_message_string = '\n'.join(loot_messages)
+        # Save the player data after common actions
+        save_player_data(guild_id, player_data)
 
+        # Clear the previous BattleOptions view
+        await battle_options_msg.delete()
+        new_loot_view = LootOptions(ctx, player, monster, battle_embed, player_data, author_id, battle_outcome)
         await battle_embed.edit(
             embed=create_battle_embed(ctx.user, player, monster,
                                       f"You have **DEFEATED** the {monster.name}!\n\n"
-                                      f"You dealt **{battle_outcome[1]} damage** to the monster and took **{battle_outcome[2]} damage**. "
-                                      f"You gained {experience_gained} combat XP.\n"
-                                      f"\n"
-                                      f"__**Loot picked up:**__\n"
-                                      f"```{loot_message_string}```")
+                                          f"You dealt **{battle_outcome[1]} damage** to the monster and took **{battle_outcome[2]} damage**. "
+                                          f"You gained {experience_gained} combat XP.\n"
+                                          f"\n"),
+            view=new_loot_view
         )
-
-
-
-
 
     else:
         # The player is defeated
