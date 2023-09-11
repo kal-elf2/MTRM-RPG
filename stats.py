@@ -123,7 +123,7 @@ class ResurrectOptions(discord.ui.View):
     async def use_mtrm(self, button, interaction):
         if self.player_data[self.author_id]["inventory"].materium_count >= 1:
             self.player_data[self.author_id]["inventory"].materium_count -= 1
-            self.player.stats.health = self.player.stats.max_health  # Update health here
+            self.player.stats.health = self.player.stats.max_health
             self.player_data[self.author_id]["stats"].update(self.player.stats.__dict__)  # Save the updated stats
 
             # Create a new embed with only the renewed message
@@ -145,9 +145,21 @@ class ResurrectOptions(discord.ui.View):
                 view=None,
             )
             save_player_data(interaction.guild.id, self.player_data)
+
+
+        # Else loop (user died and is being penalized)
         else:
             # Apply the penalty since the user doesn't have enough MTRM
             levels_decreased = await apply_penalty(self.player_data, self.author_id, interaction)
+
+            # Save the updated stats
+            save_player_data(interaction.guild.id, self.player_data)
+
+            # Update self.player based on updated player_data
+            updated_stats = self.player_data[self.author_id]['stats']
+            self.player.stats.health = updated_stats['health']
+            self.player.stats.max_health = updated_stats['max_health']
+
 
             # Define emojis for skills
             skill_emojis = {
@@ -166,25 +178,39 @@ class ResurrectOptions(discord.ui.View):
                     [f"{skill_emojis.get(skill, '')}  **{skill.capitalize()}**: {new_level}  ({diff})"
                      for skill, (new_level, diff) in levels_decreased.items()]
                 )
+                # Add the full health bar to the embed
+                new_embed.add_field(name="Your Health has been Restored",
+                                    value=f"❤️  {self.player.stats.health}/{self.player.stats.max_health}")
+
                 new_embed.add_field(name="Skills Affected", value=level_decreased_message)
             else:
+                # Add the full health bar to the embed
+                new_embed.add_field(name="Your Health has been Restored",
+                                    value=f"❤️  {self.player.stats.health}/{self.player.stats.max_health}")
+
                 new_embed.add_field(name="Skills Affected", value="No skills were affected.")
 
             # Send the new embed as a new message
             await interaction.response.send_message(embed=new_embed)
 
-            # Save player data
-            save_player_data(interaction.guild.id, self.player_data)
 
     @discord.ui.button(custom_id="resurrect", label="Resurrect", style=discord.ButtonStyle.danger)
     async def resurrect(self, button, interaction):
 
-        levels_decreased = await apply_penalty(self.player_data, self.author_id,
-                                               interaction)  # Capture the return value
+        # Apply the penalty since the user doesn't have enough MTRM
+        levels_decreased = await apply_penalty(self.player_data, self.author_id, interaction)
+
+        # Save the updated stats
+        save_player_data(interaction.guild.id, self.player_data)
+
+        # Update self.player based on updated player_data
+        updated_stats = self.player_data[self.author_id]['stats']
+        self.player.stats.health = updated_stats['health']
+        self.player.stats.max_health = updated_stats['max_health']
 
         # Create a new embed with adjusted info
         new_embed = discord.Embed(title="You've been resurrected, but at a cost.",
-                                  color=0xff0000)  # Red color
+                                  color=0xff0000)
 
         # Define emojis for skills
         skill_emojis = {
@@ -196,32 +222,45 @@ class ResurrectOptions(discord.ui.View):
         # If levels were decreased, show that information
         if levels_decreased:
             level_decreased_message = '\n'.join(
-                [f"{skill_emojis.get(skill, '')} **{skill.capitalize()}**: {new_level} ({diff})"
+                [f"{skill_emojis.get(skill, '')}  **{skill.capitalize()}**: {new_level}  ({diff})"
                  for skill, (new_level, diff) in levels_decreased.items()]
             )
+            # Add the full health bar to the embed
+            new_embed.add_field(name="Your Health has been Restored",
+                                value=f"❤️  {self.player.stats.health}/{self.player.stats.max_health}")
+
             new_embed.add_field(name="Skills Affected", value=level_decreased_message)
         else:
+            # Add the full health bar to the embed
+            new_embed.add_field(name="Your Health has been Restored",
+                                value=f"❤️  {self.player.stats.health}/{self.player.stats.max_health}")
+
             new_embed.add_field(name="Skills Affected", value="No skills were affected.")
 
         # Send the new embed as a new message
         await interaction.response.send_message(embed=new_embed)
 
-        # Save player data
-        save_player_data(interaction.guild.id, self.player_data)
-
 
 async def apply_penalty(player_data, author_id, interaction):
     stats = player_data[author_id]["stats"]
     levels_decreased = {}
+    player = Exemplar(player_data[author_id]["exemplar"],
+                      player_data[author_id]["stats"],
+                      player_data[author_id]["inventory"])
+
     for skill in ["combat_experience", "woodcutting_experience", "mining_experience"]:
         original_skill_name = skill[:-11]  # Remove '_experience' from the skill name
         original_level = stats[f"{original_skill_name}_level"]
 
         # Apply the 2.5% penalty
-        stats[skill] = max(1, math.floor(stats[skill] * 0.975))
+        new_exp = max(1, math.floor(stats[skill] * 0.975))
+        stats[skill] = new_exp  # Update the experience in player_data
 
         # Recalculate the level based on the new experience
         new_level = recalculate_level(stats[skill])
+
+        if original_skill_name == "combat":
+            player.set_combat_stats(new_level, player)  # Update the dependent combat stats
 
         if new_level < original_level:
             diff = new_level - original_level  # Calculate the difference
@@ -229,9 +268,14 @@ async def apply_penalty(player_data, author_id, interaction):
 
         stats[f"{original_skill_name}_level"] = new_level  # Update the level in the player's stats
 
+    player_data[author_id]["stats"]["health"] = player.stats.health
+    player_data[author_id]["stats"]["max_health"] = player.stats.max_health
+    player_data[author_id]["stats"]["strength"] = player.stats.strength
+    player_data[author_id]["stats"]["endurance"] = player.stats.endurance
+    player_data[author_id]["stats"]["attack"] = player.stats.attack
+    player_data[author_id]["stats"]["defense"] = player.stats.defense
+
     return levels_decreased
-
-
 
 def recalculate_level(updated_exp):
     with open("level_data.json", "r") as f:

@@ -31,8 +31,8 @@ def generate_monster_by_name(name, zone_level):
         ('Deer', 20, 2, 3, None, None, 1.6, [Item('Deer Parts'), Item('Deer Skins')], [1, 1]),
         ('Buck', 30, 3, 4, 'longbow', 'warhammer', 1.7, [Item('Deer Parts'), Item('Deer Skins')], [2, 3]),
         ('Wolf', 50, 6, 5, 'warhammer', 'staff', 1.8, [Item('Wolf Skin')], [1]),
-        ('Goblin', 200, 20, 20, 'longsword', 'longbow', 2, [Item('Onyx')], [1]),
-        ('Goblin Hunter', 400, 35, 30, 'dual_daggers', 'warhammer', 2.2, [Item('Onyx')], [5]),
+        ('Goblin', 100, 10, 10, 'longsword', 'longbow', 2, [Item('Onyx')], [1]),
+        ('Goblin Hunter', 200, 20, 20, 'dual_daggers', 'warhammer', 2.2, [Item('Onyx')], [5]),
         ('Mega Brute', 3000, 45, 40, 'longsword', 'staff', 2.5, [Item('Onyx')], [10]),
         ('Wisp', 3000, 55, 50, 'staff', 'longbow', 2.7, [Item('Glowing Essence')], [1]),
     ]
@@ -80,7 +80,7 @@ def create_health_bar(current, max_health):
     empty_symbols = '◻' * (bar_length - filled_length)
     return filled_symbols + empty_symbols
 
-def create_battle_embed(user, player, monster, message=""):
+def create_battle_embed(user, player, monster, messages):
     player_health_bar = create_health_bar(player.health, player.stats.max_health)
     monster_health_bar = create_health_bar(monster.health, monster.max_health)
 
@@ -89,8 +89,13 @@ def create_battle_embed(user, player, monster, message=""):
     # Construct image URL
     image_url = f"https://raw.githubusercontent.com/kal-elf2/MTRM-RPG/master/images/{monster_name_url}.png"
 
+    if isinstance(messages, list):
+        messages = "\n".join(messages)
+    elif isinstance(messages, str):
+        messages = messages
+
     embed = Embed()
-    embed.add_field(name="Battle", value=message, inline=False)
+    embed.add_field(name="Battle", value=messages, inline=False)
     embed.add_field(name=f"{user.name}'s Health", value=f"{player.health}/{player.stats.max_health}\n{player_health_bar}", inline=True)
     embed.add_field(name=f"{monster.name}'s Health", value=f"{monster.health}/{monster.max_health}\n{monster_health_bar}", inline=True)
 
@@ -136,7 +141,7 @@ def calculate_attack_speed_modifier(attack_value):
     # Cap the attack speed to a minimum and maximum value
     return max(1, min(3, 2 - attack_value * 0.05))
 
-async def player_attack_task(user, player, monster, attack_modifier, message):
+async def player_attack_task(user, player, monster, attack_modifier, message, battle_messages):
     attack_speed_modifier = calculate_attack_speed_modifier(player.stats.attack * attack_modifier)
     while not monster.is_defeated() and not player.is_defeated():
         hit_probability = calculate_hit_probability(player.stats.attack * attack_modifier, monster.defense)
@@ -153,9 +158,14 @@ async def player_attack_task(user, player, monster, attack_modifier, message):
             if is_critical_hit:
                 update_message += " ***Critical hit!***"
         else:
-            update_message = f"The {monster.name} evaded {user.mention}'s attack!"
+            update_message = f"The {monster.name} ***evaded*** {user.mention}'s attack!"
 
-        battle_embed = create_battle_embed(user, player, monster, update_message)
+        # Update the battle messages list
+        if len(battle_messages) >= 5:
+            battle_messages.pop(0)
+        battle_messages.append(update_message)
+
+        battle_embed = create_battle_embed(user, player, monster, battle_messages)
         await message.edit(embed=battle_embed)
 
         if monster.is_defeated():
@@ -163,7 +173,7 @@ async def player_attack_task(user, player, monster, attack_modifier, message):
 
         await asyncio.sleep(attack_speed_modifier)
 
-async def monster_attack_task(user, player, monster, message):
+async def monster_attack_task(user, player, monster, message, battle_messages):
     attack_speed_modifier = calculate_attack_speed_modifier(monster.attack)
     while not monster.is_defeated() and not player.is_defeated():
         hit_probability = calculate_hit_probability(monster.attack, player.stats.defense)
@@ -182,12 +192,16 @@ async def monster_attack_task(user, player, monster, message):
 
             update_message = f"The {monster.name} dealt {damage_dealt} damage to {user.mention}!"
             if is_critical_hit:
-                update_message += " Critical hit!"
+                update_message += " ***Critical hit!***"
         else:
-            update_message = f"{user.mention} evaded the {monster.name}'s attack!"
+            update_message = f"{user.mention} ***evaded*** the {monster.name}'s attack!"
 
-        # Update the battle message
-        battle_embed = create_battle_embed(user, player, monster, update_message)
+        # Update the battle messages list
+        if len(battle_messages) >= 5:
+            battle_messages.pop(0)
+        battle_messages.append(update_message)
+
+        battle_embed = create_battle_embed(user, player, monster, battle_messages)
         await message.edit(embed=battle_embed)
 
         # Break out of loop if the player is defeated
@@ -198,6 +212,8 @@ async def monster_attack_task(user, player, monster, message):
 
 
 async def monster_battle(user, player, monster, zone_level, message):
+    # Initialize battle messages list
+    battle_messages = []
     player_weapon_type = player.equipped_weapon.type if player.equipped_weapon else None
 
     if player_weapon_type == monster.weak_against:
@@ -209,8 +225,9 @@ async def monster_battle(user, player, monster, zone_level, message):
     else:
         attack_modifier = 1
 
-    player_attack = asyncio.create_task(player_attack_task(user, player, monster, attack_modifier, message))
-    monster_attack = asyncio.create_task(monster_attack_task(user, player, monster, message))
+    player_attack = asyncio.create_task(
+        player_attack_task(user, player, monster, attack_modifier, message, battle_messages))
+    monster_attack = asyncio.create_task(monster_attack_task(user, player, monster, message, battle_messages))
 
     await asyncio.gather(player_attack, monster_attack)
 

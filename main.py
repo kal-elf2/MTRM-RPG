@@ -139,7 +139,7 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
     monster = generate_monster_by_name(monster, zone_level)
 
     battle_embed = await send_message(ctx.channel,
-                                      create_battle_embed(ctx.author, player, monster))
+                                      create_battle_embed(ctx.author, player, monster, messages=""))
     await ctx.respond(f"{ctx.author.mention} encounters a {monster.name}")
 
     # Store the message object that is sent
@@ -188,13 +188,16 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
 
             loot_message_string = '\n'.join(loot_messages)
 
-            final_embed = create_battle_embed(ctx.user, player, monster,
-                                          f"You have **DEFEATED** the {monster.name}!\n\n"
-                                          f"You dealt **{battle_outcome[1]} damage** to the monster and took **{battle_outcome[2]} damage**. "
-                                          f"You gained {experience_gained} combat XP.\n"
-                                          f"\n"
-                                          f"__**Loot picked up:**__\n"
-                                          f"```{loot_message_string}```")
+            message_text = (
+                f"You have **DEFEATED** the {monster.name}!\n"
+                f"You dealt **{battle_outcome[1]} damage** to the monster and took **{battle_outcome[2]} damage**.\n"
+                f"You gained {experience_gained} combat XP.\n\n"
+                f"__**Loot picked up:**__\n"
+                f"```{loot_message_string}```"
+            )
+
+            final_embed = create_battle_embed(ctx.user, player, monster, message_text)
+
             save_player_data(guild_id, player_data)
             # Edit the message to remove the button by not passing a view
             await interaction.message.edit(embed=final_embed, view=None)
@@ -285,7 +288,7 @@ async def newgame(ctx):
 
         view = NewGame()
         await ctx.respond(
-            f"{ctx.author.mention}, you already have a game in progress. Do you want to erase your progress and start a new game?",
+            f"{ctx.author.mention}, you have a game in progress. Do you want to erase your progress and start a new game?",
             view=view)
 
 class BattleOptions(discord.ui.View):

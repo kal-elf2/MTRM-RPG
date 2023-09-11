@@ -88,7 +88,7 @@ class Exemplar:
             if interaction is not None:
                 await self.send_level_up_message(interaction, experience_type, updated_level)
 
-    def set_level(self, skill, updated_exp):
+    def set_level(self, skill, updated_exp, player=None):
         # Find the correct level range based on the player's total experience
         for level, level_data in LEVEL_DATA.items():
             if updated_exp <= level_data["total_experience"]:
@@ -100,7 +100,7 @@ class Exemplar:
         # Handle combat level up separately
         if skill == "combat":
             self.stats.combat_level = new_level
-            self.set_combat_stats(new_level)
+            self.set_combat_stats(new_level, player)
         else:
             self.increase_skill_stats(skill)
         return new_level
@@ -109,30 +109,35 @@ class Exemplar:
     def max_health(self):
         return self.stats.max_health
 
-    def set_combat_stats(self, new_combat_level):
+    def set_combat_stats(self, new_combat_level, player=None):
 
-        if self.name == "human":
+        if player is None:
+            player_name = self.name
+        else:
+            player_name = player.name
+
+        if player_name == "human":
             max_health_update = 100 + (10 * (new_combat_level - 1))
             strength_update = 12 + (5 * (new_combat_level - 1))
             endurance_update = 12 + (5 * (new_combat_level - 1))
             attack_update = 6 + (2 * (new_combat_level - 1))
             defense_update = 6 + (2 * (new_combat_level - 1))
 
-        elif self.name == "dwarf":
+        elif player_name == "dwarf":
             max_health_update = 110 + (10 * (new_combat_level - 1))
             strength_update = 14 + (5 * (new_combat_level - 1))
             endurance_update = 10 + (5 * (new_combat_level - 1))
             attack_update = 7 + (2 * (new_combat_level - 1))
             defense_update = 5 + (2 * (new_combat_level - 1))
 
-        elif self.name == "orc":
+        elif player_name == "orc":
             max_health_update = 120 + (10 * (new_combat_level - 1))
             strength_update = 16 + (5 * (new_combat_level - 1))
             endurance_update = 8 + (5 * (new_combat_level - 1))
             attack_update = 8 + (2 * (new_combat_level - 1))
             defense_update = 4 + (2 * (new_combat_level - 1))
 
-        elif self.name == "halfling":
+        elif player_name == "halfling":
             max_health_update = 90 + (10 * (new_combat_level - 1))
             strength_update = 10 + (5 * (new_combat_level - 1))
             endurance_update = 14 + (5 * (new_combat_level - 1))
@@ -147,12 +152,21 @@ class Exemplar:
             attack_update = 6 + (2 * (new_combat_level - 1))
             defense_update = 7 + (2 * (new_combat_level - 1))
 
-        # Update the stats
-        self.stats.update_max_health(max_health_update)
-        self.stats.update_strength(strength_update)
-        self.stats.update_endurance(endurance_update)
-        self.stats.update_attack(attack_update)
-        self.stats.update_defense(defense_update)
+        if player is None:
+            # Update the stats
+            self.stats.update_max_health(max_health_update)
+            self.stats.update_strength(strength_update)
+            self.stats.update_endurance(endurance_update)
+            self.stats.update_attack(attack_update)
+            self.stats.update_defense(defense_update)
+        else:
+            # Update the stats
+            player.stats.update_max_health(max_health_update)
+            player.stats.update_health(max_health_update)
+            player.stats.update_strength(strength_update)
+            player.stats.update_endurance(endurance_update)
+            player.stats.update_attack(attack_update)
+            player.stats.update_defense(defense_update)
 
     def level_up_mining(self):
         while self.stats.mining_experience >= self.exp_needed_to_level_up(self.stats.mining_level):
@@ -283,8 +297,8 @@ class PlayerStats:
         self.woodcutting_experience = woodcutting_experience
         self.damage_taken = damage_taken
 
-    def update_health(self, delta):
-        self.health = min(self.max_health, max(0, self.health + delta))
+    def update_health(self, update):
+        self.health = update
 
     def update_max_health(self, update):
         self.max_health = update
