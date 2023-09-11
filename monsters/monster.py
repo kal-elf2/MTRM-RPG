@@ -158,7 +158,7 @@ async def player_attack_task(user, player, monster, attack_modifier, message, ba
             if is_critical_hit:
                 update_message += " ***Critical hit!***"
         else:
-            update_message = f"The {monster.name} ***evaded*** {user.mention}'s attack!"
+            update_message = f"The {monster.name} ***evaded*** the attack of {user.mention}!"
 
         # Update the battle messages list
         if len(battle_messages) >= 5:
