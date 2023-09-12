@@ -91,6 +91,7 @@ class PickExemplars(Select):
             "max_health": exemplar_instance.stats.max_health,
             "strength": exemplar_instance.stats.strength,
             "endurance": exemplar_instance.stats.endurance,
+            "max_endurance": exemplar_instance.stats.max_endurance,
             "attack": exemplar_instance.stats.attack,
             "defense": exemplar_instance.stats.defense,
             "combat_level": exemplar_instance.stats.combat_level,

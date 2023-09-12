@@ -272,6 +272,7 @@ async def apply_penalty(player_data, author_id, interaction):
     player_data[author_id]["stats"]["max_health"] = player.stats.max_health
     player_data[author_id]["stats"]["strength"] = player.stats.strength
     player_data[author_id]["stats"]["endurance"] = player.stats.endurance
+    player_data[author_id]["stats"]["max_endurance"] = player.stats.max_endurance
     player_data[author_id]["stats"]["attack"] = player.stats.attack
     player_data[author_id]["stats"]["defense"] = player.stats.defense
 

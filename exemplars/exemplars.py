@@ -23,6 +23,7 @@ class Exemplar:
             stats["max_health"],
             stats["strength"],
             stats["endurance"],
+            stats["max_endurance"],
             stats["attack"],
             stats["defense"],
             stats["combat_level"],
@@ -172,6 +173,7 @@ class Exemplar:
             self.stats.update_max_health(max_health_update)
             self.stats.update_strength(strength_update)
             self.stats.update_endurance(endurance_update)
+            self.stats.update_max_endurance(endurance_update)
             self.stats.update_attack(attack_update)
             self.stats.update_defense(defense_update)
         else:
@@ -180,6 +182,7 @@ class Exemplar:
             player.stats.update_health(max_health_update)
             player.stats.update_strength(strength_update)
             player.stats.update_endurance(endurance_update)
+            player.stats.update_max_endurance(endurance_update)
             player.stats.update_attack(attack_update)
             player.stats.update_defense(defense_update)
 
@@ -288,6 +291,7 @@ class PlayerStats:
         max_health,
         strength,
         endurance,
+        max_endurance,
         attack,
         defense,
         combat_level=1,
@@ -302,6 +306,7 @@ class PlayerStats:
         self.max_health = max_health
         self.strength = strength
         self.endurance = endurance
+        self.max_endurance = max_endurance
         self.attack = attack
         self.defense = defense
         self.combat_level = combat_level
@@ -324,6 +329,9 @@ class PlayerStats:
     def update_endurance(self, update):
         self.endurance = update
 
+    def update_max_endurance(self, update):
+        self.max_endurance = update
+
     def update_attack(self, update):
         self.attack = update
 
@@ -343,6 +351,7 @@ class Human(Exemplar):
             "max_health": 100,
             "strength": 12,
             "endurance": 12,
+            "max_endurance": 12,
             "attack": 6,
             "defense": 6,
             "combat_level": 1,
@@ -361,6 +370,7 @@ class Dwarf(Exemplar):
             "max_health": 110,
             "strength": 14,
             "endurance": 10,
+            "max_endurance": 10,
             "attack": 7,
             "defense": 5,
             "combat_level": 1,
@@ -379,6 +389,7 @@ class Orc(Exemplar):
             "max_health": 120,
             "strength": 16,
             "endurance": 8,
+            "max_endurance": 8,
             "attack": 8,
             "defense": 4,
             "combat_level": 1,
@@ -397,6 +408,7 @@ class Halfling(Exemplar):
             "max_health": 90,
             "strength": 10,
             "endurance": 14,
+            "max_endurance": 14,
             "attack": 5,
             "defense": 7,
             "combat_level": 1,
@@ -415,6 +427,7 @@ class Elf(Exemplar):
             "max_health": 95,
             "strength": 11,
             "endurance": 13,
+            "max_endurance": 13,
             "attack": 6,
             "defense": 7,
             "combat_level": 1,
