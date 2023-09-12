@@ -5,7 +5,8 @@ from resources.herb import Herb
 from exemplars.exemplars import PlayerStats, Bank
 from crafting.crafting import Crafting
 from resources.item import Item
-from resources.ore import Gem
+from resources.ore import Gem, Ore
+from resources.tree import Tree
 
 class ExemplarJSONEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -13,8 +14,6 @@ class ExemplarJSONEncoder(json.JSONEncoder):
             return obj.__dict__
         elif isinstance(obj, Inventory):
             return obj.__dict__
-        elif isinstance(obj, Herb):
-            return obj.to_dict()
         elif isinstance(obj, PlayerStats):
             return obj.__dict__
         elif isinstance(obj, Bank):
@@ -23,7 +22,13 @@ class ExemplarJSONEncoder(json.JSONEncoder):
             return obj.__dict__
         elif isinstance(obj, Item):
             return obj.to_dict()
+        elif isinstance(obj, Herb):
+            return obj.to_dict()
         elif isinstance(obj, Gem):
+            return obj.to_dict()
+        elif isinstance(obj, Ore):
+            return obj.to_dict()
+        elif isinstance(obj, Tree):
             return obj.to_dict()
         else:
             return super().default(obj)

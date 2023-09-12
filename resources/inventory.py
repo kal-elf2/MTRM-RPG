@@ -4,13 +4,16 @@ from resources.potion import Potion
 from resources.item import Item
 from crafting.weapon import Weapon
 from crafting.armor import Armor
-from resources.ore import Gem
+from resources.ore import Gem, Ore
 from resources.loot import Loot
+from resources.tree import Tree
 
 class Inventory:
     def __init__(self, limit=40):
         self.items = []
+        self.trees = []
         self.herbs = []
+        self.ore = []
         self.gems = []
         self.potions = []
         self.loot = []
@@ -25,7 +28,9 @@ class Inventory:
         return {
             "gold": self.gold,
             "items": [item.to_dict() for item in self.items],
+            "trees": [tree.to_dict() for tree in self.trees],
             "herbs": [herb.to_dict() for herb in self.herbs],
+            "ore": [ore.to_dict() for ore in self.ore],
             "gems": [gem.to_dict() for gem in self.gems],
             "potions": [potion.to_dict() for potion in self.potions],
             "loot": [item.to_dict() for item in self.loot],
@@ -41,7 +46,9 @@ class Inventory:
         inventory = cls(limit=data["limit"] if "limit" in data else 40)
         inventory.gold = data["gold"]
         inventory.items = [Item.from_dict(item_data) for item_data in data["items"]]
+        inventory.trees = [Tree.from_dict(tree_data) for tree_data in data["trees"]]
         inventory.herbs = [Herb.from_dict(herb_data) for herb_data in data["herbs"]]
+        inventory.ore = [Ore.from_dict(ore_data) for ore_data in data["ore"]]
         inventory.potions = [Potion.from_dict(potion_data) for potion_data in data["potions"]]
         inventory.gems = [Gem.from_dict(gem_data) for gem_data in data["gems"]]
         inventory.loot = [Item.from_dict(item_data) for item_data in data["loot"]]
@@ -57,8 +64,12 @@ class Inventory:
     def add_item_to_inventory(self, item, amount=1):
         if isinstance(item, Materium):
             self.materium_count += amount
+        elif isinstance(item, Tree):
+            self._add_item_to_specific_inventory(item, amount, self.trees)
         elif isinstance(item, Herb):
             self._add_item_to_specific_inventory(item, amount, self.herbs)
+        elif isinstance(item, Ore):
+            self._add_item_to_specific_inventory(item, amount, self.ore)
         elif isinstance(item, Potion):
             self._add_item_to_specific_inventory(item, amount, self.potions)
         elif isinstance(item, Gem):
@@ -180,5 +191,3 @@ class Bank:
             print("Item not found in the bank.")
             return None
 
-
-#not stackable, but working....

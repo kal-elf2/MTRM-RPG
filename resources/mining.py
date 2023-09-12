@@ -1,6 +1,6 @@
 import random
 import time
-from gathering import Gathering
+from resources.gathering import Gathering
 from ore import ORE_TYPES, GEM_TYPES
 from materium import Materium
 

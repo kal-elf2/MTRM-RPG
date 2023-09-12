@@ -12,10 +12,13 @@ from monsters.monster import generate_monster_list, generate_monster_by_name, mo
 from discord import Embed
 from resources.inventory import Inventory
 from stats import ResurrectOptions
+from emojis import potion_red_emoji, potion_yellow_emoji, mtrm_emoji, rip_emoji
 
 bot = commands.Bot(command_prefix="/", intents=discord.Intents.all())
 # Add the cog to your bot
 bot.load_extension("stats")
+bot.load_extension("resources.woodcutting")
+
 
 guild_data = {}
 
@@ -40,20 +43,25 @@ async def setchannel(ctx):
 
     await ctx.respond(f'{ctx.channel.name} Channel set. Please use "newgame" command to start a new adventure! .')
 
+
+from emojis import human_exemplar_emoji, dwarf_exemplar_emoji, orc_exemplar_emoji, halfling_exemplar_emoji, \
+    elf_exemplar_emoji
+
 # Exemplars class
 class PickExemplars(Select):
+
     def __init__(self):
         options = [
             SelectOption(label='Human Exemplars', value='human',
-                         emoji="<:human_seafarer:1052760015372562453>"),
+                         emoji=f'{human_exemplar_emoji}'),
             SelectOption(label='Dwarf Exemplars', value='dwarf',
-                         emoji="<:dwarf_glimmeringclan:1052760138987098122>"),
+                         emoji=f'{dwarf_exemplar_emoji}'),
             SelectOption(label='Orc Exemplars', value='orc',
-                         emoji="<:orcsofthelonghunt:1052760210357375046>"),
+                         emoji=f'{orc_exemplar_emoji}'),
             SelectOption(label='Halfling Exemplars', value='halfling',
-                         emoji="<:halflinglongsong:1052760240954822678>"),
+                         emoji=f'{halfling_exemplar_emoji}'),
             SelectOption(label='Elf Exemplars', value='elf',
-                         emoji="<:elf_darksun:1052760309875622009>")
+                         emoji=f'{elf_exemplar_emoji}')
         ]
         super().__init__(placeholder='Exemplar', options=options)
         self.options_dict = {
@@ -114,11 +122,6 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
     author_id = str(ctx.author.id)
 
     player_data = load_player_data(guild_id)
-    in_battle = player_data[author_id].get("in_battle", False)
-
-    if in_battle:
-        await ctx.respond("You are already in a battle!")
-        return
 
     player = Exemplar(player_data[author_id]["exemplar"],
                       player_data[author_id]["stats"],
@@ -235,12 +238,11 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
         player.stats.health = 0  # Set player's health to 0
         player_data[author_id]["stats"]["health"] = 0
 
-        mtrm_emoji = '<:mtrm:1148449848085979167>'
         # Create a new embed with the defeat message
         new_embed = create_battle_embed(ctx.user, player, monster,
 
         f"☠️ You have been **DEFEATED** by the **{monster.name}**! 💀\n"
-        f"🪦 *Your spirit lingers, seeking renewal.* 🪦\n\n"
+        f"{rip_emoji} *Your spirit lingers, seeking renewal.* {rip_emoji}\n\n"
         f"__**Options for Revival:**__\n"
         f"1. Use {mtrm_emoji} to revive without penalty.\n"
         f"2. Resurrect with 2.5% penalty to all skills.")
@@ -260,7 +262,7 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
 @bot.slash_command(description="Start a new game.")
 async def newgame(ctx):
     guild_id = ctx.guild.id
-    author_id = ctx.author.id
+    author_id = str(ctx.author.id)  # Keep the types consistent
     player_data = load_player_data(guild_id)
 
     class NewGame(discord.ui.View):
@@ -269,7 +271,12 @@ async def newgame(ctx):
 
         @discord.ui.button(label="New Game", custom_id="new_game", style=discord.ButtonStyle.blurple)
         async def button1(self, button, interaction):
-            del player_data[str(author_id)]
+            # Explicitly remove and re-initialize player data
+            player_data[author_id] = {
+                "exemplar": None,
+                "stats": None,
+                "inventory": Inventory().to_dict(),
+            }
             save_player_data(guild_id, player_data)
             view = View()
             view.add_item(PickExemplars())
@@ -277,19 +284,16 @@ async def newgame(ctx):
                 f"{ctx.author.mention}, your progress has been erased. Please choose your exemplar from the list below.",
                 view=view)
 
-
-    if str(author_id) not in player_data:
+    if author_id not in player_data:
         view = View()
         view.add_item(PickExemplars())
         await ctx.respond(f"{ctx.author.mention}, please choose your exemplar from the list below.", view=view)
     else:
-        def check(m):
-            return m.author.id == author_id and m.channel.id == ctx.channel.id
-
         view = NewGame()
         await ctx.respond(
             f"{ctx.author.mention}, you have a game in progress. Do you want to erase your progress and start a new game?",
             view=view)
+
 
 class BattleOptions(discord.ui.View):
     def __init__(self, interaction):
@@ -299,10 +303,10 @@ class BattleOptions(discord.ui.View):
     @discord.ui.button(custom_id="attack", style=discord.ButtonStyle.blurple, emoji = '⚔️')
     async def special_attack(self, button, interaction):
         pass
-    @discord.ui.button(custom_id="health", style=discord.ButtonStyle.blurple, emoji='<:potion_red:1133946477463482458>')
+    @discord.ui.button(custom_id="health", style=discord.ButtonStyle.blurple, emoji=f'{potion_red_emoji}')
     async def health_potion(self, button, interaction):
         pass
-    @discord.ui.button(custom_id="stamina", style=discord.ButtonStyle.blurple, emoji="<:potion_yellow:1133946478386221237>")
+    @discord.ui.button(custom_id="stamina", style=discord.ButtonStyle.blurple, emoji=f'{potion_yellow_emoji}')
     async def stamina_potion(self, button, interaction):
         pass
     @discord.ui.button(label="Run", custom_id="run", style=discord.ButtonStyle.blurple)

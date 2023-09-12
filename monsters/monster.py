@@ -5,6 +5,7 @@ from discord import Embed
 import asyncio
 from resources.item import Item
 import math
+from emojis import heart_emoji
 
 class Monster:
     def __init__(self, name, health, max_health, attack, endurance, experience_reward, weak_against, strong_against, attack_speed, drop):
@@ -96,7 +97,7 @@ def create_battle_embed(user, player, monster, messages):
 
     embed = Embed()
     embed.add_field(name="Battle", value=messages, inline=False)
-    embed.add_field(name=f"{user.name}'s Health", value=f"{player.health}/{player.stats.max_health}\n{player_health_bar}", inline=True)
+    embed.add_field(name=f"{heart_emoji}  {user.name}'s Health", value=f"{player.health}/{player.stats.max_health}\n{player_health_bar}", inline=True)
     embed.add_field(name=f"{monster.name}'s Health", value=f"{monster.health}/{monster.max_health}\n{monster_health_bar}", inline=True)
 
     # Add image to embed

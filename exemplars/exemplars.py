@@ -3,6 +3,8 @@ from crafting.crafting import Crafting
 import threading
 import random
 import json
+import discord
+from emojis import heart_emoji, endurance_emoji, strength_emoji
 
 with open("level_data.json", "r") as f:
     LEVEL_DATA = json.load(f)
@@ -53,15 +55,27 @@ class Exemplar:
 
     def increase_skill_stats(self, skill):
         if skill == "mining":
-            self.stats.update_strength(1)
+            self.stats.increment_strength(1)
         elif skill == "woodcutting":
-            self.stats.update_attack(1)
+            self.stats.increment_attack(1)
 
-    @staticmethod
-    async def send_level_up_message(interaction, skill, new_level):
-        await interaction.followup.send(
-            f"Congratulations, {interaction.user.mention}! You have reached level {new_level} in {skill}."
-        )
+    # Inside your Exemplar class
+    async def send_level_up_message(self, interaction, skill, new_level):
+        if skill == "combat":
+
+            embed = discord.Embed(color=discord.Color.blue(), title="Level Up!")
+            embed.description = f"Congratulations, {interaction.user.mention}! You have reached level {new_level} in {skill}."
+            embed.add_field(name="⚔️ Combat Level", value=str(self.stats.combat_level), inline=True)
+            embed.add_field(name=f"{heart_emoji} Health", value=self.stats.health, inline=True)
+            embed.add_field(name=f"{strength_emoji} Strength", value=self.stats.strength, inline=True)
+            embed.add_field(name=f"{endurance_emoji} Endurance", value=self.stats.endurance, inline=True)
+            embed.add_field(name="🗡️ Attack", value=self.stats.attack, inline=True)
+            embed.add_field(name="🛡️ Defense", value=self.stats.defense, inline=True)
+            await interaction.followup.send(embed=embed)
+        else:
+            await interaction.followup.send(
+                f"Congratulations, {interaction.user.mention}! You have reached level {new_level} in {skill}."
+            )
 
     @staticmethod
     def exp_needed_to_level_up(level):
@@ -82,8 +96,9 @@ class Exemplar:
         if updated_level > previous_level:
             setattr(self.stats, skill_level_key, updated_level)
 
-            # Reset player's health to max health upon leveling up
-            self.health = self.max_health
+            # Reset player's health to max health upon leveling up if combat
+            if experience_type == "combat":
+                self.health = self.max_health
 
             if interaction is not None:
                 await self.send_level_up_message(interaction, experience_type, updated_level)
@@ -314,6 +329,12 @@ class PlayerStats:
 
     def update_defense(self, update):
         self.defense = update
+
+    def increment_attack(self, value=1):
+        self.attack += value
+
+    def increment_strength(self, value=1):
+        self.strength += value
 
 class Human(Exemplar):
     def __init__(self):

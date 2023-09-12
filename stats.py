@@ -5,6 +5,7 @@ from discord.ext import commands
 from discord.commands import Option
 from utils import load_player_data, save_player_data
 from exemplars.exemplars import Exemplar
+from emojis import heart_emoji, mtrm_emoji, endurance_emoji, strength_emoji
 
 
 def load_level_data():
@@ -65,9 +66,9 @@ class StatsCog(commands.Cog):
         if progress is None:
             all_stats = f"""**Exemplar**: {str(player_data[author_id]['exemplar']).capitalize()}\n
             ⚔️ **Combat Level**: {str(player['combat_level'])}
-            ❤️ **Health**: {str(player['health'])}
-            💪 **Strength**: {str(player['strength'])}
-            🏃️ **Endurance**: {str(player['endurance'])}
+            {heart_emoji} **Health**: {str(player['health'])}
+            {strength_emoji} **Strength**: {str(player['strength'])}
+            {endurance_emoji}️ **Endurance**: {str(player['endurance'])}
             🗡️ **Attack**: {str(player['attack'])}
             🛡️ **Defense**: {str(player['defense'])}
             ⛏️ **Mining Level**: {str(player['mining_level'])}
@@ -117,9 +118,8 @@ class ResurrectOptions(discord.ui.View):
                                player_data[author_id]["stats"],
                                player_data[author_id]["inventory"])
 
-    mtrm_emoji = '<:mtrm:1148449848085979167>'
-
-    @discord.ui.button(custom_id="use_mtrm", label="MTRM", style=discord.ButtonStyle.primary, emoji=mtrm_emoji)
+    mtrm = mtrm_emoji
+    @discord.ui.button(custom_id="use_mtrm", label="MTRM", style=discord.ButtonStyle.primary, emoji=mtrm)
     async def use_mtrm(self, button, interaction):
         if self.player_data[self.author_id]["inventory"].materium_count >= 1:
             self.player_data[self.author_id]["inventory"].materium_count -= 1
@@ -132,9 +132,9 @@ class ResurrectOptions(discord.ui.View):
 
             # Add the full health bar to the embed
             new_embed.add_field(name="Your Health has been Restored",
-                                value=f"❤️  {self.player.stats.health}/{self.player.stats.max_health}")
+                                value=f"{heart_emoji}  {self.player.stats.health}/{self.player.stats.max_health}")
 
-            new_embed.add_field(name=f"{self.mtrm_emoji}  Remaining",
+            new_embed.add_field(name=f"{self.mtrm}  Remaining",
                                 value=f"{self.player_data[self.author_id]['inventory'].materium_count}")
 
             # Add the "Revive" image to the embed
@@ -169,7 +169,7 @@ class ResurrectOptions(discord.ui.View):
             }
 
             # Create a new embed
-            new_embed = discord.Embed(title=f"You don't have enough {self.mtrm_emoji}  MTRM. \n\nYou've been resurrected but at a cost.",
+            new_embed = discord.Embed(title=f"You don't have enough {self.mtrm}  MTRM. \n\nYou've been resurrected but at a cost.",
                                       color=0xff0000)  # Red color
 
             # If levels were decreased, show that information
@@ -180,13 +180,13 @@ class ResurrectOptions(discord.ui.View):
                 )
                 # Add the full health bar to the embed
                 new_embed.add_field(name="Your Health has been Restored",
-                                    value=f"❤️  {self.player.stats.health}/{self.player.stats.max_health}")
+                                    value=f"{heart_emoji}  {self.player.stats.health}/{self.player.stats.max_health}")
 
                 new_embed.add_field(name="Skills Affected", value=level_decreased_message)
             else:
                 # Add the full health bar to the embed
                 new_embed.add_field(name="Your Health has been Restored",
-                                    value=f"❤️  {self.player.stats.health}/{self.player.stats.max_health}")
+                                    value=f"{heart_emoji}  {self.player.stats.health}/{self.player.stats.max_health}")
 
                 new_embed.add_field(name="Skills Affected", value="No skills were affected.")
 
@@ -227,13 +227,13 @@ class ResurrectOptions(discord.ui.View):
             )
             # Add the full health bar to the embed
             new_embed.add_field(name="Your Health has been Restored",
-                                value=f"❤️  {self.player.stats.health}/{self.player.stats.max_health}")
+                                value=f"{heart_emoji}  {self.player.stats.health}/{self.player.stats.max_health}")
 
             new_embed.add_field(name="Skills Affected", value=level_decreased_message)
         else:
             # Add the full health bar to the embed
             new_embed.add_field(name="Your Health has been Restored",
-                                value=f"❤️  {self.player.stats.health}/{self.player.stats.max_health}")
+                                value=f"{heart_emoji}  {self.player.stats.health}/{self.player.stats.max_health}")
 
             new_embed.add_field(name="Skills Affected", value="No skills were affected.")
 
