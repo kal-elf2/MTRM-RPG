@@ -155,6 +155,7 @@ class ResurrectOptions(discord.ui.View):
             # Save the updated stats
             save_player_data(interaction.guild.id, self.player_data)
 
+
             # Update self.player based on updated player_data
             updated_stats = self.player_data[self.author_id]['stats']
             self.player.stats.health = updated_stats['health']
@@ -275,6 +276,8 @@ async def apply_penalty(player_data, author_id, interaction):
     player_data[author_id]["stats"]["max_endurance"] = player.stats.max_endurance
     player_data[author_id]["stats"]["attack"] = player.stats.attack
     player_data[author_id]["stats"]["defense"] = player.stats.defense
+
+
 
     return levels_decreased
 

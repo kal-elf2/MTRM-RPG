@@ -54,18 +54,19 @@ class Exemplar:
     def health(self, value):
         self.stats.health = value
 
-    def increase_skill_stats(self, skill):
-        if skill == "mining":
-            self.stats.increment_strength(1)
-        elif skill == "woodcutting":
-            self.stats.increment_attack(1)
+    # def increase_skill_stats(self, skill):
+    #     if skill == "mining":
+    #         self.stats.increment_strength(1)
+    #     elif skill == "woodcutting":
+    #         self.stats.increment_attack(1)
+    #     elif skill == "fishing":
+    #         self.stats.increment_defense(1)
 
-    # Inside your Exemplar class
     async def send_level_up_message(self, interaction, skill, new_level):
         if skill == "combat":
 
             embed = discord.Embed(color=discord.Color.blue(), title="Level Up!")
-            embed.description = f"Congratulations, {interaction.user.mention}! You have reached level {new_level} in {skill}."
+            embed.description = f"Congratulations, {interaction.user.mention}! You have reached **Level {new_level} in {skill.capitalize()}**."
             embed.add_field(name="⚔️ Combat Level", value=str(self.stats.combat_level), inline=True)
             embed.add_field(name=f"{heart_emoji} Health", value=self.stats.health, inline=True)
             embed.add_field(name=f"{strength_emoji} Strength", value=self.stats.strength, inline=True)
@@ -74,9 +75,9 @@ class Exemplar:
             embed.add_field(name="🛡️ Defense", value=self.stats.defense, inline=True)
             await interaction.followup.send(embed=embed)
         else:
-            await interaction.followup.send(
-                f"Congratulations, {interaction.user.mention}! You have reached level {new_level} in {skill}."
-            )
+            # Prepare but don't send the level-up message
+            level_up_message = f"Congratulations, {interaction.user.mention}! You have reached **Level {new_level} in {skill.capitalize()}**."
+            return level_up_message
 
     @staticmethod
     def exp_needed_to_level_up(level):
@@ -101,8 +102,13 @@ class Exemplar:
             if experience_type == "combat":
                 self.health = self.max_health
 
-            if interaction is not None:
+            if interaction is not None and experience_type != "combat":
+                level_up_message = await self.send_level_up_message(interaction, experience_type, updated_level)
+                return level_up_message
+            elif interaction is not None and experience_type == "combat":
                 await self.send_level_up_message(interaction, experience_type, updated_level)
+
+        return None  # return None if there's no level-up
 
     def set_level(self, skill, updated_exp, player=None):
         # Find the correct level range based on the player's total experience
@@ -117,8 +123,6 @@ class Exemplar:
         if skill == "combat":
             self.stats.combat_level = new_level
             self.set_combat_stats(new_level, player)
-        else:
-            self.increase_skill_stats(skill)
         return new_level
 
     @property
@@ -337,12 +341,6 @@ class PlayerStats:
 
     def update_defense(self, update):
         self.defense = update
-
-    def increment_attack(self, value=1):
-        self.attack += value
-
-    def increment_strength(self, value=1):
-        self.strength += value
 
 class Human(Exemplar):
     def __init__(self):

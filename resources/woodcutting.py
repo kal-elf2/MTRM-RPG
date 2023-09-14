@@ -1,105 +1,163 @@
 import random
-import time
-from gathering import Gathering
-from tree import TREE_TYPES
-from materium import Materium
-from resources.fish import HERB_TYPES
+from discord import Embed
+import asyncio
+import discord
+from discord.ext import commands
+from discord.commands import Option
+from resources.herb import HERB_TYPES
+from resources.tree import TREE_TYPES, Tree
+from exemplars.exemplars import Exemplar
+from emojis import potion_yellow_emoji
+from utils import load_player_data, save_player_data
 
-class Woodcutting(Gathering):
-    def __init__(self, endurance_cost=3):
-        super().__init__(endurance_cost)
+# Woodcutting experience points for each tree type
+WOODCUTTING_EXPERIENCE = {
+    "Pine": 20,
+    "Yew": 40,
+    "Ash": 80
+}
 
-    def cut_tree(self, player, tree_type):
-        attempt_interval = 3  # 3 seconds between woodcutting attempts
-        herb_tier = TREE_TYPES.index(tree_type)  # Get the index of the tree_type in the TREE_TYPES list
+# View class for Harvest button
+class HarvestButton(discord.ui.View):
+    def __init__(self, interaction, player, tree_type, player_data, guild_id, author_id, embed):
+        super().__init__(timeout=None)
+        self.interaction = interaction
+        self.player = player
+        self.tree_type = tree_type
+        self.chop_messages = []
+        self.player_data = player_data
+        self.guild_id = guild_id
+        self.author_id = author_id
+        self.embed = embed
 
-        while True:
-            if self.perform_action(player):
-                woodcutting_rate = self.calculate_woodcutting_rate(player.woodcutting_level, tree_type)
+    @discord.ui.button(label="Harvest", custom_id="harvest", style=discord.ButtonStyle.blurple)
+    async def harvest(self, button, interaction):
 
-                print(f"Attempting to cut down {tree_type.name} tree...")
+        # Disable the button immediately
+        button.disabled = True
+        await interaction.response.edit_message(embed=self.embed, view=self)
 
-                if self.is_tree_cut(woodcutting_rate):
-                    endurance_cost = self.calculate_endurance_cost(player)
-                    if player.endurance >= endurance_cost:
-                        player.endurance -= endurance_cost
-                        print(f"Congratulations! You cut down a {tree_type.name} tree!")
-                        player.inventory.add_item(tree_type)  # Update player inventory with the cut log
+        endurance = self.player.stats.endurance
+        player_level = self.player.stats.woodcutting_level
 
-                        # Check if Materium is found while woodcutting
-                        self.woodcut_materium(player)  # Update player inventory with Materium if found
-
-                        # Check if Herb is found while woodcutting
-                        self.woodcut_herb(player, herb_tier)  # Update player inventory with Herb if found
-
-                    else:
-                        print("You don't have enough endurance to cut down this tree.")
-                else:
-                    print(f"Unfortunately, you failed to cut down {tree_type.name} tree. Keep trying!")
-
-            print("Press Q to quit or any other key to continue woodcutting:")
-            user_input = input().lower()
-            if user_input == 'q' or player.inventory.is_full():
-                break
-
-            time.sleep(attempt_interval)
-
-    def woodcut_herb(self, player, herb_tier):
-        herb_chance = self.calculate_herb_chance(player.woodcutting_level)
-        if random.random() < herb_chance:
-            herb = HERB_TYPES[herb_tier]
-            print(f"Congratulations! You found a {herb.name} while woodcutting!")
-            player.inventory.add_item(herb)  # Add Herb to the player's inventory
-
-
-    def woodcut_materium(self, player):
-        materium_chance = self.calculate_materium_chance(player.woodcutting_level)
-        if random.random() < materium_chance:
-            print("Congratulations! You found a Materium while woodcutting!")
-            player.inventory.add_item(Materium())  # Add Materium to the player's inventory
-
-    @staticmethod
-    def calculate_materium_chance(skill_level):
-        base_chance = 0.001  # Base chance of getting a Materium
-        skill_level_factor = 0.0001 * skill_level  # Increase the chance based on the woodcutting level
-        return base_chance + skill_level_factor
-
-    def calculate_woodcutting_rate(self, woodcutting_level, tree_type):
-        base_woodcutting_rate = 0.33
-        level_difference = woodcutting_level - tree_type.rarity
-        woodcutting_rate = base_woodcutting_rate * (1 + level_difference * 0.1)
-        return max(min(woodcutting_rate, 1), 0)
-
-    def is_tree_cut(self, woodcutting_rate):
-        return random.random() < woodcutting_rate
-
-    def display_woodcutting_rates(self, player):
-        print("\nWoodcutting rates for each tree type:")
-        for tree_type in TREE_TYPES:
-            woodcutting_rate = self.calculate_woodcutting_rate(player.woodcutting_level, tree_type)
-            print(f"{tree_type.name}: {woodcutting_rate * 100:.2f}%")
-
-    def start_woodcutting(self, player):
-        self.display_woodcutting_rates(player)
-
-        # Ask the player which tree they want to cut
-        tree_choice = int(input("Choose a tree type to cut (1-5): ")) - 1
-        tree_type = TREE_TYPES[tree_choice]
-
-        if tree_choice < 0 or tree_choice >= len(TREE_TYPES):
-            print("Invalid tree choice. Try again.")
+        if endurance <= 0:
+            await interaction.followup.send("You are too tired to chop any wood.", ephemeral=True)
+            # Re-enable the button after 3 seconds
+            await asyncio.sleep(2.5)
+            button.disabled = False
             return
 
-        self.cut_tree(player, tree_type)
+        selected_tree = next((tree for tree in TREE_TYPES if tree.name == self.tree_type), None)
+        if not selected_tree:
+            await interaction.followup.send(f"Invalid tree type selected.", ephemeral=True)
+            return
+
+        success_prob = WoodcuttingCog.calculate_probability(player_level, selected_tree.min_level)
+
+        if success_prob < 0.05:
+            await interaction.followup.send(
+                f"You are *unlikely to be successful* in chopping {self.tree_type} at your current level.\n Try again at **Woodcutting Level {selected_tree.min_level}**.",
+                ephemeral=True)
+            return
+
+        success = random.random() < success_prob
+
+        message = ""
+        if success:
+            message = f"Successfully chopped **1 {self.tree_type} wood**!"
+            # Update inventory and decrement endurance
+            chopped_tree = Tree(name=self.tree_type, min_level=selected_tree.min_level)
+            self.player.inventory.add_item_to_inventory(chopped_tree, amount=1)
+
+            self.player.stats.endurance -= 1
+
+            # Gain woodcutting experience
+            exp_gain = WOODCUTTING_EXPERIENCE[self.tree_type]
+            level_up_message = await self.player.gain_experience(exp_gain, "woodcutting", interaction)
+
+            self.player_data[self.author_id]["stats"]["woodcutting_experience"] = self.player.stats.woodcutting_experience
+            self.player_data[self.author_id]["stats"]["woodcutting_level"] = self.player.stats.woodcutting_level
+            self.player_data[self.author_id]["stats"]["endurance"] = self.player.stats.endurance
+            save_player_data(self.guild_id, self.player_data)
+
+            # Update the chop messages list
+            if len(self.chop_messages) >= 5:
+                self.chop_messages.pop(0)
+            self.chop_messages.append(message)
+
+            # Re-enable the button after 3 seconds
+            await asyncio.sleep(2.25)
+            button.disabled = False
+
+            # Prepare updated embed
+            updated_description = "\n".join(self.chop_messages)
+            self.embed.description = updated_description
+
+            await interaction.message.edit(embed=self.embed, view=self)
+
+            if level_up_message:
+                # Add 1 level to attack on top of current attack level
+                self.player_data[self.author_id]["stats"]["attack"] = self.player.stats.attack + (
+                            self.player.stats.woodcutting_level - 1)
+                save_player_data(self.guild_id, self.player_data)
+                # If level_up_message is not None, then the player has leveled up
+                await interaction.followup.send(level_up_message)
+
+        else:
+            message = f"Failed to chop {self.tree_type} wood."
+
+            # Update the chop messages list
+            if len(self.chop_messages) >= 5:
+                self.chop_messages.pop(0)
+            self.chop_messages.append(message)
+
+            # Re-enable the button after 3 seconds
+            await asyncio.sleep(2.5)
+            button.disabled = False
+
+            # Prepare updated embed
+            updated_description = "\n".join(self.chop_messages)
+            self.embed.description = updated_description
+
+            await interaction.message.edit(embed=self.embed, view=self)
+
+    @discord.ui.button(custom_id="stamina", style=discord.ButtonStyle.blurple, emoji=f'{potion_yellow_emoji}')
+    async def stamina_potion(self, button, interaction):
+        pass
+
+
+class WoodcuttingCog(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
 
     @staticmethod
-    def calculate_herb_chance(skill_level):
-        base_chance = 0.01  # Base chance of getting a Herb
-        skill_level_factor = 0.0005 * skill_level  # Increase the chance based on the woodcutting level
-        return base_chance + skill_level_factor
+    def calculate_probability(player_level, min_level):
+        if player_level < min_level:
+            return 0
+        elif min_level == 1:  # Pine Tree
+            return min(1, 0.33 + (player_level - 1) * 0.04)
+        elif min_level == 20:  # Yew Tree
+            return max(0.01, min(1, (player_level - 20) * 0.05))
+        elif min_level == 40:  # Ash Tree
+            return max(0.01, min(1, (player_level - 40) * 0.05))
 
-    def calculate_endurance_cost(self, player):
-        base_endurance_cost = 5
-        endurance_cost = base_endurance_cost - 0.1 * player.strength - 0.1 * player.woodcutting_level
-        return max(endurance_cost, 1)  # The endurance cost should not be less than 1.
+    @commands.slash_command(description="Chop some wood!")
+    async def chop(self, ctx,
+                   tree_type: Option(str, "Type of tree to chop", choices=['Pine', 'Yew', 'Ash'], required=True)):
+        guild_id = ctx.guild.id
+        author_id = str(ctx.author.id)
+        player_data = load_player_data(guild_id)
+
+        player = Exemplar(player_data[author_id]["exemplar"],
+                          player_data[author_id]["stats"],
+                          player_data[author_id]["inventory"])
+
+        embed = Embed(title=f"{tree_type} Tree")
+        embed.set_image(url=f"https://raw.githubusercontent.com/kal-elf2/MTRM-RPG/master/images/{tree_type}.png")
+        view = HarvestButton(ctx, player, tree_type, player_data, guild_id, author_id, embed)
+        await ctx.respond(embed=embed, view=view)
+
+
+def setup(bot):
+    bot.add_cog(WoodcuttingCog(bot))
 
