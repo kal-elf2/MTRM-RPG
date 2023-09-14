@@ -13,9 +13,18 @@ from utils import load_player_data, save_player_data
 # Woodcutting experience points for each tree type
 WOODCUTTING_EXPERIENCE = {
     "Pine": 20,
-    "Yew": 40,
-    "Ash": 80
+    "Yew": 50,
+    "Ash": 100
 }
+
+def attempt_herb_drop(zone_level):
+    herb_drop_rate = 0.1  # 10% chance to drop a herb
+    if random.random() < herb_drop_rate:
+        herb_types_for_zone = HERB_TYPES[:zone_level]  # Adjust the herb types based on the zone level
+        herb_weights = [50, 30, 15, 4, 1][:zone_level]  # Adjust the weights based on the zone level
+        herb_dropped = random.choices(herb_types_for_zone, weights=herb_weights, k=1)[0]
+        return herb_dropped
+    return None
 
 # View class for Harvest button
 class HarvestButton(discord.ui.View):
@@ -75,6 +84,13 @@ class HarvestButton(discord.ui.View):
             exp_gain = WOODCUTTING_EXPERIENCE[self.tree_type]
             level_up_message = await self.player.gain_experience(exp_gain, "woodcutting", interaction)
 
+            # Attempt herb drop
+            zone_level = self.player.zone_level
+            herb_dropped = attempt_herb_drop(zone_level)
+            if herb_dropped:
+                self.player.inventory.add_item_to_inventory(herb_dropped, amount=1)
+                message += f"\nYou also **found some 🌿 {herb_dropped.name}**!"
+
             self.player_data[self.author_id]["stats"][
                 "woodcutting_experience"] = self.player.stats.woodcutting_experience
             self.player_data[self.author_id]["stats"]["woodcutting_level"] = self.player.stats.woodcutting_level
@@ -112,7 +128,10 @@ class HarvestButton(discord.ui.View):
                 self.player_data[self.author_id]["stats"]["attack"] = self.player.stats.attack + (
                         self.player.stats.woodcutting_level - 1)
                 save_player_data(self.guild_id, self.player_data)
+
+                level_up_message += "  (+1 🗡️ level)"  # Append additional text to the level_up_message
                 await interaction.followup.send(level_up_message)
+
 
         else:
             message = f"Failed to chop {self.tree_type} wood."
