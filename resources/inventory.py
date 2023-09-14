@@ -79,6 +79,13 @@ class Inventory:
         elif isinstance(item, Item):
             self._add_item_to_specific_inventory(item, amount, self.items)
 
+    def get_tree_count(self, tree_type):
+        #Returns the count of a specific type of tree in the inventory.
+        for tree in self.trees:
+            if tree.name == tree_type:
+                return tree.stack
+        return 0  # Return 0 if the tree_type is not found in inventory
+
     def _add_item_to_specific_inventory(self, item, amount, item_list):
         existing_item = next((i for i in item_list if i.name == item.name), None)
         if existing_item:

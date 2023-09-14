@@ -64,43 +64,54 @@ class HarvestButton(discord.ui.View):
 
         message = ""
         if success:
-            message = f"Successfully chopped **1 {self.tree_type} wood**!"
+            message = f"**Successfully chopped 1 {self.tree_type}!**"
+
             # Update inventory and decrement endurance
             chopped_tree = Tree(name=self.tree_type, min_level=selected_tree.min_level)
             self.player.inventory.add_item_to_inventory(chopped_tree, amount=1)
-
             self.player.stats.endurance -= 1
 
             # Gain woodcutting experience
             exp_gain = WOODCUTTING_EXPERIENCE[self.tree_type]
             level_up_message = await self.player.gain_experience(exp_gain, "woodcutting", interaction)
 
-            self.player_data[self.author_id]["stats"]["woodcutting_experience"] = self.player.stats.woodcutting_experience
+            self.player_data[self.author_id]["stats"][
+                "woodcutting_experience"] = self.player.stats.woodcutting_experience
             self.player_data[self.author_id]["stats"]["woodcutting_level"] = self.player.stats.woodcutting_level
             self.player_data[self.author_id]["stats"]["endurance"] = self.player.stats.endurance
             save_player_data(self.guild_id, self.player_data)
+
+            # Clear previous fields and add new ones
+            self.embed.clear_fields()
+            # Include the yellow potion emoji for the stamina/endurance string
+            stamina_str = f"{potion_yellow_emoji}  {self.player.stats.endurance}/{self.player.stats.max_endurance}"
+            # Get the new wood count
+            wood_count = self.player.inventory.get_tree_count(self.tree_type)
+            wood_str = str(wood_count)
+            # Add updated fields to embed
+            self.embed.add_field(name="Endurance", value=stamina_str, inline=True)  # Changed 'Stamina' to 'Endurance'
+            self.embed.add_field(name=f"{self.tree_type}", value=f"🪵  {wood_str}",
+                                 inline=True)  # Included the "🪵" emoji
 
             # Update the chop messages list
             if len(self.chop_messages) >= 5:
                 self.chop_messages.pop(0)
             self.chop_messages.append(message)
 
-            # Re-enable the button after 3 seconds
-            await asyncio.sleep(2.25)
-            button.disabled = False
-
             # Prepare updated embed
             updated_description = "\n".join(self.chop_messages)
             self.embed.description = updated_description
 
+            # Re-enable the button after 3 seconds
+            await asyncio.sleep(2.25)
+            button.disabled = False
+
             await interaction.message.edit(embed=self.embed, view=self)
 
             if level_up_message:
-                # Add 1 level to attack on top of current attack level
                 self.player_data[self.author_id]["stats"]["attack"] = self.player.stats.attack + (
-                            self.player.stats.woodcutting_level - 1)
+                        self.player.stats.woodcutting_level - 1)
                 save_player_data(self.guild_id, self.player_data)
-                # If level_up_message is not None, then the player has leveled up
                 await interaction.followup.send(level_up_message)
 
         else:
@@ -151,8 +162,20 @@ class WoodcuttingCog(commands.Cog):
                           player_data[author_id]["stats"],
                           player_data[author_id]["inventory"])
 
+        # Inside your chop command
         embed = Embed(title=f"{tree_type} Tree")
         embed.set_image(url=f"https://raw.githubusercontent.com/kal-elf2/MTRM-RPG/master/images/{tree_type}.png")
+
+        # Add the initial stamina and wood inventory here
+        stamina_str = f"{potion_yellow_emoji}  {player.stats.endurance}/{player.stats.max_endurance}"
+
+        # Use the get_tree_count method to get the wood count
+        wood_count = player.inventory.get_tree_count(tree_type)
+        wood_str = str(wood_count)
+
+        embed.add_field(name="Endurance", value=stamina_str, inline=True)
+        embed.add_field(name=f"{tree_type}", value=f"🪵  {wood_str}", inline=True)
+
         view = HarvestButton(ctx, player, tree_type, player_data, guild_id, author_id, embed)
         await ctx.respond(embed=embed, view=view)
 
