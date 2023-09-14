@@ -125,7 +125,6 @@ class HarvestButton(discord.ui.View):
     async def stamina_potion(self, button, interaction):
         pass
 
-
 class WoodcuttingCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot

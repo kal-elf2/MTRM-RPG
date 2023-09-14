@@ -99,7 +99,9 @@ class PickExemplars(Select):
             "mining_level": exemplar_instance.stats.mining_level,
             "mining_experience": exemplar_instance.stats.mining_experience,
             "woodcutting_level": exemplar_instance.stats.woodcutting_level,
-            "woodcutting_experience": exemplar_instance.stats.woodcutting_experience
+            "woodcutting_experience": exemplar_instance.stats.woodcutting_experience,
+            "fishing_level": exemplar_instance.stats.fishing_level,
+            "fishing_experience": exemplar_instance.stats.fishing_experience,
         }
 
         player_data[str(author_id)]["inventory"] = Inventory().to_dict()
