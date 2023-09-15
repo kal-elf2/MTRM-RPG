@@ -81,10 +81,6 @@ class Exemplar:
             level_up_message = f"Congratulations, {interaction.user.mention}! You have reached **Level {new_level} in {skill.capitalize()}**."
             return level_up_message
 
-    @staticmethod
-    def exp_needed_to_level_up(level):
-        return LEVEL_DATA[str(level)]["total_experience"]
-
     async def gain_experience(self, experience_points, experience_type, interaction=None):
         skill_exp_key = f"{experience_type}_experience"
         skill_level_key = f"{experience_type}_level"
@@ -94,7 +90,7 @@ class Exemplar:
 
         # Call the set_level method after gaining experience
         previous_level = getattr(self.stats, skill_level_key)
-        updated_level = self.set_level(experience_type, updated_exp)
+        updated_level, max_level = self.set_level(experience_type, updated_exp)
 
         # Send a level up message if needed
         if updated_level > previous_level:
@@ -113,19 +109,24 @@ class Exemplar:
         return None  # return None if there's no level-up
 
     def set_level(self, skill, updated_exp, player=None):
-        # Find the correct level range based on the player's total experience
-        for level, level_data in LEVEL_DATA.items():
-            if updated_exp <= level_data["total_experience"]:
-                new_level = int(level)
+        new_level = 1  # Initialize to the lowest level
+        for level, level_data in sorted(LEVEL_DATA.items(), key=lambda x: int(x[0])):
+            if updated_exp >= level_data["total_experience"]:
+                new_level = int(level) + 1
+            else:
                 break
-        else:
-            new_level = len(LEVEL_DATA)
 
-        # Handle combat level up separately
+        if new_level >= 100:  # Check if new level is 100
+            new_level = 99
+            max_level = True
+        else:
+            max_level = False
+
         if skill == "combat":
             self.stats.combat_level = new_level
             self.set_combat_stats(new_level, player)
-        return new_level
+
+        return new_level, max_level  # Also return if it's a max level or not
 
     @property
     def max_health(self):

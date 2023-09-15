@@ -2,6 +2,7 @@ import random
 from discord import Embed
 import asyncio
 import discord
+import json
 from discord.ext import commands
 from discord.commands import Option
 from resources.herb import HERB_TYPES
@@ -13,16 +14,21 @@ from utils import load_player_data, save_player_data
 # Woodcutting experience points for each tree type
 WOODCUTTING_EXPERIENCE = {
     "Pine": 20,
-    "Yew": 50,
-    "Ash": 100,
-    "Poplar": 250
+    "Yew": 25,
+    "Ash": 50,
+    "Poplar": 100
 }
 
+with open("level_data.json", "r") as f:
+    LEVEL_DATA = json.load(f)
+
 def attempt_herb_drop(zone_level):
-    herb_drop_rate = 0.99  # 10% chance to drop a herb
+    herb_drop_rate = 0.10  # 10% chance to drop a herb
     if random.random() < herb_drop_rate:
-        herb_types_for_zone = HERB_TYPES[:zone_level]  # Adjust the herb types based on the zone level
-        herb_weights = [50, 30, 15, 4, 1][:zone_level]  # Adjust the weights based on the zone level
+        # Adjust the herb types based on the zone level
+        herb_types_for_zone = HERB_TYPES[:zone_level]
+        # Adjust the weights based on the zone level, these are now 40%, 40%, 5%, 5%
+        herb_weights = [40, 40, 10, 5, 1][:zone_level]
         herb_dropped = random.choices(herb_types_for_zone, weights=herb_weights, k=1)[0]
         return herb_dropped
     return None
@@ -118,10 +124,24 @@ class HarvestButton(discord.ui.View):
             # Get the new wood count
             wood_count = self.player.inventory.get_tree_count(self.tree_type)
             wood_str = str(wood_count)
+
+            # Calculate current woodcutting level and experience for the next level
+            current_woodcutting_level = self.player.stats.woodcutting_level
+            next_level = current_woodcutting_level + 1
+            current_experience = self.player.stats.woodcutting_experience
+
             # Add updated fields to embed
-            self.embed.add_field(name="Endurance", value=stamina_str, inline=True)  # Changed 'Stamina' to 'Endurance'
-            self.embed.add_field(name=f"{self.tree_type}", value=f"🪵  {wood_str}",
-                                 inline=True)  # Included the "🪵" emoji
+            self.embed.add_field(name="Endurance", value=stamina_str, inline=True)
+            self.embed.add_field(name=f"{self.tree_type}", value=f"🪵  {wood_str}", inline=True)
+
+            # Check if the player is at max level and add the XP field last
+            if next_level >= 100:
+                self.embed.add_field(name="Max Level", value=f"📊  {current_experience}", inline=True)
+            else:
+                next_level_experience_needed = LEVEL_DATA.get(str(current_woodcutting_level), {}).get(
+                    "total_experience")
+                self.embed.add_field(name=f"XP to Level {next_level}",
+                                     value=f"📊  {current_experience} / {next_level_experience_needed}", inline=True)
 
             # Update the chop messages list
             if len(self.chop_messages) >= 5:
@@ -180,15 +200,16 @@ class WoodcuttingCog(commands.Cog):
         elif min_level == 1:  # Pine Tree
             return min(1, 0.25 + (player_level - 1) * 0.04)
         elif min_level == 20:  # Yew Tree
-            return max(0.25, min(1, (player_level - 20) * 0.05))
+            return max(0.20, min(1, (player_level - 20) * 0.05))
         elif min_level == 40:  # Ash Tree
-            return max(0.25, min(1, (player_level - 40) * 0.05))
+            return max(0.15, min(1, (player_level - 40) * 0.05))
         elif min_level == 60:  # Poplar Tree
-            return max(0.25, min(1, (player_level - 60) * 0.05))
+            return max(0.10, min(1, (player_level - 60) * 0.05))
 
     @commands.slash_command(description="Chop some wood!")
     async def chop(self, ctx,
-                   tree_type: Option(str, "Type of tree to chop", choices=['Pine', 'Yew', 'Ash', 'Poplar'], required=True)):
+                   tree_type: Option(str, "Type of tree to chop", choices=['Pine', 'Yew', 'Ash', 'Poplar'],
+                                     required=True)):
         guild_id = ctx.guild.id
         author_id = str(ctx.author.id)
         player_data = load_player_data(guild_id)
@@ -197,7 +218,7 @@ class WoodcuttingCog(commands.Cog):
                           player_data[author_id]["stats"],
                           player_data[author_id]["inventory"])
 
-        # Inside your chop command
+        # Start Embed
         embed = Embed(title=f"{tree_type} Tree")
         embed.set_image(url=f"https://raw.githubusercontent.com/kal-elf2/MTRM-RPG/master/images/trees/{tree_type}.png")
 
@@ -208,9 +229,24 @@ class WoodcuttingCog(commands.Cog):
         wood_count = player.inventory.get_tree_count(tree_type)
         wood_str = str(wood_count)
 
+        # Add the initial fields to the embed
         embed.add_field(name="Endurance", value=stamina_str, inline=True)
         embed.add_field(name=f"{tree_type}", value=f"🪵  {wood_str}", inline=True)
 
+        # Calculate current woodcutting level and experience for the next level
+        current_woodcutting_level = player.stats.woodcutting_level
+        next_level = current_woodcutting_level + 1
+        current_experience = player.stats.woodcutting_experience
+
+        # Check if the player is at max level and add the XP field last
+        if next_level >= 100:
+            embed.add_field(name="Max Level", value=f"📊  {current_experience}", inline=True)
+        else:
+            next_level_experience_needed = LEVEL_DATA.get(str(current_woodcutting_level), {}).get("total_experience")
+            embed.add_field(name=f"XP to Level {next_level}",
+                            value=f"📊  {current_experience} / {next_level_experience_needed}", inline=True)
+
+        # Create the view and send the response
         view = HarvestButton(ctx, player, tree_type, player_data, guild_id, author_id, embed)
         await ctx.respond(embed=embed, view=view)
 

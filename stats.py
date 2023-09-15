@@ -313,6 +313,5 @@ def recalculate_level(updated_exp):
         new_level = len(LEVEL_DATA)
     return new_level
 
-
 def setup(bot):
     bot.add_cog(StatsCog(bot))
