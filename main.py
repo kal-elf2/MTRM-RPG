@@ -86,7 +86,7 @@ class PickExemplars(Select):
         # Initialize the character's stats
         exemplar_instance = create_exemplar(self.values[0])
         player_data[str(author_id)]["stats"] = {
-            "zone_level": exemplar_instance.zone_level,
+            "zone_level": exemplar_instance.stats.zone_level,
             "health": exemplar_instance.stats.health,
             "max_health": exemplar_instance.stats.max_health,
             "strength": exemplar_instance.stats.strength,
@@ -141,7 +141,7 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
     player_data[author_id]["in_battle"] = True
     save_player_data(guild_id, player_data)
 
-    zone_level = player.zone_level
+    zone_level = player.stats.zone_level
     monster = generate_monster_by_name(monster, zone_level)
 
     battle_embed = await send_message(ctx.channel,
@@ -254,7 +254,7 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
         await battle_options_msg.delete()
 
         # Add the "dead.png" image to the embed
-        new_embed.set_image(url="https://raw.githubusercontent.com/kal-elf2/MTRM-RPG/master/images/dead.png")
+        new_embed.set_image(url="https://raw.githubusercontent.com/kal-elf2/MTRM-RPG/master/images/cemetery/dead.png")
         # Update the message with the new embed and view
         await battle_embed.edit(embed=new_embed, view=ResurrectOptions(ctx, player_data, author_id, new_embed))
 

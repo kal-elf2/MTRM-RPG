@@ -88,7 +88,7 @@ def create_battle_embed(user, player, monster, messages):
     # Replace spaces with '%20' for URL compatibility
     monster_name_url = monster.name.replace(" ", "%20")
     # Construct image URL
-    image_url = f"https://raw.githubusercontent.com/kal-elf2/MTRM-RPG/master/images/{monster_name_url}.png"
+    image_url = f"https://raw.githubusercontent.com/kal-elf2/MTRM-RPG/master/images/monsters/{monster_name_url}.png"
 
     if isinstance(messages, list):
         messages = "\n".join(messages)

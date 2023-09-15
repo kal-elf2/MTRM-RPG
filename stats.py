@@ -138,7 +138,7 @@ class ResurrectOptions(discord.ui.View):
                                 value=f"{self.player_data[self.author_id]['inventory'].materium_count}")
 
             # Add the "Revive" image to the embed
-            new_embed.set_image(url="https://raw.githubusercontent.com/kal-elf2/MTRM-RPG/master/images/Revive.png")
+            new_embed.set_image(url="https://raw.githubusercontent.com/kal-elf2/MTRM-RPG/master/images/cemetery/Revive.png")
 
             await interaction.message.edit(
                 embed=new_embed,

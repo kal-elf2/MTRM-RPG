@@ -23,5 +23,6 @@ class Fish:
 FISH_TYPES = [
     Fish("Herring", 1),
     Fish("Trout", 20),
-    Fish("Swordfish", 40)
+    Fish("Tuna", 40),
+    Fish("Swordfish", 60)
 ]

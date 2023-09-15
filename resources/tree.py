@@ -23,5 +23,6 @@ class Tree:
 TREE_TYPES = [
     Tree("Pine", 1),
     Tree("Yew", 20),
-    Tree("Ash", 40)
+    Tree("Ash", 40),
+    Tree("Poplar", 60)
 ]

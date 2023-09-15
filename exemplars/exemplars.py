@@ -15,7 +15,6 @@ class Exemplar:
         name,
         stats,
         inventory=None,
-        zone_level=1,
     ):
         self.name = name
         self.stats = PlayerStats(
@@ -34,9 +33,10 @@ class Exemplar:
             stats["woodcutting_experience"],
             stats["fishing_level"],
             stats["fishing_experience"],
+            stats["zone_level"],
             damage_taken=0
+
         )
-        self.zone_level = zone_level
         self.inventory = inventory if inventory else Inventory()
         self.bank = Bank()
         self.crafting = Crafting()
@@ -312,6 +312,7 @@ class PlayerStats:
         woodcutting_experience=0,
         fishing_level=1,
         fishing_experience=0,
+        zone_level = 1,
         damage_taken =0
 
     ):
@@ -330,7 +331,9 @@ class PlayerStats:
         self.woodcutting_experience = woodcutting_experience
         self.fishing_level = fishing_level
         self.fishing_experience = fishing_experience
+        self.zone_level = zone_level
         self.damage_taken = damage_taken
+
 
     def update_health(self, update):
         self.health = update
@@ -356,6 +359,7 @@ class PlayerStats:
 class Human(Exemplar):
     def __init__(self):
         human_stats = {
+            "zone_level": 1,
             "health": 100,
             "max_health": 100,
             "strength": 12,
@@ -377,6 +381,7 @@ class Human(Exemplar):
 class Dwarf(Exemplar):
     def __init__(self):
         dwarf_stats = {
+            "zone_level": 1,
             "health": 110,
             "max_health": 110,
             "strength": 14,
@@ -398,6 +403,7 @@ class Dwarf(Exemplar):
 class Orc(Exemplar):
     def __init__(self):
         orc_stats = {
+            "zone_level": 1,
             "health": 120,
             "max_health": 120,
             "strength": 16,
@@ -419,6 +425,7 @@ class Orc(Exemplar):
 class Halfling(Exemplar):
     def __init__(self):
         halfling_stats = {
+            "zone_level": 1,
             "health": 90,
             "max_health": 90,
             "strength": 10,
@@ -440,6 +447,7 @@ class Halfling(Exemplar):
 class Elf(Exemplar):
     def __init__(self):
         elf_stats = {
+            "zone_level": 1,
             "health": 95,
             "max_health": 95,
             "strength": 11,

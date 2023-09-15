@@ -14,11 +14,12 @@ from utils import load_player_data, save_player_data
 WOODCUTTING_EXPERIENCE = {
     "Pine": 20,
     "Yew": 50,
-    "Ash": 100
+    "Ash": 100,
+    "Poplar": 250
 }
 
 def attempt_herb_drop(zone_level):
-    herb_drop_rate = 0.1  # 10% chance to drop a herb
+    herb_drop_rate = 0.99  # 10% chance to drop a herb
     if random.random() < herb_drop_rate:
         herb_types_for_zone = HERB_TYPES[:zone_level]  # Adjust the herb types based on the zone level
         herb_weights = [50, 30, 15, 4, 1][:zone_level]  # Adjust the weights based on the zone level
@@ -28,7 +29,7 @@ def attempt_herb_drop(zone_level):
 
 # View class for Harvest button
 class HarvestButton(discord.ui.View):
-    def __init__(self, interaction, player, tree_type, player_data, guild_id, author_id, embed):
+    def __init__(self, interaction,player, tree_type, player_data, guild_id, author_id, embed):
         super().__init__(timeout=None)
         self.interaction = interaction
         self.player = player
@@ -69,6 +70,19 @@ class HarvestButton(discord.ui.View):
                 ephemeral=True)
             return
 
+        # Check if player is in the correct zone for the tree type
+        if self.tree_type == "Yew" and self.player.stats.zone_level < 2:
+            await interaction.followup.send("You must be in Zone Level 2 or higher to harvest Yew. *(Combat lvl 20 or higher required)*", ephemeral=True)
+            return
+
+        elif self.tree_type == "Ash" and self.player.stats.zone_level < 3:
+            await interaction.followup.send("You must be in Zone Level 3 or higher to harvest Ash. *(Combat lvl 40 or higher required)*", ephemeral=True)
+            return
+
+        elif self.tree_type == "Poplar" and self.player.stats.zone_level < 4:
+            await interaction.followup.send("You must be in Zone Level 4 or higher to harvest Poplar. *(Combat lvl 60 or higher required)*", ephemeral=True)
+            return
+
         success = random.random() < success_prob
 
         message = ""
@@ -85,7 +99,7 @@ class HarvestButton(discord.ui.View):
             level_up_message = await self.player.gain_experience(exp_gain, "woodcutting", interaction)
 
             # Attempt herb drop
-            zone_level = self.player.zone_level
+            zone_level = self.player.stats.zone_level
             herb_dropped = attempt_herb_drop(zone_level)
             if herb_dropped:
                 self.player.inventory.add_item_to_inventory(herb_dropped, amount=1)
@@ -164,15 +178,17 @@ class WoodcuttingCog(commands.Cog):
         if player_level < min_level:
             return 0
         elif min_level == 1:  # Pine Tree
-            return min(1, 0.33 + (player_level - 1) * 0.04)
+            return min(1, 0.25 + (player_level - 1) * 0.04)
         elif min_level == 20:  # Yew Tree
-            return max(0.01, min(1, (player_level - 20) * 0.05))
+            return max(0.25, min(1, (player_level - 20) * 0.05))
         elif min_level == 40:  # Ash Tree
-            return max(0.01, min(1, (player_level - 40) * 0.05))
+            return max(0.25, min(1, (player_level - 40) * 0.05))
+        elif min_level == 60:  # Poplar Tree
+            return max(0.25, min(1, (player_level - 60) * 0.05))
 
     @commands.slash_command(description="Chop some wood!")
     async def chop(self, ctx,
-                   tree_type: Option(str, "Type of tree to chop", choices=['Pine', 'Yew', 'Ash'], required=True)):
+                   tree_type: Option(str, "Type of tree to chop", choices=['Pine', 'Yew', 'Ash', 'Poplar'], required=True)):
         guild_id = ctx.guild.id
         author_id = str(ctx.author.id)
         player_data = load_player_data(guild_id)
@@ -183,7 +199,7 @@ class WoodcuttingCog(commands.Cog):
 
         # Inside your chop command
         embed = Embed(title=f"{tree_type} Tree")
-        embed.set_image(url=f"https://raw.githubusercontent.com/kal-elf2/MTRM-RPG/master/images/{tree_type}.png")
+        embed.set_image(url=f"https://raw.githubusercontent.com/kal-elf2/MTRM-RPG/master/images/trees/{tree_type}.png")
 
         # Add the initial stamina and wood inventory here
         stamina_str = f"{potion_yellow_emoji}  {player.stats.endurance}/{player.stats.max_endurance}"
