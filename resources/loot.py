@@ -5,6 +5,7 @@ from resources.potion import POTION_LIST
 from resources.materium import Materium
 from resources.item import Item
 
+
 class Loot:
     def __init__(self, name, rarity, value):
         self.name = name

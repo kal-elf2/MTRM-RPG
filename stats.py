@@ -6,7 +6,7 @@ from discord.commands import Option
 from utils import load_player_data, save_player_data
 from exemplars.exemplars import Exemplar
 from emojis import heart_emoji, mtrm_emoji, endurance_emoji, strength_emoji
-
+from images.urls import generate_urls
 
 def load_level_data():
     with open('level_data.json', 'r') as f:
@@ -191,8 +191,11 @@ class ResurrectOptions(discord.ui.View):
 
                 new_embed.add_field(name="Skills Affected", value="No skills were affected.")
 
-            # Send the new embed as a new message
-            await interaction.response.send_message(embed=new_embed)
+            # Add the "dead.png" image to the embed
+            new_embed.set_image(url=generate_urls("cemetery", "Revive"))
+
+            # Send the new embed as a new message, without view buttons
+            await interaction.message.edit(embed=new_embed, view=None)
 
 
     @discord.ui.button(custom_id="resurrect", label="Resurrect", style=discord.ButtonStyle.danger)
@@ -231,6 +234,7 @@ class ResurrectOptions(discord.ui.View):
                                 value=f"{heart_emoji}  {self.player.stats.health}/{self.player.stats.max_health}")
 
             new_embed.add_field(name="Skills Affected", value=level_decreased_message)
+
         else:
             # Add the full health bar to the embed
             new_embed.add_field(name="Your Health has been Restored",
@@ -238,8 +242,11 @@ class ResurrectOptions(discord.ui.View):
 
             new_embed.add_field(name="Skills Affected", value="No skills were affected.")
 
-        # Send the new embed as a new message
-        await interaction.response.send_message(embed=new_embed)
+        # Add the "dead.png" image to the embed
+        new_embed.set_image(url=generate_urls("cemetery", "Revive"))
+
+        # Send the new embed as a new message, without view buttons
+        await interaction.message.edit(embed=new_embed, view=None)
 
 
 async def apply_penalty(player_data, author_id, interaction):

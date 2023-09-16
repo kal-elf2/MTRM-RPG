@@ -1,11 +1,10 @@
 # monster.py
 import random
 from resources.loot import generate_zone_loot, loot_definitions
-from discord import Embed
+from monsters.battle import create_battle_embed
 import asyncio
 from resources.item import Item
 import math
-from emojis import heart_emoji
 
 class Monster:
     def __init__(self, name, health, max_health, attack, endurance, experience_reward, weak_against, strong_against, attack_speed, drop):
@@ -68,42 +67,6 @@ def generate_monster_list():
         'Wisp',
     ]
     return monster_names
-
-def create_health_bar(current, max_health):
-    bar_length = 12  # Fixed bar length
-    health_percentage = current / max_health
-    filled_length = round(bar_length * health_percentage)
-
-    # Calculate how many '▣' symbols to display
-    filled_symbols = '◼' * filled_length
-
-    # Calculate how many '-' symbols to display
-    empty_symbols = '◻' * (bar_length - filled_length)
-    return filled_symbols + empty_symbols
-
-def create_battle_embed(user, player, monster, messages):
-    player_health_bar = create_health_bar(player.health, player.stats.max_health)
-    monster_health_bar = create_health_bar(monster.health, monster.max_health)
-
-    # Replace spaces with '%20' for URL compatibility
-    monster_name_url = monster.name.replace(" ", "%20")
-    # Construct image URL
-    image_url = f"https://raw.githubusercontent.com/kal-elf2/MTRM-RPG/master/images/monsters/{monster_name_url}.png"
-
-    if isinstance(messages, list):
-        messages = "\n".join(messages)
-    elif isinstance(messages, str):
-        messages = messages
-
-    embed = Embed()
-    embed.add_field(name="Battle", value=messages, inline=False)
-    embed.add_field(name=f"{heart_emoji}  {user.name}'s Health", value=f"{player.health}/{player.stats.max_health}\n{player_health_bar}", inline=True)
-    embed.add_field(name=f"{monster.name}'s Health", value=f"{monster.health}/{monster.max_health}\n{monster_health_bar}", inline=True)
-
-    # Add image to embed
-    embed.set_image(url=image_url)
-
-    return embed
 
 # Constants
 CRITICAL_HIT_CHANCE = 0.1  # 10% chance of a critical hit

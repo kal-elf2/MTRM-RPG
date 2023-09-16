@@ -7,6 +7,8 @@ from crafting.crafting import Crafting
 from resources.item import Item
 from resources.ore import Gem, Ore
 from resources.tree import Tree
+from discord.ext import commands
+
 
 class ExemplarJSONEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -46,3 +48,6 @@ def load_player_data(guild_id):
 def save_player_data(guild_id, player_data):
     with open(f'server/player_data_{guild_id}.json', "w") as c:
         json.dump(player_data, c, indent=4, cls=ExemplarJSONEncoder)
+
+async def send_message(ctx: commands.Context, embed):
+    return await ctx.send(embed=embed)

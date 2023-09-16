@@ -3,7 +3,7 @@ import json
 import discord
 from discord.ext import commands
 from discord.commands import Option
-from utils import load_player_data, save_player_data
+from utils import load_player_data, save_player_data, send_message
 from discord.ui import Select, View
 from discord.components import SelectOption
 from zones.zone import Zone
@@ -12,7 +12,8 @@ from monsters.monster import generate_monster_list, generate_monster_by_name, mo
 from discord import Embed
 from resources.inventory import Inventory
 from stats import ResurrectOptions
-from emojis import potion_red_emoji, potion_yellow_emoji, mtrm_emoji, rip_emoji
+from monsters.battle import BattleOptions, LootOptions
+from emojis import mtrm_emoji, rip_emoji
 
 bot = commands.Bot(command_prefix="/", intents=discord.Intents.all())
 # Add the cog to your bot
@@ -112,9 +113,6 @@ class PickExemplars(Select):
             f'{interaction.user.mention}, you have chosen the {self.options_dict[self.values[0]]} Exemplar!',
             ephemeral=False)
 
-async def send_message(ctx: commands.Context, embed):
-    return await ctx.send(embed=embed)
-
 @bot.slash_command(description="Battle a monster!")
 async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=generate_monster_list(), required=False, default='')):
     if not monster:
@@ -153,62 +151,6 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
 
     battle_outcome, loot_messages = await monster_battle(ctx.author, player, monster, zone_level, battle_embed)
 
-    class LootOptions(discord.ui.View):
-        def __init__(self, interaction, player, monster, battle_embed, player_data, author_id, battle_outcome):
-            super().__init__(timeout=None)
-            self.interaction_ = interaction
-            self.player_ = player
-            self.monster_ = monster
-            self.battle_embed_ = battle_embed
-            self.player_data_ = player_data
-            self.author_id_ = author_id
-            self.battle_outcome_ = battle_outcome
-
-        @discord.ui.button(custom_id="loot", label="Loot", style=discord.ButtonStyle.blurple)
-        async def collect_loot(self, button, interaction):
-            for loot_type, loot_items in battle_outcome[3]:
-                if loot_type == 'gold':
-                    player.inventory.add_gold(loot_items)
-                elif loot_type == 'items':
-                    # Check if loot_items is a list of tuples (meaning it's a list of (item, quantity) pairs)
-                    if isinstance(loot_items, list) and all(isinstance(i, tuple) for i in loot_items):
-                        for item, quantity in loot_items:
-                            for _ in range(quantity):
-                                player.inventory.add_item_to_inventory(item)
-                    elif isinstance(loot_items, list):  # If it's just a list of items
-                        for item in loot_items:
-                            player.inventory.add_item_to_inventory(item)
-                    else:  # If loot_items is a single object
-                        player.inventory.add_item_to_inventory(loot_items)
-                else:
-                    if isinstance(loot_items, list) and all(isinstance(i, tuple) for i in loot_items):
-                        for item, quantity in loot_items:
-                            for _ in range(quantity):
-                                player.inventory.add_item_to_inventory(item)
-                    elif isinstance(loot_items, list):  # If it's just a list of items
-                        for item in loot_items:
-                            player.inventory.add_item_to_inventory(item)
-                    else:  # If loot_items is a single object
-                        player.inventory.add_item_to_inventory(loot_items)
-            player_data[author_id]["inventory"] = player.inventory.to_dict()
-
-            loot_message_string = '\n'.join(loot_messages)
-
-            message_text = (
-                f"You have **DEFEATED** the {monster.name}!\n"
-                f"You dealt **{battle_outcome[1]} damage** to the monster and took **{battle_outcome[2]} damage**.\n"
-                f"You gained {experience_gained} combat XP.\n\n"
-                f"__**Loot picked up:**__\n"
-                f"```{loot_message_string}```"
-            )
-
-            final_embed = create_battle_embed(ctx.user, player, monster, message_text)
-
-            save_player_data(guild_id, player_data)
-            # Edit the message to remove the button by not passing a view
-            await interaction.message.edit(embed=final_embed, view=None)
-
-
     if battle_outcome[0]:
 
         experience_gained = monster.experience_reward
@@ -226,14 +168,16 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
 
         # Clear the previous BattleOptions view
         await battle_options_msg.delete()
-        new_loot_view = LootOptions(ctx, player, monster, battle_embed, player_data, author_id, battle_outcome)
+        loot_view = LootOptions(ctx, player, monster, battle_embed, player_data, author_id, battle_outcome, loot_messages, guild_id, ctx, experience_gained)
+
+
         await battle_embed.edit(
             embed=create_battle_embed(ctx.user, player, monster,
                                       f"You have **DEFEATED** the {monster.name}!\n\n"
                                           f"You dealt **{battle_outcome[1]} damage** to the monster and took **{battle_outcome[2]} damage**. "
                                           f"You gained {experience_gained} combat XP.\n"
                                           f"\n"),
-            view=new_loot_view
+            view=loot_view
         )
 
     else:
@@ -297,24 +241,6 @@ async def newgame(ctx):
             f"{ctx.author.mention}, you have a game in progress. Do you want to erase your progress and start a new game?",
             view=view)
 
-
-class BattleOptions(discord.ui.View):
-    def __init__(self, interaction):
-        super().__init__(timeout=None)
-        self.interaction = interaction
-
-    @discord.ui.button(custom_id="attack", style=discord.ButtonStyle.blurple, emoji = '⚔️')
-    async def special_attack(self, button, interaction):
-        pass
-    @discord.ui.button(custom_id="health", style=discord.ButtonStyle.blurple, emoji=f'{potion_red_emoji}')
-    async def health_potion(self, button, interaction):
-        pass
-    @discord.ui.button(custom_id="stamina", style=discord.ButtonStyle.blurple, emoji=f'{potion_yellow_emoji}')
-    async def stamina_potion(self, button, interaction):
-        pass
-    @discord.ui.button(label="Run", custom_id="run", style=discord.ButtonStyle.blurple)
-    async def run_button(self, button, interaction):
-        pass
 
 @bot.slash_command()
 async def menu(ctx):

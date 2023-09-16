@@ -3,13 +3,17 @@ from discord import Embed
 import asyncio
 import discord
 import json
+import numpy as np
 from discord.ext import commands
 from discord.commands import Option
 from resources.herb import HERB_TYPES
 from resources.tree import TREE_TYPES, Tree
+from stats import ResurrectOptions
 from exemplars.exemplars import Exemplar
-from emojis import potion_yellow_emoji
-from utils import load_player_data, save_player_data
+from emojis import potion_yellow_emoji, rip_emoji, mtrm_emoji
+from utils import load_player_data, save_player_data, send_message
+from monsters.monster import create_battle_embed, monster_battle, generate_monster_by_name
+from monsters.battle import BattleOptions, LootOptions
 
 # Woodcutting experience points for each tree type
 WOODCUTTING_EXPERIENCE = {
@@ -21,6 +25,23 @@ WOODCUTTING_EXPERIENCE = {
 
 with open("level_data.json", "r") as f:
     LEVEL_DATA = json.load(f)
+
+
+def generate_random_monster(tree_type):
+    monster_chances = {}
+    if tree_type == "Pine":
+        monster_chances = {'Buck': 0.25, 'Wolf': 0.75}
+    elif tree_type == "Yew":
+        monster_chances = {'Buck': 0.1, 'Wolf': 0.3, 'Goblin': 0.6}
+    elif tree_type == "Ash":
+        monster_chances = {'Goblin': 0.6, 'Goblin Hunter': 0.2, 'Mega Brute': 0.15, 'Wisp': 0.05}
+    else:
+        monster_chances = {'Goblin Hunter': 0.7, 'Mega Brute': 0.2, 'Wisp': 0.1}
+
+    monsters = list(monster_chances.keys())
+    probabilities = list(monster_chances.values())
+
+    return np.random.choice(monsters, p=probabilities)
 
 def attempt_herb_drop(zone_level):
     herb_drop_rate = 0.10  # 10% chance to drop a herb
@@ -35,9 +56,9 @@ def attempt_herb_drop(zone_level):
 
 # View class for Harvest button
 class HarvestButton(discord.ui.View):
-    def __init__(self, interaction,player, tree_type, player_data, guild_id, author_id, embed):
+    def __init__(self, ctx, player, tree_type, player_data, guild_id, author_id, embed):
         super().__init__(timeout=None)
-        self.interaction = interaction
+        self.ctx = ctx
         self.player = player
         self.tree_type = tree_type
         self.chop_messages = []
@@ -185,6 +206,80 @@ class HarvestButton(discord.ui.View):
 
             await interaction.message.edit(embed=self.embed, view=self)
 
+        # 10% chance of a monster encounter
+        if np.random.rand() <= 0.99 and self.player_data[self.author_id]["in_battle"] == False:
+            self.player_data[self.author_id]["in_battle"] = True
+            save_player_data(self.guild_id, self.player_data)
+
+            monster_name = generate_random_monster(self.tree_type)
+            monster = generate_monster_by_name(monster_name, self.player.stats.zone_level)
+
+            battle_embed = await send_message(interaction.channel,
+                                              create_battle_embed(interaction.user, self.player, monster, messages=""))
+
+            # Store the message object that is sent
+            battle_options_msg = await self.ctx.send(view=BattleOptions(self.ctx))
+
+            await interaction.followup.send(f"**❗ LOOK OUT ❗** \n{interaction.user.mention} gets **attacked by a {monster.name}** while harvesting {self.tree_type}.", ephemeral = True)
+
+            battle_outcome, loot_messages = await monster_battle(interaction.user, self.player, monster, self.player.stats.zone_level, battle_embed)
+
+            if battle_outcome[0]:
+
+                experience_gained = monster.experience_reward
+                await self.player.gain_experience(experience_gained, 'combat', interaction)
+                self.player_data[self.author_id]["stats"]["combat_level"] = self.player.stats.combat_level
+                self.player_data[self.author_id]["stats"]["combat_experience"] = self.player.stats.combat_experience
+                self.player.stats.damage_taken = 0
+                self.player_data[self.author_id]["stats"].update(self.player.stats.__dict__)
+
+                if self.player.stats.health <= 0:
+                    self.player.stats.health = self.player.stats.max_health
+
+                # Save the player data after common actions
+                save_player_data(self.guild_id, self.player_data)
+
+                # Clear the previous BattleOptions view
+                await battle_options_msg.delete()
+                loot_view = LootOptions(interaction, self.player, monster, battle_embed, self.player_data, self.author_id, battle_outcome,
+                                        loot_messages, self.guild_id, interaction, experience_gained)
+
+                await battle_embed.edit(
+                    embed=create_battle_embed(interaction.user, self.player, monster,
+                                              f"You have **DEFEATED** the {monster.name}!\n\n"
+                                              f"You dealt **{battle_outcome[1]} damage** to the monster and took **{battle_outcome[2]} damage**. "
+                                              f"You gained {experience_gained} combat XP.\n"
+                                              f"\n"),
+                    view=loot_view
+                )
+
+            else:
+                # The player is defeated
+                self.player.stats.health = 0  # Set player's health to 0
+                self.player_data[self.author_id]["stats"]["health"] = 0
+
+                # Create a new embed with the defeat message
+                new_embed = create_battle_embed(interaction.user, self.player, monster,
+
+                                                f"☠️ You have been **DEFEATED** by the **{monster.name}**! 💀\n"
+                                                f"{rip_emoji} *Your spirit lingers, seeking renewal.* {rip_emoji}\n\n"
+                                                f"__**Options for Revival:**__\n"
+                                                f"1. Use {mtrm_emoji} to revive without penalty.\n"
+                                                f"2. Resurrect with 2.5% penalty to all skills.")
+
+                # Clear the previous BattleOptions view
+                await battle_options_msg.delete()
+
+                # Add the "dead.png" image to the embed
+                new_embed.set_image(
+                    url="https://raw.githubusercontent.com/kal-elf2/MTRM-RPG/master/images/cemetery/dead.png")
+                # Update the message with the new embed and view
+                await battle_embed.edit(embed=new_embed, view=ResurrectOptions(interaction, self.player_data, self.author_id, new_embed))
+
+            # Clear the in_battle flag after the battle ends
+            self.player_data[self.author_id]["in_battle"] = False
+            save_player_data(self.guild_id, self.player_data)
+
     @discord.ui.button(custom_id="stamina", style=discord.ButtonStyle.blurple, emoji=f'{potion_yellow_emoji}')
     async def stamina_potion(self, button, interaction):
         pass
@@ -248,6 +343,7 @@ class WoodcuttingCog(commands.Cog):
 
         # Create the view and send the response
         view = HarvestButton(ctx, player, tree_type, player_data, guild_id, author_id, embed)
+
         await ctx.respond(embed=embed, view=view)
 
 
