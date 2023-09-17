@@ -14,6 +14,7 @@ from emojis import potion_yellow_emoji, rip_emoji, mtrm_emoji
 from utils import load_player_data, save_player_data, send_message
 from monsters.monster import create_battle_embed, monster_battle, generate_monster_by_name
 from monsters.battle import BattleOptions, LootOptions
+from images.urls import generate_urls
 
 # Woodcutting experience points for each tree type
 WOODCUTTING_EXPERIENCE = {
@@ -44,7 +45,7 @@ def generate_random_monster(tree_type):
     return np.random.choice(monsters, p=probabilities)
 
 def attempt_herb_drop(zone_level):
-    herb_drop_rate = 0.10  # 10% chance to drop a herb
+    herb_drop_rate = 0.99  # 10% chance to drop a herb
     if random.random() < herb_drop_rate:
         # Adjust the herb types based on the zone level
         herb_types_for_zone = HERB_TYPES[:zone_level]
@@ -207,7 +208,7 @@ class HarvestButton(discord.ui.View):
             await interaction.message.edit(embed=self.embed, view=self)
 
         # 10% chance of a monster encounter
-        if np.random.rand() <= 0.05 and self.player_data[self.author_id]["in_battle"] == False:
+        if np.random.rand() <= 0.1 and self.player_data[self.author_id]["in_battle"] == False:
             self.player_data[self.author_id]["in_battle"] = True
             save_player_data(self.guild_id, self.player_data)
 
@@ -272,7 +273,7 @@ class HarvestButton(discord.ui.View):
 
                 # Add the "dead.png" image to the embed
                 new_embed.set_image(
-                    url="https://raw.githubusercontent.com/kal-elf2/MTRM-RPG/master/images/cemetery/dead.png")
+                    url=generate_urls("cemetery", "dead"))
                 # Update the message with the new embed and view
                 await battle_embed.edit(embed=new_embed, view=ResurrectOptions(interaction, self.player_data, self.author_id, new_embed))
 
@@ -315,7 +316,8 @@ class WoodcuttingCog(commands.Cog):
 
         # Start Embed
         embed = Embed(title=f"{tree_type} Tree")
-        embed.set_image(url=f"https://raw.githubusercontent.com/kal-elf2/MTRM-RPG/master/images/trees/{tree_type}.png")
+        test = generate_urls("trees", f'{tree_type}')
+        embed.set_image(url=test)
 
         # Add the initial stamina and wood inventory here
         stamina_str = f"{potion_yellow_emoji}  {player.stats.endurance}/{player.stats.max_endurance}"

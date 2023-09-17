@@ -107,7 +107,7 @@ def generate_zone_loot(zone_level, monster_drop=None):
     loot_messages.append(f"You found {gold_dropped} gold!")
 
     # Gem drops
-    gem_drop_rate = 0.05  # 5% chance to drop a gem
+    gem_drop_rate = 0.99  # 5% chance to drop a gem
     if random.random() < gem_drop_rate:
         gem_types_for_zone = GEM_TYPES[:zone_level]  # Adjust the gem types based on the zone level
         gem_weights = [50, 30, 15, 4, 1][:zone_level]  # Adjust the weights based on the zone level
@@ -116,7 +116,7 @@ def generate_zone_loot(zone_level, monster_drop=None):
         loot_messages.append(f"You found a {gem_dropped.name}!")
 
     # Herb drops
-    herb_drop_rate = 0.10  # 10% chance to drop a herb
+    herb_drop_rate = 0.99  # 10% chance to drop a herb
     if random.random() < herb_drop_rate:
         herb_types_for_zone = HERB_TYPES[:zone_level]  # Adjust the herb types based on the zone level
         herb_weights = [50, 30, 15, 4, 1][:zone_level]  # Adjust the weights based on the zone level
@@ -125,14 +125,14 @@ def generate_zone_loot(zone_level, monster_drop=None):
         loot_messages.append(f"You found some {herb_dropped.name}!")
 
     # Materium drops
-    materium_drop_rate = 0.01  # 1% chance to drop Materium
+    materium_drop_rate = 0.99  # 1% chance to drop Materium
     if random.random() < materium_drop_rate:
         materium_dropped = Materium()
         loot.append(('materium', materium_dropped))
         loot_messages.append("You found some Materium!")
 
         # Loot drops
-    loot_drop_rate = 0.10  # 10% chance to drop loot
+    loot_drop_rate = 0.99  # 10% chance to drop loot
     if random.random() < loot_drop_rate:
         loot_options_for_zone = loot_list[zone_level - 1]
         loot_weights = [50, 30, 15, 4, 1]
@@ -143,7 +143,7 @@ def generate_zone_loot(zone_level, monster_drop=None):
         loot_messages.append(f"You found a {loot_dropped.name}!")
 
     # Potion drops
-    potion_drop_rate = 0.05 * zone_level  # Increase the chance of getting a potion as zone level increases
+    potion_drop_rate = 0.99 * zone_level  # Increase the chance of getting a potion as zone level increases
     if random.random() < potion_drop_rate:
         potion_weights = [50, 30, 15, 4, 1][
                          :len(POTION_LIST)]  # Adjust the weights based on the length of POTION_LIST

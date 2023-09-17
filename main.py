@@ -14,6 +14,7 @@ from resources.inventory import Inventory
 from stats import ResurrectOptions
 from monsters.battle import BattleOptions, LootOptions
 from emojis import mtrm_emoji, rip_emoji
+from images.urls import generate_urls
 
 bot = commands.Bot(command_prefix="/", intents=discord.Intents.all())
 # Add the cog to your bot
@@ -198,7 +199,7 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
         await battle_options_msg.delete()
 
         # Add the "dead.png" image to the embed
-        new_embed.set_image(url="https://raw.githubusercontent.com/kal-elf2/MTRM-RPG/master/images/cemetery/dead.png")
+        new_embed.set_image(url=generate_urls("cemetery", "dead"))
         # Update the message with the new embed and view
         await battle_embed.edit(embed=new_embed, view=ResurrectOptions(ctx, player_data, author_id, new_embed))
 

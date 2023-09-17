@@ -21,21 +21,32 @@ class LootOptions(discord.ui.View):
 
     @discord.ui.button(custom_id="loot", label="Loot", style=discord.ButtonStyle.blurple)
     async def collect_loot(self, button, interaction):
-        # Note how I use self.battle_outcome_ instead of battle_outcome, and so on
+
         for loot_type, loot_items in self.battle_outcome_[3]:
             if loot_type == 'gold':
                 self.player_.inventory.add_gold(loot_items)
-            # (rest of the logic remains the same but using instance variables)
+            elif loot_type == 'gem':
+                self.player_.inventory.add_item_to_inventory(loot_items)
+            elif loot_type == 'herb':
+                self.player_.inventory.add_item_to_inventory(loot_items)
+            elif loot_type == 'materium':
+                self.player_.inventory.add_item_to_inventory(loot_items)
+            elif loot_type == 'loot':
+                self.player_.inventory.add_item_to_inventory(loot_items)
+            elif loot_type == 'potion':
+                self.player_.inventory.add_item_to_inventory(loot_items)
+            elif loot_type == 'items':  # For items with quantity
+                for item, quantity in loot_items:
+                    self.player_.inventory.add_item_to_inventory(item, amount=quantity)
 
         self.player_data_[self.author_id_]["inventory"] = self.player_.inventory.to_dict()
 
-        # Again, using instance variables
         loot_message_string = '\n'.join(self.loot_messages_)
 
         message_text = (
             f"You have **DEFEATED** the {self.monster_.name}!\n"
             f"You dealt **{self.battle_outcome_[1]} damage** to the monster and took **{self.battle_outcome_[2]} damage**.\n"
-            f"You gained {self.experience_gained} combat XP.\n\n"  # Note: You'll also need to pass 'experience_gained' when you instantiate
+            f"You gained {self.experience_gained} combat XP.\n\n" 
             f"__**Loot picked up:**__\n"
             f"```{loot_message_string}```"
         )

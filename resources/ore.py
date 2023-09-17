@@ -1,15 +1,13 @@
 class Ore:
-    def __init__(self, name, rarity, value):
+    def __init__(self, name, min_level):
         self.name = name
-        self.rarity = rarity
-        self.value = value
+        self.min_level = min_level
         self.stack = 0
 
     def to_dict(self):
         return {
             "name": self.name,
-            "rarity": self.rarity,
-            "value": self.value,
+            "min_level": self.min_level,
             "stack": self.stack,
         }
 
@@ -17,16 +15,16 @@ class Ore:
     def from_dict(cls, data):
         ore = cls(
             name=data["name"],
-            rarity=data["rarity"],
-            value=data["value"],
+            min_level=data["min_level"],
         )
         ore.stack = data["stack"]
         return ore
 
 ORE_TYPES = [
-    Ore("Iron", 1, 15),
-    Ore("Coal", 2, 20),
-    Ore("Carbon", 3, 30),
+    Ore("Iron", 1),
+    Ore("Coal", 20),
+    Ore("Carbon", 40),
+    Ore("Mithril", 60)
 ]
 
 class Gem:

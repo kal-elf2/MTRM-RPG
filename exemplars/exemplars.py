@@ -56,13 +56,6 @@ class Exemplar:
     def health(self, value):
         self.stats.health = value
 
-    # def increase_skill_stats(self, skill):
-    #     if skill == "mining":
-    #         self.stats.increment_strength(1)
-    #     elif skill == "woodcutting":
-    #         self.stats.increment_attack(1)
-    #     elif skill == "fishing":
-    #         self.stats.increment_defense(1)
 
     async def send_level_up_message(self, interaction, skill, new_level):
         if skill == "combat":
