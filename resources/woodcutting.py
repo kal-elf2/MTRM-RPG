@@ -207,7 +207,7 @@ class HarvestButton(discord.ui.View):
             await interaction.message.edit(embed=self.embed, view=self)
 
         # 10% chance of a monster encounter
-        if np.random.rand() <= 0.99 and self.player_data[self.author_id]["in_battle"] == False:
+        if np.random.rand() <= 0.05 and self.player_data[self.author_id]["in_battle"] == False:
             self.player_data[self.author_id]["in_battle"] = True
             save_player_data(self.guild_id, self.player_data)
 
@@ -220,7 +220,7 @@ class HarvestButton(discord.ui.View):
             # Store the message object that is sent
             battle_options_msg = await self.ctx.send(view=BattleOptions(self.ctx))
 
-            await interaction.followup.send(f"**❗ LOOK OUT ❗** \n{interaction.user.mention} gets **attacked by a {monster.name}** while harvesting {self.tree_type}.", ephemeral = True)
+            await interaction.followup.send(f"**❗ LOOK OUT {interaction.user.mention} ❗** \n You got **attacked by a {monster.name}** while harvesting {self.tree_type}.", ephemeral = True)
 
             battle_outcome, loot_messages = await monster_battle(interaction.user, self.player, monster, self.player.stats.zone_level, battle_embed)
 
