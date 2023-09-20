@@ -56,23 +56,34 @@ class Exemplar:
     def health(self, value):
         self.stats.health = value
 
-
     async def send_level_up_message(self, interaction, skill, new_level):
-        if skill == "combat":
+        embed = discord.Embed(color=discord.Color.blue(), title="Level Up!")
+        embed.description = f"Congratulations, {interaction.user.mention}! You have reached **Level {new_level} in {skill.capitalize()}**."
 
-            embed = discord.Embed(color=discord.Color.blue(), title="Level Up!")
-            embed.description = f"Congratulations, {interaction.user.mention}! You have reached **Level {new_level} in {skill.capitalize()}**."
-            embed.add_field(name="⚔️ Combat Level", value=str(self.stats.combat_level), inline=True)
-            embed.add_field(name=f"{heart_emoji} Health", value=self.stats.health, inline=True)
-            embed.add_field(name=f"{strength_emoji} Strength", value=self.stats.strength, inline=True)
-            embed.add_field(name=f"{endurance_emoji} Endurance", value=self.stats.endurance, inline=True)
-            embed.add_field(name="🗡️ Attack", value=self.stats.attack, inline=True)
-            embed.add_field(name="🛡️ Defense", value=self.stats.defense, inline=True)
+        if skill == "combat":
+            embed.add_field(name="⚔️ Combat Level", value=f"**{self.stats.combat_level}**   (+1)", inline=True)
+            embed.add_field(name=f"{heart_emoji} Health", value=f"**{self.stats.health}**   (+10)", inline=True)
+            embed.add_field(name=f"{strength_emoji} Strength", value=f"**{self.stats.strength}**   (+5)", inline=True)
+            embed.add_field(name=f"{endurance_emoji} Endurance", value=f"**{self.stats.endurance}**   (+5)",
+                            inline=True)
+            embed.add_field(name="🗡️ Attack", value=f"**{self.stats.attack}**   (+2)", inline=True)
+            embed.add_field(name="🛡️ Defense", value=f"**{self.stats.defense}**   (+2)", inline=True)
             await interaction.followup.send(embed=embed)
         else:
-            # Prepare but don't send the level-up message
-            level_up_message = f"Congratulations, {interaction.user.mention}! You have reached **Level {new_level} in {skill.capitalize()}**."
-            return level_up_message
+            increase_value = 1  # Always +1 for these skills
+            if skill == "mining":
+                embed.add_field(name="⛏️ Mining Level", value=f"**{new_level}**   (+{increase_value})", inline=True)
+                embed.add_field(name=f"{strength_emoji} Strength",
+                                value=f"**{self.stats.strength}**   (+{increase_value})",
+                                inline=True)
+            elif skill == "woodcutting":
+                embed.add_field(name="🪓 Woodcutting Level", value=f"**{new_level}**   (+{increase_value})", inline=True)
+                embed.add_field(name="🗡️ Attack", value=f"**{self.stats.attack}**   (+{increase_value})", inline=True)
+            elif skill == "fishing":
+                embed.add_field(name="🎣 Fishing Level", value=f"**{new_level}**   (+{increase_value})", inline=True)
+                embed.add_field(name="🛡️ Defense", value=f"**{self.stats.defense}**   (+{increase_value})", inline=True)
+
+        return embed
 
     async def gain_experience(self, experience_points, experience_type, interaction=None):
         skill_exp_key = f"{experience_type}_experience"

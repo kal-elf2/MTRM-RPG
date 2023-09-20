@@ -8,6 +8,7 @@ from discord.ext import commands
 from discord.commands import Option
 from resources.herb import HERB_TYPES
 from resources.tree import TREE_TYPES, Tree
+from resources.materium import Materium
 from stats import ResurrectOptions
 from exemplars.exemplars import Exemplar
 from emojis import potion_yellow_emoji, rip_emoji, mtrm_emoji
@@ -54,6 +55,16 @@ def attempt_herb_drop(zone_level):
         herb_dropped = random.choices(herb_types_for_zone, weights=herb_weights, k=1)[0]
         return herb_dropped
     return None
+
+# Function to handle MTRM drop
+def attempt_mtrm_drop(zone_level):
+    mtrm_drop_rate = 0.99  # 1% chance to drop MTRM
+    if random.random() < mtrm_drop_rate:
+        mtrm_dropped = Materium()  # Create a Materium object
+        mtrm_dropped.stack = zone_level  # Set the stack attribute to be the zone level
+        return mtrm_dropped
+    return None
+
 
 # View class for Harvest button
 class HarvestButton(discord.ui.View):
@@ -131,7 +142,13 @@ class HarvestButton(discord.ui.View):
             herb_dropped = attempt_herb_drop(zone_level)
             if herb_dropped:
                 self.player.inventory.add_item_to_inventory(herb_dropped, amount=1)
-                message += f"\nYou also **found some 🌿 {herb_dropped.name}**!"
+                message += f"\nYou also **found some {herb_dropped.name}!** 🌿"
+
+            # Attempt MTRM drop
+            mtrm_dropped = attempt_mtrm_drop(zone_level)
+            if mtrm_dropped:
+                self.player.inventory.add_item_to_inventory(mtrm_dropped, amount=1)
+                message += f"\nYou also **found some Materium!** {mtrm_emoji}"
 
             self.player_data[self.author_id]["stats"][
                 "woodcutting_experience"] = self.player.stats.woodcutting_experience
@@ -175,18 +192,18 @@ class HarvestButton(discord.ui.View):
             self.embed.description = updated_description
 
             # Re-enable the button after 3 seconds
-            await asyncio.sleep(2.25)
+            await asyncio.sleep(1.75)
             button.disabled = False
 
             await interaction.message.edit(embed=self.embed, view=self)
 
-            if level_up_message:
+            if level_up_message:  # Assuming level_up_message is an embed object
                 self.player_data[self.author_id]["stats"]["attack"] = self.player.stats.attack + (
                         self.player.stats.woodcutting_level - 1)
                 save_player_data(self.guild_id, self.player_data)
 
-                level_up_message += "  (+1 🗡️ level)"  # Append additional text to the level_up_message
-                await interaction.followup.send(level_up_message)
+                await interaction.followup.send(embed=level_up_message)
+
 
 
         else:
@@ -198,7 +215,7 @@ class HarvestButton(discord.ui.View):
             self.chop_messages.append(message)
 
             # Re-enable the button after 3 seconds
-            await asyncio.sleep(2.5)
+            await asyncio.sleep(2.25)
             button.disabled = False
 
             # Prepare updated embed

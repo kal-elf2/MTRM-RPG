@@ -262,7 +262,7 @@ async def apply_penalty(player_data, author_id, interaction):
         original_level = stats[f"{original_skill_name}_level"]
 
         # Apply the 2.5% penalty
-        new_exp = max(1, math.floor(stats[skill] * 0.975))
+        new_exp = max(0, math.floor(stats[skill] * 0.975))
         stats[skill] = new_exp  # Update the experience in player_data
 
         # Recalculate the level based on the new experience
