@@ -20,7 +20,7 @@ bot = commands.Bot(command_prefix="/", intents=discord.Intents.all())
 # Add the cog to your bot
 bot.load_extension("stats")
 bot.load_extension("resources.woodcutting")
-
+bot.load_extension("resources.mining")
 
 guild_data = {}
 
@@ -107,6 +107,8 @@ class PickExemplars(Select):
         }
 
         player_data[str(author_id)]["inventory"] = Inventory().to_dict()
+        # Set 'in_battle' field to False
+        player_data[str(author_id)]["in_battle"] = False
 
         save_player_data(guild_id, player_data)
 

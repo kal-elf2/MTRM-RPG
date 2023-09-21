@@ -225,7 +225,7 @@ class HarvestButton(discord.ui.View):
             await interaction.message.edit(embed=self.embed, view=self)
 
         # 10% chance of a monster encounter
-        if np.random.rand() <= 0.1 and self.player_data[self.author_id]["in_battle"] == False:
+        if np.random.rand() <= 0.25 and self.player_data[self.author_id]["in_battle"] == False:
             self.player_data[self.author_id]["in_battle"] = True
             save_player_data(self.guild_id, self.player_data)
 
@@ -333,8 +333,7 @@ class WoodcuttingCog(commands.Cog):
 
         # Start Embed
         embed = Embed(title=f"{tree_type} Tree")
-        test = generate_urls("trees", f'{tree_type}')
-        embed.set_image(url=test)
+        embed.set_image(url=generate_urls("trees", f'{tree_type}'))
 
         # Add the initial stamina and wood inventory here
         stamina_str = f"{potion_yellow_emoji}  {player.stats.endurance}/{player.stats.max_endurance}"
