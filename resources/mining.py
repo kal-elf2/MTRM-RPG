@@ -20,13 +20,11 @@ from images.urls import generate_urls
 MINING_EXPERIENCE = {
     "Iron": 20,
     "Coal": 25,
-    "Carbon": 50,
-    "Mithril": 100
+    "Carbon": 50
 }
 
 with open("level_data.json", "r") as f:
     LEVEL_DATA = json.load(f)
-
 
 def generate_random_monster(ore_type):
     monster_chances = {}
@@ -36,8 +34,6 @@ def generate_random_monster(ore_type):
         monster_chances = {'Buck': 0.1, 'Wolf': 0.3, 'Goblin': 0.6}
     elif ore_type == "Carbon":
         monster_chances = {'Goblin': 0.6, 'Goblin Hunter': 0.2, 'Mega Brute': 0.15, 'Wisp': 0.05}
-    else:
-        monster_chances = {'Goblin Hunter': 0.7, 'Mega Brute': 0.2, 'Wisp': 0.1}
 
     monsters = list(monster_chances.keys())
     probabilities = list(monster_chances.values())
@@ -45,7 +41,7 @@ def generate_random_monster(ore_type):
     return np.random.choice(monsters, p=probabilities)
 
 def attempt_gem_drop(zone_level):
-    gem_drop_rate = 0.99  # 10% chance to drop a gem
+    gem_drop_rate = 0.10  # 10% chance to drop a gem
     if random.random() < gem_drop_rate:
         # Adjust the gem types based on the zone level
         gem_types_for_zone = GEM_TYPES[:zone_level]
@@ -57,7 +53,7 @@ def attempt_gem_drop(zone_level):
 
 # Function to handle MTRM drop
 def attempt_mtrm_drop(zone_level):
-    mtrm_drop_rate = 0.99  # 1% chance to drop MTRM
+    mtrm_drop_rate = 0.01  # 1% chance to drop MTRM
     if random.random() < mtrm_drop_rate:
         mtrm_dropped = Materium()  # Create a Materium object
         mtrm_dropped.stack = zone_level  # Set the stack attribute to be the zone level
@@ -100,26 +96,7 @@ class MineButton(discord.ui.View):
             await interaction.followup.send(f"Invalid ore type selected.", ephemeral=True)
             return
 
-        success_prob = MiningCog.calculate_probability(player_level, selected_ore.min_level)
-
-        if success_prob < 0.05:
-            await interaction.followup.send(
-                f"You are *unlikely to be successful* in mining {self.ore_type} at your current level.\n Try again at **Mining Level {selected_ore.min_level}**.",
-                ephemeral=True)
-            return
-
-        # Check if player is in the correct zone for the Ore type
-        if self.ore_type == "Coal" and self.player.stats.zone_level < 2:
-            await interaction.followup.send("You must be in Zone Level 2 or higher to harvest Coal. *(Combat lvl 20 or higher required)*", ephemeral=True)
-            return
-
-        elif self.ore_type == "Carbon" and self.player.stats.zone_level < 3:
-            await interaction.followup.send("You must be in Zone Level 3 or higher to harvest Carbon. *(Combat lvl 40 or higher required)*", ephemeral=True)
-            return
-
-        elif self.ore_type == "Mithril" and self.player.stats.zone_level < 4:
-            await interaction.followup.send("You must be in Zone Level 4 or higher to harvest Mithril. *(Combat lvl 60 or higher required)*", ephemeral=True)
-            return
+        success_prob = MiningCog.calculate_probability(player_level, self.player.stats.zone_level, self.ore_type)
 
         success = random.random() < success_prob
 
@@ -128,7 +105,7 @@ class MineButton(discord.ui.View):
             message = f"**Successfully mined 1 {self.ore_type}!**"
 
             # Update inventory and decrement endurance
-            mined_ore = Ore(name=self.ore_type, min_level=selected_ore.min_level)
+            mined_ore = Ore(name=self.ore_type)
             self.player.inventory.add_item_to_inventory(mined_ore, amount=1)
             self.player.stats.endurance -= 1
 
@@ -203,8 +180,6 @@ class MineButton(discord.ui.View):
 
                 await interaction.followup.send(embed=level_up_message)
 
-
-
         else:
             message = f"Failed to mine {self.ore_type} ore."
 
@@ -224,7 +199,7 @@ class MineButton(discord.ui.View):
             await interaction.message.edit(embed=self.embed, view=self)
 
         # 10% chance of a monster encounter
-        if np.random.rand() <= 0.25 and self.player_data[self.author_id]["in_battle"] == False:
+        if np.random.rand() <= 0.10 and self.player_data[self.author_id]["in_battle"] == False:
             self.player_data[self.author_id]["in_battle"] = True
             save_player_data(self.guild_id, self.player_data)
 
@@ -308,21 +283,31 @@ class MiningCog(commands.Cog):
         self.bot = bot
 
     @staticmethod
-    def calculate_probability(player_level, min_level):
-        if player_level < min_level:
+    def calculate_probability(player_level, zone_level, ore_type):
+        base_min_levels = {
+            "Iron": 1,
+            "Coal": 7,
+            "Carbon": 14
+        }
+
+        # Calculate the adjusted min level for the specific ore in the current zone
+        ore_zone_min_level = base_min_levels[ore_type] + (zone_level - 1) * 20
+
+        # Check if player's level is lower than ore's minimum level
+        if player_level < ore_zone_min_level:
             return 0
-        elif min_level == 1:  # Iron Ore
-            return min(1, 0.25 + (player_level - 1) * 0.04)
-        elif min_level == 20:  # Coal Ore
-            return max(0.20, min(1, (player_level - 20) * 0.05))
-        elif min_level == 40:  # Carbon Ore
-            return max(0.15, min(1, (player_level - 40) * 0.05))
-        elif min_level == 60:  # Mithril Ore
-            return max(0.10, min(1, (player_level - 60) * 0.05))
+
+        # Calculate the level difference
+        level_difference = player_level - ore_zone_min_level
+
+        # Determine the success probability
+        # Starts at 25% and increases by 3.75% for each level difference until it reaches 100% in 20 levels
+        probability = 0.25 + min(level_difference, 20) * 0.0375
+        return min(1, probability)  # Ensure it doesn't exceed 100%
 
     @commands.slash_command(description="Mine some Ore!")
     async def mine(self, ctx,
-                   ore_type: Option(str, "Type of tree to chop", choices=['Iron', 'Coal', 'Carbon', 'Mithril'],
+                   ore_type: Option(str, "Type of tree to chop", choices=['Iron', 'Coal', 'Carbon'],
                                      required=True)):
         guild_id = ctx.guild.id
         author_id = str(ctx.author.id)
@@ -331,6 +316,22 @@ class MiningCog(commands.Cog):
         player = Exemplar(player_data[author_id]["exemplar"],
                           player_data[author_id]["stats"],
                           player_data[author_id]["inventory"])
+
+        # Determine minimum level based on player's zone level
+        base_min_level = {
+            "Iron": 1,
+            "Coal": 7,
+            "Carbon": 14
+        }
+
+        ore_min_level = base_min_level.get(ore_type) + (player.stats.zone_level - 1) * 20
+
+        # Check if player meets the level requirement
+        if player.stats.mining_level < ore_min_level:
+            await ctx.respond(
+                f"You need to be at least Mining Level {ore_min_level} to mine {ore_type} in this zone.",
+                ephemeral=True)
+            return
 
         # Start Embed
         embed = Embed(title=f"{ore_type} Ore")

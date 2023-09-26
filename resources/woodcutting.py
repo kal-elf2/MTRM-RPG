@@ -46,7 +46,7 @@ def generate_random_monster(tree_type):
     return np.random.choice(monsters, p=probabilities)
 
 def attempt_herb_drop(zone_level):
-    herb_drop_rate = 0.99  # 10% chance to drop a herb
+    herb_drop_rate = 0.10  # 10% chance to drop a herb
     if random.random() < herb_drop_rate:
         # Adjust the herb types based on the zone level
         herb_types_for_zone = HERB_TYPES[:zone_level]
@@ -58,7 +58,7 @@ def attempt_herb_drop(zone_level):
 
 # Function to handle MTRM drop
 def attempt_mtrm_drop(zone_level):
-    mtrm_drop_rate = 0.99  # 1% chance to drop MTRM
+    mtrm_drop_rate = 0.01  # 1% chance to drop MTRM
     if random.random() < mtrm_drop_rate:
         mtrm_dropped = Materium()  # Create a Materium object
         mtrm_dropped.stack = zone_level  # Set the stack attribute to be the zone level
@@ -101,26 +101,8 @@ class HarvestButton(discord.ui.View):
             await interaction.followup.send(f"Invalid tree type selected.", ephemeral=True)
             return
 
-        success_prob = WoodcuttingCog.calculate_probability(player_level, selected_tree.min_level)
-
-        if success_prob < 0.05:
-            await interaction.followup.send(
-                f"You are *unlikely to be successful* in chopping {self.tree_type} at your current level.\n Try again at **Woodcutting Level {selected_tree.min_level}**.",
-                ephemeral=True)
-            return
-
-        # Check if player is in the correct zone for the tree type
-        if self.tree_type == "Yew" and self.player.stats.zone_level < 2:
-            await interaction.followup.send("You must be in Zone Level 2 or higher to harvest Yew. *(Combat lvl 20 or higher required)*", ephemeral=True)
-            return
-
-        elif self.tree_type == "Ash" and self.player.stats.zone_level < 3:
-            await interaction.followup.send("You must be in Zone Level 3 or higher to harvest Ash. *(Combat lvl 40 or higher required)*", ephemeral=True)
-            return
-
-        elif self.tree_type == "Poplar" and self.player.stats.zone_level < 4:
-            await interaction.followup.send("You must be in Zone Level 4 or higher to harvest Poplar. *(Combat lvl 60 or higher required)*", ephemeral=True)
-            return
+        # Calculate probability using the zone level and the tree type
+        success_prob = WoodcuttingCog.calculate_probability(player_level, self.player.stats.zone_level, self.tree_type)
 
         success = random.random() < success_prob
 
@@ -129,7 +111,7 @@ class HarvestButton(discord.ui.View):
             message = f"**Successfully chopped 1 {self.tree_type}!**"
 
             # Update inventory and decrement endurance
-            chopped_tree = Tree(name=self.tree_type, min_level=selected_tree.min_level)
+            chopped_tree = Tree(name=self.tree_type)
             self.player.inventory.add_item_to_inventory(chopped_tree, amount=1)
             self.player.stats.endurance -= 1
 
@@ -225,7 +207,7 @@ class HarvestButton(discord.ui.View):
             await interaction.message.edit(embed=self.embed, view=self)
 
         # 10% chance of a monster encounter
-        if np.random.rand() <= 0.25 and self.player_data[self.author_id]["in_battle"] == False:
+        if np.random.rand() <= 0.10 and self.player_data[self.author_id]["in_battle"] == False:
             self.player_data[self.author_id]["in_battle"] = True
             save_player_data(self.guild_id, self.player_data)
 
@@ -307,17 +289,27 @@ class WoodcuttingCog(commands.Cog):
         self.bot = bot
 
     @staticmethod
-    def calculate_probability(player_level, min_level):
-        if player_level < min_level:
+    def calculate_probability(player_level, zone_level, tree_type):
+        base_min_levels = {
+            "Pine": 1,
+            "Yew": 5,
+            "Ash": 10,
+            "Poplar": 15
+        }
+
+        # Calculate the adjusted min level for the specific tree in the current zone
+        tree_zone_min_level = base_min_levels[tree_type] + (zone_level - 1) * 20
+
+        # Check if player's level is lower than tree's minimum level
+        if player_level < tree_zone_min_level:
             return 0
-        elif min_level == 1:  # Pine Tree
-            return min(1, 0.25 + (player_level - 1) * 0.04)
-        elif min_level == 20:  # Yew Tree
-            return max(0.20, min(1, (player_level - 20) * 0.05))
-        elif min_level == 40:  # Ash Tree
-            return max(0.15, min(1, (player_level - 40) * 0.05))
-        elif min_level == 60:  # Poplar Tree
-            return max(0.10, min(1, (player_level - 60) * 0.05))
+
+        # Calculate the level difference
+        level_difference = player_level - tree_zone_min_level
+
+        # Determine the success probability
+        probability = 0.25 + min(level_difference, 20) * 0.0375
+        return min(1, probability)  # Ensure it doesn't exceed 100%
 
     @commands.slash_command(description="Chop some wood!")
     async def chop(self, ctx,
@@ -330,6 +322,22 @@ class WoodcuttingCog(commands.Cog):
         player = Exemplar(player_data[author_id]["exemplar"],
                           player_data[author_id]["stats"],
                           player_data[author_id]["inventory"])
+
+        base_min_level = {
+            "Pine": 1,
+            "Yew": 5,
+            "Ash": 10,
+            "Poplar": 15
+        }
+
+        tree_min_level = base_min_level.get(tree_type) + (player.stats.zone_level - 1) * 20
+
+        # Check if player meets the level requirement
+        if player.stats.woodcutting_level < tree_min_level:
+            await ctx.respond(
+                f"You need to be at least Woodcutting Level {tree_min_level} to chop {tree_type} in this zone.",
+                ephemeral=True)
+            return
 
         # Start Embed
         embed = Embed(title=f"{tree_type} Tree")

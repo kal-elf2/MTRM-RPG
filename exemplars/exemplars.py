@@ -31,8 +31,6 @@ class Exemplar:
             stats["mining_experience"],
             stats["woodcutting_level"],
             stats["woodcutting_experience"],
-            stats["fishing_level"],
-            stats["fishing_experience"],
             stats["zone_level"],
             damage_taken=0
 
@@ -79,9 +77,6 @@ class Exemplar:
             elif skill == "woodcutting":
                 embed.add_field(name="🪓 Woodcutting Level", value=f"**{new_level}**   (+{increase_value})", inline=True)
                 embed.add_field(name="🗡️ Attack", value=f"**{self.stats.attack}**   (+{increase_value})", inline=True)
-            elif skill == "fishing":
-                embed.add_field(name="🎣 Fishing Level", value=f"**{new_level}**   (+{increase_value})", inline=True)
-                embed.add_field(name="🛡️ Defense", value=f"**{self.stats.defense}**   (+{increase_value})", inline=True)
 
         return embed
 
@@ -136,7 +131,7 @@ class Exemplar:
     def max_health(self):
         return self.stats.max_health
 
-    def set_combat_stats(self, new_combat_level, player=None, woodcutting_level=None, mining_level=None, fishing_level=None):
+    def set_combat_stats(self, new_combat_level, player=None, woodcutting_level=None, mining_level=None):
 
         if player is None:
             player_name = self.name
@@ -204,10 +199,6 @@ class Exemplar:
         if mining_level:
             # Update strength based on mining level
             strength_update += (mining_level[0] - 1)
-
-        if fishing_level:
-            # Update defense based on mining level
-            defense_update += (fishing_level[0] - 1)
 
     def can_equip_item(self, item):
         level_requirement = item.stats['level_requirement']
@@ -315,8 +306,6 @@ class PlayerStats:
         mining_experience=0,
         woodcutting_level=1,
         woodcutting_experience=0,
-        fishing_level=1,
-        fishing_experience=0,
         zone_level = 1,
         damage_taken =0
 
@@ -334,8 +323,6 @@ class PlayerStats:
         self.mining_experience = mining_experience
         self.woodcutting_level = woodcutting_level
         self.woodcutting_experience = woodcutting_experience
-        self.fishing_level = fishing_level
-        self.fishing_experience = fishing_experience
         self.zone_level = zone_level
         self.damage_taken = damage_taken
 
@@ -377,9 +364,7 @@ class Human(Exemplar):
             "mining_level": 1,
             "mining_experience": 0,
             "woodcutting_level": 1,
-            "woodcutting_experience": 0,
-            "fishing_level": 1,
-            "fishing_experience":0
+            "woodcutting_experience": 0
         }
         super().__init__("Human", stats=human_stats)
 
@@ -399,9 +384,7 @@ class Dwarf(Exemplar):
             "mining_level": 1,
             "mining_experience": 0,
             "woodcutting_level": 1,
-            "woodcutting_experience": 0,
-            "fishing_level": 1,
-            "fishing_experience": 0
+            "woodcutting_experience": 0
         }
         super().__init__("Dwarf", stats=dwarf_stats)
 
@@ -421,9 +404,7 @@ class Orc(Exemplar):
             "mining_level": 1,
             "mining_experience": 0,
             "woodcutting_level": 1,
-            "woodcutting_experience": 0,
-            "fishing_level": 1,
-            "fishing_experience": 0
+            "woodcutting_experience": 0
         }
         super().__init__("Orc", stats=orc_stats)
 
@@ -443,9 +424,7 @@ class Halfling(Exemplar):
             "mining_level": 1,
             "mining_experience": 0,
             "woodcutting_level": 1,
-            "woodcutting_experience": 0,
-            "fishing_level": 1,
-            "fishing_experience": 0
+            "woodcutting_experience": 0
         }
         super().__init__("Halfling", stats=halfling_stats)
 
@@ -465,9 +444,7 @@ class Elf(Exemplar):
             "mining_level": 1,
             "mining_experience": 0,
             "woodcutting_level": 1,
-            "woodcutting_experience": 0,
-            "fishing_level": 1,
-            "fishing_experience": 0
+            "woodcutting_experience": 0
         }
         super().__init__("Elf", stats=elf_stats)
 

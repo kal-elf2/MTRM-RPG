@@ -257,7 +257,7 @@ async def apply_penalty(player_data, author_id, interaction):
                       player_data[author_id]["inventory"])
 
     new_combat_level = None
-    for skill in ["combat_experience", "woodcutting_experience", "mining_experience", "fishing_experience"]:
+    for skill in ["combat_experience", "woodcutting_experience", "mining_experience"]:
         original_skill_name = skill[:-11]  # Remove '_experience' from the skill name
         original_level = stats[f"{original_skill_name}_level"]
 
@@ -278,7 +278,7 @@ async def apply_penalty(player_data, author_id, interaction):
         stats[f"{original_skill_name}_level"] = new_level  # Update the level in the player's stats
 
     # Call the function to update combat stats once, after all skills have been processed
-    player.set_combat_stats(new_combat_level, player, levels_decreased.get('woodcutting'), levels_decreased.get('mining'), levels_decreased.get('fishing'))
+    player.set_combat_stats(new_combat_level, player, levels_decreased.get('woodcutting'), levels_decreased.get('mining'))
 
     player_data[author_id]["stats"]["health"] = player.stats.health
     player_data[author_id]["stats"]["max_health"] = player.stats.max_health
@@ -296,15 +296,10 @@ async def apply_penalty(player_data, author_id, interaction):
     new_mining_level = player_data[author_id]["stats"]["mining_level"]
     player.stats.strength += (
             new_mining_level - 1)  # Add 1 strength point for each mining level, starting from level 2
-    # Update defense based on fishing level
-    new_fishing_level = player_data[author_id]["stats"]["fishing_level"]
-    player.stats.defense += (
-            new_fishing_level - 1)  # Add 1 defense point for each fishing level, starting from level 2
 
     # Save updated attack/strength/defense skills
     player_data[author_id]["stats"]["attack"] = player.stats.attack
     player_data[author_id]["stats"]["strength"] = player.stats.strength
-    player_data[author_id]["stats"]["defense"] = player.stats.defense
 
     return levels_decreased
 
