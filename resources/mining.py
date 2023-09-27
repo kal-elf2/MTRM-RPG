@@ -15,12 +15,19 @@ from utils import load_player_data, save_player_data, send_message
 from monsters.monster import create_battle_embed, monster_battle, generate_monster_by_name
 from monsters.battle import BattleOptions, LootOptions
 from images.urls import generate_urls
+from emojis import coal_emoji, carbon_emoji, iron_emoji
 
 # Woodcutting experience points for each tree type
 MINING_EXPERIENCE = {
     "Iron": 20,
     "Coal": 25,
     "Carbon": 50
+}
+
+ORE_EMOJIS = {
+    "Coal": coal_emoji,
+    "Carbon": carbon_emoji,
+    "Iron": iron_emoji
 }
 
 with open("level_data.json", "r") as f:
@@ -100,9 +107,11 @@ class MineButton(discord.ui.View):
 
         success = random.random() < success_prob
 
+        ore_emoji = ORE_EMOJIS.get(self.ore_type, "🪨")  # Default to a rock emoji if no specific emoji is found.
+
         message = ""
         if success:
-            message = f"**Successfully mined 1 {self.ore_type}!**"
+            message = f"**Successfully mined 1 {self.ore_type}! {ore_emoji}**"
 
             # Update inventory and decrement endurance
             mined_ore = Ore(name=self.ore_type)
@@ -147,7 +156,7 @@ class MineButton(discord.ui.View):
 
             # Add updated fields to embed
             self.embed.add_field(name="Endurance", value=stamina_str, inline=True)
-            self.embed.add_field(name=f"{self.ore_type}", value=f"🪨  {ore_str}", inline=True)
+            self.embed.add_field(name=f"{self.ore_type}", value=f"{ore_str} {ore_emoji}", inline=True)
 
             # Check if the player is at max level and add the XP field last
             if next_level >= 100:
@@ -324,6 +333,8 @@ class MiningCog(commands.Cog):
             "Carbon": 14
         }
 
+        ore_emoji = ORE_EMOJIS.get(ore_type, "🪨")  # Default to a rock emoji if no specific emoji is found.
+
         ore_min_level = base_min_level.get(ore_type) + (player.stats.zone_level - 1) * 20
 
         # Check if player meets the level requirement
@@ -344,9 +355,9 @@ class MiningCog(commands.Cog):
         ore_count = player.inventory.get_ore_count(ore_type)
         ore_str = str(ore_count)
 
-        # Add the initial fields to the embed
+        # Add updated fields to embed
         embed.add_field(name="Endurance", value=stamina_str, inline=True)
-        embed.add_field(name=f"{ore_type}", value=f"🪨  {ore_str}", inline=True)
+        embed.add_field(name=ore_type, value=f"{ore_str} {ore_emoji}", inline=True)
 
         # Calculate current mining level and experience for the next level
         current_mining_level = player.stats.mining_level

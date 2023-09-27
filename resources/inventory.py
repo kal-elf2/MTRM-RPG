@@ -22,11 +22,11 @@ class Inventory:
         self.equipped_armor = {}
         self.equipped_weapon = None
         self.materium_count = 0
-        self.gold = 0
+        self.coppers = 0
 
     def to_dict(self):
         return {
-            "gold": self.gold,
+            "coppers": self.coppers,
             "items": [item.to_dict() for item in self.items],
             "trees": [tree.to_dict() for tree in self.trees],
             "herbs": [herb.to_dict() for herb in self.herbs],
@@ -44,7 +44,7 @@ class Inventory:
     @classmethod
     def from_dict(cls, data):
         inventory = cls(limit=data["limit"] if "limit" in data else 40)
-        inventory.gold = data["gold"]
+        inventory.coppers = data["coppers"]
         inventory.items = [Item.from_dict(item_data) for item_data in data["items"]]
         inventory.trees = [Tree.from_dict(tree_data) for tree_data in data["trees"]]
         inventory.herbs = [Herb.from_dict(herb_data) for herb_data in data["herbs"]]
@@ -58,8 +58,8 @@ class Inventory:
         inventory.materium_count = data["materium_count"]
         return inventory
 
-    def add_gold(self, amount):
-        self.gold += amount
+    def add_coppers(self, amount):
+        self.coppers += amount
 
     def add_item_to_inventory(self, item, amount=1):
         if isinstance(item, Materium):

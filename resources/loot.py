@@ -4,6 +4,7 @@ from resources.herb import HERB_TYPES
 from resources.potion import POTION_LIST
 from resources.materium import Materium
 from resources.item import Item
+from emojis import rabbit_body_emoji, wolf_skin_emoji, glowing_essence_emoji, deer_skins_emoji, deer_parts_emoji, onyx_emoji
 
 
 class Loot:
@@ -97,14 +98,24 @@ loot_list = [
     ],
 ]
 
+item_emoji_mapping = {
+    'Onyx': onyx_emoji,
+    'Deer Skins': deer_skins_emoji,
+    'Deer Parts': deer_parts_emoji,
+    'Rabbit Body': rabbit_body_emoji,
+    'Glowing Essence': glowing_essence_emoji,
+    'Wolf Skin': wolf_skin_emoji
+}
+
+
 def generate_zone_loot(zone_level, monster_drop=None):
     loot_messages = []
     loot = []
 
-    # Gold drops
-    gold_dropped = random.randint(zone_level * 2, zone_level * 5)
-    loot.append(('gold', gold_dropped))
-    loot_messages.append(f"You found {gold_dropped} gold!")
+    # Coppers drops
+    coppers_dropped = random.randint(zone_level * 2, zone_level * 5)
+    loot.append(('coppers', coppers_dropped))
+    loot_messages.append(f"You found {coppers_dropped} coppers!")
 
     # Gem drops
     gem_drop_rate = 0.05  # 5% chance to drop a gem
@@ -165,7 +176,7 @@ def generate_zone_loot(zone_level, monster_drop=None):
                 continue  # Ignore the drop if it's not a string or an Item
 
             loot.append(('items', [(item, quantity)]))
-            loot_messages.append(f"You found {quantity} {item.name}!")
+            loot_messages.append(f"{item_emoji_mapping.get(item.name, '')}  You found {quantity} {item.name}!")
 
         # Return the loot dropped (empty list if no loot is dropped) and the loot messages
     return loot, loot_messages

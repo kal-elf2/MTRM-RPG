@@ -23,8 +23,8 @@ class LootOptions(discord.ui.View):
     async def collect_loot(self, button, interaction):
 
         for loot_type, loot_items in self.battle_outcome_[3]:
-            if loot_type == 'gold':
-                self.player_.inventory.add_gold(loot_items)
+            if loot_type == 'coppers':
+                self.player_.inventory.add_coppers(loot_items)
             elif loot_type == 'gem':
                 self.player_.inventory.add_item_to_inventory(loot_items)
             elif loot_type == 'herb':
@@ -48,7 +48,7 @@ class LootOptions(discord.ui.View):
             f"You dealt **{self.battle_outcome_[1]} damage** to the monster and took **{self.battle_outcome_[2]} damage**.\n"
             f"You gained {self.experience_gained} combat XP.\n\n" 
             f"__**Loot picked up:**__\n"
-            f"```{loot_message_string}```"
+            f"{loot_message_string}"
         )
 
         final_embed = create_battle_embed(self.ctx_.user, self.player_, self.monster_, message_text)
