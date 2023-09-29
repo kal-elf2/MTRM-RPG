@@ -13,7 +13,7 @@ from discord import Embed
 from resources.inventory import Inventory
 from stats import ResurrectOptions
 from monsters.battle import BattleOptions, LootOptions
-from emojis import mtrm_emoji, rip_emoji
+from emojis import mtrm_emoji, rip_emoji, heart_emoji, strength_emoji, endurance_emoji
 from images.urls import generate_urls
 
 bot = commands.Bot(command_prefix="/", intents=discord.Intents.all())
@@ -108,11 +108,68 @@ class PickExemplars(Select):
         # Set 'in_battle' field to False
         player_data[str(author_id)]["in_battle"] = False
 
-        save_player_data(guild_id, player_data)
+        # Generate embed with exemplar stats
+        embed = self.generate_stats_embed(exemplar_instance)
+
+        # Create the confirmation view with two buttons
+        view = ConfirmExemplar(exemplar_instance, player_data, str(author_id), guild_id)
 
         await interaction.response.send_message(
             f'{interaction.user.mention}, you have chosen the {self.options_dict[self.values[0]]} Exemplar!',
+            embed=embed,
+            view=view,
             ephemeral=False)
+
+    def generate_stats_embed(self, exemplar_instance):
+        stats = exemplar_instance.stats
+
+        # Assigning weapon specialties based on exemplar
+        weapon_specialty = {
+            "human": "Sword",
+            "elf": "Bow",
+            "orc": "Spear",
+            "dwarf": "Hammer",
+            "halfling": "Sword"
+        }
+        specialty = weapon_specialty.get(exemplar_instance.name.lower())
+        embed = discord.Embed(color=discord.Color.blue(), title=f"{exemplar_instance.name} Exemplar Stats")
+
+        # Assuming there's a function to generate URLs for exemplars' thumbnails
+        embed.set_image(url=generate_urls("exemplars", exemplar_instance.name))
+
+        embed.add_field(name="⚔️ Combat Level", value=str(stats.combat_level), inline=True)
+        embed.add_field(name=f"{heart_emoji} Health", value=str(stats.health), inline=True)
+        embed.add_field(name=f"{strength_emoji} Strength", value=str(stats.strength), inline=True)
+        embed.add_field(name=f"{endurance_emoji} Endurance", value=str(stats.endurance), inline=True)
+        embed.add_field(name="🗡️ Attack", value=str(stats.attack), inline=True)
+        embed.add_field(name="🛡️ Defense", value=str(stats.defense), inline=True)
+        embed.add_field(name="⛏️ Mining Level", value=str(stats.mining_level), inline=True)
+        embed.add_field(name="🪓 Woodcutting Level", value=str(stats.woodcutting_level), inline=True)
+        embed.set_footer(text=f"Weapon bonus: {specialty}")
+
+        return embed
+
+class ConfirmExemplar(discord.ui.View):
+    def __init__(self, exemplar_instance, player_data, author_id, guild_id):
+        super().__init__(timeout=None)
+        self.exemplar_instance = exemplar_instance
+        self.player_data = player_data
+        self.author_id = author_id
+        self.guild_id = guild_id
+
+    @discord.ui.button(label="Start", custom_id="confirm_yes", style=discord.ButtonStyle.blurple)
+    async def confirm_yes(self, button, interaction):
+        # Save player data here
+        save_player_data(self.guild_id, self.player_data)
+        await interaction.response.send_message(f"Your selection of {self.exemplar_instance.name} Exemplar has been saved!", ephemeral=False)
+
+    @discord.ui.button(label="Back", custom_id="confirm_no", style=discord.ButtonStyle.grey)
+    async def confirm_no(self, button, interaction):
+        # Re-send the PickExemplars view
+        view = discord.ui.View()
+        view.add_item(PickExemplars())
+        await interaction.response.send_message("Please choose your exemplar from the list below.", view=view, ephemeral=False)
+
 
 @bot.slash_command(description="Battle a monster!")
 async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=generate_monster_list(), required=False, default='')):

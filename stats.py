@@ -58,10 +58,24 @@ class StatsCog(commands.Cog):
 
         player_data = load_player_data(guild_id)
         player = player_data[author_id]["stats"]
+        exemplar = player_data[author_id]['exemplar']
+        exemplar_capitalized = exemplar.capitalize()
 
         level_data = load_level_data()
 
         embed = discord.Embed(color=discord.Color.blue())
+
+        # Obtain the exemplar image and set it to the embed
+        embed.set_thumbnail(url=generate_urls("exemplars", exemplar_capitalized))
+
+        # Displaying weapon specialty in the footer
+        weapon_specialty = {
+            "human": "Sword",
+            "elf": "Bow",
+            "orc": "Spear",
+            "dwarf": "Hammer",
+            "halfling": "Sword"
+        }
 
         if progress is None:
             all_stats = f"""**Exemplar**: {str(player_data[author_id]['exemplar']).capitalize()}\n
@@ -75,6 +89,8 @@ class StatsCog(commands.Cog):
             🪓 **Woodcutting Level**: {str(player['woodcutting_level'])}"""
 
             embed.add_field(name="Overall Stats", value=all_stats, inline=False)
+            specialty = weapon_specialty.get(exemplar)
+            embed.set_footer(text=f"Weapon bonus: {specialty}")
             await ctx.respond(content=f"{ctx.author.mention}'s Overall Stats", embed=embed)
         else:
             if progress == 'Combat Level':
