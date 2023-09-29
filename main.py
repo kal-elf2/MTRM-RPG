@@ -225,13 +225,31 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
         await battle_options_msg.delete()
         loot_view = LootOptions(ctx, player, monster, battle_embed, player_data, author_id, battle_outcome, loot_messages, guild_id, ctx, experience_gained)
 
+        with open("level_data.json", "r") as f:
+            LEVEL_DATA = json.load(f)
+
+        # Calculate current combat level and experience for the next level
+        current_combat_level = player_data[author_id]["stats"]["combat_level"]
+        next_combat_level = current_combat_level + 1
+        current_combat_experience = player_data[author_id]["stats"]["combat_experience"]
+
+        # Determine the footer text based on combat level
+        if next_combat_level >= 100:
+            footer_text = f"⚔️ Combat Level: {current_combat_level}\n📊 {current_combat_experience}"
+        else:
+            next_level_experience_needed = LEVEL_DATA.get(str(current_combat_level), {}).get("total_experience")
+            footer_text = f"⚔️ Combat Level: {current_combat_level}\n📊 {current_combat_experience}/{next_level_experience_needed}"
+
+        # Construct the embed with the footer
+        battle_outcome_embed = create_battle_embed(ctx.user, player, monster,
+                                                   f"You have **DEFEATED** the {monster.name}!\n\n"
+                                                   f"You dealt **{battle_outcome[1]} damage** to the monster and took **{battle_outcome[2]} damage**. "
+                                                   f"You gained {experience_gained} combat XP.\n"
+                                                   f"\n")
+        battle_outcome_embed.set_footer(text=footer_text)
 
         await battle_embed.edit(
-            embed=create_battle_embed(ctx.user, player, monster,
-                                      f"You have **DEFEATED** the {monster.name}!\n\n"
-                                          f"You dealt **{battle_outcome[1]} damage** to the monster and took **{battle_outcome[2]} damage**. "
-                                          f"You gained {experience_gained} combat XP.\n"
-                                          f"\n"),
+            embed=battle_outcome_embed,
             view=loot_view
         )
 
