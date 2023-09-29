@@ -60,7 +60,7 @@ def attempt_herb_drop(zone_level):
     if random.random() < herb_drop_rate:
         # Adjust the herb types based on the zone level
         herb_types_for_zone = HERB_TYPES[:zone_level]
-        # Adjust the weights based on the zone level, these are now 40%, 40%, 5%, 5%
+        # Adjust the weights based on the zone level, these are now 40%, 40%, 5%, 5%, 1%
         herb_weights = [40, 40, 10, 5, 1][:zone_level]
         herb_dropped = random.choices(herb_types_for_zone, weights=herb_weights, k=1)[0]
         return herb_dropped
@@ -118,7 +118,7 @@ class HarvestButton(discord.ui.View):
 
         message = ""
         if success:
-            tree_emoji = tree_emoji_mapping.get(self.tree_type, "")  # Default to empty string if not found
+            tree_emoji = tree_emoji_mapping.get(self.tree_type, "🪵")
             message = f"{tree_emoji} **Successfully chopped 1 {self.tree_type}!**"
 
             # Update inventory and decrement endurance
@@ -135,7 +135,7 @@ class HarvestButton(discord.ui.View):
             herb_dropped = attempt_herb_drop(zone_level)
             if herb_dropped:
                 self.player.inventory.add_item_to_inventory(herb_dropped, amount=1)
-                message += f"\n🌿 You also **found some {herb_dropped.name}!** "
+                message += f"\n🌿 You also **found some {herb_dropped.name}!**"
 
             # Attempt MTRM drop
             mtrm_dropped = attempt_mtrm_drop(zone_level)
@@ -200,7 +200,7 @@ class HarvestButton(discord.ui.View):
 
 
         else:
-            message = f"Failed to chop {self.tree_type} wood."
+            message = f"You failed to chop {self.tree_type} wood."
 
             # Update the chop messages list
             if len(self.chop_messages) >= 5:
@@ -217,7 +217,7 @@ class HarvestButton(discord.ui.View):
 
             await interaction.message.edit(embed=self.embed, view=self)
 
-        # 10% chance of a monster encounter
+        # Monster encounter set in probabilities.py
         if np.random.rand() <= attack_percent and self.player_data[self.author_id]["in_battle"] == False:
             self.player_data[self.author_id]["in_battle"] = True
             save_player_data(self.guild_id, self.player_data)
@@ -344,12 +344,9 @@ class WoodcuttingCog(commands.Cog):
             "Poplar": 15
         }
 
-        if player.stats.zone_level > 1:
-            tree_min_level = base_min_levels[tree_type] + (player.stats.zone_level - 1) * 20 - 20
-        else:
-            tree_min_level = base_min_levels[tree_type]
+        tree_min_level = base_min_levels[tree_type] + (player.stats.zone_level - 1) * 20
 
-        tree_emoji = tree_emoji_mapping.get(tree_type, "")  # Default to empty string if not found
+        tree_emoji = tree_emoji_mapping.get(tree_type, "🪵")  # Default to empty string if not found
 
         # Check if player meets the level requirement
         if player.stats.woodcutting_level < tree_min_level:

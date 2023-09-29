@@ -10,21 +10,21 @@ from resources.ore import GEM_TYPES, ORE_TYPES, Ore
 from resources.materium import Materium
 from stats import ResurrectOptions
 from exemplars.exemplars import Exemplar
-from emojis import potion_yellow_emoji, rip_emoji, mtrm_emoji
 from utils import load_player_data, save_player_data, send_message
 from monsters.monster import create_battle_embed, monster_battle, generate_monster_by_name
 from monsters.battle import BattleOptions, LootOptions
 from images.urls import generate_urls
-from emojis import coal_emoji, carbon_emoji, iron_emoji
+from emojis import coal_emoji, carbon_emoji, iron_emoji, potion_yellow_emoji, rip_emoji, mtrm_emoji
+from probabilities import gem_drop_percent, mtrm_drop_percent, attack_percent
 
-# Woodcutting experience points for each tree type
+# Mining experience points for each ore type
 MINING_EXPERIENCE = {
     "Iron": 20,
     "Coal": 25,
     "Carbon": 50
 }
 
-ORE_EMOJIS = {
+ore_emoji_mapping = {
     "Coal": coal_emoji,
     "Carbon": carbon_emoji,
     "Iron": iron_emoji
@@ -48,7 +48,9 @@ def generate_random_monster(ore_type):
     return np.random.choice(monsters, p=probabilities)
 
 def attempt_gem_drop(zone_level):
-    gem_drop_rate = 0.10  # 10% chance to drop a gem
+    base_gem_drop_rate = gem_drop_percent
+    gem_drop_rate = min(base_gem_drop_rate * zone_level, 1) # Adjust the drop rate based on zone level and cap at 1
+
     if random.random() < gem_drop_rate:
         # Adjust the gem types based on the zone level
         gem_types_for_zone = GEM_TYPES[:zone_level]
@@ -60,10 +62,11 @@ def attempt_gem_drop(zone_level):
 
 # Function to handle MTRM drop
 def attempt_mtrm_drop(zone_level):
-    mtrm_drop_rate = 0.01  # 1% chance to drop MTRM
+    base_mtrm_drop_rate = mtrm_drop_percent
+    mtrm_drop_rate = min(base_mtrm_drop_rate * zone_level, 1)  # Adjust the drop rate based on zone level and cap at 1
+
     if random.random() < mtrm_drop_rate:
         mtrm_dropped = Materium()  # Create a Materium object
-        mtrm_dropped.stack = zone_level  # Set the stack attribute to be the zone level
         return mtrm_dropped
     return None
 
@@ -107,11 +110,10 @@ class MineButton(discord.ui.View):
 
         success = random.random() < success_prob
 
-        ore_emoji = ORE_EMOJIS.get(self.ore_type, "🪨")  # Default to a rock emoji if no specific emoji is found.
-
         message = ""
         if success:
-            message = f"**Successfully mined 1 {self.ore_type}! {ore_emoji}**"
+            ore_emoji = ore_emoji_mapping.get(self.ore_type, "🪨")
+            message = f"{ore_emoji} **Successfully chopped 1 {self.ore_type}!**"
 
             # Update inventory and decrement endurance
             mined_ore = Ore(name=self.ore_type)
@@ -127,13 +129,13 @@ class MineButton(discord.ui.View):
             gem_dropped = attempt_gem_drop(zone_level)
             if gem_dropped:
                 self.player.inventory.add_item_to_inventory(gem_dropped, amount=1)
-                message += f"\nYou also **found a {gem_dropped.name}!** 💎"
+                message += f"\n💎 You also **found a {gem_dropped.name}!**"
 
             # Attempt MTRM drop
             mtrm_dropped = attempt_mtrm_drop(zone_level)
             if mtrm_dropped:
                 self.player.inventory.add_item_to_inventory(mtrm_dropped, amount=1)
-                message += f"\nYou also **found some Materium!** {mtrm_emoji}"
+                message += f"\n{mtrm_emoji} You also **found some Materium!**"
 
             self.player_data[self.author_id]["stats"][
                 "mining_experience"] = self.player.stats.mining_experience
@@ -190,7 +192,7 @@ class MineButton(discord.ui.View):
                 await interaction.followup.send(embed=level_up_message)
 
         else:
-            message = f"Failed to mine {self.ore_type} ore."
+            message = f"You failed to mine {self.ore_type} ore."
 
             # Update the mine messages list
             if len(self.mine_messages) >= 5:
@@ -207,8 +209,8 @@ class MineButton(discord.ui.View):
 
             await interaction.message.edit(embed=self.embed, view=self)
 
-        # 10% chance of a monster encounter
-        if np.random.rand() <= 0.10 and self.player_data[self.author_id]["in_battle"] == False:
+        # Monster encounter set in probabilities.py
+        if np.random.rand() <= attack_percent and self.player_data[self.author_id]["in_battle"] == False:
             self.player_data[self.author_id]["in_battle"] = True
             save_player_data(self.guild_id, self.player_data)
 
@@ -294,13 +296,16 @@ class MiningCog(commands.Cog):
     @staticmethod
     def calculate_probability(player_level, zone_level, ore_type):
         base_min_levels = {
-            "Iron": 1,
+            "Iron": 0,
             "Coal": 7,
             "Carbon": 14
         }
 
         # Calculate the adjusted min level for the specific ore in the current zone
-        ore_zone_min_level = base_min_levels[ore_type] + (zone_level - 1) * 20
+        if zone_level > 1:
+            ore_zone_min_level = base_min_levels[ore_type] + (zone_level - 1) * 20 - 20
+        else:
+            ore_zone_min_level = base_min_levels[ore_type]
 
         # Check if player's level is lower than ore's minimum level
         if player_level < ore_zone_min_level:
@@ -310,13 +315,12 @@ class MiningCog(commands.Cog):
         level_difference = player_level - ore_zone_min_level
 
         # Determine the success probability
-        # Starts at 25% and increases by 3.75% for each level difference until it reaches 100% in 20 levels
         probability = 0.25 + min(level_difference, 20) * 0.0375
         return min(1, probability)  # Ensure it doesn't exceed 100%
 
     @commands.slash_command(description="Mine some Ore!")
     async def mine(self, ctx,
-                   ore_type: Option(str, "Type of tree to chop", choices=['Iron', 'Coal', 'Carbon'],
+                   ore_type: Option(str, "Type of ore to mine", choices=['Iron', 'Coal', 'Carbon'],
                                      required=True)):
         guild_id = ctx.guild.id
         author_id = str(ctx.author.id)
@@ -326,16 +330,16 @@ class MiningCog(commands.Cog):
                           player_data[author_id]["stats"],
                           player_data[author_id]["inventory"])
 
-        # Determine minimum level based on player's zone level
-        base_min_level = {
-            "Iron": 1,
+
+        base_min_levels = {
+            "Iron": 0,
             "Coal": 7,
             "Carbon": 14
         }
 
-        ore_emoji = ORE_EMOJIS.get(ore_type, "🪨")  # Default to a rock emoji if no specific emoji is found.
+        ore_min_level = base_min_levels[ore_type] + (player.stats.zone_level - 1) * 20
 
-        ore_min_level = base_min_level.get(ore_type) + (player.stats.zone_level - 1) * 20
+        ore_emoji = ore_emoji_mapping.get(ore_type, "🪨")  # Default to empty string if not found
 
         # Check if player meets the level requirement
         if player.stats.mining_level < ore_min_level:
@@ -351,7 +355,7 @@ class MiningCog(commands.Cog):
         # Add the initial stamina and ore inventory here
         stamina_str = f"{potion_yellow_emoji}  {player.stats.endurance}/{player.stats.max_endurance}"
 
-        # Use the get_tree_count method to get the wood count
+        # Use the get_ore_count method to get the wood count
         ore_count = player.inventory.get_ore_count(ore_type)
         ore_str = str(ore_count)
 
