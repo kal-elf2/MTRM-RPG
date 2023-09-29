@@ -48,7 +48,7 @@ class LootOptions(discord.ui.View):
             f"You dealt **{self.battle_outcome_[1]} damage** to the monster and took **{self.battle_outcome_[2]} damage**.\n"
             f"You gained {self.experience_gained} combat XP.\n\n" 
             f"__**Loot picked up:**__\n"
-            f"{loot_message_string}"
+            f"{loot_message_string}\n\n"
         )
 
         final_embed = create_battle_embed(self.ctx_.user, self.player_, self.monster_, message_text)

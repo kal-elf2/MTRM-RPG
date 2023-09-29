@@ -4,8 +4,8 @@ from resources.herb import HERB_TYPES
 from resources.potion import POTION_LIST
 from resources.materium import Materium
 from resources.item import Item
-from emojis import rabbit_body_emoji, wolf_skin_emoji, glowing_essence_emoji, deer_skins_emoji, deer_parts_emoji, onyx_emoji
-
+from emojis import coppers_emoji, mtrm_emoji, rabbit_body_emoji, wolf_skin_emoji, glowing_essence_emoji, deer_skins_emoji, deer_parts_emoji, onyx_emoji
+from probabilities import mtrm_drop_percent, potion_drop_percent, herb_drop_percent, gem_drop_percent, loot_drop_percent
 
 class Loot:
     def __init__(self, name, rarity, value):
@@ -107,43 +107,53 @@ item_emoji_mapping = {
     'Wolf Skin': wolf_skin_emoji
 }
 
+monster_difficulty_multiplier = {
+    'Rabbit': 0.5,
+    'Deer': 1,
+    'Buck': 1.5,
+    'Wolf': 2,
+    'Goblin': 5,
+    'Goblin Hunter': 10,
+    'Mega Brute': 20,
+    'Wisp': 20,
+}
 
-def generate_zone_loot(zone_level, monster_drop=None):
+def generate_zone_loot(zone_level, monster_drop=None, name=None):
     loot_messages = []
     loot = []
 
-    # Coppers drops
-    coppers_dropped = random.randint(zone_level * 2, zone_level * 5)
+    monster_multiplier = monster_difficulty_multiplier.get(name, 1)  # Get the multiplier for the monster or default to 1
+    coppers_dropped = random.randint(int(zone_level * 2 * monster_multiplier), int(zone_level * 5 * monster_multiplier))
     loot.append(('coppers', coppers_dropped))
-    loot_messages.append(f"You found {coppers_dropped} coppers!")
+    loot_messages.append(f"{coppers_emoji} You found {coppers_dropped} coppers!")
 
     # Gem drops
-    gem_drop_rate = 0.05  # 5% chance to drop a gem
+    gem_drop_rate = gem_drop_percent * zone_level  # Increase the chance of getting a drop as zone level increases
     if random.random() < gem_drop_rate:
         gem_types_for_zone = GEM_TYPES[:zone_level]  # Adjust the gem types based on the zone level
         gem_weights = [50, 30, 15, 4, 1][:zone_level]  # Adjust the weights based on the zone level
         gem_dropped = random.choices(gem_types_for_zone, weights=gem_weights, k=1)[0]
         loot.append(('gem', gem_dropped))
-        loot_messages.append(f"You found a {gem_dropped.name}!")
+        loot_messages.append(f"💎 You found a {gem_dropped.name}!")
 
     # Herb drops
-    herb_drop_rate = 0.10  # 10% chance to drop a herb
+    herb_drop_rate = herb_drop_percent * zone_level  # Increase the chance of getting a drop as zone level increases
     if random.random() < herb_drop_rate:
         herb_types_for_zone = HERB_TYPES[:zone_level]  # Adjust the herb types based on the zone level
         herb_weights = [50, 30, 15, 4, 1][:zone_level]  # Adjust the weights based on the zone level
         herb_dropped = random.choices(herb_types_for_zone, weights=herb_weights, k=1)[0]
         loot.append(('herb', herb_dropped))
-        loot_messages.append(f"You found some {herb_dropped.name}!")
+        loot_messages.append(f"🌿 You found some {herb_dropped.name}!")
 
     # Materium drops
-    materium_drop_rate = 0.01  # 1% chance to drop Materium
+    materium_drop_rate = mtrm_drop_percent * zone_level  # Increase the chance of getting a drop as zone level increases
     if random.random() < materium_drop_rate:
         materium_dropped = Materium()
         loot.append(('materium', materium_dropped))
-        loot_messages.append("You found some Materium!")
+        loot_messages.append(f"{mtrm_emoji} You found some Materium!")
 
         # Loot drops
-    loot_drop_rate = 0.10  # 10% chance to drop loot
+    loot_drop_rate = loot_drop_percent * zone_level  # Increase the chance of getting a drop as zone level increases
     if random.random() < loot_drop_rate:
         loot_options_for_zone = loot_list[zone_level - 1]
         loot_weights = [50, 30, 15, 4, 1]
@@ -151,16 +161,16 @@ def generate_zone_loot(zone_level, monster_drop=None):
             loot_options_for_zone)]  # Adjust the weights based on the number of loot options for the zone
         loot_dropped = random.choices(loot_options_for_zone, weights=loot_weights, k=1)[0]
         loot.append(('loot', loot_dropped))
-        loot_messages.append(f"You found a {loot_dropped.name}!")
+        loot_messages.append(f"💰 You found a {loot_dropped.name}!")
 
     # Potion drops
-    potion_drop_rate = 0.05 * zone_level  # Increase the chance of getting a potion as zone level increases
+    potion_drop_rate = potion_drop_percent * zone_level  # Increase the chance of getting a drop as zone level increases
     if random.random() < potion_drop_rate:
         potion_weights = [50, 30, 15, 4, 1][
                          :len(POTION_LIST)]  # Adjust the weights based on the length of POTION_LIST
         potion_dropped = random.choices(POTION_LIST, weights=potion_weights, k=1)[0]
         loot.append(('potion', potion_dropped))
-        loot_messages.append(f"You found a {potion_dropped.name}!")
+        loot_messages.append(f"⚗️ You found a {potion_dropped.name}!")
 
     if monster_drop:
         for drop, quantity in monster_drop:  # Iterate over each drop item and its quantity

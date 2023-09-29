@@ -11,11 +11,12 @@ from resources.tree import TREE_TYPES, Tree
 from resources.materium import Materium
 from stats import ResurrectOptions
 from exemplars.exemplars import Exemplar
-from emojis import potion_yellow_emoji, rip_emoji, mtrm_emoji
+from emojis import potion_yellow_emoji, rip_emoji, mtrm_emoji, pine_emoji, ash_emoji, yew_emoji, poplar_emoji
 from utils import load_player_data, save_player_data, send_message
 from monsters.monster import create_battle_embed, monster_battle, generate_monster_by_name
 from monsters.battle import BattleOptions, LootOptions
 from images.urls import generate_urls
+from probabilities import herb_drop_percent, mtrm_drop_percent, attack_percent
 
 # Woodcutting experience points for each tree type
 WOODCUTTING_EXPERIENCE = {
@@ -23,6 +24,13 @@ WOODCUTTING_EXPERIENCE = {
     "Yew": 25,
     "Ash": 50,
     "Poplar": 100
+}
+
+tree_emoji_mapping = {
+    "Pine": pine_emoji,
+    "Yew": yew_emoji,
+    "Ash": ash_emoji,
+    "Poplar": poplar_emoji
 }
 
 with open("level_data.json", "r") as f:
@@ -46,7 +54,9 @@ def generate_random_monster(tree_type):
     return np.random.choice(monsters, p=probabilities)
 
 def attempt_herb_drop(zone_level):
-    herb_drop_rate = 0.10  # 10% chance to drop a herb
+    base_herb_drop_rate = herb_drop_percent
+    herb_drop_rate = min(base_herb_drop_rate * zone_level, 1)  # Adjust the drop rate based on zone level and cap at 1
+
     if random.random() < herb_drop_rate:
         # Adjust the herb types based on the zone level
         herb_types_for_zone = HERB_TYPES[:zone_level]
@@ -58,13 +68,13 @@ def attempt_herb_drop(zone_level):
 
 # Function to handle MTRM drop
 def attempt_mtrm_drop(zone_level):
-    mtrm_drop_rate = 0.01  # 1% chance to drop MTRM
+    base_mtrm_drop_rate = mtrm_drop_percent
+    mtrm_drop_rate = min(base_mtrm_drop_rate * zone_level, 1)  # Adjust the drop rate based on zone level and cap at 1
+
     if random.random() < mtrm_drop_rate:
         mtrm_dropped = Materium()  # Create a Materium object
-        mtrm_dropped.stack = zone_level  # Set the stack attribute to be the zone level
         return mtrm_dropped
     return None
-
 
 # View class for Harvest button
 class HarvestButton(discord.ui.View):
@@ -108,7 +118,8 @@ class HarvestButton(discord.ui.View):
 
         message = ""
         if success:
-            message = f"**Successfully chopped 1 {self.tree_type}!**"
+            tree_emoji = tree_emoji_mapping.get(self.tree_type, "")  # Default to empty string if not found
+            message = f"{tree_emoji} **Successfully chopped 1 {self.tree_type}!**"
 
             # Update inventory and decrement endurance
             chopped_tree = Tree(name=self.tree_type)
@@ -124,13 +135,13 @@ class HarvestButton(discord.ui.View):
             herb_dropped = attempt_herb_drop(zone_level)
             if herb_dropped:
                 self.player.inventory.add_item_to_inventory(herb_dropped, amount=1)
-                message += f"\nYou also **found some {herb_dropped.name}!** 🌿"
+                message += f"\n🌿 You also **found some {herb_dropped.name}!** "
 
             # Attempt MTRM drop
             mtrm_dropped = attempt_mtrm_drop(zone_level)
             if mtrm_dropped:
                 self.player.inventory.add_item_to_inventory(mtrm_dropped, amount=1)
-                message += f"\nYou also **found some Materium!** {mtrm_emoji}"
+                message += f"\n{mtrm_emoji} You also **found some Materium!**"
 
             self.player_data[self.author_id]["stats"][
                 "woodcutting_experience"] = self.player.stats.woodcutting_experience
@@ -153,7 +164,7 @@ class HarvestButton(discord.ui.View):
 
             # Add updated fields to embed
             self.embed.add_field(name="Endurance", value=stamina_str, inline=True)
-            self.embed.add_field(name=f"{self.tree_type}", value=f"🪵  {wood_str}", inline=True)
+            self.embed.add_field(name=f"{self.tree_type}", value=f"{tree_emoji}  {wood_str}", inline=True)
 
             # Check if the player is at max level and add the XP field last
             if next_level >= 100:
@@ -207,7 +218,7 @@ class HarvestButton(discord.ui.View):
             await interaction.message.edit(embed=self.embed, view=self)
 
         # 10% chance of a monster encounter
-        if np.random.rand() <= 0.10 and self.player_data[self.author_id]["in_battle"] == False:
+        if np.random.rand() <= attack_percent and self.player_data[self.author_id]["in_battle"] == False:
             self.player_data[self.author_id]["in_battle"] = True
             save_player_data(self.guild_id, self.player_data)
 
@@ -291,14 +302,17 @@ class WoodcuttingCog(commands.Cog):
     @staticmethod
     def calculate_probability(player_level, zone_level, tree_type):
         base_min_levels = {
-            "Pine": 1,
+            "Pine": 0,
             "Yew": 5,
             "Ash": 10,
             "Poplar": 15
         }
 
         # Calculate the adjusted min level for the specific tree in the current zone
-        tree_zone_min_level = base_min_levels[tree_type] + (zone_level - 1) * 20
+        if zone_level > 1:
+            tree_zone_min_level = base_min_levels[tree_type] + (zone_level - 1) * 20 - 20
+        else:
+            tree_zone_min_level = base_min_levels[tree_type]
 
         # Check if player's level is lower than tree's minimum level
         if player_level < tree_zone_min_level:
@@ -323,14 +337,19 @@ class WoodcuttingCog(commands.Cog):
                           player_data[author_id]["stats"],
                           player_data[author_id]["inventory"])
 
-        base_min_level = {
-            "Pine": 1,
+        base_min_levels = {
+            "Pine": 0,
             "Yew": 5,
             "Ash": 10,
             "Poplar": 15
         }
 
-        tree_min_level = base_min_level.get(tree_type) + (player.stats.zone_level - 1) * 20
+        if player.stats.zone_level > 1:
+            tree_min_level = base_min_levels[tree_type] + (player.stats.zone_level - 1) * 20 - 20
+        else:
+            tree_min_level = base_min_levels[tree_type]
+
+        tree_emoji = tree_emoji_mapping.get(tree_type, "")  # Default to empty string if not found
 
         # Check if player meets the level requirement
         if player.stats.woodcutting_level < tree_min_level:
@@ -352,7 +371,7 @@ class WoodcuttingCog(commands.Cog):
 
         # Add the initial fields to the embed
         embed.add_field(name="Endurance", value=stamina_str, inline=True)
-        embed.add_field(name=f"{tree_type}", value=f"🪵  {wood_str}", inline=True)
+        embed.add_field(name=f"{tree_type}", value=f"{tree_emoji}  {wood_str}", inline=True)
 
         # Calculate current woodcutting level and experience for the next level
         current_woodcutting_level = player.stats.woodcutting_level

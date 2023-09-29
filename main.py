@@ -115,7 +115,7 @@ class PickExemplars(Select):
         view = ConfirmExemplar(exemplar_instance, player_data, str(author_id), guild_id)
 
         await interaction.response.send_message(
-            f'{interaction.user.mention}, you have chosen the {self.options_dict[self.values[0]]} Exemplar!',
+            f'{interaction.user.mention}, verify your selection of {self.options_dict[self.values[0]]} Exemplar below!',
             embed=embed,
             view=view,
             ephemeral=False)
@@ -172,10 +172,7 @@ class ConfirmExemplar(discord.ui.View):
 
 
 @bot.slash_command(description="Battle a monster!")
-async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=generate_monster_list(), required=False, default='')):
-    if not monster:
-        await ctx.respond("Choosing a monster is required to start a battle.", ephemeral=True)
-        return
+async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=generate_monster_list(), required=True, default='')):
 
     guild_id = ctx.guild.id
     author_id = str(ctx.author.id)
