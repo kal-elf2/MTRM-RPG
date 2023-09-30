@@ -119,7 +119,7 @@ def footer_text_for_embed(ctx):
         LEVEL_DATA = json.load(f)
 
     guild_id = ctx.guild.id
-    author_id = str(ctx.author.id)
+    author_id = str(ctx.user.id)
     player_data = load_player_data(guild_id)
 
     current_combat_level = player_data[author_id]["stats"]["combat_level"]

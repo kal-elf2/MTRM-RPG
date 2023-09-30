@@ -14,7 +14,7 @@ from exemplars.exemplars import Exemplar
 from emojis import potion_yellow_emoji, rip_emoji, mtrm_emoji, pine_emoji, ash_emoji, yew_emoji, poplar_emoji
 from utils import load_player_data, save_player_data, send_message
 from monsters.monster import create_battle_embed, monster_battle, generate_monster_by_name
-from monsters.battle import BattleOptions, LootOptions
+from monsters.battle import BattleOptions, LootOptions, footer_text_for_embed
 from images.urls import generate_urls
 from probabilities import herb_drop_percent, mtrm_drop_percent, attack_percent
 
@@ -76,6 +76,22 @@ def attempt_mtrm_drop(zone_level):
         return mtrm_dropped
     return None
 
+def footer_text_for_woodcutting_embed(ctx, player_level, zone_level, tree_type):
+    guild_id = ctx.guild.id
+    author_id = str(ctx.user.id)
+    player_data = load_player_data(guild_id)
+
+    # Use the provided WoodcuttingCog method to calculate the success probability
+    probability = WoodcuttingCog.calculate_probability(player_level, zone_level, tree_type)
+    success_percentage = probability * 100  # Convert to percentage for display
+
+    woodcutting_level = player_data[author_id]["stats"]["woodcutting_level"]
+
+    footer_text = f"🪓 Woodcutting Level:\u00A0\u00A0{woodcutting_level}\u00A0\u00A0\u00A0\u00A0|\u00A0\u00A0\u00A0\u00A0✅ Success Rate:\u00A0\u00A0{success_percentage:.1f}%"
+
+    return footer_text
+
+
 # View class for Harvest button
 class HarvestButton(discord.ui.View):
     def __init__(self, ctx, player, tree_type, player_data, guild_id, author_id, embed):
@@ -116,6 +132,8 @@ class HarvestButton(discord.ui.View):
 
         success = random.random() < success_prob
 
+        zone_level = self.player.stats.zone_level
+
         message = ""
         if success:
             tree_emoji = tree_emoji_mapping.get(self.tree_type, "🪵")
@@ -131,7 +149,6 @@ class HarvestButton(discord.ui.View):
             level_up_message = await self.player.gain_experience(exp_gain, "woodcutting", interaction)
 
             # Attempt herb drop
-            zone_level = self.player.stats.zone_level
             herb_dropped = attempt_herb_drop(zone_level)
             if herb_dropped:
                 self.player.inventory.add_item_to_inventory(herb_dropped, amount=1)
@@ -175,6 +192,11 @@ class HarvestButton(discord.ui.View):
                 self.embed.add_field(name=f"XP to Level {next_level}",
                                      value=f"📊  {current_experience} / {next_level_experience_needed}", inline=True)
 
+            #Set footer to show Woodcutting level and Probability
+            footer = footer_text_for_woodcutting_embed(interaction, current_woodcutting_level, zone_level,
+                                                       self.tree_type)
+            self.embed.set_footer(text=footer)
+
             # Update the chop messages list
             if len(self.chop_messages) >= 5:
                 self.chop_messages.pop(0)
@@ -198,9 +220,11 @@ class HarvestButton(discord.ui.View):
                 await interaction.followup.send(embed=level_up_message)
 
 
-
         else:
             message = f"You failed to chop {self.tree_type} wood."
+
+            # Calculate current woodcutting level and experience for the next level
+            current_woodcutting_level = self.player.stats.woodcutting_level
 
             # Update the chop messages list
             if len(self.chop_messages) >= 5:
@@ -215,6 +239,10 @@ class HarvestButton(discord.ui.View):
             updated_description = "\n".join(self.chop_messages)
             self.embed.description = updated_description
 
+            footer = footer_text_for_woodcutting_embed(interaction, current_woodcutting_level, zone_level,
+                                                       self.tree_type)
+            self.embed.set_footer(text=footer)
+
             await interaction.message.edit(embed=self.embed, view=self)
 
         # Monster encounter set in probabilities.py
@@ -226,14 +254,14 @@ class HarvestButton(discord.ui.View):
             monster = generate_monster_by_name(monster_name, self.player.stats.zone_level)
 
             battle_embed = await send_message(interaction.channel,
-                                              create_battle_embed(interaction.user, self.player, monster, messages=""))
+                                              create_battle_embed(interaction.user, self.player, monster, footer_text_for_embed(self.ctx), messages=""))
 
             # Store the message object that is sent
             battle_options_msg = await self.ctx.send(view=BattleOptions(self.ctx))
 
             await interaction.followup.send(f"**❗ LOOK OUT {interaction.user.mention} ❗** \n You got **attacked by a {monster.name}** while harvesting {self.tree_type}.", ephemeral = True)
 
-            battle_outcome, loot_messages = await monster_battle(interaction.user, self.player, monster, self.player.stats.zone_level, battle_embed)
+            battle_outcome, loot_messages = await monster_battle(self.ctx, interaction.user, self.player, monster, self.player.stats.zone_level, battle_embed)
 
             if battle_outcome[0]:
 
@@ -256,7 +284,7 @@ class HarvestButton(discord.ui.View):
                                         loot_messages, self.guild_id, interaction, experience_gained)
 
                 await battle_embed.edit(
-                    embed=create_battle_embed(interaction.user, self.player, monster,
+                    embed=create_battle_embed(interaction.user, self.player, monster, footer_text_for_embed(self.ctx),
                                               f"You have **DEFEATED** the {monster.name}!\n\n"
                                               f"You dealt **{battle_outcome[1]} damage** to the monster and took **{battle_outcome[2]} damage**. "
                                               f"You gained {experience_gained} combat XP.\n"
@@ -270,7 +298,7 @@ class HarvestButton(discord.ui.View):
                 self.player_data[self.author_id]["stats"]["health"] = 0
 
                 # Create a new embed with the defeat message
-                new_embed = create_battle_embed(interaction.user, self.player, monster,
+                new_embed = create_battle_embed(interaction.user, self.player, monster, footer_text= "", messages=
 
                                                 f"☠️ You have been **DEFEATED** by the **{monster.name}**! 💀\n"
                                                 f"{rip_emoji} *Your spirit lingers, seeking renewal.* {rip_emoji}\n\n"
@@ -382,6 +410,10 @@ class WoodcuttingCog(commands.Cog):
             next_level_experience_needed = LEVEL_DATA.get(str(current_woodcutting_level), {}).get("total_experience")
             embed.add_field(name=f"XP to Level {next_level}",
                             value=f"📊  {current_experience} / {next_level_experience_needed}", inline=True)
+
+        # Set footer to show Woodcutting level and Probability
+        footer = footer_text_for_woodcutting_embed(ctx, current_woodcutting_level, player.stats.zone_level, tree_type)
+        embed.set_footer(text=footer)
 
         # Create the view and send the response
         view = HarvestButton(ctx, player, tree_type, player_data, guild_id, author_id, embed)

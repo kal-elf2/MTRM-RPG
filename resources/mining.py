@@ -11,7 +11,7 @@ from resources.materium import Materium
 from stats import ResurrectOptions
 from exemplars.exemplars import Exemplar
 from utils import load_player_data, save_player_data, send_message
-from monsters.monster import create_battle_embed, monster_battle, generate_monster_by_name
+from monsters.monster import create_battle_embed, monster_battle, generate_monster_by_name, footer_text_for_embed
 from monsters.battle import BattleOptions, LootOptions
 from images.urls import generate_urls
 from emojis import coal_emoji, carbon_emoji, iron_emoji, potion_yellow_emoji, rip_emoji, mtrm_emoji
@@ -70,6 +70,21 @@ def attempt_mtrm_drop(zone_level):
         return mtrm_dropped
     return None
 
+def footer_text_for_mining_embed(ctx, player_level, zone_level, ore_type):
+    guild_id = ctx.guild.id
+    author_id = str(ctx.user.id)
+    player_data = load_player_data(guild_id)
+
+    # Use the provided WoodcuttingCog method to calculate the success probability
+    probability = MiningCog.calculate_probability(player_level, zone_level, ore_type)
+    success_percentage = probability * 100  # Convert to percentage for display
+
+    mining_level = player_data[author_id]["stats"]["mining_level"]
+
+    footer_text = f"⛏️ Mining Level:\u00A0\u00A0{mining_level}\u00A0\u00A0\u00A0\u00A0|\u00A0\u00A0\u00A0\u00A0✅ Success Rate:\u00A0\u00A0{success_percentage:.1f}%"
+
+    return footer_text
+
 
 # View class for Harvest button
 class MineButton(discord.ui.View):
@@ -109,6 +124,8 @@ class MineButton(discord.ui.View):
         success_prob = MiningCog.calculate_probability(player_level, self.player.stats.zone_level, self.ore_type)
 
         success = random.random() < success_prob
+
+        zone_level = self.player.stats.zone_level
 
         message = ""
         if success:
@@ -169,6 +186,11 @@ class MineButton(discord.ui.View):
                 self.embed.add_field(name=f"XP to Level {next_level}",
                                      value=f"📊  {current_experience} / {next_level_experience_needed}", inline=True)
 
+            # Set footer to show Woodcutting level and Probability
+            footer = footer_text_for_mining_embed(interaction, current_mining_level, zone_level,
+                                                       self.ore_type)
+            self.embed.set_footer(text=footer)
+
             # Update the mine messages list
             if len(self.mine_messages) >= 5:
                 self.mine_messages.pop(0)
@@ -194,6 +216,9 @@ class MineButton(discord.ui.View):
         else:
             message = f"You failed to mine {self.ore_type} ore."
 
+            # Calculate current woodcutting level and experience for the next level
+            current_mining_level = self.player.stats.mining_level
+
             # Update the mine messages list
             if len(self.mine_messages) >= 5:
                 self.mine_messages.pop(0)
@@ -207,6 +232,11 @@ class MineButton(discord.ui.View):
             updated_description = "\n".join(self.mine_messages)
             self.embed.description = updated_description
 
+            # Set footer to show Woodcutting level and Probability
+            footer = footer_text_for_mining_embed(interaction, current_mining_level, zone_level,
+                                                  self.ore_type)
+            self.embed.set_footer(text=footer)
+
             await interaction.message.edit(embed=self.embed, view=self)
 
         # Monster encounter set in probabilities.py
@@ -218,14 +248,14 @@ class MineButton(discord.ui.View):
             monster = generate_monster_by_name(monster_name, self.player.stats.zone_level)
 
             battle_embed = await send_message(interaction.channel,
-                                              create_battle_embed(interaction.user, self.player, monster, messages=""))
+                                              create_battle_embed(interaction.user, self.player, monster, footer_text_for_embed(self.ctx), messages=""))
 
             # Store the message object that is sent
             battle_options_msg = await self.ctx.send(view=BattleOptions(self.ctx))
 
             await interaction.followup.send(f"**❗ LOOK OUT {interaction.user.mention} ❗** \n You got **attacked by a {monster.name}** while mining {self.ore_type}.", ephemeral = True)
 
-            battle_outcome, loot_messages = await monster_battle(interaction.user, self.player, monster, self.player.stats.zone_level, battle_embed)
+            battle_outcome, loot_messages = await monster_battle(self.ctx, interaction.user, self.player, monster, self.player.stats.zone_level, battle_embed)
 
             if battle_outcome[0]:
 
@@ -248,7 +278,7 @@ class MineButton(discord.ui.View):
                                         loot_messages, self.guild_id, interaction, experience_gained)
 
                 await battle_embed.edit(
-                    embed=create_battle_embed(interaction.user, self.player, monster,
+                    embed=create_battle_embed(interaction.user, self.player, monster, footer_text_for_embed(self.ctx),
                                               f"You have **DEFEATED** the {monster.name}!\n\n"
                                               f"You dealt **{battle_outcome[1]} damage** to the monster and took **{battle_outcome[2]} damage**. "
                                               f"You gained {experience_gained} combat XP.\n"
@@ -264,7 +294,7 @@ class MineButton(discord.ui.View):
                 self.player_data[self.author_id]["stats"]["health"] = 0
 
                 # Create a new embed with the defeat message
-                new_embed = create_battle_embed(interaction.user, self.player, monster,
+                new_embed = create_battle_embed(interaction.user, self.player, monster, footer_text= "", messages=
 
                                                 f"☠️ You have been **DEFEATED** by the **{monster.name}**! 💀\n"
                                                 f"{rip_emoji} *Your spirit lingers, seeking renewal.* {rip_emoji}\n\n"
@@ -375,6 +405,10 @@ class MiningCog(commands.Cog):
             next_level_experience_needed = LEVEL_DATA.get(str(current_mining_level), {}).get("total_experience")
             embed.add_field(name=f"XP to Level {next_level}",
                             value=f"📊  {current_experience} / {next_level_experience_needed}", inline=True)
+
+        # Set footer to show Woodcutting level and Probability
+        footer = footer_text_for_mining_embed(ctx, current_mining_level, player.stats.zone_level, ore_type)
+        embed.set_footer(text=footer)
 
         # Create the view and send the response
         view = MineButton(ctx, player, ore_type, player_data, guild_id, author_id, embed)

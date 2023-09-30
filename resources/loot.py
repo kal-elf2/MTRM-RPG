@@ -125,7 +125,11 @@ def generate_zone_loot(zone_level, monster_drop=None, name=None):
     monster_multiplier = monster_difficulty_multiplier.get(name, 1)  # Get the multiplier for the monster or default to 1
     coppers_dropped = random.randint(int(zone_level * 2 * monster_multiplier), int(zone_level * 5 * monster_multiplier))
     loot.append(('coppers', coppers_dropped))
-    loot_messages.append(f"{coppers_emoji} You found {coppers_dropped} coppers!")
+
+    if coppers_dropped == 1:
+        loot_messages.append(f"{coppers_emoji} You found {coppers_dropped} Copper!")
+    else:
+        loot_messages.append(f"{coppers_emoji} You found {coppers_dropped} Coppers!")
 
     # Gem drops
     gem_drop_rate = gem_drop_percent * zone_level  # Increase the chance of getting a drop as zone level increases
