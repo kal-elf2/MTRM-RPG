@@ -1,7 +1,7 @@
 # monster.py
 import random
 from resources.loot import generate_zone_loot, loot_definitions
-from monsters.battle import create_battle_embed
+from monsters.battle import create_battle_embed, footer_text_for_embed
 import asyncio
 from resources.item import Item
 import math
@@ -105,7 +105,7 @@ def calculate_attack_speed_modifier(attack_value):
     # Cap the attack speed to a minimum and maximum value
     return max(1, min(3, 2 - attack_value * 0.05))
 
-async def player_attack_task(user, player, monster, attack_modifier, message, battle_messages):
+async def player_attack_task(ctx, user, player, monster, attack_modifier, message, battle_messages):
     attack_speed_modifier = calculate_attack_speed_modifier(player.stats.attack * attack_modifier)
     while not monster.is_defeated() and not player.is_defeated():
         hit_probability = calculate_hit_probability(player.stats.attack * attack_modifier, monster.defense)
@@ -129,7 +129,7 @@ async def player_attack_task(user, player, monster, attack_modifier, message, ba
             battle_messages.pop(0)
         battle_messages.append(update_message)
 
-        battle_embed = create_battle_embed(user, player, monster, battle_messages)
+        battle_embed = create_battle_embed(user, player, monster, footer_text_for_embed(ctx), battle_messages)
         await message.edit(embed=battle_embed)
 
         if monster.is_defeated():
@@ -137,7 +137,7 @@ async def player_attack_task(user, player, monster, attack_modifier, message, ba
 
         await asyncio.sleep(attack_speed_modifier)
 
-async def monster_attack_task(user, player, monster, message, battle_messages):
+async def monster_attack_task(ctx, user, player, monster, message, battle_messages):
     attack_speed_modifier = calculate_attack_speed_modifier(monster.attack)
     while not monster.is_defeated() and not player.is_defeated():
         hit_probability = calculate_hit_probability(monster.attack, player.stats.defense)
@@ -165,7 +165,7 @@ async def monster_attack_task(user, player, monster, message, battle_messages):
             battle_messages.pop(0)
         battle_messages.append(update_message)
 
-        battle_embed = create_battle_embed(user, player, monster, battle_messages)
+        battle_embed = create_battle_embed(user, player, monster, footer_text_for_embed(ctx), battle_messages)
         await message.edit(embed=battle_embed)
 
         # Break out of loop if the player is defeated
@@ -175,7 +175,7 @@ async def monster_attack_task(user, player, monster, message, battle_messages):
         await asyncio.sleep(attack_speed_modifier)
 
 
-async def monster_battle(user, player, monster, zone_level, message):
+async def monster_battle(ctx, user, player, monster, zone_level, message):
     # Initialize battle messages list
     battle_messages = []
     player_weapon_type = player.equipped_weapon.type if player.equipped_weapon else None
@@ -190,8 +190,8 @@ async def monster_battle(user, player, monster, zone_level, message):
         attack_modifier = 1
 
     player_attack = asyncio.create_task(
-        player_attack_task(user, player, monster, attack_modifier, message, battle_messages))
-    monster_attack = asyncio.create_task(monster_attack_task(user, player, monster, message, battle_messages))
+        player_attack_task(ctx, user, player, monster, attack_modifier, message, battle_messages))
+    monster_attack = asyncio.create_task(monster_attack_task(ctx, user, player, monster, message, battle_messages))
 
     await asyncio.gather(player_attack, monster_attack)
 

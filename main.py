@@ -8,7 +8,7 @@ from discord.ui import Select, View
 from discord.components import SelectOption
 from zones.zone import Zone
 from exemplars.exemplars import create_exemplar, Exemplar
-from monsters.monster import generate_monster_list, generate_monster_by_name, monster_battle, create_battle_embed
+from monsters.monster import generate_monster_list, generate_monster_by_name, monster_battle, create_battle_embed, footer_text_for_embed
 from discord import Embed
 from resources.inventory import Inventory
 from stats import ResurrectOptions
@@ -174,6 +174,9 @@ class ConfirmExemplar(discord.ui.View):
 @bot.slash_command(description="Battle a monster!")
 async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=generate_monster_list(), required=True, default='')):
 
+    with open("level_data.json", "r") as f:
+        LEVEL_DATA = json.load(f)
+
     guild_id = ctx.guild.id
     author_id = str(ctx.author.id)
 
@@ -198,13 +201,14 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
     monster = generate_monster_by_name(monster, zone_level)
 
     battle_embed = await send_message(ctx.channel,
-                                      create_battle_embed(ctx.author, player, monster, messages=""))
+                                      create_battle_embed(ctx.author, player, monster, footer_text_for_embed(ctx), messages= ""))
+
     await ctx.respond(f"{ctx.author.mention} encounters a {monster.name}")
 
     # Store the message object that is sent
     battle_options_msg = await ctx.send(view=BattleOptions(ctx))
 
-    battle_outcome, loot_messages = await monster_battle(ctx.author, player, monster, zone_level, battle_embed)
+    battle_outcome, loot_messages = await monster_battle(ctx, ctx.author, player, monster, zone_level, battle_embed)
 
     if battle_outcome[0]:
 
@@ -225,41 +229,27 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
         await battle_options_msg.delete()
         loot_view = LootOptions(ctx, player, monster, battle_embed, player_data, author_id, battle_outcome, loot_messages, guild_id, ctx, experience_gained)
 
-        with open("level_data.json", "r") as f:
-            LEVEL_DATA = json.load(f)
-
-        # Calculate current combat level and experience for the next level
-        current_combat_level = player_data[author_id]["stats"]["combat_level"]
-        next_combat_level = current_combat_level + 1
-        current_combat_experience = player_data[author_id]["stats"]["combat_experience"]
-
-        # Determine the footer text based on combat level
-        if next_combat_level >= 100:
-            footer_text = f"⚔️ Combat Level: {current_combat_level}\n📊 {current_combat_experience}"
-        else:
-            next_level_experience_needed = LEVEL_DATA.get(str(current_combat_level), {}).get("total_experience")
-            footer_text = f"⚔️ Combat Level: {current_combat_level}\n📊 {current_combat_experience}/{next_level_experience_needed}"
-
         # Construct the embed with the footer
-        battle_outcome_embed = create_battle_embed(ctx.user, player, monster,
-                                                   f"You have **DEFEATED** the {monster.name}!\n\n"
+        battle_outcome_embed = create_battle_embed(ctx.user, player, monster, footer_text_for_embed(ctx),
+                                                   f"You have **DEFEATED** the {monster.name}!\n"
                                                    f"You dealt **{battle_outcome[1]} damage** to the monster and took **{battle_outcome[2]} damage**. "
                                                    f"You gained {experience_gained} combat XP.\n"
-                                                   f"\n")
-        battle_outcome_embed.set_footer(text=footer_text)
+                                                   f"\n\u00A0\u00A0")
 
         await battle_embed.edit(
             embed=battle_outcome_embed,
             view=loot_view
         )
 
+
     else:
+
         # The player is defeated
         player.stats.health = 0  # Set player's health to 0
         player_data[author_id]["stats"]["health"] = 0
 
         # Create a new embed with the defeat message
-        new_embed = create_battle_embed(ctx.user, player, monster,
+        new_embed = create_battle_embed(ctx.user, player, monster, footer_text = "", messages =
 
         f"☠️ You have been **DEFEATED** by the **{monster.name}**! 💀\n"
         f"{rip_emoji} *Your spirit lingers, seeking renewal.* {rip_emoji}\n\n"
@@ -272,6 +262,7 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
 
         # Add the "dead.png" image to the embed
         new_embed.set_image(url=generate_urls("cemetery", "dead"))
+
         # Update the message with the new embed and view
         await battle_embed.edit(embed=new_embed, view=ResurrectOptions(ctx, player_data, author_id, new_embed))
 
