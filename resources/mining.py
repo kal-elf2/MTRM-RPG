@@ -332,20 +332,17 @@ class MiningCog(commands.Cog):
         }
 
         # Calculate the adjusted min level for the specific ore in the current zone
-        if zone_level > 1:
-            ore_zone_min_level = base_min_levels[ore_type] + (zone_level - 1) * 20 - 20
-        else:
-            ore_zone_min_level = base_min_levels[ore_type]
+        ore_zone_min_level = base_min_levels[ore_type] + (zone_level - 1) * 20
 
         # Check if player's level is lower than ore's minimum level
         if player_level < ore_zone_min_level:
             return 0
 
         # Calculate the level difference
-        level_difference = player_level - ore_zone_min_level
+        level_difference = min(player_level - ore_zone_min_level, 20)
 
         # Determine the success probability
-        probability = 0.25 + min(level_difference, 20) * 0.0375
+        probability = 0.25 + level_difference * 0.0375
         return min(1, probability)  # Ensure it doesn't exceed 100%
 
     @commands.slash_command(description="Mine some Ore!")

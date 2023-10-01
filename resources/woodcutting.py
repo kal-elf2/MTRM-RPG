@@ -337,20 +337,17 @@ class WoodcuttingCog(commands.Cog):
         }
 
         # Calculate the adjusted min level for the specific tree in the current zone
-        if zone_level > 1:
-            tree_zone_min_level = base_min_levels[tree_type] + (zone_level - 1) * 20 - 20
-        else:
-            tree_zone_min_level = base_min_levels[tree_type]
+        tree_zone_min_level = base_min_levels[tree_type] + (zone_level - 1) * 20
 
         # Check if player's level is lower than tree's minimum level
         if player_level < tree_zone_min_level:
             return 0
 
         # Calculate the level difference
-        level_difference = player_level - tree_zone_min_level
+        level_difference = min(player_level - tree_zone_min_level, 20)
 
         # Determine the success probability
-        probability = 0.25 + min(level_difference, 20) * 0.0375
+        probability = 0.25 + level_difference * 0.0375
         return min(1, probability)  # Ensure it doesn't exceed 100%
 
     @commands.slash_command(description="Chop some wood!")
