@@ -4,7 +4,7 @@ from resources.herb import HERB_TYPES
 from resources.potion import POTION_LIST
 from resources.materium import Materium
 from resources.item import Item
-from emojis import coppers_emoji, mtrm_emoji, rabbit_body_emoji, wolf_skin_emoji, glowing_essence_emoji, deer_skins_emoji, deer_parts_emoji, onyx_emoji
+from emojis import get_emoji
 from probabilities import mtrm_drop_percent, potion_drop_percent, herb_drop_percent, gem_drop_percent, loot_drop_percent
 
 class Loot:
@@ -99,12 +99,12 @@ loot_list = [
 ]
 
 item_emoji_mapping = {
-    'Onyx': onyx_emoji,
-    'Deer Skins': deer_skins_emoji,
-    'Deer Parts': deer_parts_emoji,
-    'Rabbit Body': rabbit_body_emoji,
-    'Glowing Essence': glowing_essence_emoji,
-    'Wolf Skin': wolf_skin_emoji
+    'Onyx': 'onyx_emoji',
+    'Deer Skins': 'deer_skins_emoji',
+    'Deer Parts': 'deer_parts_emoji',
+    'Rabbit Body': 'rabbit_body_emoji',
+    'Glowing Essence': 'glowing_essence_emoji',
+    'Wolf Skin': 'wolf_skin_emoji'
 }
 
 monster_difficulty_multiplier = {
@@ -127,9 +127,9 @@ def generate_zone_loot(zone_level, monster_drop=None, name=None):
     loot.append(('coppers', coppers_dropped))
 
     if coppers_dropped == 1:
-        loot_messages.append(f"{coppers_emoji} You found {coppers_dropped} Copper!")
+        loot_messages.append(f"{get_emoji('coppers_emoji')} You found {coppers_dropped} Copper!")
     else:
-        loot_messages.append(f"{coppers_emoji} You found {coppers_dropped} Coppers!")
+        loot_messages.append(f"{get_emoji('coppers_emoji')} You found {coppers_dropped} Coppers!")
 
     # Gem drops
     gem_drop_rate = gem_drop_percent * zone_level  # Increase the chance of getting a drop as zone level increases
@@ -154,7 +154,7 @@ def generate_zone_loot(zone_level, monster_drop=None, name=None):
     if random.random() < materium_drop_rate:
         materium_dropped = Materium()
         loot.append(('materium', materium_dropped))
-        loot_messages.append(f"{mtrm_emoji} You found some Materium!")
+        loot_messages.append(f"{get_emoji('mtrm_emoji')} You found some Materium!")
 
         # Loot drops
     loot_drop_rate = loot_drop_percent * zone_level  # Increase the chance of getting a drop as zone level increases
@@ -190,7 +190,7 @@ def generate_zone_loot(zone_level, monster_drop=None, name=None):
                 continue  # Ignore the drop if it's not a string or an Item
 
             loot.append(('items', [(item, quantity)]))
-            loot_messages.append(f"{item_emoji_mapping.get(item.name, '')}  You found {quantity} {item.name}!")
+            loot_messages.append(f"{get_emoji(item_emoji_mapping.get(item.name, ''))}  You found {quantity} {item.name}!")
 
         # Return the loot dropped (empty list if no loot is dropped) and the loot messages
     return loot, loot_messages

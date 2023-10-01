@@ -14,7 +14,7 @@ from utils import load_player_data, save_player_data, send_message
 from monsters.monster import create_battle_embed, monster_battle, generate_monster_by_name, footer_text_for_embed
 from monsters.battle import BattleOptions, LootOptions
 from images.urls import generate_urls
-from emojis import coal_emoji, carbon_emoji, iron_emoji, potion_yellow_emoji, rip_emoji, mtrm_emoji
+from emojis import get_emoji
 from probabilities import gem_drop_percent, mtrm_drop_percent, attack_percent
 
 # Mining experience points for each ore type
@@ -25,9 +25,9 @@ MINING_EXPERIENCE = {
 }
 
 ore_emoji_mapping = {
-    "Coal": coal_emoji,
-    "Carbon": carbon_emoji,
-    "Iron": iron_emoji
+    "Coal": 'coal_emoji',
+    "Carbon": 'carbon_emoji',
+    "Iron": 'iron_emoji'
 }
 
 with open("level_data.json", "r") as f:
@@ -129,7 +129,7 @@ class MineButton(discord.ui.View):
 
         message = ""
         if success:
-            ore_emoji = ore_emoji_mapping.get(self.ore_type, "🪨")
+            ore_emoji = get_emoji(ore_emoji_mapping.get(self.ore_type, "🪨"))
             message = f"{ore_emoji} **Successfully chopped 1 {self.ore_type}!**"
 
             # Update inventory and decrement endurance
@@ -152,7 +152,7 @@ class MineButton(discord.ui.View):
             mtrm_dropped = attempt_mtrm_drop(zone_level)
             if mtrm_dropped:
                 self.player.inventory.add_item_to_inventory(mtrm_dropped, amount=1)
-                message += f"\n{mtrm_emoji} You also **found some Materium!**"
+                message += f"\n{get_emoji('mtrm_emoji')} You also **found some Materium!**"
 
             self.player_data[self.author_id]["stats"][
                 "mining_experience"] = self.player.stats.mining_experience
@@ -163,7 +163,7 @@ class MineButton(discord.ui.View):
             # Clear previous fields and add new ones
             self.embed.clear_fields()
             # Include the yellow potion emoji for the stamina/endurance string
-            stamina_str = f"{potion_yellow_emoji}  {self.player.stats.endurance}/{self.player.stats.max_endurance}"
+            stamina_str = f"{get_emoji('potion_yellow_emoji')}  {self.player.stats.endurance}/{self.player.stats.max_endurance}"
             # Get the new ore count
             ore_count = self.player.inventory.get_ore_count(self.ore_type)
             ore_str = str(ore_count)
@@ -296,10 +296,10 @@ class MineButton(discord.ui.View):
                 # Create a new embed with the defeat message
                 new_embed = create_battle_embed(interaction.user, self.player, monster, footer_text= "", messages=
 
-                                                f"☠️ You have been **DEFEATED** by the **{monster.name}**! 💀\n"
-                                                f"{rip_emoji} *Your spirit lingers, seeking renewal.* {rip_emoji}\n\n"
+                                                f"☠️ You have been **DEFEATED** by the **{monster.name}**!\n"
+                                                f"{get_emoji('rip_emoji')} *Your spirit lingers, seeking renewal.* {get_emoji('rip_emoji')}\n\n"
                                                 f"__**Options for Revival:**__\n"
-                                                f"1. Use {mtrm_emoji} to revive without penalty.\n"
+                                                f"1. Use {get_emoji('mtrm_emoji')} to revive without penalty.\n"
                                                 f"2. Resurrect with 2.5% penalty to all skills.")
 
                 # Clear the previous BattleOptions view
@@ -315,7 +315,7 @@ class MineButton(discord.ui.View):
             self.player_data[self.author_id]["in_battle"] = False
             save_player_data(self.guild_id, self.player_data)
 
-    @discord.ui.button(custom_id="stamina", style=discord.ButtonStyle.blurple, emoji=f'{potion_yellow_emoji}')
+    @discord.ui.button(custom_id="stamina", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("potion_yellow_emoji")}')
     async def stamina_potion(self, button, interaction):
         pass
 
@@ -366,7 +366,7 @@ class MiningCog(commands.Cog):
 
         ore_min_level = base_min_levels[ore_type] + (player.stats.zone_level - 1) * 20
 
-        ore_emoji = ore_emoji_mapping.get(ore_type, "🪨")  # Default to empty string if not found
+        ore_emoji = get_emoji(ore_emoji_mapping.get(ore_type, "🪨"))  # Default to empty string if not found
 
         # Check if player meets the level requirement
         if player.stats.mining_level < ore_min_level:
@@ -400,7 +400,7 @@ class MiningCog(commands.Cog):
         embed.set_image(url=generate_urls("ore", f'{ore_type}'))
 
         # Add the initial stamina and ore inventory here
-        stamina_str = f"{potion_yellow_emoji}  {player.stats.endurance}/{player.stats.max_endurance}"
+        stamina_str = f"{get_emoji('potion_yellow_emoji')}  {player.stats.endurance}/{player.stats.max_endurance}"
 
         # Use the get_ore_count method to get the wood count
         ore_count = player.inventory.get_ore_count(ore_type)

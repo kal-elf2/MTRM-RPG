@@ -4,7 +4,7 @@ import threading
 import random
 import json
 import discord
-from emojis import heart_emoji, endurance_emoji, strength_emoji
+from emojis import get_emoji
 
 with open("level_data.json", "r") as f:
     LEVEL_DATA = json.load(f)
@@ -60,9 +60,9 @@ class Exemplar:
 
         if skill == "combat":
             embed.add_field(name="⚔️ Combat Level", value=f"**{self.stats.combat_level}**   (+1)", inline=True)
-            embed.add_field(name=f"{heart_emoji} Health", value=f"**{self.stats.health}**   (+10)", inline=True)
-            embed.add_field(name=f"{strength_emoji} Strength", value=f"**{self.stats.strength}**   (+5)", inline=True)
-            embed.add_field(name=f"{endurance_emoji} Endurance", value=f"**{self.stats.endurance}**   (+5)",
+            embed.add_field(name=f"{get_emoji('heart_emoji')} Health", value=f"**{self.stats.health}**   (+10)", inline=True)
+            embed.add_field(name=f"{get_emoji('strength_emoji')} Strength", value=f"**{self.stats.strength}**   (+5)", inline=True)
+            embed.add_field(name=f"{get_emoji('endurance_emoji')} Endurance", value=f"**{self.stats.endurance}**   (+5)",
                             inline=True)
             embed.add_field(name="🗡️ Attack", value=f"**{self.stats.attack}**   (+2)", inline=True)
             embed.add_field(name="🛡️ Defense", value=f"**{self.stats.defense}**   (+2)", inline=True)
@@ -71,7 +71,7 @@ class Exemplar:
             increase_value = 1  # Always +1 for these skills
             if skill == "mining":
                 embed.add_field(name="⛏️ Mining Level", value=f"**{new_level}**   (+{increase_value})", inline=True)
-                embed.add_field(name=f"{strength_emoji} Strength",
+                embed.add_field(name=f"{get_emoji('strength_emoji')} Strength",
                                 value=f"**{self.stats.strength}**   (+{increase_value})",
                                 inline=True)
             elif skill == "woodcutting":

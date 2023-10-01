@@ -13,7 +13,7 @@ from discord import Embed
 from resources.inventory import Inventory
 from stats import ResurrectOptions
 from monsters.battle import BattleOptions, LootOptions
-from emojis import mtrm_emoji, rip_emoji, heart_emoji, strength_emoji, endurance_emoji
+from emojis import get_emoji
 from images.urls import generate_urls
 
 bot = commands.Bot(command_prefix="/", intents=discord.Intents.all())
@@ -46,24 +46,21 @@ async def setchannel(ctx):
     await ctx.respond(f'{ctx.channel.name} Channel set. Please use "newgame" command to start a new adventure! .')
 
 
-from emojis import human_exemplar_emoji, dwarf_exemplar_emoji, orc_exemplar_emoji, halfling_exemplar_emoji, \
-    elf_exemplar_emoji
-
 # Exemplars class
 class PickExemplars(Select):
 
     def __init__(self):
         options = [
             SelectOption(label='Human Exemplars', value='human',
-                         emoji=f'{human_exemplar_emoji}'),
+                         emoji=f'{get_emoji("human_exemplar_emoji")}'),
             SelectOption(label='Dwarf Exemplars', value='dwarf',
-                         emoji=f'{dwarf_exemplar_emoji}'),
+                         emoji=f'{get_emoji("dwarf_exemplar_emoji")}'),
             SelectOption(label='Orc Exemplars', value='orc',
-                         emoji=f'{orc_exemplar_emoji}'),
+                         emoji=f'{get_emoji("orc_exemplar_emoji")}'),
             SelectOption(label='Halfling Exemplars', value='halfling',
-                         emoji=f'{halfling_exemplar_emoji}'),
+                         emoji=f'{get_emoji("halfling_exemplar_emoji")}'),
             SelectOption(label='Elf Exemplars', value='elf',
-                         emoji=f'{elf_exemplar_emoji}')
+                         emoji=f'{get_emoji("elf_exemplar_emoji")}')
         ]
         super().__init__(placeholder='Exemplar', options=options)
         self.options_dict = {
@@ -138,9 +135,9 @@ class PickExemplars(Select):
         embed.set_image(url=generate_urls("exemplars", exemplar_instance.name))
 
         embed.add_field(name="⚔️ Combat Level", value=str(stats.combat_level), inline=True)
-        embed.add_field(name=f"{heart_emoji} Health", value=str(stats.health), inline=True)
-        embed.add_field(name=f"{strength_emoji} Strength", value=str(stats.strength), inline=True)
-        embed.add_field(name=f"{endurance_emoji} Endurance", value=str(stats.endurance), inline=True)
+        embed.add_field(name=f"{get_emoji('heart_emoji')} Health", value=str(stats.health), inline=True)
+        embed.add_field(name=f"{get_emoji('strength_emoji')} Strength", value=str(stats.strength), inline=True)
+        embed.add_field(name=f"{get_emoji('endurance_emoji')} Endurance", value=str(stats.endurance), inline=True)
         embed.add_field(name="🗡️ Attack", value=str(stats.attack), inline=True)
         embed.add_field(name="🛡️ Defense", value=str(stats.defense), inline=True)
         embed.add_field(name="⛏️ Mining Level", value=str(stats.mining_level), inline=True)
@@ -251,10 +248,10 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
         # Create a new embed with the defeat message
         new_embed = create_battle_embed(ctx.user, player, monster, footer_text = "", messages =
 
-        f"☠️ You have been **DEFEATED** by the **{monster.name}**! 💀\n"
-        f"{rip_emoji} *Your spirit lingers, seeking renewal.* {rip_emoji}\n\n"
+        f"☠️ You have been **DEFEATED** by the **{monster.name}**!\n"
+        f"{get_emoji('rip_emoji')} *Your spirit lingers, seeking renewal.* {get_emoji('rip_emoji')}\n\n"
         f"__**Options for Revival:**__\n"
-        f"1. Use {mtrm_emoji} to revive without penalty.\n"
+        f"1. Use {get_emoji('mtrm_emoji')} to revive without penalty.\n"
         f"2. Resurrect with 2.5% penalty to all skills.")
 
         # Clear the previous BattleOptions view

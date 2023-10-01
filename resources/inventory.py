@@ -93,13 +93,6 @@ class Inventory:
                 return ore.stack
         return 0  # Return 0 if the ore_type is not found in inventory
 
-    def get_fish_count(self, fish_type):
-        #Returns the count of a specific type of tree in the inventory.
-        for fish in self.fish:
-            if fish.name == fish_type:
-                return fish.stack
-        return 0  # Return 0 if the tree_type is not found in inventory
-
     def _add_item_to_specific_inventory(self, item, amount, item_list):
         existing_item = next((i for i in item_list if i.name == item.name), None)
         if existing_item:

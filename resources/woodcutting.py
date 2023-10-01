@@ -11,7 +11,7 @@ from resources.tree import TREE_TYPES, Tree
 from resources.materium import Materium
 from stats import ResurrectOptions
 from exemplars.exemplars import Exemplar
-from emojis import potion_yellow_emoji, rip_emoji, mtrm_emoji, pine_emoji, ash_emoji, yew_emoji, poplar_emoji
+from emojis import get_emoji
 from utils import load_player_data, save_player_data, send_message
 from monsters.monster import create_battle_embed, monster_battle, generate_monster_by_name
 from monsters.battle import BattleOptions, LootOptions, footer_text_for_embed
@@ -27,10 +27,10 @@ WOODCUTTING_EXPERIENCE = {
 }
 
 tree_emoji_mapping = {
-    "Pine": pine_emoji,
-    "Yew": yew_emoji,
-    "Ash": ash_emoji,
-    "Poplar": poplar_emoji
+    "Pine": 'pine_emoji',
+    "Yew": 'yew_emoji',
+    "Ash": 'ash_emoji',
+    "Poplar": 'poplar_emoji'
 }
 
 with open("level_data.json", "r") as f:
@@ -136,7 +136,7 @@ class HarvestButton(discord.ui.View):
 
         message = ""
         if success:
-            tree_emoji = tree_emoji_mapping.get(self.tree_type, "🪵")
+            tree_emoji = get_emoji(tree_emoji_mapping.get(self.tree_type, "🪵"))
             message = f"{tree_emoji} **Successfully chopped 1 {self.tree_type}!**"
 
             # Update inventory and decrement endurance
@@ -158,7 +158,7 @@ class HarvestButton(discord.ui.View):
             mtrm_dropped = attempt_mtrm_drop(zone_level)
             if mtrm_dropped:
                 self.player.inventory.add_item_to_inventory(mtrm_dropped, amount=1)
-                message += f"\n{mtrm_emoji} You also **found some Materium!**"
+                message += f"\n{get_emoji('mtrm_emoji')} You also **found some Materium!**"
 
             self.player_data[self.author_id]["stats"][
                 "woodcutting_experience"] = self.player.stats.woodcutting_experience
@@ -169,7 +169,7 @@ class HarvestButton(discord.ui.View):
             # Clear previous fields and add new ones
             self.embed.clear_fields()
             # Include the yellow potion emoji for the stamina/endurance string
-            stamina_str = f"{potion_yellow_emoji}  {self.player.stats.endurance}/{self.player.stats.max_endurance}"
+            stamina_str = f"{get_emoji('potion_yellow_emoji')}  {self.player.stats.endurance}/{self.player.stats.max_endurance}"
             # Get the new wood count
             wood_count = self.player.inventory.get_tree_count(self.tree_type)
             wood_str = str(wood_count)
@@ -300,10 +300,10 @@ class HarvestButton(discord.ui.View):
                 # Create a new embed with the defeat message
                 new_embed = create_battle_embed(interaction.user, self.player, monster, footer_text= "", messages=
 
-                                                f"☠️ You have been **DEFEATED** by the **{monster.name}**! 💀\n"
-                                                f"{rip_emoji} *Your spirit lingers, seeking renewal.* {rip_emoji}\n\n"
+                                                f"☠️ You have been **DEFEATED** by the **{monster.name}**!\n"
+                                                f"{get_emoji('rip_emoji')} *Your spirit lingers, seeking renewal.* {get_emoji('rip_emoji')}\n\n"
                                                 f"__**Options for Revival:**__\n"
-                                                f"1. Use {mtrm_emoji} to revive without penalty.\n"
+                                                f"1. Use {get_emoji('mtrm_emoji')} to revive without penalty.\n"
                                                 f"2. Resurrect with 2.5% penalty to all skills.")
 
                 # Clear the previous BattleOptions view
@@ -319,7 +319,7 @@ class HarvestButton(discord.ui.View):
             self.player_data[self.author_id]["in_battle"] = False
             save_player_data(self.guild_id, self.player_data)
 
-    @discord.ui.button(custom_id="stamina", style=discord.ButtonStyle.blurple, emoji=f'{potion_yellow_emoji}')
+    @discord.ui.button(custom_id="stamina", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("potion_yellow_emoji")}')
     async def stamina_potion(self, button, interaction):
         pass
 
@@ -371,7 +371,7 @@ class WoodcuttingCog(commands.Cog):
 
         tree_min_level = base_min_levels[tree_type] + (player.stats.zone_level - 1) * 20
 
-        tree_emoji = tree_emoji_mapping.get(tree_type, "🪵")  # Default to empty string if not found
+        tree_emoji = get_emoji(tree_emoji_mapping.get(tree_type, "🪵"))  # Default to empty string if not found
 
         # Check if player meets the level requirement
         if player.stats.woodcutting_level < tree_min_level:
@@ -405,7 +405,7 @@ class WoodcuttingCog(commands.Cog):
         embed.set_image(url=generate_urls("trees", f'{tree_type}'))
 
         # Add the initial stamina and wood inventory here
-        stamina_str = f"{potion_yellow_emoji}  {player.stats.endurance}/{player.stats.max_endurance}"
+        stamina_str = f"{get_emoji('potion_yellow_emoji')}  {player.stats.endurance}/{player.stats.max_endurance}"
 
         # Use the get_tree_count method to get the wood count
         wood_count = player.inventory.get_tree_count(tree_type)

@@ -1,8 +1,7 @@
 from discord import Embed
-from emojis import heart_emoji
 import discord
 import json
-from emojis import potion_red_emoji, potion_yellow_emoji, uncommon_emoji, common_emoji, rare_emoji, epic_emoji, legendary_emoji
+from emojis import get_emoji
 from utils import save_player_data, load_player_data
 from images.urls import generate_urls
 
@@ -67,10 +66,10 @@ class BattleOptions(discord.ui.View):
     @discord.ui.button(custom_id="attack", style=discord.ButtonStyle.blurple, emoji = '⚔️')
     async def special_attack(self, button, interaction):
         pass
-    @discord.ui.button(custom_id="health", style=discord.ButtonStyle.blurple, emoji=f'{potion_red_emoji}')
+    @discord.ui.button(custom_id="health", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("potion_red_emoji")}')
     async def health_potion(self, button, interaction):
         pass
-    @discord.ui.button(custom_id="stamina", style=discord.ButtonStyle.blurple, emoji=f'{potion_yellow_emoji}')
+    @discord.ui.button(custom_id="stamina", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("potion_yellow_emoji")}')
     async def stamina_potion(self, button, interaction):
         pass
     @discord.ui.button(label="Run", custom_id="run", style=discord.ButtonStyle.blurple)
@@ -96,11 +95,11 @@ def create_battle_embed(user, player, monster, footer_text, messages=None):
 
     # Emojis for each zone
     zone_emoji_mapping = {
-        1: common_emoji,
-        2: uncommon_emoji,
-        3: rare_emoji,
-        4: epic_emoji,
-        5: legendary_emoji
+        1: 'common_emoji',
+        2: 'uncommon_emoji',
+        3: 'rare_emoji',
+        4: 'epic_emoji',
+        5: 'legendary_emoji'
     }
 
     color_mapping = {
@@ -112,7 +111,7 @@ def create_battle_embed(user, player, monster, footer_text, messages=None):
     }
 
     # Get the appropriate emoji for the current zone
-    zone_emoji = zone_emoji_mapping.get(zone_level)
+    zone_emoji = get_emoji(zone_emoji_mapping.get(zone_level))
     embed_color = color_mapping.get(zone_level)
 
     # Replace spaces with '%20' for URL compatibility
@@ -127,7 +126,7 @@ def create_battle_embed(user, player, monster, footer_text, messages=None):
 
     embed = Embed(title=f"{zone_emoji} {monster.name}", color=embed_color)
     embed.add_field(name="Battle Outcome", value=messages, inline=False)
-    embed.add_field(name=f"{heart_emoji}  {user.name}'s Health", value=f"{player.health}/{player.stats.max_health}\n{player_health_bar}", inline=True)
+    embed.add_field(name=f"{get_emoji('heart_emoji')}  {user.name}'s Health", value=f"{player.health}/{player.stats.max_health}\n{player_health_bar}", inline=True)
     embed.add_field(name=f"{monster.name}'s Health", value=f"{monster.health}/{monster.max_health}\n{monster_health_bar}", inline=True)
 
     # Add image to embed
