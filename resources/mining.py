@@ -375,8 +375,28 @@ class MiningCog(commands.Cog):
                 ephemeral=True)
             return
 
+        # Rarity and Color Mapping
+        rarity_mapping = {
+            1: "Common",
+            2: "Uncommon",
+            3: "Rare",
+            4: "Epic",
+            5: "Legendary"
+        }
+
+        color_mapping = {
+            "Common": 0x969696,
+            "Uncommon": 0x15ce00,
+            "Rare": 0x0096f1,
+            "Epic": 0x9900ff,
+            "Legendary": 0xfebd0d
+        }
+
+        rarity = rarity_mapping.get(player.stats.zone_level)
+        embed_color = color_mapping.get(rarity)
+
         # Start Embed
-        embed = Embed(title=f"{ore_type} Ore")
+        embed = Embed(title=f"{rarity} {ore_type} Ore", color=embed_color)
         embed.set_image(url=generate_urls("ore", f'{ore_type}'))
 
         # Add the initial stamina and ore inventory here
