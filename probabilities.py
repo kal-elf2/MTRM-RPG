@@ -16,4 +16,4 @@ loot_drop_percent = 0.1
 potion_drop_percent = 0.05
 
 # Original value: 0.1 (10% chance)
-attack_percent = 0.01
+attack_percent = 0.1
