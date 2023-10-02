@@ -5,7 +5,7 @@ from resources.potion import POTION_LIST
 from resources.materium import Materium
 from resources.item import Item
 from emojis import get_emoji
-from probabilities import mtrm_drop_percent, potion_drop_percent, herb_drop_percent, gem_drop_percent, loot_drop_percent
+from probabilities import mtrm_drop_percent, potion_drop_percent, herb_drop_percent, gem_drop_percent
 
 class Loot:
     def __init__(self, name, rarity, value):
@@ -34,7 +34,7 @@ class Loot:
 
 loot_definitions = {
     'Rabbit Body': {
-        'description': 'A furry rabbit body, warm to the touch. Can be used for crafting soft armors.',
+        'description': 'A furry rabbit body, warm to the touch. Can be used for citadel soft armors.',
         'value': 10
     },
     'Deer Parts': {
@@ -42,7 +42,7 @@ loot_definitions = {
         'value': 20
     },
     'Deer Skins': {
-        'description': 'Tough deer skin. Can be used for crafting sturdy armors.',
+        'description': 'Tough deer skin. Can be used for citadel sturdy armors.',
         'value': 30
     },
     'Wolf Skin': {
@@ -50,53 +50,14 @@ loot_definitions = {
         'value': 50
     },
     'Onyx': {
-        'description': 'A precious black gemstone. Used in crafting magical items and potent elixirs.',
+        'description': 'A precious black gemstone. Used in citadel magical items and potent elixirs.',
         'value': 100
     },
     'Glowing Essence': {
-        'description': 'An ethereal essence that glows faintly. Used in powerful magical rituals and crafting.',
+        'description': 'An ethereal essence that glows faintly. Used in powerful magical rituals and citadel.',
         'value': 200
     }
 }
-
-
-loot_list = [
-    [
-        Loot("Copper Coin", 1, 2),
-        Loot("Bronze Bracelet", 1, 5),
-        Loot("Wooden Amulet", 1, 8),
-        Loot("Small Gemstone", 1, 10),
-        Loot("Rusty Longsword", 1, 20),
-    ],
-    [
-        Loot("Silver Coin", 2, 10),
-        Loot("Iron Ring", 2, 15),
-        Loot("Glass Necklace", 2, 25),
-        Loot("Polished Gemstone", 2, 30),
-        Loot("Iron Longsword", 2, 40),
-    ],
-    [
-        Loot("Gold Coin", 3, 20),
-        Loot("Silver Bracelet", 3, 35),
-        Loot("Golden Amulet", 3, 50),
-        Loot("Cut Gemstone", 3, 60),
-        Loot("Steel Longsword", 3, 75),
-    ],
-    [
-        Loot("Platinum Coin", 4, 50),
-        Loot("Golden Ring", 4, 60),
-        Loot("Crystal Necklace", 4, 80),
-        Loot("Flawless Gemstone", 4, 100),
-        Loot("Mithril Longsword", 4, 125),
-    ],
-    [
-        Loot("Adamant Coin", 5, 100),
-        Loot("Platinum Bracelet", 5, 120),
-        Loot("Enchanted Amulet", 5, 150),
-        Loot("Pristine Gemstone", 5, 200),
-        Loot("Adamant Longsword", 5, 200),
-    ],
-]
 
 item_emoji_mapping = {
     'Onyx': 'onyx_emoji',
@@ -155,17 +116,6 @@ def generate_zone_loot(zone_level, monster_drop=None, name=None):
         materium_dropped = Materium()
         loot.append(('materium', materium_dropped))
         loot_messages.append(f"{get_emoji('mtrm_emoji')} You found some Materium!")
-
-        # Loot drops
-    loot_drop_rate = loot_drop_percent * zone_level  # Increase the chance of getting a drop as zone level increases
-    if random.random() < loot_drop_rate:
-        loot_options_for_zone = loot_list[zone_level - 1]
-        loot_weights = [50, 30, 15, 4, 1]
-        loot_weights = loot_weights[:len(
-            loot_options_for_zone)]  # Adjust the weights based on the number of loot options for the zone
-        loot_dropped = random.choices(loot_options_for_zone, weights=loot_weights, k=1)[0]
-        loot.append(('loot', loot_dropped))
-        loot_messages.append(f"💰 You found a {loot_dropped.name}!")
 
     # Potion drops
     potion_drop_rate = potion_drop_percent * zone_level  # Increase the chance of getting a drop as zone level increases

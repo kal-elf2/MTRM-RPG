@@ -2,10 +2,9 @@ from resources.materium import Materium
 from resources.herb import Herb
 from resources.potion import Potion
 from resources.item import Item
-from crafting.weapon import Weapon
-from crafting.armor import Armor
+from citadel.crafting import Weapon
+from citadel.crafting import Armor
 from resources.ore import Gem, Ore
-from resources.loot import Loot
 from resources.tree import Tree
 
 class Inventory:
@@ -16,7 +15,8 @@ class Inventory:
         self.ore = []
         self.gems = []
         self.potions = []
-        self.loot = []
+        self.weapons = []
+        self.armors = []
         self.equipped_items = []
         self.limit = limit
         self.equipped_armor = {}
@@ -33,7 +33,8 @@ class Inventory:
             "ore": [ore.to_dict() for ore in self.ore],
             "gems": [gem.to_dict() for gem in self.gems],
             "potions": [potion.to_dict() for potion in self.potions],
-            "loot": [item.to_dict() for item in self.loot],
+            "weapons": [weapon.to_dict() for weapon in self.weapons],
+            "armors": [armor.to_dict() for armor in self.armors],
             "limit": self.limit,
             "equipped_items": [item.to_dict() for item in self.equipped_items],
             "equipped_armor": {k: v.to_dict() for k, v in self.equipped_armor.items()},
@@ -51,7 +52,8 @@ class Inventory:
         inventory.ore = [Ore.from_dict(ore_data) for ore_data in data["ore"]]
         inventory.potions = [Potion.from_dict(potion_data) for potion_data in data["potions"]]
         inventory.gems = [Gem.from_dict(gem_data) for gem_data in data["gems"]]
-        inventory.loot = [Item.from_dict(item_data) for item_data in data["loot"]]
+        inventory.weapons = [Weapon.from_dict(weapon_data) for weapon_data in data["weapons"]]
+        inventory.armors = [Armor.from_dict(armor_data) for armor_data in data["armors"]]
         inventory.equipped_items = [Item.from_dict(item_data) for item_data in data["equipped_items"]]
         inventory.equipped_armor = {k: Armor.from_dict(v_data) for k, v_data in data["equipped_armor"].items()}
         inventory.equipped_weapon = Weapon.from_dict(data["equipped_weapon"]) if data["equipped_weapon"] else None
@@ -74,8 +76,6 @@ class Inventory:
             self._add_item_to_specific_inventory(item, amount, self.potions)
         elif isinstance(item, Gem):
             self._add_item_to_specific_inventory(item, amount, self.gems)
-        elif isinstance(item, Loot):
-            self._add_item_to_specific_inventory(item, amount, self.loot)
         elif isinstance(item, Item):
             self._add_item_to_specific_inventory(item, amount, self.items)
 
@@ -151,57 +151,4 @@ class Inventory:
             print(f"You don't have {amount} {item.name}(s) in your inventory.")
             return False
 
-    def equip_item(self, item):
-        if isinstance(item, Armor) or isinstance(item, Weapon):
-            if self._can_equip_item(item):
-                self.equipped_items.append(item)
-                self.remove_item(item)
-                return True
-            else:
-                print(f"Cannot equip {item.name}.")
-                return False
-        else:
-            print("You can only equip Armor or Weapon items.")
-            return False
-
-    def _can_equip_item(self, item):
-        if isinstance(item, Armor):
-            return not any(equipped_item.armor_type == item.armor_type for equipped_item in self.equipped_items)
-        elif isinstance(item, Weapon):
-            if item.weapon_type == "dual_daggers":
-                return sum(1 for equipped_item in self.equipped_items if
-                           isinstance(equipped_item, Weapon) and equipped_item.weapon_type == "dual_daggers") < 2
-            elif item.weapon_type == "longbow":
-                return not any(
-                    isinstance(equipped_item, Armor) and equipped_item.armor_type == "shield" for equipped_item in
-                    self.equipped_items) and not any(
-                    isinstance(equipped_item, Weapon) for equipped_item in self.equipped_items)
-            else:
-                return not any(isinstance(equipped_item, Weapon) for equipped_item in self.equipped_items)
-        return False
-
-    def unequip_item(self, item):
-        if item in self.equipped_items:
-            self.equipped_items.remove(item)
-            self.add_item_to_inventory(item)
-            return True
-        else:
-            print("Item not found in equipped items.")
-            return False
-
-
-class Bank:
-    def __init__(self):
-        self.items = []
-
-    def deposit_item(self, item):
-        self.items.append(item)
-
-    def withdraw_item(self, item):
-        if item in self.items:
-            self.items.remove(item)
-            return item
-        else:
-            print("Item not found in the bank.")
-            return None
 

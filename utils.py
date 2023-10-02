@@ -2,8 +2,7 @@ import json
 from resources.inventory import Inventory
 from exemplars.exemplars import Exemplar
 from resources.herb import Herb
-from exemplars.exemplars import PlayerStats, Bank
-from crafting.crafting import Crafting
+from exemplars.exemplars import PlayerStats
 from resources.item import Item
 from resources.ore import Gem, Ore
 from resources.tree import Tree
@@ -17,10 +16,6 @@ class ExemplarJSONEncoder(json.JSONEncoder):
         elif isinstance(obj, Inventory):
             return obj.__dict__
         elif isinstance(obj, PlayerStats):
-            return obj.__dict__
-        elif isinstance(obj, Bank):
-            return obj.__dict__
-        elif isinstance(obj, Crafting):
             return obj.__dict__
         elif isinstance(obj, Item):
             return obj.to_dict()

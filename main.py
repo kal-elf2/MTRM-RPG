@@ -21,6 +21,7 @@ bot = commands.Bot(command_prefix="/", intents=discord.Intents.all())
 bot.load_extension("stats")
 bot.load_extension("resources.woodcutting")
 bot.load_extension("resources.mining")
+bot.load_extension("citadel.buttons")
 
 guild_data = {}
 
@@ -308,7 +309,7 @@ async def menu(ctx):
     embed = Embed(title="Main Menu", description="Here are the available commands:", color=0x00ff00)
     embed.add_field(name="!battle", value="💀 Fight monsters or search for dungeons", inline=False)
     embed.add_field(name="!gather", value="🎣 Gather resources", inline=False)
-    embed.add_field(name="!crafting", value="🛡️ Craft items", inline=False)
+    embed.add_field(name="!citadel", value="🛡️ Craft items", inline=False)
     embed.add_field(name="!travel", value="🐴 Travel towns or different zones", inline=False)
     embed.add_field(name="!inventory", value="💰 Check your inventory", inline=False)
     embed.add_field(name="!equip", value="🗡️ Equip or unequip items", inline=False)

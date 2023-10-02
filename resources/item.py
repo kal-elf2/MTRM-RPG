@@ -26,6 +26,3 @@ class Item:
         )
         item.stack = data.get("stack", 0)
         return item
-
-
-

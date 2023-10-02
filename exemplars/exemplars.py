@@ -1,5 +1,4 @@
-from resources.inventory import Inventory, Bank
-from crafting.crafting import Crafting
+from resources.inventory import Inventory
 import threading
 import random
 import json
@@ -36,8 +35,6 @@ class Exemplar:
 
         )
         self.inventory = inventory if inventory else Inventory()
-        self.bank = Bank()
-        self.crafting = Crafting()
         self.equipped_weapon = None
         self.equipped_armor = None
         self.attack = 0
@@ -250,29 +247,6 @@ class Exemplar:
         base_defense = self.stats.endurance
         armor_bonus = self.equipped_armor.defense if self.equipped_armor else 0
         return base_defense + armor_bonus
-
-    def craft_item(self, item_type, recipe_name):
-        recipe = self.crafting.get_recipe(item_type, recipe_name)
-        if recipe is None:
-            print(f"Recipe not found for {item_type.capitalize()} '{recipe_name}'.")
-            return None
-
-        if self.can_craft_item(recipe):
-            item = self.crafting.create_item(recipe['item_class'], recipe)
-            self.inventory.add_item_to_inventory(item)
-            for resource, amount in recipe['resources'].items():
-                self.inventory.remove_item(resource, amount)
-            print(f"You have crafted a {item.name}.")
-            return item
-        else:
-            print("You do not have the required resources to craft this item.")
-            return None
-
-    def can_craft_item(self, recipe):
-        for resource, amount in recipe['resources'].items():
-            if not self.inventory.has(resource, amount):
-                return False
-        return True
 
     def use_potion(self, potion):
         if not self.inventory.remove_item(potion):
