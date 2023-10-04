@@ -18,9 +18,8 @@ class Weapon(Item):
 
     @classmethod
     def from_dict(cls, data):
-        weapon = super().from_dict(data)
-        weapon.wtype = data["wtype"]
-        return weapon
+        return cls(name=data["name"], wtype=data["wtype"], description=data.get("description"), value=data.get("value"))
+
 
 class Armor(Item):
     def __init__(self, name, description=None, value=None):
@@ -92,8 +91,8 @@ class CraftButtonView(discord.ui.View):
         self.player = player
         self.disabled = disabled
         self.player_data = player_data
+        self.message = None
         self.add_item(CraftButton(disabled, station, selected_recipe, player, player_data, guild_id))
-
 
 class CraftButton(discord.ui.Button):
     def __init__(self, disabled, station, selected_recipe, player, player_data, guild_id):
@@ -106,11 +105,56 @@ class CraftButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         # Use the CraftingStation's craft method
-        crafted_item = self.station.craft(self.selected_recipe.result.name, self.player, self.player_data, self.guild_id)
+        crafted_item = self.station.craft(self.selected_recipe.result.name, self.player, self.player_data,
+                                          self.guild_id)
+
+        # Get zone level from player stats
+        zone_level = self.player.stats.zone_level
+
+        # Emojis for each zone
+        zone_emoji_mapping = {
+            1: 'common_emoji',
+            2: 'uncommon_emoji',
+            3: 'rare_emoji',
+            4: 'epic_emoji',
+            5: 'legendary_emoji'
+        }
+
+        # Colors for each zone
+        color_mapping = {
+            1: 0x969696,
+            2: 0x15ce00,
+            3: 0x0096f1,
+            4: 0x9900ff,
+            5: 0xfebd0d
+        }
+
+        zone_emoji = get_emoji(zone_emoji_mapping.get(zone_level))
+        embed_color = color_mapping.get(zone_level)
+
         if crafted_item:
-            await interaction.response.send_message(f"Successfully crafted {crafted_item.name}!", ephemeral=True)
+            # Check player's inventory for required ingredients.
+            ingredients_list = []
+            for ingredient, required_quantity in self.selected_recipe.ingredients:
+                available_quantity = self.player.inventory.get_item_quantity(ingredient.name)
+                if available_quantity < required_quantity:
+                    ingredients_list.append(f"❌ {ingredient.name} {available_quantity}/{required_quantity}")
+                else:
+                    ingredients_list.append(f"✅ {ingredient.name} {available_quantity}/{required_quantity}")
+
+            message_content = "\n".join(ingredients_list)
+            crafted_item_url = generate_urls('Icons', self.selected_recipe.result.name.replace(" ", "%20"))
+            embed = Embed(title=f"{self.selected_recipe.result.name} {zone_emoji}", description=message_content,
+                          color=embed_color)
+            embed.set_thumbnail(url=crafted_item_url)
+            crafted_item_count = self.player.inventory.get_item_quantity(crafted_item.name)
+            embed.set_footer(text=f"+1 {crafted_item.name}\n{crafted_item_count} in backpack")
+
+            await interaction.response.edit_message(embed=embed)
         else:
-            await interaction.response.send_message(f"Failed to craft {self.selected_recipe.result.name}.", ephemeral=True)
+            await interaction.response.send_message(f"Failed to craft {self.selected_recipe.result.name}.",
+                                                    ephemeral=True)
+
 
 class CraftingSelect(discord.ui.Select):
     def __init__(self, recipes):
@@ -127,10 +171,6 @@ class CraftingSelect(discord.ui.Select):
         guild_id = interaction.guild.id
         author_id = str(interaction.user.id)
         player_data = load_player_data(guild_id)
-        if author_id not in player_data:
-            print(f"Player data not found for {author_id}.")
-            await interaction.response.send_message("Error: Player data not found.", ephemeral=True)
-            return
         player = Exemplar(player_data[author_id]["exemplar"],
                           player_data[author_id]["stats"],
                           player_data[author_id]["inventory"])
@@ -177,12 +217,13 @@ class CraftingSelect(discord.ui.Select):
         # Construct the embed message.
         message_content = "\n".join(ingredients_list)
         crafted_item_url = generate_urls('Icons', selected_recipe.result.name.replace(" ", "%20"))
-        embed = Embed(title=f"{zone_emoji} {selected_recipe.result.name}", description=message_content,
+        embed = Embed(title=f"{selected_recipe.result.name} {zone_emoji}", description=message_content,
                       color=embed_color)
         embed.set_thumbnail(url=crafted_item_url)
 
         view = CraftButtonView(player, player_data, forge, selected_recipe, guild_id, disabled=not can_craft)
-        await interaction.response.send_message(embed=embed, ephemeral=True, view=view)
+        message = await interaction.response.send_message(embed=embed, ephemeral=True, view=view)
+        view.message = message
 
 
 # Defining All Items
