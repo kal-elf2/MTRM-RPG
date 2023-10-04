@@ -41,7 +41,7 @@ loot_definitions = {
         'description': 'Various parts of a deer. Some are useful for making tools and weapons.',
         'value': 20
     },
-    'Deer Skins': {
+    'Deer Skin': {
         'description': 'Tough deer skin. Can be used for citadel sturdy armors.',
         'value': 30
     },
@@ -61,7 +61,7 @@ loot_definitions = {
 
 item_emoji_mapping = {
     'Onyx': 'onyx_emoji',
-    'Deer Skins': 'deer_skins_emoji',
+    'Deer Skin': 'deer_skin_emoji',
     'Deer Parts': 'deer_parts_emoji',
     'Rabbit Body': 'rabbit_body_emoji',
     'Glowing Essence': 'glowing_essence_emoji',

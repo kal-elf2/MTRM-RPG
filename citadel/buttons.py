@@ -11,53 +11,79 @@ class CitadelCog(commands.Cog):
         def __init__(self, ctx=None):
             super().__init__(timeout=None)
             self.ctx = ctx
+            self.crafting_select = None
+
+        def update_or_add_crafting_select(self, recipes):
+            if self.crafting_select:
+                self.remove_item(self.crafting_select)
+            self.crafting_select = CraftingSelect(recipes)
+            self.add_item(self.crafting_select)
 
         @discord.ui.button(label="Forge", custom_id="citadel_forge", style=discord.ButtonStyle.blurple)
         async def forge(self, button, interaction):
-
-            # Add the CraftingSelect with forge recipes
-            self.add_item(CraftingSelect(forge.recipes))
-
-            # Update the original message to display the CraftingSelect
+            self.update_or_add_crafting_select(forge)
             await interaction.response.edit_message(content="Choose an item to Forge:", view=self)
 
         @discord.ui.button(label="Wood Shop", custom_id="citadel_woodshop", style=discord.ButtonStyle.blurple)
         async def wood_shop(self, button, interaction):
-            await interaction.response.send_message("You're at the Wood Shop!")
+            self.update_or_add_crafting_select(woodshop)
+            await interaction.response.edit_message(content="Choose an item from the Wood Shop:", view=self)
 
         @discord.ui.button(label="Archery Stand", custom_id="citadel_archery", style=discord.ButtonStyle.blurple)
         async def archery_stand(self, button, interaction):
-            await interaction.response.send_message("You're at the Archery Stand!")
+            self.update_or_add_crafting_select(archery_stand)
+            await interaction.response.edit_message(content="Choose an item from the Archery Stand:", view=self)
+
 
     class TanneryRow(discord.ui.View):
         def __init__(self, ctx=None):
             super().__init__(timeout=None)
-            self.value = None
             self.ctx = ctx
+            self.crafting_select = None
+
+        def update_or_add_crafting_select(self, recipes):
+            if self.crafting_select:
+                self.remove_item(self.crafting_select)
+            self.crafting_select = CraftingSelect(recipes)
+            self.add_item(self.crafting_select)
+
         @discord.ui.button(label="Tannery", custom_id="citadel_tannery", style=discord.ButtonStyle.blurple)
         async def tannery(self, button, interaction):
-            await interaction.response.send_message("You're at the Tannery!")
+            self.update_or_add_crafting_select(tannery)
+            await interaction.response.edit_message(content="Choose an item from the Tannery:", view=self)
 
         @discord.ui.button(label="Clothiery", custom_id="citadel_clothiery", style=discord.ButtonStyle.blurple)
         async def clothiery(self, button, interaction):
-            await interaction.response.send_message("You're at the Clothiery!")
+            self.update_or_add_crafting_select(clothiery)
+            await interaction.response.edit_message(content="Choose an item from the Clothiery:", view=self)
 
         @discord.ui.button(label="Potion Shop", custom_id="citadel_potion_shop", style=discord.ButtonStyle.blurple)
         async def potion_shop(self, button, interaction):
             await interaction.response.send_message("You're at the Potion Shop!")
 
+
     class BreadRow(discord.ui.View):
         def __init__(self, ctx=None):
             super().__init__(timeout=None)
-            self.value = None
             self.ctx = ctx
+            self.crafting_select = None
+
+        def update_or_add_crafting_select(self, recipes):
+            if self.crafting_select:
+                self.remove_item(self.crafting_select)
+            self.crafting_select = CraftingSelect(recipes)
+            self.add_item(self.crafting_select)
+
         @discord.ui.button(label="Bread Stand", custom_id="citadel_bread_stand", style=discord.ButtonStyle.blurple)
         async def bread_stand(self, button, interaction):
-            await interaction.response.send_message("You're at the Bread Stand!")
+            self.update_or_add_crafting_select(bread_stand)
+            await interaction.response.edit_message(content="Choose an item from the Bread Stand:", view=self)
 
         @discord.ui.button(label="Meat Stand", custom_id="citadel_meat_stand", style=discord.ButtonStyle.blurple)
         async def meat_stand(self, button, interaction):
-            await interaction.response.send_message("You're at the Meat Stand!")
+            self.update_or_add_crafting_select(meat_stand)
+            await interaction.response.edit_message(content="Choose an item from the Meat Stand:", view=self)
+
 
         @discord.ui.button(label="Tavern", custom_id="citadel_tavern", style=discord.ButtonStyle.blurple)
         async def tavern(self, button, interaction):

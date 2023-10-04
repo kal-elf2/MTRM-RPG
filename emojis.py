@@ -21,7 +21,7 @@ def get_emoji(emoji_name):
         'ash_emoji': '<:ash:1156402822083002389>',
         'poplar_emoji': '<:Ico_poplar:1157347835331743855>',
         'onyx_emoji': '<:onyx:1156402843767541901>',
-        'deer_skins_emoji': '<:deer_skin:1156402830387720325>',
+        'deer_skin_emoji': '<:deer_skin:1156402830387720325>',
         'deer_parts_emoji': '<:deer_part:1156402827296514108>',
         'rabbit_body_emoji': '<:Ico_rabbit_body:1157347837676363796>',
         'glowing_essence_emoji': '<:glowing_essence:1156402835257307197>',

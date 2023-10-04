@@ -135,12 +135,17 @@ class CraftButton(discord.ui.Button):
         if crafted_item:
             # Check player's inventory for required ingredients.
             ingredients_list = []
+            can_craft_again = True
             for ingredient, required_quantity in self.selected_recipe.ingredients:
                 available_quantity = self.player.inventory.get_item_quantity(ingredient.name)
                 if available_quantity < required_quantity:
+                    can_craft_again = False
                     ingredients_list.append(f"❌ {ingredient.name} {available_quantity}/{required_quantity}")
                 else:
                     ingredients_list.append(f"✅ {ingredient.name} {available_quantity}/{required_quantity}")
+
+            # If any ingredient is not available in the required quantity, disable the button
+            self.disabled = not can_craft_again
 
             message_content = "\n".join(ingredients_list)
             crafted_item_url = generate_urls('Icons', self.selected_recipe.result.name.replace(" ", "%20"))
@@ -150,17 +155,20 @@ class CraftButton(discord.ui.Button):
             crafted_item_count = self.player.inventory.get_item_quantity(crafted_item.name)
             embed.set_footer(text=f"+1 {crafted_item.name}\n{crafted_item_count} in backpack")
 
-            await interaction.response.edit_message(embed=embed)
+            await interaction.response.edit_message(embed=embed,
+                                                    view=self.view)  # Update the view to reflect button state
         else:
             await interaction.response.send_message(f"Failed to craft {self.selected_recipe.result.name}.",
                                                     ephemeral=True)
 
 
 class CraftingSelect(discord.ui.Select):
-    def __init__(self, recipes):
+    def __init__(self, crafting_station):
+        self.crafting_station = crafting_station
 
         # Define select options based on the provided recipes
-        options = [discord.SelectOption(label=recipe.result.name, value=recipe.result.name) for recipe in recipes]
+        options = [discord.SelectOption(label=recipe.result.name, value=recipe.result.name)
+                   for recipe in self.crafting_station.recipes]
 
         # Initialize the Select element with the generated options
         super().__init__(placeholder="Choose an item to craft", options=options, min_values=1, max_values=1)
@@ -201,7 +209,7 @@ class CraftingSelect(discord.ui.Select):
         embed_color = color_mapping.get(zone_level)
 
         # Retrieve the recipe for the selected item.
-        selected_recipe = next((r for r in forge.recipes if r.result.name == self.values[0]), None)
+        selected_recipe = next((r for r in self.crafting_station.recipes if r.result.name == self.values[0]), None)
 
         # Check player's inventory for required ingredients.
         ingredients_list = []
@@ -221,7 +229,7 @@ class CraftingSelect(discord.ui.Select):
                       color=embed_color)
         embed.set_thumbnail(url=crafted_item_url)
 
-        view = CraftButtonView(player, player_data, forge, selected_recipe, guild_id, disabled=not can_craft)
+        view = CraftButtonView(player, player_data, self.crafting_station, selected_recipe, guild_id, disabled=not can_craft)
         message = await interaction.response.send_message(embed=embed, ephemeral=True, view=view)
         view.message = message
 
