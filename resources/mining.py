@@ -19,7 +19,7 @@ from probabilities import gem_drop_percent, mtrm_drop_percent, attack_percent
 
 # Mining experience points for each ore type
 MINING_EXPERIENCE = {
-    "Iron": 20,
+    "Iron Ore": 20,
     "Coal": 25,
     "Carbon": 50
 }
@@ -27,7 +27,7 @@ MINING_EXPERIENCE = {
 ore_emoji_mapping = {
     "Coal": 'coal_emoji',
     "Carbon": 'carbon_emoji',
-    "Iron": 'iron_emoji'
+    "Iron Ore": 'iron_emoji'
 }
 
 with open("level_data.json", "r") as f:
@@ -35,7 +35,7 @@ with open("level_data.json", "r") as f:
 
 def generate_random_monster(ore_type):
     monster_chances = {}
-    if ore_type == "Iron":
+    if ore_type == "Iron Ore":
         monster_chances = {'Buck': 0.25, 'Wolf': 0.75}
     elif ore_type == "Coal":
         monster_chances = {'Buck': 0.1, 'Wolf': 0.3, 'Goblin': 0.6}
@@ -326,7 +326,7 @@ class MiningCog(commands.Cog):
     @staticmethod
     def calculate_probability(player_level, zone_level, ore_type):
         base_min_levels = {
-            "Iron": 0,
+            "Iron Ore": 0,
             "Coal": 7,
             "Carbon": 14
         }
@@ -347,7 +347,7 @@ class MiningCog(commands.Cog):
 
     @commands.slash_command(description="Mine some Ore!")
     async def mine(self, ctx,
-                   ore_type: Option(str, "Type of ore to mine", choices=['Iron', 'Coal', 'Carbon'],
+                   ore_type: Option(str, "Type of ore to mine", choices=['Iron Ore', 'Coal', 'Carbon'],
                                      required=True)):
         guild_id = ctx.guild.id
         author_id = str(ctx.author.id)
@@ -359,7 +359,7 @@ class MiningCog(commands.Cog):
 
 
         base_min_levels = {
-            "Iron": 0,
+            "Iron Ore": 0,
             "Coal": 7,
             "Carbon": 14
         }

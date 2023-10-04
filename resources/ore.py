@@ -18,10 +18,9 @@ class Ore:
         return ore
 
 ORE_TYPES = [
-    Ore("Iron"),
+    Ore("Iron Ore"),
     Ore("Coal"),
-    Ore("Carbon"),
-    Ore("Mithril")
+    Ore("Carbon")
 ]
 
 class Gem:
