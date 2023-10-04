@@ -2,8 +2,6 @@ from resources.materium import Materium
 from resources.herb import Herb
 from resources.potion import Potion
 from resources.item import Item
-from citadel.crafting import Weapon
-from citadel.crafting import Armor
 from resources.ore import Gem, Ore
 from resources.tree import Tree
 
@@ -44,6 +42,7 @@ class Inventory:
 
     @classmethod
     def from_dict(cls, data):
+        from citadel.crafting import Weapon, Armor
         inventory = cls(limit=data["limit"] if "limit" in data else 40)
         inventory.coppers = data["coppers"]
         inventory.items = [Item.from_dict(item_data) for item_data in data["items"]]
@@ -64,6 +63,7 @@ class Inventory:
         self.coppers += amount
 
     def add_item_to_inventory(self, item, amount=1):
+        from citadel.crafting import Weapon, Armor
         if isinstance(item, Materium):
             self.materium_count += amount
         elif isinstance(item, Tree):
@@ -76,6 +76,10 @@ class Inventory:
             self._add_item_to_specific_inventory(item, amount, self.potions)
         elif isinstance(item, Gem):
             self._add_item_to_specific_inventory(item, amount, self.gems)
+        elif isinstance(item, Weapon):
+            self._add_item_to_specific_inventory(item, amount, self.weapons)
+        elif isinstance(item, Armor):
+            self._add_item_to_specific_inventory(item, amount, self.armors)
         elif isinstance(item, Item):
             self._add_item_to_specific_inventory(item, amount, self.items)
 
@@ -93,6 +97,20 @@ class Inventory:
                 return ore.stack
         return 0  # Return 0 if the ore_type is not found in inventory
 
+    def get_item_quantity(self, item_name):
+        # Define a list of all inventory sections that have a 'stack' property
+        stackable_sections = [self.items, self.trees, self.herbs, self.ore, self.gems, self.potions, self.weapons,
+                              self.armors]
+
+        # Iterate through all sections that are stackable and look for the item
+        for section in stackable_sections:
+            for item in section:
+                if item.name == item_name:
+                    return item.stack
+
+        # Return 0 if the item is not found in any section of the inventory
+        return 0
+
     def _add_item_to_specific_inventory(self, item, amount, item_list):
         existing_item = next((i for i in item_list if i.name == item.name), None)
         if existing_item:
@@ -106,49 +124,50 @@ class Inventory:
                 return False
         return True
 
-
-    def has(self, item, amount):
-        if isinstance(item, Materium):
-            return self.materium_count >= amount
-        else:
-            return self.items.count(item) >= amount
-
-    def remove_item(self, item, amount=1):
-        if isinstance(item, Materium):
-            return self._remove_materium_from_inventory(amount)
-
-        if isinstance(item, Herb):
-            return self._remove_herb_from_inventory(item, amount)
-
-        return self._remove_generic_item_from_inventory(item, amount)
-
-    def _remove_materium_from_inventory(self, amount):
-        if self.materium_count >= amount:
-            self.materium_count -= amount
-            return True
-        else:
-            print("Item not found in inventory.")
+    def remove_item(self, item_name, amount=1):
+        # Helper function to remove or decrease the quantity of an item from a specific inventory list
+        def _remove_from_list(item_list, item_name, amount):
+            for idx, item in enumerate(item_list):
+                if item.name == item_name:
+                    if item.stack > amount:
+                        item.stack -= amount
+                        print(f"Removed {amount} of {item_name} from {item_list}. Remaining: {item.stack}")
+                        return True
+                    else:
+                        print(f"Removing entire {item_name} from {item_list} as amount is greater or equal.")
+                        del item_list[idx]
+                        return True
+            print(f"{item_name} not found in {item_list}.")
             return False
 
-    def _remove_herb_from_inventory(self, herb, amount):
-        existing_herb = next((i for i in self.items if isinstance(i, Herb) and i.name == herb.name), None)
-        if existing_herb and existing_herb.stack >= amount:
-            existing_herb.stack -= amount
-            if existing_herb.stack == 0:
-                self.items.remove(existing_herb)
-            return True
-        else:
-            print(f"You don't have {amount} {herb.name}(s) in your inventory.")
-            return False
+        print(f"Attempting to remove {amount} of {item_name} from inventory.")
 
-    def _remove_generic_item_from_inventory(self, item, amount):
-        item_count = self.items.count(item)
-        if item_count >= amount:
-            for _ in range(amount):
-                self.items.remove(item)
+        if _remove_from_list(self.items, item_name, amount):
+            return True
+        elif _remove_from_list(self.trees, item_name, amount):
+            return True
+        elif _remove_from_list(self.herbs, item_name, amount):
+            return True
+        elif _remove_from_list(self.ore, item_name, amount):
+            return True
+        elif _remove_from_list(self.gems, item_name, amount):
+            return True
+        elif _remove_from_list(self.potions, item_name, amount):
             return True
         else:
-            print(f"You don't have {amount} {item.name}(s) in your inventory.")
-            return False
+            for idx, weapon in enumerate(self.weapons):
+                if weapon.name == item_name:
+                    print(f"Removing weapon {item_name} from weapons list.")
+                    del self.weapons[idx]
+                    return True
+
+            for idx, armor in enumerate(self.armors):
+                if armor.name == item_name:
+                    print(f"Removing armor {item_name} from armors list.")
+                    del self.armors[idx]
+                    return True
+
+        print(f"Failed to remove {item_name}. Not found in any list.")
+        return False
 
 

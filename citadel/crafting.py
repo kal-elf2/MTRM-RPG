@@ -1,10 +1,15 @@
 from resources.item import Item
 import discord
+from discord import Embed
+from images.urls import generate_urls
+from emojis import get_emoji
+from exemplars.exemplars import Exemplar
+
 
 class Weapon(Item):
     def __init__(self, name, wtype, description=None, value=None):
         super().__init__(name, description, value)
-        self.wtype = wtype   # New attribute for weapon type
+        self.wtype = wtype
 
     def to_dict(self):
         weapon_data = super().to_dict()
@@ -21,6 +26,15 @@ class Armor(Item):
     def __init__(self, name, description=None, value=None):
         super().__init__(name, description, value)
 
+    def to_dict(self):
+        return super().to_dict()
+
+    @classmethod
+    def from_dict(cls, data):
+        armor = super().from_dict(data)
+        return armor
+
+
 # Recipe Classes
 class Recipe:
     def __init__(self, result, *ingredients):
@@ -29,9 +43,12 @@ class Recipe:
 
     def can_craft(self, inventory):
         for ingredient, quantity in self.ingredients:
-            if inventory.get(ingredient, 0) < quantity:
+            available_quantity = inventory.get_item_quantity(ingredient.name)
+            if available_quantity < quantity:
+                print(f"Failed due to ingredient: {ingredient.name}. Needed {quantity}, but have {available_quantity}.")
                 return False
         return True
+
 
 class CraftingStation:
     def __init__(self, name):
@@ -41,18 +58,63 @@ class CraftingStation:
     def add_recipe(self, recipe):
         self.recipes.append(recipe)
 
-    def craft(self, recipe_name, inventory):
+    def craft(self, recipe_name, player, player_data, guild_id):
+        from utils import save_player_data
+
         recipe = next((r for r in self.recipes if r.result.name == recipe_name), None)
-        if recipe and recipe.can_craft(inventory):
+        if not recipe:
+            print(f"Recipe not found for {recipe_name}.")
+            return None
+        if not recipe.can_craft(player.inventory):
+            print(f"Cannot craft {recipe_name} due to insufficient ingredients.")
+            return None
+        if recipe and recipe.can_craft(player.inventory):
+
             for ingredient, quantity in recipe.ingredients:
-                inventory[ingredient] -= quantity
-            inventory[recipe.result.name] = inventory.get(recipe.result.name, 0) + 1
+                player.inventory.remove_item(ingredient.name, quantity)
+
+            if isinstance(recipe.result, Armor):
+                player.inventory.armors.append(recipe.result)
+            elif isinstance(recipe.result, Weapon):
+                player.inventory.weapons.append(recipe.result)
+            else:
+                player.inventory.add_item_to_inventory(recipe.result)
+
+            save_player_data(guild_id, player_data)
+
             return recipe.result
         return None
 
 
+class CraftButtonView(discord.ui.View):
+    def __init__(self, player, player_data, station, selected_recipe, guild_id, disabled=True):
+        super().__init__()
+        self.player = player
+        self.disabled = disabled
+        self.player_data = player_data
+        self.add_item(CraftButton(disabled, station, selected_recipe, player, player_data, guild_id))
+
+
+class CraftButton(discord.ui.Button):
+    def __init__(self, disabled, station, selected_recipe, player, player_data, guild_id):
+        super().__init__(label="Craft", style=discord.ButtonStyle.primary, disabled=disabled)
+        self.station = station
+        self.selected_recipe = selected_recipe
+        self.player = player
+        self.player_data = player_data
+        self.guild_id = guild_id
+
+    async def callback(self, interaction: discord.Interaction):
+        # Use the CraftingStation's craft method
+        crafted_item = self.station.craft(self.selected_recipe.result.name, self.player, self.player_data, self.guild_id)
+        if crafted_item:
+            await interaction.response.send_message(f"Successfully crafted {crafted_item.name}!", ephemeral=True)
+        else:
+            await interaction.response.send_message(f"Failed to craft {self.selected_recipe.result.name}.", ephemeral=True)
+
 class CraftingSelect(discord.ui.Select):
     def __init__(self, recipes):
+
         # Define select options based on the provided recipes
         options = [discord.SelectOption(label=recipe.result.name, value=recipe.result.name) for recipe in recipes]
 
@@ -60,17 +122,67 @@ class CraftingSelect(discord.ui.Select):
         super().__init__(placeholder="Choose an item to craft", options=options, min_values=1, max_values=1)
 
     async def callback(self, interaction: discord.Interaction):
+        from utils import load_player_data
+
+        guild_id = interaction.guild.id
+        author_id = str(interaction.user.id)
+        player_data = load_player_data(guild_id)
+        if author_id not in player_data:
+            print(f"Player data not found for {author_id}.")
+            await interaction.response.send_message("Error: Player data not found.", ephemeral=True)
+            return
+        player = Exemplar(player_data[author_id]["exemplar"],
+                          player_data[author_id]["stats"],
+                          player_data[author_id]["inventory"])
+
+        # Get zone level from player stats
+        zone_level = player.stats.zone_level
+
+        # Emojis for each zone
+        zone_emoji_mapping = {
+            1: 'common_emoji',
+            2: 'uncommon_emoji',
+            3: 'rare_emoji',
+            4: 'epic_emoji',
+            5: 'legendary_emoji'
+        }
+
+        # Colors for each zone
+        color_mapping = {
+            1: 0x969696,
+            2: 0x15ce00,
+            3: 0x0096f1,
+            4: 0x9900ff,
+            5: 0xfebd0d
+        }
+
+        # Get the appropriate emoji and color for the current zone
+        zone_emoji = get_emoji(zone_emoji_mapping.get(zone_level))
+        embed_color = color_mapping.get(zone_level)
+
         # Retrieve the recipe for the selected item.
         selected_recipe = next((r for r in forge.recipes if r.result.name == self.values[0]), None)
-        if selected_recipe:
-            # Construct the recipe message.
-            ingredients_str = ", ".join(
-                [f"{quantity}x {ingredient.name}" for ingredient, quantity in selected_recipe.ingredients])
-            message_content = f"Recipe for {selected_recipe.result.name}: {ingredients_str}"
 
-            await interaction.response.send_message(message_content, ephemeral=True)
-        else:
-            await interaction.response.send_message(f"Recipe for {self.values[0]} not found.", ephemeral=True)
+        # Check player's inventory for required ingredients.
+        ingredients_list = []
+        can_craft = True
+        for ingredient, required_quantity in selected_recipe.ingredients:
+            available_quantity = player.inventory.get_item_quantity(ingredient.name)
+            if available_quantity < required_quantity:
+                can_craft = False
+                ingredients_list.append(f"❌ {ingredient.name} {available_quantity}/{required_quantity}")
+            else:
+                ingredients_list.append(f"✅ {ingredient.name} {available_quantity}/{required_quantity}")
+
+        # Construct the embed message.
+        message_content = "\n".join(ingredients_list)
+        crafted_item_url = generate_urls('Icons', selected_recipe.result.name.replace(" ", "%20"))
+        embed = Embed(title=f"{zone_emoji} {selected_recipe.result.name}", description=message_content,
+                      color=embed_color)
+        embed.set_thumbnail(url=crafted_item_url)
+
+        view = CraftButtonView(player, player_data, forge, selected_recipe, guild_id, disabled=not can_craft)
+        await interaction.response.send_message(embed=embed, ephemeral=True, view=view)
 
 
 # Defining All Items
@@ -97,7 +209,7 @@ poplar_strip = Item("Poplar Strip")
 wheat = Item("Wheat")
 flour = Item("Flour")
 bread = Item("Bread")
-deer_part = Item("Deer Part")
+deer_part = Item("Deer Parts")
 rabbit_body = Item("Rabbit Body")
 venison = Item("Venison")
 sinew = Item("Sinew")
