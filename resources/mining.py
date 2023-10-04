@@ -165,7 +165,7 @@ class MineButton(discord.ui.View):
             # Include the yellow potion emoji for the stamina/endurance string
             stamina_str = f"{get_emoji('potion_yellow_emoji')}  {self.player.stats.endurance}/{self.player.stats.max_endurance}"
             # Get the new ore count
-            ore_count = self.player.inventory.get_ore_count(self.ore_type)
+            ore_count = self.player.inventory.get_item_quantity(self.ore_type)
             ore_str = str(ore_count)
 
             # Calculate current mining level and experience for the next level
@@ -396,14 +396,14 @@ class MiningCog(commands.Cog):
         embed_color = color_mapping.get(rarity)
 
         # Start Embed
-        embed = Embed(title=f"{rarity} {ore_type} Ore", color=embed_color)
+        embed = Embed(title=f"{rarity} {ore_type}", color=embed_color)
         embed.set_image(url=generate_urls("ore", f'{ore_type}'))
 
         # Add the initial stamina and ore inventory here
         stamina_str = f"{get_emoji('potion_yellow_emoji')}  {player.stats.endurance}/{player.stats.max_endurance}"
 
         # Use the get_ore_count method to get the wood count
-        ore_count = player.inventory.get_ore_count(ore_type)
+        ore_count = player.inventory.get_item_quantity(ore_type)
         ore_str = str(ore_count)
 
         # Add updated fields to embed

@@ -4,16 +4,19 @@ from discord import Embed
 from images.urls import generate_urls
 from emojis import get_emoji
 from exemplars.exemplars import Exemplar
+from resources.ore import Ore
 
 
 class Weapon(Item):
-    def __init__(self, name, wtype, description=None, value=None):
+    def __init__(self, name, wtype, description=None, value=None, stack=1):
         super().__init__(name, description, value)
         self.wtype = wtype
+        self.stack = stack
 
     def to_dict(self):
         weapon_data = super().to_dict()
         weapon_data["wtype"] = self.wtype
+        weapon_data["stack"] = self.stack
         return weapon_data
 
     @classmethod
@@ -22,11 +25,14 @@ class Weapon(Item):
 
 
 class Armor(Item):
-    def __init__(self, name, description=None, value=None):
+    def __init__(self, name, description=None, value=None, stack=1):
         super().__init__(name, description, value)
+        self.stack = stack
 
     def to_dict(self):
-        return super().to_dict()
+        armor_data = super().to_dict()
+        armor_data["stack"] = self.stack
+        return armor_data
 
     @classmethod
     def from_dict(cls, data):
@@ -44,7 +50,6 @@ class Recipe:
         for ingredient, quantity in self.ingredients:
             available_quantity = inventory.get_item_quantity(ingredient.name)
             if available_quantity < quantity:
-                print(f"Failed due to ingredient: {ingredient.name}. Needed {quantity}, but have {available_quantity}.")
                 return False
         return True
 
@@ -73,9 +78,20 @@ class CraftingStation:
                 player.inventory.remove_item(ingredient.name, quantity)
 
             if isinstance(recipe.result, Armor):
-                player.inventory.armors.append(recipe.result)
+                armor_exists = next((a for a in player.inventory.armors if a.name == recipe.result.name), None)
+                if armor_exists:
+                    armor_exists.stack += 1
+                else:
+                    # The new Armor instance will be created with a stack of 1 by default
+                    player.inventory.armors.append(recipe.result)
+
             elif isinstance(recipe.result, Weapon):
-                player.inventory.weapons.append(recipe.result)
+                weapon_exists = next((w for w in player.inventory.weapons if w.name == recipe.result.name), None)
+                if weapon_exists:
+                    weapon_exists.stack += 1
+                else:
+                    # The new Weapon instance will be created with a stack of 1 by default
+                    player.inventory.weapons.append(recipe.result)
             else:
                 player.inventory.add_item_to_inventory(recipe.result)
 
@@ -237,7 +253,7 @@ class CraftingSelect(discord.ui.Select):
 # Defining All Items
 charcoal = Item("Charcoal")
 iron = Item("Iron")
-carbon = Item("Carbon")
+carbon = Ore("Carbon")
 steel = Item("Steel")
 pine = Item("Pine")
 iron_ore = Item("Iron Ore")

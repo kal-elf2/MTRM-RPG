@@ -171,7 +171,7 @@ class HarvestButton(discord.ui.View):
             # Include the yellow potion emoji for the stamina/endurance string
             stamina_str = f"{get_emoji('potion_yellow_emoji')}  {self.player.stats.endurance}/{self.player.stats.max_endurance}"
             # Get the new wood count
-            wood_count = self.player.inventory.get_tree_count(self.tree_type)
+            wood_count = self.player.inventory.get_item_quantity(self.tree_type)
             wood_str = str(wood_count)
 
             # Calculate current woodcutting level and experience for the next level
@@ -407,8 +407,8 @@ class WoodcuttingCog(commands.Cog):
         # Add the initial stamina and wood inventory here
         stamina_str = f"{get_emoji('potion_yellow_emoji')}  {player.stats.endurance}/{player.stats.max_endurance}"
 
-        # Use the get_tree_count method to get the wood count
-        wood_count = player.inventory.get_tree_count(tree_type)
+        # Use the get_item_quantity method to get the wood count
+        wood_count = player.inventory.get_item_quantity(tree_type)
         wood_str = str(wood_count)
 
         # Add the initial fields to the embed

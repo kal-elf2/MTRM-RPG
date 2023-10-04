@@ -3,42 +3,162 @@
         "exemplar": "elf",
         "stats": {
             "zone_level": 1,
-            "health": 95,
-            "max_health": 95,
-            "strength": 11,
-            "endurance": 11,
-            "max_endurance": 13,
-            "attack": 6,
-            "defense": 7,
-            "combat_level": 1,
-            "combat_experience": 0,
-            "mining_level": 1,
-            "mining_experience": 0,
-            "woodcutting_level": 1,
-            "woodcutting_experience": 40
+            "health": 671,
+            "max_health": 775,
+            "strength": 351,
+            "endurance": 351,
+            "max_endurance": 353,
+            "attack": 142,
+            "defense": 143,
+            "combat_level": 69,
+            "combat_experience": 250249,
+            "mining_level": 69,
+            "mining_experience": 250215,
+            "woodcutting_level": 69,
+            "woodcutting_experience": 250255,
+            "damage_taken": 0
         },
         "inventory": {
             "items": [
                 {
+                    "name": "Wolf Skin",
+                    "description": "A skin of a wild wolf. Known for its durability and strength.",
+                    "value": 50,
+                    "stack": 286
+                },
+                {
                     "name": "Charcoal",
                     "description": null,
                     "value": null,
-                    "stack": 2
+                    "stack": 898
+                },
+                {
+                    "name": "Rabbit Body",
+                    "description": "A furry rabbit body, warm to the touch. Can be used for citadel soft armors.",
+                    "value": 10,
+                    "stack": 100
+                },
+                {
+                    "name": "Deer Parts",
+                    "description": "Various parts of a deer. Some are useful for making tools and weapons.",
+                    "value": 20,
+                    "stack": 200
+                },
+                {
+                    "name": "Deer Skin",
+                    "description": "Tough deer skin. Can be used for citadel sturdy armors.",
+                    "value": 30,
+                    "stack": 282
+                },
+                {
+                    "name": "Onyx",
+                    "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
+                    "value": 100,
+                    "stack": 88
+                },
+                {
+                    "name": "Glowing Essence",
+                    "description": "An ethereal essence that glows faintly. Used in powerful magical rituals and citadel.",
+                    "value": 200,
+                    "stack": 9
+                },
+                {
+                    "name": "Leather",
+                    "description": null,
+                    "value": null,
+                    "stack": 30
+                },
+                {
+                    "name": "Iron",
+                    "description": null,
+                    "value": null,
+                    "stack": 80
+                },
+                {
+                    "name": "Pole",
+                    "description": null,
+                    "value": null,
+                    "stack": 40
+                },
+                {
+                    "name": "Tough Leather",
+                    "description": null,
+                    "value": null,
+                    "stack": 60
                 }
             ],
-            "trees": [],
-            "herbs": [],
-            "ore": [],
+            "trees": [
+                {
+                    "name": "Pine",
+                    "stack": 9610
+                },
+                {
+                    "name": "Yew",
+                    "stack": 1000
+                },
+                {
+                    "name": "Ash",
+                    "stack": 500
+                },
+                {
+                    "name": "Poplar",
+                    "stack": 1000
+                }
+            ],
+            "herbs": [
+                {
+                    "name": "Ranarr",
+                    "rarity": 1,
+                    "value": 25,
+                    "stack": 1
+                }
+            ],
+            "ore": [
+                {
+                    "name": "Iron Ore",
+                    "stack": 155
+                },
+                {
+                    "name": "Coal",
+                    "stack": 990
+                },
+                {
+                    "name": "Carbon",
+                    "stack": 5
+                }
+            ],
             "gems": [],
             "potions": [],
-            "weapons": [],
-            "armors": [],
+            "weapons": [
+                {
+                    "name": "Club",
+                    "description": null,
+                    "value": null,
+                    "stack": 1,
+                    "wtype": "Hammer"
+                },
+                {
+                    "name": "Voltaic Sword",
+                    "description": null,
+                    "value": null,
+                    "stack": 1,
+                    "wtype": "Sword"
+                }
+            ],
+            "armors": [
+                {
+                    "name": "Brigandine Armor",
+                    "description": null,
+                    "value": null,
+                    "stack": 1
+                }
+            ],
             "equipped_items": [],
             "limit": 40,
             "equipped_armor": {},
             "equipped_weapon": null,
             "materium_count": 0,
-            "coppers": 0
+            "coppers": 124
         },
         "in_battle": false
     }
