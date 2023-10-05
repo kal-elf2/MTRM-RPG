@@ -53,6 +53,17 @@ class Recipe:
                 return False
         return True
 
+def endurance_bar(current, max_endurance):
+    bar_length = 20  # Fixed bar length
+    endurance_percentage = current / max_endurance
+    filled_length = round(bar_length * endurance_percentage)
+
+    # Calculate how many '◼' symbols to display
+    filled_symbols = '◼' * filled_length
+
+    # Calculate how many '◻' symbols to display
+    empty_symbols = '◻' * (bar_length - filled_length)
+    return filled_symbols + empty_symbols
 
 class CraftingStation:
     def __init__(self, name):
@@ -76,6 +87,11 @@ class CraftingStation:
 
             for ingredient, quantity in recipe.ingredients:
                 player.inventory.remove_item(ingredient.name, quantity)
+
+            if recipe.result.name == "Bread":
+                added_endurance = 10
+                player.stats.endurance = min(player.stats.endurance + added_endurance, player.stats.max_endurance)
+                return recipe.result  # Return the Bread item even though it's consumed
 
             if isinstance(recipe.result, Armor):
                 armor_exists = next((a for a in player.inventory.armors if a.name == recipe.result.name), None)
@@ -102,24 +118,27 @@ class CraftingStation:
 
 
 class CraftButtonView(discord.ui.View):
-    def __init__(self, player, player_data, station, selected_recipe, guild_id, disabled=True):
+    def __init__(self, player, player_data, station, selected_recipe, guild_id, author_id, disabled=True):
         super().__init__()
         self.player = player
         self.disabled = disabled
         self.player_data = player_data
         self.message = None
-        self.add_item(CraftButton(disabled, station, selected_recipe, player, player_data, guild_id))
+        self.author_id = author_id
+        self.add_item(CraftButton(disabled, station, selected_recipe, player, player_data, guild_id, author_id))
 
 class CraftButton(discord.ui.Button):
-    def __init__(self, disabled, station, selected_recipe, player, player_data, guild_id):
+    def __init__(self, disabled, station, selected_recipe, player, player_data, guild_id, author_id):
         super().__init__(label="Craft", style=discord.ButtonStyle.primary, disabled=disabled)
         self.station = station
         self.selected_recipe = selected_recipe
         self.player = player
         self.player_data = player_data
         self.guild_id = guild_id
+        self.author_id = author_id
 
     async def callback(self, interaction: discord.Interaction):
+        from utils import save_player_data
         # Use the CraftingStation's craft method
         crafted_item = self.station.craft(self.selected_recipe.result.name, self.player, self.player_data,
                                           self.guild_id)
@@ -149,6 +168,13 @@ class CraftButton(discord.ui.Button):
         embed_color = color_mapping.get(zone_level)
 
         if crafted_item:
+            # Update player endurance data after crafting bread
+            if self.selected_recipe.result.name == "Bread":
+                # Update endurance in player_data
+                self.player_data[self.author_id]["stats"]["endurance"] = self.player.stats.endurance
+                # Save updated endurance data
+                save_player_data(self.guild_id, self.player_data)
+
             # Check player's inventory for required ingredients.
             ingredients_list = []
             can_craft_again = True
@@ -168,14 +194,27 @@ class CraftButton(discord.ui.Button):
             embed = Embed(title=f"{self.selected_recipe.result.name} {zone_emoji}", description=message_content,
                           color=embed_color)
             embed.set_thumbnail(url=crafted_item_url)
-            crafted_item_count = self.player.inventory.get_item_quantity(crafted_item.name)
-            embed.set_footer(text=f"+1 {crafted_item.name}\n{crafted_item_count} in backpack")
 
-            await interaction.response.edit_message(embed=embed,
-                                                    view=self.view)  # Update the view to reflect button state
-        else:
-            await interaction.response.send_message(f"Failed to craft {self.selected_recipe.result.name}.",
-                                                    ephemeral=True)
+            # Only show footer if not crafting bread
+            if self.selected_recipe.result.name != "Bread":
+                crafted_item_count = self.player.inventory.get_item_quantity(crafted_item.name)
+                embed.set_footer(text=f"+1 {crafted_item.name}\n{crafted_item_count} in backpack")
+
+            # Check if it's "Bread" and add endurance bar to description
+            if self.selected_recipe.result.name == "Bread":
+                endurance_progress = endurance_bar(self.player.stats.endurance, self.player.stats.max_endurance)
+                endurance_emoji = get_emoji('endurance_emoji')
+
+                # Check if endurance is full and modify the message accordingly
+                if self.player.stats.endurance >= self.player.stats.max_endurance:
+                    self.disabled = True
+                    endurance_message = f"\n\n{endurance_emoji} Endurance: {endurance_progress} {self.player.stats.endurance}/{self.player.stats.max_endurance} **FULL!**"
+                else:
+                    endurance_message = f"\n\n{endurance_emoji} Endurance: {endurance_progress} {self.player.stats.endurance}/{self.player.stats.max_endurance}"
+
+                embed.description += endurance_message
+
+            await interaction.response.edit_message(embed=embed, view=self.view)
 
 
 class CraftingSelect(discord.ui.Select):
@@ -226,6 +265,9 @@ class CraftingSelect(discord.ui.Select):
 
         # Retrieve the recipe for the selected item.
         selected_recipe = next((r for r in self.crafting_station.recipes if r.result.name == self.values[0]), None)
+        embed_title = f"{selected_recipe.result.name} {zone_emoji}"
+        if selected_recipe.result.name == "Bread":
+            embed_title = "Bread: Auto Consume"
 
         # Check player's inventory for required ingredients.
         ingredients_list = []
@@ -241,11 +283,25 @@ class CraftingSelect(discord.ui.Select):
         # Construct the embed message.
         message_content = "\n".join(ingredients_list)
         crafted_item_url = generate_urls('Icons', selected_recipe.result.name.replace(" ", "%20"))
-        embed = Embed(title=f"{selected_recipe.result.name} {zone_emoji}", description=message_content,
-                      color=embed_color)
+        embed = Embed(title=embed_title, description=message_content, color=embed_color)
         embed.set_thumbnail(url=crafted_item_url)
 
-        view = CraftButtonView(player, player_data, self.crafting_station, selected_recipe, guild_id, disabled=not can_craft)
+        # Check if it's "Bread" and add endurance bar to description
+        if selected_recipe.result.name == "Bread":
+            endurance_progress = endurance_bar(player.stats.endurance, player.stats.max_endurance)
+            endurance_emoji = get_emoji('endurance_emoji')
+
+            # Check if endurance is full and modify the message accordingly
+            if player.stats.endurance >= player.stats.max_endurance:
+                endurance_message = f"\n\n{endurance_emoji} Endurance: {endurance_progress} {player.stats.endurance}/{player.stats.max_endurance} **FULL!**"
+                can_craft = False  # Disable the Craft button if endurance is full
+            else:
+                endurance_message = f"\n\n{endurance_emoji} Endurance: {endurance_progress} {player.stats.endurance}/{player.stats.max_endurance}"
+
+            embed.description += endurance_message
+
+        view = CraftButtonView(player, player_data, self.crafting_station, selected_recipe, guild_id, author_id,
+                               disabled=not can_craft)
         message = await interaction.response.send_message(embed=embed, ephemeral=True, view=view)
         view.message = message
 

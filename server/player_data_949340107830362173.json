@@ -6,7 +6,7 @@
             "health": 671,
             "max_health": 775,
             "strength": 351,
-            "endurance": 351,
+            "endurance": 353,
             "max_endurance": 353,
             "attack": 142,
             "defense": 143,
@@ -15,7 +15,7 @@
             "mining_level": 69,
             "mining_experience": 250215,
             "woodcutting_level": 69,
-            "woodcutting_experience": 250255,
+            "woodcutting_experience": 250280,
             "damage_taken": 0
         },
         "inventory": {
@@ -24,25 +24,25 @@
                     "name": "Wolf Skin",
                     "description": "A skin of a wild wolf. Known for its durability and strength.",
                     "value": 50,
-                    "stack": 286
+                    "stack": 285
                 },
                 {
                     "name": "Charcoal",
                     "description": null,
                     "value": null,
-                    "stack": 898
+                    "stack": 830
                 },
                 {
                     "name": "Rabbit Body",
                     "description": "A furry rabbit body, warm to the touch. Can be used for citadel soft armors.",
                     "value": 10,
-                    "stack": 100
+                    "stack": 88
                 },
                 {
                     "name": "Deer Parts",
                     "description": "Various parts of a deer. Some are useful for making tools and weapons.",
                     "value": 20,
-                    "stack": 200
+                    "stack": 178
                 },
                 {
                     "name": "Deer Skin",
@@ -54,55 +54,139 @@
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 88
+                    "stack": 55
                 },
                 {
                     "name": "Glowing Essence",
                     "description": "An ethereal essence that glows faintly. Used in powerful magical rituals and citadel.",
                     "value": 200,
-                    "stack": 9
+                    "stack": 7
                 },
                 {
                     "name": "Leather",
                     "description": null,
                     "value": null,
-                    "stack": 30
+                    "stack": 294
                 },
                 {
                     "name": "Iron",
                     "description": null,
                     "value": null,
-                    "stack": 80
+                    "stack": 787
                 },
                 {
                     "name": "Pole",
                     "description": null,
                     "value": null,
-                    "stack": 40
+                    "stack": 394
                 },
                 {
                     "name": "Tough Leather",
                     "description": null,
                     "value": null,
-                    "stack": 60
+                    "stack": 541
+                },
+                {
+                    "name": "Steel",
+                    "description": null,
+                    "value": null,
+                    "stack": 2
+                },
+                {
+                    "name": "Leather Straps",
+                    "description": null,
+                    "value": null,
+                    "stack": 70
+                },
+                {
+                    "name": "Tough Leather Straps",
+                    "description": null,
+                    "value": null,
+                    "stack": 11
+                },
+                {
+                    "name": "Thick Pole",
+                    "description": null,
+                    "value": null,
+                    "stack": 2
+                },
+                {
+                    "name": "Pine Strip",
+                    "description": null,
+                    "value": null,
+                    "stack": 10
+                },
+                {
+                    "name": "Yew Strip",
+                    "description": null,
+                    "value": null,
+                    "stack": 10
+                },
+                {
+                    "name": "Poplar Strip",
+                    "description": null,
+                    "value": null,
+                    "stack": 3
+                },
+                {
+                    "name": "Ash Strip",
+                    "description": null,
+                    "value": null,
+                    "stack": 5
+                },
+                {
+                    "name": "Venison",
+                    "description": null,
+                    "value": null,
+                    "stack": 3
+                },
+                {
+                    "name": "Sinew",
+                    "description": null,
+                    "value": null,
+                    "stack": 5
+                },
+                {
+                    "name": "Rabbit Meat",
+                    "description": null,
+                    "value": null,
+                    "stack": 6
+                },
+                {
+                    "name": "Bread",
+                    "description": null,
+                    "value": null,
+                    "stack": 2
+                },
+                {
+                    "name": "Flour",
+                    "description": null,
+                    "value": null,
+                    "stack": 9
+                },
+                {
+                    "name": "Wheat",
+                    "description": null,
+                    "value": null,
+                    "stack": 2
                 }
             ],
             "trees": [
                 {
                     "name": "Pine",
-                    "stack": 9610
+                    "stack": 9567
                 },
                 {
                     "name": "Yew",
-                    "stack": 1000
+                    "stack": 961
                 },
                 {
                     "name": "Ash",
-                    "stack": 500
+                    "stack": 350
                 },
                 {
                     "name": "Poplar",
-                    "stack": 1000
+                    "stack": 988
                 }
             ],
             "herbs": [
@@ -120,11 +204,11 @@
                 },
                 {
                     "name": "Coal",
-                    "stack": 990
+                    "stack": 988
                 },
                 {
                     "name": "Carbon",
-                    "stack": 5
+                    "stack": 491
                 }
             ],
             "gems": [],
@@ -143,11 +227,79 @@
                     "value": null,
                     "stack": 1,
                     "wtype": "Sword"
+                },
+                {
+                    "name": "Short Sword",
+                    "description": null,
+                    "value": null,
+                    "stack": 1,
+                    "wtype": "Sword"
+                },
+                {
+                    "name": "Long Sword",
+                    "description": null,
+                    "value": null,
+                    "stack": 1,
+                    "wtype": "Sword"
+                },
+                {
+                    "name": "Champion Sword",
+                    "description": null,
+                    "value": null,
+                    "stack": 1,
+                    "wtype": "Sword"
+                },
+                {
+                    "name": "Short Spear",
+                    "description": null,
+                    "value": null,
+                    "stack": 1,
+                    "wtype": "Spear"
+                },
+                {
+                    "name": "Long Spear",
+                    "description": null,
+                    "value": null,
+                    "stack": 1,
+                    "wtype": "Spear"
+                },
+                {
+                    "name": "Champion Spear",
+                    "description": null,
+                    "value": null,
+                    "stack": 1,
+                    "wtype": "Spear"
+                },
+                {
+                    "name": "Hammer",
+                    "description": null,
+                    "value": null,
+                    "stack": 1,
+                    "wtype": "Hammer"
+                },
+                {
+                    "name": "War Hammer",
+                    "description": null,
+                    "value": null,
+                    "stack": 1,
+                    "wtype": "Hammer"
                 }
             ],
             "armors": [
                 {
                     "name": "Brigandine Armor",
+                    "description": null,
+                    "value": null,
+                    "stack": 3
+                },
+                {
+                    "name": "Brigandine Boots",
+                    "description": null,
+                    "value": null,
+                    "stack": 1
+                },
+                {
+                    "name": "Brigandine Gloves",
                     "description": null,
                     "value": null,
                     "stack": 1
