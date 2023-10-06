@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from citadel.crafting import CraftingSelect, forge, woodshop, bread_stand, archery_stand, tannery, clothiery, meat_stand
+from citadel.crafting import CraftingSelect, forge, woodshop, bread_stand, tavern, archery_stand, tannery, clothiery, meat_stand
 from images.urls import generate_urls
 from resources.grains import HarvestButton
 from exemplars.exemplars import Exemplar
@@ -120,7 +120,8 @@ class BreadRow(discord.ui.View):
 
     @discord.ui.button(label="🎲 Tavern", custom_id="citadel_tavern", style=discord.ButtonStyle.blurple)
     async def tavern(self, button, interaction):
-        await interaction.response.send_message("You're at the Tavern!")
+        self.update_or_add_crafting_select(tavern)
+        await interaction.response.edit_message(content="Choose an item from the Tavern:", view=self)
 
 class WheatRow(discord.ui.View):
     def __init__(self, ctx=None, player=None, guild_id=None, player_data=None):
@@ -140,12 +141,23 @@ class WheatRow(discord.ui.View):
         wheat_url = generate_urls("Grains", "Wheat")
         embed.set_thumbnail(url=wheat_url)
 
-        view = HarvestButton(ctx=self.ctx, guild_id=self.guild_id, player=self.player, player_data=self.player_data)
+        view = HarvestButton(ctx=self.ctx, guild_id=self.guild_id, player=self.player, player_data=self.player_data,
+                             crop="Wheat")
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
     @discord.ui.button(label="🌿 Flax", custom_id="citadel_flax", style=discord.ButtonStyle.blurple)
     async def flax(self, button, interaction):
-        await interaction.response.send_message("You're at the Flax Field!")
+        # Modify this similar to wheat
+        embed = discord.Embed(
+            title="Flax Field",
+            description="Harvest the flax to add to your inventory.",
+            color=discord.Color.green()
+        )
+        flax_url = generate_urls("Grains", "Flax")
+        embed.set_thumbnail(url=flax_url)
+        view = HarvestButton(ctx=self.ctx, guild_id=self.guild_id, player=self.player, player_data=self.player_data,
+                             crop="Flax")
+        await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
     @discord.ui.button(label="⛺ Heal Tent", custom_id="citadel_heal_tent", style=discord.ButtonStyle.blurple)
     async def heal_tent(self, button, interaction):

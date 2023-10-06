@@ -92,6 +92,9 @@ class CraftingStation:
                 added_endurance = 10
                 player.stats.endurance = min(player.stats.endurance + added_endurance, player.stats.max_endurance)
                 return recipe.result  # Return the Bread item even though it's consumed
+            elif recipe.result.name == "Trencher":
+                player.stats.endurance = player.stats.max_endurance
+                return recipe.result  # Return the Trencher item even though it's consumed
 
             if isinstance(recipe.result, Armor):
                 armor_exists = next((a for a in player.inventory.armors if a.name == recipe.result.name), None)
@@ -168,9 +171,16 @@ class CraftButton(discord.ui.Button):
         embed_color = color_mapping.get(zone_level)
 
         if crafted_item:
-            # Update player endurance data after crafting bread
+            # Update player endurance data after crafting bread or trencher
             if self.selected_recipe.result.name == "Bread":
                 # Update endurance in player_data
+                self.player_data[self.author_id]["stats"]["endurance"] = self.player.stats.endurance
+                # Save updated endurance data
+                save_player_data(self.guild_id, self.player_data)
+
+            elif self.selected_recipe.result.name == "Trencher":
+                # Restore endurance to 100% and update player_data
+                self.player.stats.endurance = self.player.stats.max_endurance
                 self.player_data[self.author_id]["stats"]["endurance"] = self.player.stats.endurance
                 # Save updated endurance data
                 save_player_data(self.guild_id, self.player_data)
@@ -195,13 +205,13 @@ class CraftButton(discord.ui.Button):
                           color=embed_color)
             embed.set_thumbnail(url=crafted_item_url)
 
-            # Only show footer if not crafting bread
-            if self.selected_recipe.result.name != "Bread":
+            # Only show footer if not crafting bread or trencher
+            if self.selected_recipe.result.name not in ["Bread", "Trencher"]:
                 crafted_item_count = self.player.inventory.get_item_quantity(crafted_item.name)
                 embed.set_footer(text=f"+1 {crafted_item.name}\n{crafted_item_count} in backpack")
 
-            # Check if it's "Bread" and add endurance bar to description
-            if self.selected_recipe.result.name == "Bread":
+            # Check if it's "Bread" or "Trencher" and add endurance bar to description
+            if self.selected_recipe.result.name in ["Bread", "Trencher"]:
                 endurance_progress = endurance_bar(self.player.stats.endurance, self.player.stats.max_endurance)
                 endurance_emoji = get_emoji('endurance_emoji')
 
@@ -268,6 +278,8 @@ class CraftingSelect(discord.ui.Select):
         embed_title = f"{selected_recipe.result.name} {zone_emoji}"
         if selected_recipe.result.name == "Bread":
             embed_title = "Bread: Auto Consume"
+        elif selected_recipe.result.name == "Trencher":
+            embed_title = "Trencher: Endurance Refill"
 
         # Check player's inventory for required ingredients.
         ingredients_list = []
@@ -286,8 +298,8 @@ class CraftingSelect(discord.ui.Select):
         embed = Embed(title=embed_title, description=message_content, color=embed_color)
         embed.set_thumbnail(url=crafted_item_url)
 
-        # Check if it's "Bread" and add endurance bar to description
-        if selected_recipe.result.name == "Bread":
+        # Check if it's "Bread" or "Trencher" and add endurance bar to description
+        if selected_recipe.result.name in ["Bread", "Trencher"]:
             endurance_progress = endurance_bar(player.stats.endurance, player.stats.max_endurance)
             endurance_emoji = get_emoji('endurance_emoji')
 
@@ -338,6 +350,7 @@ rabbit_meat = Item("Rabbit Meat")
 deer_skin = Item("Deer Skin")
 wolf_skin = Item("Wolf Skin")
 leather = Item("Leather")
+trencher = Item("Trencher")
 tough_leather = Item("Tough Leather")
 linen = Item("Linen")
 linen_thread = Item("Linen Thread")
@@ -432,3 +445,7 @@ archery_stand = CraftingStation("Archery Stand")
 archery_stand.add_recipe(Recipe(short_bow, (pine, 2), (linen_thread, 3)))
 archery_stand.add_recipe(Recipe(long_bow, (yew, 4), (sinew, 4)))
 archery_stand.add_recipe(Recipe(champion_bow, (ash_strip, 5), (sinew, 5)))
+
+# Tavern Trencher
+tavern = CraftingStation("Tavern")
+tavern.add_recipe(Recipe(trencher, (venison, 10), (rabbit_meat, 10), (flour, 5)))
