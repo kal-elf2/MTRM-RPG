@@ -8,36 +8,57 @@ from resources.ore import Ore
 
 
 class Weapon(Item):
-    def __init__(self, name, wtype, description=None, value=None, stack=1):
+    def __init__(self, name, wtype, attack_modifier, description=None, value=None, special_attack=None, stack=1):
         super().__init__(name, description, value)
         self.wtype = wtype
+        self.attack_modifier = attack_modifier
         self.stack = stack
+        self.special_attack = special_attack
 
     def to_dict(self):
         weapon_data = super().to_dict()
         weapon_data["wtype"] = self.wtype
+        weapon_data["attack_modifier"] = self.attack_modifier
+        weapon_data["special_attack"] = self.special_attack
         weapon_data["stack"] = self.stack
         return weapon_data
 
     @classmethod
     def from_dict(cls, data):
-        return cls(name=data["name"], wtype=data["wtype"], description=data.get("description"), value=data.get("value"))
-
+        return cls(name=data["name"], wtype=data["wtype"], attack_modifier=data["attack_modifier"], description=data.get("description"), value=data.get("value"))
 
 class Armor(Item):
-    def __init__(self, name, description=None, value=None, stack=1):
+    def __init__(self, name, defense_modifier, description=None, value=None, stack=1):
         super().__init__(name, description, value)
+        self.defense_modifier = defense_modifier
         self.stack = stack
 
     def to_dict(self):
         armor_data = super().to_dict()
+        armor_data["defense_modifier"] = self.defense_modifier
         armor_data["stack"] = self.stack
         return armor_data
 
     @classmethod
     def from_dict(cls, data):
-        armor = super().from_dict(data)
-        return armor
+        return cls(name=data["name"], defense_modifier=data["defense_modifier"], description=data.get("description"), value=data.get("value"))
+
+class Shield(Item):
+    def __init__(self, name, defense_modifier, description=None, value=None, stack=1):
+        super().__init__(name, description, value)
+        self.defense_modifier = defense_modifier
+        self.stack = stack
+
+    def to_dict(self):
+        shield_data = super().to_dict()
+        shield_data["defense_modifier"] = self.defense_modifier
+        shield_data["stack"] = self.stack
+        return shield_data
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(name=data["name"], defense_modifier=data["defense_modifier"], description=data.get("description"), value=data.get("value"))
+
 
 
 # Recipe Classes
@@ -356,31 +377,36 @@ linen = Item("Linen")
 linen_thread = Item("Linen Thread")
 flax = Item("Flax")
 
-# Weapons
-short_sword = Weapon("Short Sword", "Sword")
-long_sword = Weapon("Long Sword", "Sword")
-champion_sword = Weapon("Champion Sword", "Sword")
-voltaic_sword = Weapon("Voltaic Sword", "Sword")
-short_spear = Weapon("Short Spear", "Spear")
-long_spear = Weapon("Long Spear", "Spear")
-champion_spear = Weapon("Champion Spear", "Spear")
-hammer = Weapon("Hammer", "Hammer")
-war_hammer = Weapon("War Hammer", "Hammer")
-club = Weapon("Club", "Hammer")
-short_bow = Weapon("Short Bow", "Bow")
-long_bow = Weapon("Long Bow", "Bow")
-champion_bow = Weapon("Champion Bow", "Bow")
+#Shields
+buckler = Shield("Buckler", defense_modifier=1, value=10)
+small_shield = Shield("Small Shield", defense_modifier=1, value=10)
+large_shield = Shield("Large Shield", defense_modifier=1, value=10)
 
 # Armors
-brigandine_armor = Armor("Brigandine Armor")
-brigandine_boots = Armor("Brigandine Boots")
-brigandine_gloves = Armor("Brigandine Gloves")
-leather_armor = Armor("Leather Armor")
-leather_boots = Armor("Leather Boots")
-leather_gloves = Armor("Leather Gloves")
-padded_armor = Armor("Padded Armor")
-padded_boots = Armor("Padded Boots")
-padded_gloves = Armor("Padded Gloves")
+brigandine_armor = Armor("Brigandine Armor", defense_modifier=1, value=10)
+brigandine_boots = Armor("Brigandine Boots", defense_modifier=1, value=10)
+brigandine_gloves = Armor("Brigandine Gloves", defense_modifier=1, value=10)
+leather_armor = Armor("Leather Armor", defense_modifier=1, value=10)
+leather_boots = Armor("Leather Boots", defense_modifier=1, value=10)
+leather_gloves = Armor("Leather Gloves", defense_modifier=1, value=10)
+padded_armor = Armor("Padded Armor", defense_modifier=1, value=10)
+padded_boots = Armor("Padded Boots", defense_modifier=1, value=10)
+padded_gloves = Armor("Padded Gloves", defense_modifier=1, value=10)
+
+# Weapons
+short_sword = Weapon("Short Sword", "Sword", attack_modifier=1, special_attack= 1, value=10)
+long_sword = Weapon("Long Sword", "Sword", attack_modifier=1, special_attack= 1, value=10)
+champion_sword = Weapon("Champion Sword", "Sword", attack_modifier=1, special_attack= 1, value=10)
+voltaic_sword = Weapon("Voltaic Sword", "Sword", attack_modifier=1, special_attack= 1, value=10)
+short_spear = Weapon("Short Spear", "Spear", attack_modifier=1, special_attack= 1, value=10)
+long_spear = Weapon("Long Spear", "Spear", attack_modifier=1, special_attack= 1, value=10)
+champion_spear = Weapon("Champion Spear", "Spear", attack_modifier=1, special_attack= 1, value=10)
+hammer = Weapon("Hammer", "Hammer", attack_modifier=1, special_attack= 1, value=10)
+war_hammer = Weapon("War Hammer", "Hammer", attack_modifier=1, special_attack= 1, value=10)
+club = Weapon("Club", "Hammer", attack_modifier=1, special_attack= 1, value=10)
+short_bow = Weapon("Short Bow", "Bow", attack_modifier=1, special_attack= 1, value=10)
+long_bow = Weapon("Long Bow", "Bow", attack_modifier=1, special_attack= 1, value=10)
+champion_bow = Weapon("Champion Bow", "Bow", attack_modifier=1, special_attack= 1, value=10)
 
 # Forge Crafting Station and Recipes
 forge = CraftingStation("Forge")
@@ -400,6 +426,9 @@ forge.add_recipe(Recipe(war_hammer, (charcoal, 3), (thick_pole, 2), (steel, 3), 
 forge.add_recipe(Recipe(brigandine_armor, (charcoal, 6), (steel, 5), (tough_leather_straps, 3), (onyx, 12)))
 forge.add_recipe(Recipe(brigandine_boots, (charcoal, 4), (steel, 3), (tough_leather_straps, 2), (onyx, 6)))
 forge.add_recipe(Recipe(brigandine_gloves, (charcoal, 2), (steel, 2), (tough_leather_straps, 1), (onyx, 3)))
+forge.add_recipe(Recipe(buckler, (pine_strip, 5), (leather_straps, 3), (iron, 2)))
+forge.add_recipe(Recipe(small_shield, (ash_strip, 3), (tough_leather_straps, 2), (steel, 2)))
+forge.add_recipe(Recipe(large_shield, (yew_strip, 4), (tough_leather_straps, 4), (iron, 3), (steel, 5)))
 
 # WOOD SHOP Crafting Station and Recipes
 woodshop = CraftingStation("Wood Shop")

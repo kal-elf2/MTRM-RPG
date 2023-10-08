@@ -19,6 +19,8 @@ class Inventory:
         self.limit = limit
         self.equipped_armor = {}
         self.equipped_weapon = None
+        self.shields = []
+        self.equipped_shield = None
         self.materium_count = 0
         self.coppers = 0
 
@@ -37,12 +39,14 @@ class Inventory:
             "equipped_items": [item.to_dict() for item in self.equipped_items],
             "equipped_armor": {k: v.to_dict() for k, v in self.equipped_armor.items()},
             "equipped_weapon": self.equipped_weapon.to_dict() if self.equipped_weapon else None,
+            "shields": [shield.to_dict() for shield in self.shields],
+            "equipped_shield": self.equipped_shield.to_dict() if self.equipped_shield else None,
             "materium_count": self.materium_count,
         }
 
     @classmethod
     def from_dict(cls, data):
-        from citadel.crafting import Weapon, Armor
+        from citadel.crafting import Weapon, Armor, Shield
         inventory = cls(limit=data["limit"] if "limit" in data else 40)
         inventory.coppers = data["coppers"]
         inventory.items = [Item.from_dict(item_data) for item_data in data["items"]]
@@ -56,6 +60,8 @@ class Inventory:
         inventory.equipped_items = [Item.from_dict(item_data) for item_data in data["equipped_items"]]
         inventory.equipped_armor = {k: Armor.from_dict(v_data) for k, v_data in data["equipped_armor"].items()}
         inventory.equipped_weapon = Weapon.from_dict(data["equipped_weapon"]) if data["equipped_weapon"] else None
+        inventory.shields = [Shield.from_dict(shield_data) for shield_data in data["shields"]]
+        inventory.equipped_shield = Shield.from_dict(data["equipped_shield"]) if data["equipped_shield"] else None
         inventory.materium_count = data["materium_count"]
         return inventory
 
@@ -63,7 +69,7 @@ class Inventory:
         self.coppers += amount
 
     def add_item_to_inventory(self, item, amount=1):
-        from citadel.crafting import Weapon, Armor
+        from citadel.crafting import Weapon, Armor, Shield
         if isinstance(item, Materium):
             self.materium_count += amount
         elif isinstance(item, Tree):
@@ -80,12 +86,14 @@ class Inventory:
             self._add_item_to_specific_inventory(item, amount, self.weapons)
         elif isinstance(item, Armor):
             self._add_item_to_specific_inventory(item, amount, self.armors)
+        elif isinstance(item, Shield):
+            self._add_item_to_specific_inventory(item, amount, self.shields)
         elif isinstance(item, Item):
             self._add_item_to_specific_inventory(item, amount, self.items)
 
     def get_item_quantity(self, item_name):
         stackable_sections = [self.items, self.trees, self.herbs, self.ore, self.gems, self.potions, self.weapons,
-                              self.armors]
+                              self.armors, self.shields]
 
         for section in stackable_sections:
             for item in section:
@@ -141,6 +149,11 @@ class Inventory:
             for idx, armor in enumerate(self.armors):
                 if armor.name == item_name:
                     del self.armors[idx]
+                    return True
+
+            for idx, shield in enumerate(self.shields):
+                if shield.name == item_name:
+                    del self.shields[idx]
                     return True
 
         return False
