@@ -3,35 +3,18 @@ from discord.ext import commands
 from citadel.crafting import CraftingSelect, forge, woodshop, bread_stand, tavern, archery_stand, tannery, clothiery, meat_stand
 from images.urls import generate_urls
 from resources.grains import HarvestButton
-from exemplars.exemplars import Exemplar
 
 class CitadelCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    def _get_player(self, ctx):
-        from utils import load_player_data
-        guild_id = ctx.guild.id
-        author_id = str(ctx.author.id)
-        player_data = load_player_data(guild_id)
-        return Exemplar(
-            player_data[author_id]["exemplar"],
-            player_data[author_id]["stats"],
-            player_data[author_id]["inventory"]
-        )
-
     @commands.slash_command(description="Visit the Citadel!")
     async def citadel(self, ctx):
-        player = self._get_player(ctx)
-        guild_id = ctx.guild.id
-
-        from utils import load_player_data
-        player_data = load_player_data(guild_id)
 
         row1 = ForgeRow(ctx)
         row2 = TanneryRow(ctx)
         row3 = BreadRow(ctx)
-        row4 = WheatRow(ctx, player=player, guild_id=guild_id, player_data=player_data)
+        row4 = WheatRow(ctx)
         row5 = TravelRow(ctx)
 
         await ctx.respond(view=row1)
@@ -124,12 +107,9 @@ class BreadRow(discord.ui.View):
         await interaction.response.edit_message(content="Choose an item from the Tavern:", view=self)
 
 class WheatRow(discord.ui.View):
-    def __init__(self, ctx=None, player=None, guild_id=None, player_data=None):
+    def __init__(self, ctx=None, guild_id=None, player_data=None):
         super().__init__(timeout=None)
         self.ctx = ctx
-        self.player = player
-        self.guild_id = guild_id
-        self.player_data = player_data
 
     @discord.ui.button(label="🌾 Wheat", custom_id="citadel_wheat", style=discord.ButtonStyle.blurple)
     async def wheat(self, button, interaction):
@@ -141,13 +121,11 @@ class WheatRow(discord.ui.View):
         wheat_url = generate_urls("Grains", "Wheat")
         embed.set_thumbnail(url=wheat_url)
 
-        view = HarvestButton(ctx=self.ctx, guild_id=self.guild_id, player=self.player, player_data=self.player_data,
-                             crop="Wheat")
+        view = HarvestButton(ctx=self.ctx, crop="Wheat")
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
     @discord.ui.button(label="🌿 Flax", custom_id="citadel_flax", style=discord.ButtonStyle.blurple)
     async def flax(self, button, interaction):
-        # Modify this similar to wheat
         embed = discord.Embed(
             title="Flax Field",
             description="Harvest the flax to add to your inventory.",
@@ -155,7 +133,7 @@ class WheatRow(discord.ui.View):
         )
         flax_url = generate_urls("Grains", "Flax")
         embed.set_thumbnail(url=flax_url)
-        view = HarvestButton(ctx=self.ctx, guild_id=self.guild_id, player=self.player, player_data=self.player_data,
+        view = HarvestButton(ctx=self.ctx,
                              crop="Flax")
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 

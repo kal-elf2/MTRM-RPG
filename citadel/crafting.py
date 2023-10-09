@@ -27,21 +27,37 @@ class Weapon(Item):
     def from_dict(cls, data):
         return cls(name=data["name"], wtype=data["wtype"], attack_modifier=data["attack_modifier"], description=data.get("description"), value=data.get("value"))
 
+class ArmorType:
+    CHEST = "chest"
+    BOOTS = "boots"
+    GLOVES = "gloves"
+    # Add other armor types as needed
+
 class Armor(Item):
-    def __init__(self, name, defense_modifier, description=None, value=None, stack=1):
+    def __init__(self, name, defense_modifier, armor_type, description=None, value=None, stack=1):
         super().__init__(name, description, value)
         self.defense_modifier = defense_modifier
+        self.armor_type = armor_type  # e.g., ArmorType.CHEST, ArmorType.BOOTS, etc.
         self.stack = stack
 
     def to_dict(self):
         armor_data = super().to_dict()
         armor_data["defense_modifier"] = self.defense_modifier
+        armor_data["armor_type"] = self.armor_type
         armor_data["stack"] = self.stack
         return armor_data
 
     @classmethod
     def from_dict(cls, data):
-        return cls(name=data["name"], defense_modifier=data["defense_modifier"], description=data.get("description"), value=data.get("value"))
+        if not all(key in data for key in ["name", "defense_modifier", "armor_type"]):
+            raise ValueError("Armor data is missing necessary keys.")
+
+        # Additional validation could be added to ensure the armor_type is valid
+        if data["armor_type"] not in [ArmorType.CHEST, ArmorType.BOOTS, ArmorType.GLOVES]:
+            raise ValueError(f"Invalid armor type: {data['armor_type']}")
+
+        return cls(name=data["name"], defense_modifier=data["defense_modifier"], armor_type=data["armor_type"],
+                   description=data.get("description"), value=data.get("value"), stack=data.get("stack", 1))
 
 class Shield(Item):
     def __init__(self, name, defense_modifier, description=None, value=None, stack=1):
@@ -383,15 +399,16 @@ small_shield = Shield("Small Shield", defense_modifier=1, value=10)
 large_shield = Shield("Large Shield", defense_modifier=1, value=10)
 
 # Armors
-brigandine_armor = Armor("Brigandine Armor", defense_modifier=1, value=10)
-brigandine_boots = Armor("Brigandine Boots", defense_modifier=1, value=10)
-brigandine_gloves = Armor("Brigandine Gloves", defense_modifier=1, value=10)
-leather_armor = Armor("Leather Armor", defense_modifier=1, value=10)
-leather_boots = Armor("Leather Boots", defense_modifier=1, value=10)
-leather_gloves = Armor("Leather Gloves", defense_modifier=1, value=10)
-padded_armor = Armor("Padded Armor", defense_modifier=1, value=10)
-padded_boots = Armor("Padded Boots", defense_modifier=1, value=10)
-padded_gloves = Armor("Padded Gloves", defense_modifier=1, value=10)
+brigandine_armor = Armor("Brigandine Armor", defense_modifier=1, armor_type=ArmorType.CHEST, value=10)
+brigandine_boots = Armor("Brigandine Boots", defense_modifier=1, armor_type=ArmorType.BOOTS, value=10)
+brigandine_gloves = Armor("Brigandine Gloves", defense_modifier=1, armor_type=ArmorType.GLOVES, value=10)
+leather_armor = Armor("Leather Armor", defense_modifier=1, armor_type=ArmorType.CHEST, value=10)
+leather_boots = Armor("Leather Boots", defense_modifier=1, armor_type=ArmorType.BOOTS, value=10)
+leather_gloves = Armor("Leather Gloves", defense_modifier=1, armor_type=ArmorType.GLOVES, value=10)
+padded_armor = Armor("Padded Armor", defense_modifier=1, armor_type=ArmorType.CHEST, value=10)
+padded_boots = Armor("Padded Boots", defense_modifier=1, armor_type=ArmorType.BOOTS, value=10)
+padded_gloves = Armor("Padded Gloves", defense_modifier=1, armor_type=ArmorType.GLOVES, value=10)
+
 
 # Weapons
 short_sword = Weapon("Short Sword", "Sword", attack_modifier=1, special_attack= 1, value=10)

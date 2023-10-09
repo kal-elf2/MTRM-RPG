@@ -1,4 +1,5 @@
 import json
+import discord
 from resources.inventory import Inventory
 from exemplars.exemplars import Exemplar
 from resources.herb import Herb
@@ -46,3 +47,11 @@ def save_player_data(guild_id, player_data):
 
 async def send_message(ctx: commands.Context, embed):
     return await ctx.send(embed=embed)
+
+def update_and_save_player_data(interaction: discord.Interaction, inventory, player_data):
+    # After making changes to the inventory, update it in the player data
+    player_id = str(interaction.user.id)
+    player_data[player_id]["inventory"] = inventory
+
+    # Save the updated player data to storage
+    save_player_data(interaction.guild.id, player_data)

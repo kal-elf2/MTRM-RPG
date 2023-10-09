@@ -21,6 +21,7 @@ bot = commands.Bot(command_prefix="/", intents=discord.Intents.all())
 bot.load_extension("stats")
 bot.load_extension("resources.woodcutting")
 bot.load_extension("resources.mining")
+bot.load_extension("resources.backpack")
 bot.load_extension("citadel.buttons")
 
 guild_data = {}

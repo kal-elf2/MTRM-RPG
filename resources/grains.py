@@ -1,30 +1,36 @@
 import discord
 from images.urls import generate_urls
 from resources.item import Item
-from utils import save_player_data
+from utils import save_player_data, load_player_data
+from exemplars.exemplars import Exemplar
 
 
 class HarvestButton(discord.ui.View):
-    def __init__(self, ctx, player, guild_id, player_data, crop):
+    def __init__(self, ctx, crop):
         super().__init__(timeout=None)
         self.ctx = ctx
-        self.player = player
-        self.guild_id = guild_id
-        self.player_data = player_data
         self.crop = crop
 
     @discord.ui.button(label="Harvest", custom_id="harvest", style=discord.ButtonStyle.blurple)
     async def harvest(self, button, interaction):
+        author_id = str(interaction.user.id)
+        guild_id = self.ctx.guild.id
+
+        player_data = load_player_data(guild_id)
+        player = Exemplar(
+            player_data[author_id]["exemplar"],
+            player_data[author_id]["stats"],
+            player_data[author_id]["inventory"]
+        )
+
         # Add 1 of the crop (either Wheat or Flax) to player's inventory
         crop_item = Item(name=self.crop)
-        self.player.inventory.add_item_to_inventory(crop_item, amount=1)
+        player.inventory.add_item_to_inventory(crop_item, amount=1)
 
-        # After adding crop to the player's inventory
-        self.player_data[str(self.ctx.author.id)]["inventory"] = self.player.inventory.to_dict()
-        save_player_data(self.guild_id, self.player_data)
+        save_player_data(guild_id, player_data)
 
         # Fetch quantity of the crop in the player's inventory
-        crop_count = self.player.inventory.get_item_quantity(self.crop)
+        crop_count = player.inventory.get_item_quantity(self.crop)
 
         # Create the embed to reflect the new crop count
         embed = discord.Embed(
