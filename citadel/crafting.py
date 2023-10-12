@@ -25,13 +25,14 @@ class Weapon(Item):
 
     @classmethod
     def from_dict(cls, data):
-        return cls(name=data["name"], wtype=data["wtype"], attack_modifier=data["attack_modifier"], description=data.get("description"), value=data.get("value"))
+        return cls(name=data["name"], wtype=data["wtype"], attack_modifier=data["attack_modifier"],
+                   description=data.get("description"), value=data.get("value"), stack=data.get("stack", 1))
+
 
 class ArmorType:
     CHEST = "chest"
     BOOTS = "boots"
     GLOVES = "gloves"
-    # Add other armor types as needed
 
 class Armor(Item):
     def __init__(self, name, defense_modifier, armor_type, description=None, value=None, stack=1):
@@ -73,8 +74,13 @@ class Shield(Item):
 
     @classmethod
     def from_dict(cls, data):
-        return cls(name=data["name"], defense_modifier=data["defense_modifier"], description=data.get("description"), value=data.get("value"))
-
+        return cls(
+            name=data["name"],
+            defense_modifier=data["defense_modifier"],
+            description=data.get("description"),
+            value=data.get("value"),
+            stack=data.get("stack", 1)
+        )
 
 
 # Recipe Classes

@@ -103,3 +103,35 @@ POTION_LIST = [
 
 POTION_NAME_TO_INSTANCE = {potion.name: potion for potion in POTION_LIST}
 
+class Charm(Item):
+    def __init__(self, name, zone_level, strength_modifier=0, defense_modifier=0, loot_multiplier=1.0, description=None, value=None, stack=1):
+        super().__init__(name, description, value)
+        self.zone_level = zone_level
+        self.strength_modifier = strength_modifier
+        self.defense_modifier = defense_modifier
+        self.loot_multiplier = loot_multiplier
+        self.stack = stack
+
+    def to_dict(self):
+        charm_data = super().to_dict()
+        charm_data["zone_level"] = self.zone_level
+        charm_data["strength_modifier"] = self.strength_modifier
+        charm_data["defense_modifier"] = self.defense_modifier
+        charm_data["loot_multiplier"] = self.loot_multiplier
+        charm_data["stack"] = self.stack
+        return charm_data
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(
+            name=data["name"],
+            zone_level=data["zone_level"],
+            strength_modifier=data.get("strength_modifier", 0),
+            defense_modifier=data.get("defense_modifier", 0),
+            loot_multiplier=data.get("loot_multiplier", 1.0),
+            description=data.get("description"),
+            value=data.get("value"),
+            stack=data.get("stack", 1)
+        )
+
+

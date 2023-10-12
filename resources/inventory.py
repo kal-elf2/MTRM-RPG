@@ -1,28 +1,35 @@
 from resources.materium import Materium
 from resources.herb import Herb
-from resources.potion import Potion
+from resources.potion import Potion, Charm
 from resources.item import Item
 from resources.ore import Gem, Ore
 from resources.tree import Tree
 
 class Inventory:
+
     def __init__(self, limit=40):
+        from citadel.crafting import ArmorType
+        self.coppers = 0
         self.items = []
         self.trees = []
         self.herbs = []
         self.ore = []
         self.gems = []
         self.potions = []
-        self.weapons = []
-        self.armors = []
-        self.equipped_items = []
         self.limit = limit
-        self.equipped_armor = {}
+        self.armors = []
+        self.equipped_armor = {
+            ArmorType.CHEST: None,
+            ArmorType.BOOTS: None,
+            ArmorType.GLOVES: None
+        }
+        self.weapons = []
         self.equipped_weapon = None
         self.shields = []
         self.equipped_shield = None
+        self.charms = []
+        self.equipped_charm = None
         self.materium_count = 0
-        self.coppers = 0
 
     def to_dict(self):
         return {
@@ -33,14 +40,15 @@ class Inventory:
             "ore": [ore.to_dict() for ore in self.ore],
             "gems": [gem.to_dict() for gem in self.gems],
             "potions": [potion.to_dict() for potion in self.potions],
-            "weapons": [weapon.to_dict() for weapon in self.weapons],
-            "armors": [armor.to_dict() for armor in self.armors],
             "limit": self.limit,
-            "equipped_items": [item.to_dict() for item in self.equipped_items],
-            "equipped_armor": {k: v.to_dict() for k, v in self.equipped_armor.items()},
+            "armors": [armor.to_dict() for armor in self.armors],
+            "equipped_armor": {k: v.to_dict() if hasattr(v, 'to_dict') else None for k, v in self.equipped_armor.items()},
+            "weapons": [weapon.to_dict() for weapon in self.weapons],
             "equipped_weapon": self.equipped_weapon.to_dict() if self.equipped_weapon else None,
             "shields": [shield.to_dict() for shield in self.shields],
             "equipped_shield": self.equipped_shield.to_dict() if self.equipped_shield else None,
+            "charms": [charm.to_dict() for charm in self.charms],
+            "equipped_charm": self.equipped_charm.to_dict() if self.equipped_charm else None,
             "materium_count": self.materium_count,
         }
 
@@ -57,11 +65,12 @@ class Inventory:
         inventory.gems = [Gem.from_dict(gem_data) for gem_data in data["gems"]]
         inventory.weapons = [Weapon.from_dict(weapon_data) for weapon_data in data["weapons"]]
         inventory.armors = [Armor.from_dict(armor_data) for armor_data in data["armors"]]
-        inventory.equipped_items = [Item.from_dict(item_data) for item_data in data["equipped_items"]]
-        inventory.equipped_armor = {k: Armor.from_dict(v_data) for k, v_data in data["equipped_armor"].items()}
+        inventory.equipped_armor = {k: Armor.from_dict(v_data) if v_data else None for k, v_data in data["equipped_armor"].items()}
         inventory.equipped_weapon = Weapon.from_dict(data["equipped_weapon"]) if data["equipped_weapon"] else None
         inventory.shields = [Shield.from_dict(shield_data) for shield_data in data["shields"]]
         inventory.equipped_shield = Shield.from_dict(data["equipped_shield"]) if data["equipped_shield"] else None
+        inventory.charms = [Charm.from_dict(charm_data) for charm_data in data.get("charms", [])]
+        inventory.equipped_charm = Charm.from_dict(data["equipped_charm"]) if data.get("equipped_charm") else None
         inventory.materium_count = data["materium_count"]
         return inventory
 
