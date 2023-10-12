@@ -81,49 +81,6 @@ class ItemTypeSelect(discord.ui.Select):
         self.action_type = action_type
         super().__init__(placeholder=f"Choose an item type to {action_type}", options=options, min_values=1, max_values=1)
 
-    def equip_item(self, inventory, category, selected_item, existing_item):
-        """Handles equipping logic."""
-        category_singular = category[:-1]
-        equipped_item_key = f"equipped_{category_singular}"
-
-        if isinstance(selected_item, Armor):
-            existing_armor_piece = inventory.equipped_armor.get(selected_item.armor_type)
-            if existing_armor_piece:
-                self.add_to_inventory(inventory.armors, existing_armor_piece)
-            inventory.equipped_armor[selected_item.armor_type] = selected_item
-        else:
-            current_equipped_item = getattr(inventory, equipped_item_key, None)
-            if current_equipped_item:
-                self.add_to_inventory(getattr(inventory, category), current_equipped_item)
-            setattr(inventory, equipped_item_key, selected_item)
-
-        if existing_item.stack == 1:
-            getattr(inventory, category).remove(existing_item)
-        else:
-            existing_item.stack -= 1
-
-    def unequip_item(self, inventory, category, selected_item, existing_item):
-        """Handles unequipping logic."""
-        category_singular = category[:-1]
-        equipped_item_key = f"equipped_{category_singular}"
-
-        if isinstance(selected_item, Armor):
-            if inventory.equipped_armor[selected_item.armor_type] == selected_item:
-                self.add_to_inventory(inventory.armors, selected_item)
-                inventory.equipped_armor[selected_item.armor_type] = None
-        else:
-            if getattr(inventory, equipped_item_key) == selected_item:
-                self.add_to_inventory(getattr(inventory, category), selected_item)
-                setattr(inventory, equipped_item_key, None)
-
-    def add_to_inventory(self, inventory_category, item):
-        """Adds an item to the inventory and handles stacking."""
-        existing_item_in_inventory = next((i for i in inventory_category if i.name == item.name), None)
-        if existing_item_in_inventory:
-            existing_item_in_inventory.stack += 1
-        else:
-            inventory_category.append(copy.deepcopy(item))
-
     async def callback(self, interaction: discord.Interaction):
         # Handle the selected item type and perform either equip or unequip action
         selected_value = self.values[0]
