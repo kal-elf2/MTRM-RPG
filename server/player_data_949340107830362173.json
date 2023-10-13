@@ -212,28 +212,20 @@
             "limit": 40,
             "armors": [
                 {
-                    "name": "Brigandine Armor",
+                    "name": "Brigandine Gloves",
                     "description": null,
                     "value": 10,
-                    "stack": 1,
+                    "stack": 3,
                     "defense_modifier": 1,
-                    "armor_type": "chest"
+                    "armor_type": "gloves"
                 },
                 {
-                    "name": "Brigandine Boots",
+                    "name": "Leather Boots",
                     "description": null,
                     "value": 10,
                     "stack": 1,
                     "defense_modifier": 1,
                     "armor_type": "boots"
-                },
-                {
-                    "name": "Brigandine Gloves",
-                    "description": null,
-                    "value": 10,
-                    "stack": 2,
-                    "defense_modifier": 1,
-                    "armor_type": "gloves"
                 },
                 {
                     "name": "Leather Armor",
@@ -244,7 +236,15 @@
                     "armor_type": "chest"
                 },
                 {
-                    "name": "Leather Boots",
+                    "name": "Brigandine Armor",
+                    "description": null,
+                    "value": 10,
+                    "stack": 1,
+                    "defense_modifier": 1,
+                    "armor_type": "chest"
+                },
+                {
+                    "name": "Brigandine Boots",
                     "description": null,
                     "value": 10,
                     "stack": 1,
@@ -267,28 +267,10 @@
             },
             "weapons": [
                 {
-                    "name": "Hammer",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
-                    "wtype": "Hammer",
-                    "attack_modifier": 1,
-                    "special_attack": null
-                },
-                {
                     "name": "Voltaic Sword",
                     "description": null,
                     "value": 10,
                     "stack": 2,
-                    "wtype": "Sword",
-                    "attack_modifier": 2,
-                    "special_attack": null
-                },
-                {
-                    "name": "Long Sword",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
                     "wtype": "Sword",
                     "attack_modifier": 1,
                     "special_attack": null
@@ -301,10 +283,35 @@
                     "wtype": "Spear",
                     "attack_modifier": 1,
                     "special_attack": null
+                },
+                {
+                    "name": "Hammer",
+                    "description": null,
+                    "value": 10,
+                    "stack": 1,
+                    "wtype": "Hammer",
+                    "attack_modifier": 1,
+                    "special_attack": null
+                },
+                {
+                    "name": "Long Sword",
+                    "description": null,
+                    "value": 10,
+                    "stack": 1,
+                    "wtype": "Sword",
+                    "attack_modifier": 1,
+                    "special_attack": null
                 }
             ],
             "equipped_weapon": null,
             "shields": [
+                {
+                    "name": "Small Shield",
+                    "description": null,
+                    "value": 10,
+                    "stack": 2,
+                    "defense_modifier": 1
+                },
                 {
                     "name": "Buckler",
                     "description": null,
@@ -313,13 +320,7 @@
                     "defense_modifier": 1
                 }
             ],
-            "equipped_shield": {
-                "name": "Small Shield",
-                "description": null,
-                "value": 10,
-                "stack": 2,
-                "defense_modifier": 1
-            },
+            "equipped_shield": null,
             "charms": [],
             "equipped_charm": null,
             "materium_count": 0
