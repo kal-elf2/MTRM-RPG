@@ -31,7 +31,7 @@
                     "name": "Deer Parts",
                     "description": "Various parts of a deer. Some are useful for making tools and weapons.",
                     "value": 20,
-                    "stack": 400
+                    "stack": 390
                 },
                 {
                     "name": "Deer Skin",
@@ -49,7 +49,7 @@
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 979
+                    "stack": 976
                 },
                 {
                     "name": "Glowing Essence",
@@ -91,7 +91,7 @@
                     "name": "Thick Pole",
                     "description": null,
                     "value": null,
-                    "stack": 316
+                    "stack": 318
                 },
                 {
                     "name": "Pine Strip",
@@ -103,13 +103,13 @@
                     "name": "Yew Strip",
                     "description": null,
                     "value": null,
-                    "stack": 96
+                    "stack": 92
                 },
                 {
                     "name": "Ash Strip",
                     "description": null,
                     "value": null,
-                    "stack": 97
+                    "stack": 92
                 },
                 {
                     "name": "Poplar Strip",
@@ -121,19 +121,19 @@
                     "name": "Charcoal",
                     "description": null,
                     "value": null,
-                    "stack": 1919
+                    "stack": 1917
                 },
                 {
                     "name": "Iron",
                     "description": null,
                     "value": null,
-                    "stack": 981
+                    "stack": 978
                 },
                 {
                     "name": "Steel",
                     "description": null,
                     "value": null,
-                    "stack": 2891
+                    "stack": 2884
                 },
                 {
                     "name": "Leather",
@@ -157,7 +157,7 @@
                     "name": "Tough Leather Straps",
                     "description": null,
                     "value": null,
-                    "stack": 988
+                    "stack": 983
                 }
             ],
             "trees": [
@@ -171,7 +171,7 @@
                 },
                 {
                     "name": "Ash",
-                    "stack": 976
+                    "stack": 966
                 },
                 {
                     "name": "Poplar",
@@ -186,11 +186,11 @@
                 },
                 {
                     "name": "Coal",
-                    "stack": 998
+                    "stack": 994
                 },
                 {
                     "name": "Carbon",
-                    "stack": 995
+                    "stack": 997
                 }
             ],
             "gems": [
@@ -215,49 +215,10 @@
                     "name": "Brigandine Gloves",
                     "description": null,
                     "value": 10,
-                    "stack": 3,
-                    "defense_modifier": 1,
-                    "armor_type": "gloves"
-                },
-                {
-                    "name": "Leather Boots",
-                    "description": null,
-                    "value": 10,
                     "stack": 1,
                     "defense_modifier": 1,
-                    "armor_type": "boots"
-                },
-                {
-                    "name": "Leather Armor",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
-                    "defense_modifier": 1,
-                    "armor_type": "chest"
-                },
-                {
-                    "name": "Brigandine Armor",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
-                    "defense_modifier": 1,
-                    "armor_type": "chest"
-                },
-                {
-                    "name": "Brigandine Boots",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
-                    "defense_modifier": 1,
-                    "armor_type": "boots"
-                },
-                {
-                    "name": "Leather Gloves",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
-                    "defense_modifier": 1,
-                    "armor_type": "gloves"
+                    "armor_type": "gloves",
+                    "zone_level": 1
                 }
             ],
             "equipped_armor": {
@@ -267,57 +228,25 @@
             },
             "weapons": [
                 {
-                    "name": "Voltaic Sword",
-                    "description": null,
-                    "value": 10,
-                    "stack": 2,
-                    "wtype": "Sword",
-                    "attack_modifier": 1,
-                    "special_attack": null
-                },
-                {
-                    "name": "Short Spear",
+                    "name": "Champion Bow",
                     "description": null,
                     "value": 10,
                     "stack": 1,
-                    "wtype": "Spear",
+                    "wtype": "Bow",
                     "attack_modifier": 1,
-                    "special_attack": null
-                },
-                {
-                    "name": "Hammer",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
-                    "wtype": "Hammer",
-                    "attack_modifier": 1,
-                    "special_attack": null
-                },
-                {
-                    "name": "Long Sword",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
-                    "wtype": "Sword",
-                    "attack_modifier": 1,
-                    "special_attack": null
+                    "special_attack": 3,
+                    "zone_level": 1
                 }
             ],
             "equipped_weapon": null,
             "shields": [
                 {
-                    "name": "Small Shield",
-                    "description": null,
-                    "value": 10,
-                    "stack": 2,
-                    "defense_modifier": 1
-                },
-                {
-                    "name": "Buckler",
+                    "name": "Large Shield",
                     "description": null,
                     "value": 10,
                     "stack": 1,
-                    "defense_modifier": 1
+                    "defense_modifier": 1,
+                    "zone_level": 1
                 }
             ],
             "equipped_shield": null,

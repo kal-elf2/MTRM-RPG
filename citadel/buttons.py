@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from citadel.crafting import CraftingSelect, forge, woodshop, bread_stand, tavern, archery_stand, tannery, clothiery, meat_stand
+from citadel.crafting import CraftingSelect, create_crafting_stations
 from images.urls import generate_urls
 from resources.grains import HarvestButton
 
@@ -37,17 +37,20 @@ class ForgeRow(discord.ui.View):
 
     @discord.ui.button(label="🔨 Forge", custom_id="citadel_forge", style=discord.ButtonStyle.blurple)
     async def forge(self, button, interaction):
-        self.update_or_add_crafting_select(forge)
+        station = create_crafting_stations(interaction, "forge")
+        self.update_or_add_crafting_select(station)
         await interaction.response.edit_message(content="Choose an item to Forge:", view=self)
 
     @discord.ui.button(label="🪓 Wood Shop", custom_id="citadel_woodshop", style=discord.ButtonStyle.blurple)
     async def wood_shop(self, button, interaction):
-        self.update_or_add_crafting_select(woodshop)
+        station = create_crafting_stations(interaction, "woodshop")
+        self.update_or_add_crafting_select(station)
         await interaction.response.edit_message(content="Choose an item from the Wood Shop:", view=self)
 
     @discord.ui.button(label="🏹 Archery Stand", custom_id="citadel_archery", style=discord.ButtonStyle.blurple)
     async def archery_stand(self, button, interaction):
-        self.update_or_add_crafting_select(archery_stand)
+        station = create_crafting_stations(interaction, "archery_stand")
+        self.update_or_add_crafting_select(station)
         await interaction.response.edit_message(content="Choose an item from the Archery Stand:", view=self)
 
 
@@ -65,12 +68,14 @@ class TanneryRow(discord.ui.View):
 
     @discord.ui.button(label="🐄 Tannery", custom_id="citadel_tannery", style=discord.ButtonStyle.blurple)
     async def tannery(self, button, interaction):
-        self.update_or_add_crafting_select(tannery)
+        station = create_crafting_stations(interaction, "tannery")
+        self.update_or_add_crafting_select(station)
         await interaction.response.edit_message(content="Choose an item from the Tannery:", view=self)
 
     @discord.ui.button(label="🧵 Clothiery", custom_id="citadel_clothiery", style=discord.ButtonStyle.blurple)
     async def clothiery(self, button, interaction):
-        self.update_or_add_crafting_select(clothiery)
+        station = create_crafting_stations(interaction, "clothiery")
+        self.update_or_add_crafting_select(station)
         await interaction.response.edit_message(content="Choose an item from the Clothiery:", view=self)
 
     @discord.ui.button(label="🍶 Potion Shop", custom_id="citadel_potion_shop", style=discord.ButtonStyle.blurple)
@@ -92,18 +97,21 @@ class BreadRow(discord.ui.View):
 
     @discord.ui.button(label="🥖 Bread Stand", custom_id="citadel_bread_stand", style=discord.ButtonStyle.blurple)
     async def bread_stand(self, button, interaction):
-        self.update_or_add_crafting_select(bread_stand)
+        station = create_crafting_stations(interaction, "bread_stand")
+        self.update_or_add_crafting_select(station)
         await interaction.response.edit_message(content="Choose an item from the Bread Stand:", view=self)
 
     @discord.ui.button(label="🍖 Meat Stand", custom_id="citadel_meat_stand", style=discord.ButtonStyle.blurple)
     async def meat_stand(self, button, interaction):
-        self.update_or_add_crafting_select(meat_stand)
+        station = create_crafting_stations(interaction, "meat_stand")
+        self.update_or_add_crafting_select(station)
         await interaction.response.edit_message(content="Choose an item from the Meat Stand:", view=self)
 
 
     @discord.ui.button(label="🎲 Tavern", custom_id="citadel_tavern", style=discord.ButtonStyle.blurple)
     async def tavern(self, button, interaction):
-        self.update_or_add_crafting_select(tavern)
+        station = create_crafting_stations(interaction, "tavern")
+        self.update_or_add_crafting_select(station)
         await interaction.response.edit_message(content="Choose an item from the Tavern:", view=self)
 
 class WheatRow(discord.ui.View):

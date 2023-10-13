@@ -1,6 +1,6 @@
 from resources.materium import Materium
 from resources.herb import Herb
-from resources.potion import Potion, Charm
+from resources.potion import Potion
 from resources.item import Item
 from resources.ore import Gem, Ore
 from resources.tree import Tree
@@ -54,7 +54,7 @@ class Inventory:
 
     @classmethod
     def from_dict(cls, data):
-        from citadel.crafting import Weapon, Armor, Shield
+        from citadel.crafting import Weapon, Armor, Shield, Charm
         inventory = cls(limit=data["limit"] if "limit" in data else 40)
         inventory.coppers = data["coppers"]
         inventory.items = [Item.from_dict(item_data) for item_data in data["items"]]
