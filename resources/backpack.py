@@ -1,7 +1,7 @@
 from discord.ext import commands
 import discord
 import copy
-from utils import load_player_data, update_and_save_player_data
+from utils import load_player_data, update_and_save_player_data, save_player_data
 from images.urls import generate_urls
 from citadel.crafting import Armor
 
@@ -97,9 +97,53 @@ class BackpackView(discord.ui.View):
 
     @discord.ui.button(label="Sort", custom_id="backpack_sort", style=discord.ButtonStyle.secondary, emoji="🔄")
     async def sort(self, button, interaction):
-        pass
+        from exemplars.exemplars import Exemplar
+        def sort_items(items, order):
+            return sorted(items, key=lambda item: (getattr(item, 'zone_level', 0), order.index(item.name)))
 
+        guild_id = interaction.guild.id
+        author_id = str(interaction.user.id)
+        player_data = load_player_data(guild_id)
+        player = Exemplar(player_data[author_id]["exemplar"],
+                          player_data[author_id]["stats"],
+                          player_data[author_id]["inventory"])
 
+        order = {
+            "items": [
+                "Charcoal", "Iron", "Steel", "Onyx", "Pole", "Thick Pole",
+                "Pine Strip", "Yew Strip", "Ash Strip", "Poplar Strip",
+                "Flour", "Wheat", "Flax", "Linen", "Linen Thread", "Venison",
+                "Sinew", "Rabbit Body", "Rabbit Meat", "Deer Parts",
+                "Deer Skin", "Wolf Skin", "Glowing Essence", "Leather",
+                "Tough Leather", "Leather Straps", "Tough Leather Straps"
+            ],
+            "trees": ["Pine", "Yew", "Ash", "Poplar"],
+            "herbs": ["Ranarr", "Spirit Weed", "Snapdragon", "Bloodweed", "Dwarf Weed"],
+            "ore": ["Iron Ore", "Coal", "Carbon"],
+            "gems": ["Sapphire", "Emerald", "Ruby", "Diamond", "Black Opal"],
+            "potions": ["Stamina Potion", "Health Potion", "Super Stamina Potion", "Super Health Potion"],
+            "armors": [
+                "Leather Armor", "Leather Boots", "Leather Gloves",
+                "Padded Armor", "Padded Boots", "Padded Gloves",
+                "Brigandine Armor", "Brigandine Boots", "Brigandine Gloves"
+            ],
+            "weapons": [
+                "Short Sword", "Long Sword", "Champion Sword", "Voltaic Sword",
+                "Short Spear", "Long Spear", "Champion Spear", "Club",
+                "Hammer", "War Hammer", "Short Bow", "Long Bow", "Champion Bow"
+            ],
+            "shields": ["Buckler", "Small Shield", "Large Shield"],
+            "charms": ["Mining", "Woodcutting", "Loot"]
+        }
+
+        for category, sorting_order in order.items():
+            if hasattr(player.inventory, category):
+                category_items = getattr(player.inventory, category)
+                sorted_items = sort_items(category_items, sorting_order)
+                setattr(player.inventory, category, sorted_items)
+
+        save_player_data(guild_id, player_data)
+        await interaction.response.edit_message(content="Inventory sorted.", view=self)
 
 class UnequipTypeSelect(discord.ui.Select):
     def __init__(self, action_type, options):
