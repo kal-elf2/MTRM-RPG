@@ -112,10 +112,10 @@ class HarvestButton(discord.ui.View):
         button.disabled = True
         await interaction.response.edit_message(embed=self.embed, view=self)
 
-        endurance = self.player.stats.endurance
+        stamina = self.player.stats.stamina
         player_level = self.player.stats.woodcutting_level
 
-        if endurance <= 0:
+        if stamina <= 0:
             await interaction.followup.send("You are too tired to chop any wood.", ephemeral=True)
             # Re-enable the button after 3 seconds
             await asyncio.sleep(2.5)
@@ -139,10 +139,10 @@ class HarvestButton(discord.ui.View):
             tree_emoji = get_emoji(tree_emoji_mapping.get(self.tree_type, "🪵"))
             message = f"{tree_emoji} **Successfully chopped 1 {self.tree_type}!**"
 
-            # Update inventory and decrement endurance
+            # Update inventory and decrement stamina
             chopped_tree = Tree(name=self.tree_type)
             self.player.inventory.add_item_to_inventory(chopped_tree, amount=1)
-            self.player.stats.endurance -= 1
+            self.player.stats.stamina -= 1
 
             # Gain woodcutting experience
             exp_gain = WOODCUTTING_EXPERIENCE[self.tree_type]
@@ -163,13 +163,13 @@ class HarvestButton(discord.ui.View):
             self.player_data[self.author_id]["stats"][
                 "woodcutting_experience"] = self.player.stats.woodcutting_experience
             self.player_data[self.author_id]["stats"]["woodcutting_level"] = self.player.stats.woodcutting_level
-            self.player_data[self.author_id]["stats"]["endurance"] = self.player.stats.endurance
+            self.player_data[self.author_id]["stats"]["stamina"] = self.player.stats.stamina
             save_player_data(self.guild_id, self.player_data)
 
             # Clear previous fields and add new ones
             self.embed.clear_fields()
-            # Include the yellow potion emoji for the stamina/endurance string
-            stamina_str = f"{get_emoji('potion_yellow_emoji')}  {self.player.stats.endurance}/{self.player.stats.max_endurance}"
+            # Include the yellow potion emoji for the stamina/stamina string
+            stamina_str = f"{get_emoji('potion_yellow_emoji')}  {self.player.stats.stamina}/{self.player.stats.max_stamina}"
             # Get the new wood count
             wood_count = self.player.inventory.get_item_quantity(self.tree_type)
             wood_str = str(wood_count)
@@ -180,7 +180,7 @@ class HarvestButton(discord.ui.View):
             current_experience = self.player.stats.woodcutting_experience
 
             # Add updated fields to embed
-            self.embed.add_field(name="Endurance", value=stamina_str, inline=True)
+            self.embed.add_field(name="Stamina", value=stamina_str, inline=True)
             self.embed.add_field(name=f"{self.tree_type}", value=f"{tree_emoji}  {wood_str}", inline=True)
 
             # Check if the player is at max level and add the XP field last
@@ -405,14 +405,14 @@ class WoodcuttingCog(commands.Cog):
         embed.set_image(url=generate_urls("trees", f'{tree_type}'))
 
         # Add the initial stamina and wood inventory here
-        stamina_str = f"{get_emoji('potion_yellow_emoji')}  {player.stats.endurance}/{player.stats.max_endurance}"
+        stamina_str = f"{get_emoji('potion_yellow_emoji')}  {player.stats.stamina}/{player.stats.max_stamina}"
 
         # Use the get_item_quantity method to get the wood count
         wood_count = player.inventory.get_item_quantity(tree_type)
         wood_str = str(wood_count)
 
         # Add the initial fields to the embed
-        embed.add_field(name="Endurance", value=stamina_str, inline=True)
+        embed.add_field(name="Stamina", value=stamina_str, inline=True)
         embed.add_field(name=f"{tree_type}", value=f"{tree_emoji}  {wood_str}", inline=True)
 
         # Calculate current woodcutting level and experience for the next level

@@ -79,17 +79,26 @@ class BackpackView(discord.ui.View):
         if self.item_type_select:
             self.update_item_select_options()
 
-    @discord.ui.button(label="Equip", custom_id="backpack_equip", style=discord.ButtonStyle.primary)
+    @discord.ui.button(label="Equip", custom_id="backpack_equip", style=discord.ButtonStyle.primary, emoji="⚔️")
     async def equip(self, button, interaction):
         # Open the select menu for item types for the Equip action
         self.equip_add_item_type_select("equip")
         await interaction.response.edit_message(content="Choose an item type to equip:", view=self)
 
-    @discord.ui.button(label="Unequip", custom_id="backpack_unequip", style=discord.ButtonStyle.danger)
+    @discord.ui.button(label="Unequip", custom_id="backpack_unequip", style=discord.ButtonStyle.grey, emoji="⛔")
     async def unequip(self, button, interaction):
         # Open the select menu for item types for the Unequip action
         self.unequip_add_item_type_select("unequip")
         await interaction.response.edit_message(content="Choose an item type to unequip:", view=self)
+
+    @discord.ui.button(label="Inspect", custom_id="backpack_inspect", style=discord.ButtonStyle.blurple, emoji="🔍")
+    async def inspect(self, button, interaction):
+        pass
+
+    @discord.ui.button(label="Sort", custom_id="backpack_sort", style=discord.ButtonStyle.secondary, emoji="🔄")
+    async def sort(self, button, interaction):
+        pass
+
 
 
 class UnequipTypeSelect(discord.ui.Select):

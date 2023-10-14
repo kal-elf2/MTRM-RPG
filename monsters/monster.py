@@ -7,12 +7,12 @@ from resources.item import Item
 import math
 
 class Monster:
-    def __init__(self, name, health, max_health, attack, endurance, experience_reward, weak_against, strong_against, attack_speed, drop):
+    def __init__(self, name, health, max_health, attack, stamina, experience_reward, weak_against, strong_against, attack_speed, drop):
         self.name = name
         self.health = round(health)
         self.max_health = round(max_health)
         self.attack = round(attack)
-        self.defense = round(endurance)
+        self.defense = round(stamina)
         self.experience_reward = round(experience_reward)
         self.weak_against = weak_against
         self.strong_against = strong_against
@@ -44,15 +44,15 @@ def generate_monster_by_name(name, zone_level):
     # Applying zone level scaling
     health = round(monster[1] * math.sqrt(zone_level))
     attack = round(monster[2] * math.log2(zone_level + 1))
-    endurance = round(monster[3] * math.log2(zone_level + 1))
-    experience_reward = round((attack + endurance) * 1.5)
+    stamina = round(monster[3] * math.log2(zone_level + 1))
+    experience_reward = round((attack + stamina) * 1.5)
     attack_speed = monster[6] - (0.05 * math.log2(zone_level + 1))  # Making it slightly faster in higher zones
     max_health = health
     drop_items = [Item(name=item.name, description=loot_definitions.get(item.name, {}).get('description'), value=loot_definitions.get(item.name, {}).get('value', 10)) for item in monster[7]]
     drop_quantities = monster[8] if isinstance(monster[8], list) else [monster[8]]
     drop = list(zip(drop_items, drop_quantities))
 
-    return Monster(monster[0], health, max_health, attack, endurance, experience_reward, monster[4], monster[5], attack_speed, drop)
+    return Monster(monster[0], health, max_health, attack, stamina, experience_reward, monster[4], monster[5], attack_speed, drop)
 
 
 def generate_monster_list():

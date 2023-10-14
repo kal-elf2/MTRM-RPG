@@ -70,14 +70,14 @@ POTION_LIST = [
         description="A potion that increases your strength by 5 points for a short duration. Requires rarer herbs and more materium to craft.",
     ),
     Potion(
-        name='Endurance Potion',
+        name='Stamina Potion',
         rarity=3,
-        effect_stat='endurance',
+        effect_stat='stamina',
         effect_value=10,
         required_level=30,
         resources={HERB_TYPES[2]: 1, Materium: 4},
         value=30,
-        description="A powerful potion that boosts your endurance by 10 points for a limited time. Made from rare herbs and a higher amount of materium.",
+        description="A powerful potion that boosts your stamina by 10 points for a limited time. Made from rare herbs and a higher amount of materium.",
     ),
     Potion(
         name='Attack Potion',

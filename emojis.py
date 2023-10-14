@@ -2,7 +2,7 @@ def get_emoji(emoji_name):
     # Mapping of emoji names to their string representations
     emoji_mapping = {
         'heart_emoji': '<:heartlife:1150995915491000370>',
-        'endurance_emoji': '<:endurance:1150995498342297610>',
+        'stamina_emoji': '<:endurance:1150995498342297610>',
         'strength_emoji': '<:strength:1150994770026569788>',
         'potion_red_emoji': '<:potion_red:1133946477463482458>',
         'potion_yellow_emoji': '<:potion_yellow:1133946478386221237>',

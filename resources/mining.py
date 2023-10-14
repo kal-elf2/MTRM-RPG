@@ -106,10 +106,10 @@ class MineButton(discord.ui.View):
         button.disabled = True
         await interaction.response.edit_message(embed=self.embed, view=self)
 
-        endurance = self.player.stats.endurance
+        stamina = self.player.stats.stamina
         player_level = self.player.stats.mining_level
 
-        if endurance <= 0:
+        if stamina <= 0:
             await interaction.followup.send("You are too tired to mine any ore.", ephemeral=True)
             # Re-enable the button after 3 seconds
             await asyncio.sleep(2.5)
@@ -132,10 +132,10 @@ class MineButton(discord.ui.View):
             ore_emoji = get_emoji(ore_emoji_mapping.get(self.ore_type, "🪨"))
             message = f"{ore_emoji} **Successfully chopped 1 {self.ore_type}!**"
 
-            # Update inventory and decrement endurance
+            # Update inventory and decrement stamina
             mined_ore = Ore(name=self.ore_type)
             self.player.inventory.add_item_to_inventory(mined_ore, amount=1)
-            self.player.stats.endurance -= 1
+            self.player.stats.stamina -= 1
 
             # Gain mining experience
             exp_gain = MINING_EXPERIENCE[self.ore_type]
@@ -157,13 +157,13 @@ class MineButton(discord.ui.View):
             self.player_data[self.author_id]["stats"][
                 "mining_experience"] = self.player.stats.mining_experience
             self.player_data[self.author_id]["stats"]["mining_level"] = self.player.stats.mining_level
-            self.player_data[self.author_id]["stats"]["endurance"] = self.player.stats.endurance
+            self.player_data[self.author_id]["stats"]["stamina"] = self.player.stats.stamina
             save_player_data(self.guild_id, self.player_data)
 
             # Clear previous fields and add new ones
             self.embed.clear_fields()
-            # Include the yellow potion emoji for the stamina/endurance string
-            stamina_str = f"{get_emoji('potion_yellow_emoji')}  {self.player.stats.endurance}/{self.player.stats.max_endurance}"
+            # Include the yellow potion emoji for the stamina/stamina string
+            stamina_str = f"{get_emoji('potion_yellow_emoji')}  {self.player.stats.stamina}/{self.player.stats.max_stamina}"
             # Get the new ore count
             ore_count = self.player.inventory.get_item_quantity(self.ore_type)
             ore_str = str(ore_count)
@@ -174,7 +174,7 @@ class MineButton(discord.ui.View):
             current_experience = self.player.stats.mining_experience
 
             # Add updated fields to embed
-            self.embed.add_field(name="Endurance", value=stamina_str, inline=True)
+            self.embed.add_field(name="Stamina", value=stamina_str, inline=True)
             self.embed.add_field(name=f"{self.ore_type}", value=f"{ore_str} {ore_emoji}", inline=True)
 
             # Check if the player is at max level and add the XP field last
@@ -400,14 +400,14 @@ class MiningCog(commands.Cog):
         embed.set_image(url=generate_urls("ore", f'{ore_type}'))
 
         # Add the initial stamina and ore inventory here
-        stamina_str = f"{get_emoji('potion_yellow_emoji')}  {player.stats.endurance}/{player.stats.max_endurance}"
+        stamina_str = f"{get_emoji('potion_yellow_emoji')}  {player.stats.stamina}/{player.stats.max_stamina}"
 
         # Use the get_ore_count method to get the wood count
         ore_count = player.inventory.get_item_quantity(ore_type)
         ore_str = str(ore_count)
 
         # Add updated fields to embed
-        embed.add_field(name="Endurance", value=stamina_str, inline=True)
+        embed.add_field(name="Stamina", value=stamina_str, inline=True)
         embed.add_field(name=ore_type, value=f"{ore_str} {ore_emoji}", inline=True)
 
         # Calculate current mining level and experience for the next level

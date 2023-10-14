@@ -91,8 +91,8 @@ class PickExemplars(Select):
             "health": exemplar_instance.stats.health,
             "max_health": exemplar_instance.stats.max_health,
             "strength": exemplar_instance.stats.strength,
-            "endurance": exemplar_instance.stats.endurance,
-            "max_endurance": exemplar_instance.stats.max_endurance,
+            "stamina": exemplar_instance.stats.stamina,
+            "max_stamina": exemplar_instance.stats.max_stamina,
             "attack": exemplar_instance.stats.attack,
             "defense": exemplar_instance.stats.defense,
             "combat_level": exemplar_instance.stats.combat_level,
@@ -139,7 +139,7 @@ class PickExemplars(Select):
         embed.add_field(name="⚔️ Combat Level", value=str(stats.combat_level), inline=True)
         embed.add_field(name=f"{get_emoji('heart_emoji')} Health", value=str(stats.health), inline=True)
         embed.add_field(name=f"{get_emoji('strength_emoji')} Strength", value=str(stats.strength), inline=True)
-        embed.add_field(name=f"{get_emoji('endurance_emoji')} Endurance", value=str(stats.endurance), inline=True)
+        embed.add_field(name=f"{get_emoji('stamina_emoji')} Stamina", value=str(stats.stamina), inline=True)
         embed.add_field(name="🗡️ Attack", value=str(stats.attack), inline=True)
         embed.add_field(name="🛡️ Defense", value=str(stats.defense), inline=True)
         embed.add_field(name="⛏️ Mining Level", value=str(stats.mining_level), inline=True)

@@ -130,10 +130,10 @@ class Recipe:
                 return False
         return True
 
-def endurance_bar(current, max_endurance):
+def stamina_bar(current, max_stamina):
     bar_length = 20  # Fixed bar length
-    endurance_percentage = current / max_endurance
-    filled_length = round(bar_length * endurance_percentage)
+    stamina_percentage = current / max_stamina
+    filled_length = round(bar_length * stamina_percentage)
 
     # Calculate how many '◼' symbols to display
     filled_symbols = '◼' * filled_length
@@ -166,11 +166,11 @@ class CraftingStation:
                 player.inventory.remove_item(ingredient.name, quantity)
 
             if recipe.result.name == "Bread":
-                added_endurance = 10
-                player.stats.endurance = min(player.stats.endurance + added_endurance, player.stats.max_endurance)
+                added_stamina = 10
+                player.stats.stamina = min(player.stats.stamina + added_stamina, player.stats.max_stamina)
                 return recipe.result  # Return the Bread item even though it's consumed
             elif recipe.result.name == "Trencher":
-                player.stats.endurance = player.stats.max_endurance
+                player.stats.stamina = player.stats.max_stamina
                 return recipe.result  # Return the Trencher item even though it's consumed
 
             player.inventory.add_item_to_inventory(recipe.result)
@@ -246,18 +246,18 @@ class CraftButton(discord.ui.Button):
             zone_item_quantity = self.player.inventory.get_item_quantity(crafted_item.name, zone_level)
 
         if crafted_item:
-            # Update player endurance data after crafting bread or trencher
+            # Update player stamina data after crafting bread or trencher
             if self.selected_recipe.result.name == "Bread":
-                # Update endurance in player_data
-                self.player_data[self.author_id]["stats"]["endurance"] = self.player.stats.endurance
-                # Save updated endurance data
+                # Update stamina in player_data
+                self.player_data[self.author_id]["stats"]["stamina"] = self.player.stats.stamina
+                # Save updated stamina data
                 save_player_data(self.guild_id, self.player_data)
 
             elif self.selected_recipe.result.name == "Trencher":
-                # Restore endurance to 100% and update player_data
-                self.player.stats.endurance = self.player.stats.max_endurance
-                self.player_data[self.author_id]["stats"]["endurance"] = self.player.stats.endurance
-                # Save updated endurance data
+                # Restore stamina to 100% and update player_data
+                self.player.stats.stamina = self.player.stats.max_stamina
+                self.player_data[self.author_id]["stats"]["stamina"] = self.player.stats.stamina
+                # Save updated stamina data
                 save_player_data(self.guild_id, self.player_data)
 
             # Check player's inventory for required ingredients.
@@ -289,19 +289,19 @@ class CraftButton(discord.ui.Button):
 
                 embed.set_footer(text=f"+1 {crafted_item.name} {zone_rarity_identifier}\n{crafted_item_count} in backpack")
 
-            # Check if it's "Bread" or "Trencher" and add endurance bar to description
+            # Check if it's "Bread" or "Trencher" and add stamina bar to description
             if self.selected_recipe.result.name in ["Bread", "Trencher"]:
-                endurance_progress = endurance_bar(self.player.stats.endurance, self.player.stats.max_endurance)
-                endurance_emoji = get_emoji('endurance_emoji')
+                stamina_progress = stamina_bar(self.player.stats.stamina, self.player.stats.max_stamina)
+                stamina_emoji = get_emoji('stamina_emoji')
 
-                # Check if endurance is full and modify the message accordingly
-                if self.player.stats.endurance >= self.player.stats.max_endurance:
+                # Check if stamina is full and modify the message accordingly
+                if self.player.stats.stamina >= self.player.stats.max_stamina:
                     self.disabled = True
-                    endurance_message = f"\n\n{endurance_emoji} Endurance: {endurance_progress} {self.player.stats.endurance}/{self.player.stats.max_endurance} **FULL!**"
+                    stamina_message = f"\n\n{stamina_emoji} Stamina: {stamina_progress} {self.player.stats.stamina}/{self.player.stats.max_stamina} **FULL!**"
                 else:
-                    endurance_message = f"\n\n{endurance_emoji} Endurance: {endurance_progress} {self.player.stats.endurance}/{self.player.stats.max_endurance}"
+                    stamina_message = f"\n\n{stamina_emoji} Stamina: {stamina_progress} {self.player.stats.stamina}/{self.player.stats.max_stamina}"
 
-                embed.description += endurance_message
+                embed.description += stamina_message
 
             await interaction.response.edit_message(embed=embed, view=self.view)
 
@@ -357,7 +357,7 @@ class CraftingSelect(discord.ui.Select):
         if selected_recipe.result.name == "Bread":
             embed_title = "Bread: Auto Consume"
         elif selected_recipe.result.name == "Trencher":
-            embed_title = "Trencher: Endurance Refill"
+            embed_title = "Trencher: Stamina Refill"
 
         # Check player's inventory for required ingredients.
         ingredients_list = []
@@ -376,19 +376,19 @@ class CraftingSelect(discord.ui.Select):
         embed = Embed(title=embed_title, description=message_content, color=embed_color)
         embed.set_thumbnail(url=crafted_item_url)
 
-        # Check if it's "Bread" or "Trencher" and add endurance bar to description
+        # Check if it's "Bread" or "Trencher" and add stamina bar to description
         if selected_recipe.result.name in ["Bread", "Trencher"]:
-            endurance_progress = endurance_bar(player.stats.endurance, player.stats.max_endurance)
-            endurance_emoji = get_emoji('endurance_emoji')
+            stamina_progress = stamina_bar(player.stats.stamina, player.stats.max_stamina)
+            stamina_emoji = get_emoji('stamina_emoji')
 
-            # Check if endurance is full and modify the message accordingly
-            if player.stats.endurance >= player.stats.max_endurance:
-                endurance_message = f"\n\n{endurance_emoji} Endurance: {endurance_progress} {player.stats.endurance}/{player.stats.max_endurance} **FULL!**"
-                can_craft = False  # Disable the Craft button if endurance is full
+            # Check if stamina is full and modify the message accordingly
+            if player.stats.stamina >= player.stats.max_stamina:
+                stamina_message = f"\n\n{stamina_emoji} Stamina: {stamina_progress} {player.stats.stamina}/{player.stats.max_stamina} **FULL!**"
+                can_craft = False  # Disable the Craft button if stamina is full
             else:
-                endurance_message = f"\n\n{endurance_emoji} Endurance: {endurance_progress} {player.stats.endurance}/{player.stats.max_endurance}"
+                stamina_message = f"\n\n{stamina_emoji} Stamina: {stamina_progress} {player.stats.stamina}/{player.stats.max_stamina}"
 
-            embed.description += endurance_message
+            embed.description += stamina_message
 
         view = CraftButtonView(player, player_data, self.crafting_station, selected_recipe, guild_id, author_id,
                                disabled=not can_craft)

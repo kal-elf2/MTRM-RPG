@@ -2,314 +2,76 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "zone_level": 3,
-            "health": 152,
-            "max_health": 485,
-            "strength": 206,
-            "endurance": 205,
-            "max_endurance": 208,
-            "attack": 84,
-            "defense": 85,
-            "combat_level": 40,
-            "combat_experience": 24600,
-            "mining_level": 40,
-            "mining_experience": 24490,
-            "woodcutting_level": 40,
-            "woodcutting_experience": 24570,
+            "zone_level": 1,
+            "health": 94,
+            "max_health": 105,
+            "strength": 16,
+            "stamina": 18,
+            "max_stamina": 18,
+            "attack": 8,
+            "defense": 9,
+            "combat_level": 2,
+            "combat_experience": 118,
+            "mining_level": 1,
+            "mining_experience": 40,
+            "woodcutting_level": 1,
+            "woodcutting_experience": 40,
             "damage_taken": 0
         },
         "inventory": {
-            "coppers": 116,
+            "coppers": 9,
             "items": [
                 {
                     "name": "Rabbit Body",
                     "description": "A furry rabbit body, warm to the touch. Can be used for citadel soft armors.",
                     "value": 10,
-                    "stack": 100
-                },
-                {
-                    "name": "Deer Parts",
-                    "description": "Various parts of a deer. Some are useful for making tools and weapons.",
-                    "value": 20,
-                    "stack": 388
-                },
-                {
-                    "name": "Deer Skin",
-                    "description": "Tough deer skin. Can be used for citadel sturdy armors.",
-                    "value": 30,
-                    "stack": 596
+                    "stack": 1
                 },
                 {
                     "name": "Wolf Skin",
                     "description": "A skin of a wild wolf. Known for its durability and strength.",
                     "value": 50,
-                    "stack": 996
+                    "stack": 1
                 },
                 {
-                    "name": "Onyx",
-                    "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
-                    "value": 100,
-                    "stack": 910
-                },
-                {
-                    "name": "Glowing Essence",
-                    "description": "An ethereal essence that glows faintly. Used in powerful magical rituals and citadel.",
-                    "value": 200,
-                    "stack": 92
-                },
-                {
-                    "name": "Wheat",
+                    "name": "Flour",
                     "description": null,
                     "value": null,
-                    "stack": 1001
-                },
-                {
-                    "name": "Flax",
-                    "description": null,
-                    "value": null,
-                    "stack": 2001
-                },
-                {
-                    "name": "Linen",
-                    "description": null,
-                    "value": null,
-                    "stack": 988
-                },
-                {
-                    "name": "Linen Thread",
-                    "description": null,
-                    "value": null,
-                    "stack": 988
-                },
-                {
-                    "name": "Pole",
-                    "description": null,
-                    "value": null,
-                    "stack": 395
-                },
-                {
-                    "name": "Thick Pole",
-                    "description": null,
-                    "value": null,
-                    "stack": 310
-                },
-                {
-                    "name": "Pine Strip",
-                    "description": null,
-                    "value": null,
-                    "stack": 95
-                },
-                {
-                    "name": "Yew Strip",
-                    "description": null,
-                    "value": null,
-                    "stack": 84
-                },
-                {
-                    "name": "Ash Strip",
-                    "description": null,
-                    "value": null,
-                    "stack": 78
-                },
-                {
-                    "name": "Poplar Strip",
-                    "description": null,
-                    "value": null,
-                    "stack": 100
-                },
-                {
-                    "name": "Charcoal",
-                    "description": null,
-                    "value": null,
-                    "stack": 1876
-                },
-                {
-                    "name": "Iron",
-                    "description": null,
-                    "value": null,
-                    "stack": 972
-                },
-                {
-                    "name": "Steel",
-                    "description": null,
-                    "value": null,
-                    "stack": 2830
-                },
-                {
-                    "name": "Leather",
-                    "description": null,
-                    "value": null,
-                    "stack": 995
-                },
-                {
-                    "name": "Tough Leather",
-                    "description": null,
-                    "value": null,
-                    "stack": 1000
-                },
-                {
-                    "name": "Leather Straps",
-                    "description": null,
-                    "value": null,
-                    "stack": 938
-                },
-                {
-                    "name": "Tough Leather Straps",
-                    "description": null,
-                    "value": null,
-                    "stack": 949
-                },
-                {
-                    "name": "Sinew",
-                    "description": null,
-                    "value": null,
-                    "stack": 995
+                    "stack": 2
                 }
             ],
             "trees": [
                 {
                     "name": "Pine",
-                    "stack": 968
-                },
-                {
-                    "name": "Yew",
-                    "stack": 996
-                },
-                {
-                    "name": "Ash",
-                    "stack": 966
-                },
-                {
-                    "name": "Poplar",
-                    "stack": 996
+                    "stack": 2
                 }
             ],
-            "herbs": [],
+            "herbs": [
+                {
+                    "name": "Ranarr",
+                    "rarity": 1,
+                    "value": 25,
+                    "stack": 1
+                }
+            ],
             "ore": [
                 {
                     "name": "Iron Ore",
-                    "stack": 999
-                },
-                {
-                    "name": "Coal",
-                    "stack": 994
-                },
-                {
-                    "name": "Carbon",
-                    "stack": 997
+                    "stack": 2
                 }
             ],
-            "gems": [
-                {
-                    "name": "Sapphire",
-                    "rarity": 1,
-                    "value": 50,
-                    "stack": 1
-                }
-            ],
-            "potions": [
-                {
-                    "name": "Endurance Potion",
-                    "rarity": 3,
-                    "value": 30,
-                    "stack": 1
-                }
-            ],
+            "gems": [],
+            "potions": [],
             "limit": 40,
-            "armors": [
-                {
-                    "name": "Brigandine Gloves",
-                    "description": null,
-                    "value": 10,
-                    "stack": 3,
-                    "defense_modifier": 1,
-                    "armor_type": "gloves",
-                    "zone_level": 1
-                },
-                {
-                    "name": "Brigandine Boots",
-                    "description": null,
-                    "value": 10,
-                    "stack": 2,
-                    "defense_modifier": 1,
-                    "armor_type": "boots",
-                    "zone_level": 2
-                },
-                {
-                    "name": "Brigandine Armor",
-                    "description": null,
-                    "value": 10,
-                    "stack": 2,
-                    "defense_modifier": 1,
-                    "armor_type": "chest",
-                    "zone_level": 2
-                },
-                {
-                    "name": "Brigandine Boots",
-                    "description": null,
-                    "value": 10,
-                    "stack": 4,
-                    "defense_modifier": 1,
-                    "armor_type": "boots",
-                    "zone_level": 3
-                }
-            ],
+            "armors": [],
             "equipped_armor": {
                 "chest": null,
                 "boots": null,
                 "gloves": null
             },
-            "weapons": [
-                {
-                    "name": "Champion Bow",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
-                    "wtype": "Bow",
-                    "attack_modifier": 1,
-                    "special_attack": 3,
-                    "zone_level": 1
-                },
-                {
-                    "name": "Champion Bow",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
-                    "wtype": "Bow",
-                    "attack_modifier": 1,
-                    "special_attack": 3,
-                    "zone_level": 3
-                },
-                {
-                    "name": "Champion Spear",
-                    "description": null,
-                    "value": 10,
-                    "stack": 2,
-                    "wtype": "Spear",
-                    "attack_modifier": 1,
-                    "special_attack": 3,
-                    "zone_level": 3
-                }
-            ],
+            "weapons": [],
             "equipped_weapon": null,
-            "shields": [
-                {
-                    "name": "Large Shield",
-                    "description": null,
-                    "value": 10,
-                    "stack": 3,
-                    "defense_modifier": 1,
-                    "zone_level": 1
-                },
-                {
-                    "name": "Small Shield",
-                    "description": null,
-                    "value": 10,
-                    "stack": 3,
-                    "defense_modifier": 1,
-                    "zone_level": 2
-                }
-            ],
+            "shields": [],
             "equipped_shield": null,
             "charms": [],
             "equipped_charm": null,

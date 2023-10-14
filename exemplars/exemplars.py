@@ -20,8 +20,8 @@ class Exemplar:
             stats["health"],
             stats["max_health"],
             stats["strength"],
-            stats["endurance"],
-            stats["max_endurance"],
+            stats["stamina"],
+            stats["max_stamina"],
             stats["attack"],
             stats["defense"],
             stats["combat_level"],
@@ -59,7 +59,7 @@ class Exemplar:
             embed.add_field(name="⚔️ Combat Level", value=f"**{self.stats.combat_level}**   (+1)", inline=True)
             embed.add_field(name=f"{get_emoji('heart_emoji')} Health", value=f"**{self.stats.health}**   (+10)", inline=True)
             embed.add_field(name=f"{get_emoji('strength_emoji')} Strength", value=f"**{self.stats.strength}**   (+5)", inline=True)
-            embed.add_field(name=f"{get_emoji('endurance_emoji')} Endurance", value=f"**{self.stats.endurance}**   (+5)",
+            embed.add_field(name=f"{get_emoji('stamina_emoji')} Stamina", value=f"**{self.stats.stamina}**   (+5)",
                             inline=True)
             embed.add_field(name="🗡️ Attack", value=f"**{self.stats.attack}**   (+2)", inline=True)
             embed.add_field(name="🛡️ Defense", value=f"**{self.stats.defense}**   (+2)", inline=True)
@@ -138,28 +138,28 @@ class Exemplar:
         if player_name == "human":
             max_health_update = 100 + (10 * (new_combat_level - 1))
             strength_update = 12 + (5 * (new_combat_level - 1))
-            endurance_update = 12 + (5 * (new_combat_level - 1))
+            stamina_update = 12 + (5 * (new_combat_level - 1))
             attack_update = 6 + (2 * (new_combat_level - 1))
             defense_update = 6 + (2 * (new_combat_level - 1))
 
         elif player_name == "dwarf":
             max_health_update = 110 + (10 * (new_combat_level - 1))
             strength_update = 14 + (5 * (new_combat_level - 1))
-            endurance_update = 10 + (5 * (new_combat_level - 1))
+            stamina_update = 10 + (5 * (new_combat_level - 1))
             attack_update = 7 + (2 * (new_combat_level - 1))
             defense_update = 5 + (2 * (new_combat_level - 1))
 
         elif player_name == "orc":
             max_health_update = 120 + (10 * (new_combat_level - 1))
             strength_update = 16 + (5 * (new_combat_level - 1))
-            endurance_update = 8 + (5 * (new_combat_level - 1))
+            stamina_update = 8 + (5 * (new_combat_level - 1))
             attack_update = 8 + (2 * (new_combat_level - 1))
             defense_update = 4 + (2 * (new_combat_level - 1))
 
         elif player_name == "halfling":
             max_health_update = 90 + (10 * (new_combat_level - 1))
             strength_update = 10 + (5 * (new_combat_level - 1))
-            endurance_update = 14 + (5 * (new_combat_level - 1))
+            stamina_update = 14 + (5 * (new_combat_level - 1))
             attack_update = 5 + (2 * (new_combat_level - 1))
             defense_update = 7 + (2 * (new_combat_level - 1))
 
@@ -167,7 +167,7 @@ class Exemplar:
             # For the Elf exemplar type
             max_health_update = 95 + (10 * (new_combat_level - 1))
             strength_update = 11 + (5 * (new_combat_level - 1))
-            endurance_update = 13 + (5 * (new_combat_level - 1))
+            stamina_update = 13 + (5 * (new_combat_level - 1))
             attack_update = 6 + (2 * (new_combat_level - 1))
             defense_update = 7 + (2 * (new_combat_level - 1))
 
@@ -175,8 +175,8 @@ class Exemplar:
             # Update the stats
             self.stats.update_max_health(max_health_update)
             self.stats.update_strength(strength_update)
-            self.stats.update_endurance(endurance_update)
-            self.stats.update_max_endurance(endurance_update)
+            self.stats.update_stamina(stamina_update)
+            self.stats.update_max_stamina(stamina_update)
             self.stats.update_attack(attack_update)
             self.stats.update_defense(defense_update)
         else:
@@ -184,8 +184,8 @@ class Exemplar:
             player.stats.update_max_health(max_health_update)
             player.stats.update_health(max_health_update)
             player.stats.update_strength(strength_update)
-            player.stats.update_endurance(endurance_update)
-            player.stats.update_max_endurance(endurance_update)
+            player.stats.update_stamina(stamina_update)
+            player.stats.update_max_stamina(stamina_update)
             player.stats.update_attack(attack_update)
             player.stats.update_defense(defense_update)
 
@@ -202,7 +202,7 @@ class Exemplar:
         if item.type == 'weapon':
             return self.stats.strength >= level_requirement
         elif item.type == 'armor':
-            return self.stats.endurance >= level_requirement
+            return self.stats.stamina >= level_requirement
         return False
 
     def equip_weapon(self, weapon):
@@ -244,7 +244,7 @@ class Exemplar:
         return (base_attack + weapon_bonus) * weapon_multiplier * race_weapon_bonus * random_factor
 
     def defense_value(self):
-        base_defense = self.stats.endurance
+        base_defense = self.stats.stamina
         armor_bonus = self.equipped_armor.defense if self.equipped_armor else 0
         return base_defense + armor_bonus
 
@@ -270,8 +270,8 @@ class PlayerStats:
         health,
         max_health,
         strength,
-        endurance,
-        max_endurance,
+        stamina,
+        max_stamina,
         attack,
         defense,
         combat_level=1,
@@ -287,8 +287,8 @@ class PlayerStats:
         self.health = health
         self.max_health = max_health
         self.strength = strength
-        self.endurance = endurance
-        self.max_endurance = max_endurance
+        self.stamina = stamina
+        self.max_stamina = max_stamina
         self.attack = attack
         self.defense = defense
         self.combat_level = combat_level
@@ -310,11 +310,11 @@ class PlayerStats:
     def update_strength(self, update):
         self.strength = update
 
-    def update_endurance(self, update):
-        self.endurance = update
+    def update_stamina(self, update):
+        self.stamina = update
 
-    def update_max_endurance(self, update):
-        self.max_endurance = update
+    def update_max_stamina(self, update):
+        self.max_stamina = update
 
     def update_attack(self, update):
         self.attack = update
@@ -329,8 +329,8 @@ class Human(Exemplar):
             "health": 100,
             "max_health": 100,
             "strength": 12,
-            "endurance": 12,
-            "max_endurance": 12,
+            "stamina": 12,
+            "max_stamina": 12,
             "attack": 6,
             "defense": 6,
             "combat_level": 1,
@@ -349,8 +349,8 @@ class Dwarf(Exemplar):
             "health": 110,
             "max_health": 110,
             "strength": 14,
-            "endurance": 10,
-            "max_endurance": 10,
+            "stamina": 10,
+            "max_stamina": 10,
             "attack": 7,
             "defense": 5,
             "combat_level": 1,
@@ -369,8 +369,8 @@ class Orc(Exemplar):
             "health": 120,
             "max_health": 120,
             "strength": 16,
-            "endurance": 8,
-            "max_endurance": 8,
+            "stamina": 8,
+            "max_stamina": 8,
             "attack": 8,
             "defense": 4,
             "combat_level": 1,
@@ -389,8 +389,8 @@ class Halfling(Exemplar):
             "health": 90,
             "max_health": 90,
             "strength": 10,
-            "endurance": 14,
-            "max_endurance": 14,
+            "stamina": 14,
+            "max_stamina": 14,
             "attack": 5,
             "defense": 7,
             "combat_level": 1,
@@ -409,8 +409,8 @@ class Elf(Exemplar):
             "health": 95,
             "max_health": 95,
             "strength": 11,
-            "endurance": 13,
-            "max_endurance": 13,
+            "stamina": 13,
+            "max_stamina": 13,
             "attack": 6,
             "defense": 7,
             "combat_level": 1,

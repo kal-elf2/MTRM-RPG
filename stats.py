@@ -82,7 +82,7 @@ class StatsCog(commands.Cog):
             ⚔️ **Combat Level**: {str(player['combat_level'])}
             {get_emoji('heart_emoji')} **Health**: {str(player['health'])}
             {get_emoji('strength_emoji')} **Strength**: {str(player['strength'])}
-            {get_emoji('endurance_emoji')}️ **Endurance**: {str(player['endurance'])}
+            {get_emoji('stamina_emoji')}️ **Stamina**: {str(player['stamina'])}
             🗡️ **Attack**: {str(player['attack'])}
             🛡️ **Defense**: {str(player['defense'])}
             ⛏️ **Mining Level**: {str(player['mining_level'])}
@@ -299,8 +299,8 @@ async def apply_penalty(player_data, author_id, interaction):
     player_data[author_id]["stats"]["health"] = player.stats.health
     player_data[author_id]["stats"]["max_health"] = player.stats.max_health
     player_data[author_id]["stats"]["strength"] = player.stats.strength
-    player_data[author_id]["stats"]["endurance"] = player.stats.endurance
-    player_data[author_id]["stats"]["max_endurance"] = player.stats.max_endurance
+    player_data[author_id]["stats"]["stamina"] = player.stats.stamina
+    player_data[author_id]["stats"]["max_stamina"] = player.stats.max_stamina
     player_data[author_id]["stats"]["attack"] = player.stats.attack
     player_data[author_id]["stats"]["defense"] = player.stats.defense
 
