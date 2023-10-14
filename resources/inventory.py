@@ -78,7 +78,7 @@ class Inventory:
         self.coppers += amount
 
     def add_item_to_inventory(self, item, amount=1):
-        from citadel.crafting import Weapon, Armor, Shield
+        from citadel.crafting import Weapon, Armor, Shield, Charm
         if isinstance(item, Materium):
             self.materium_count += amount
         elif isinstance(item, Tree):
@@ -97,22 +97,30 @@ class Inventory:
             self._add_item_to_specific_inventory(item, amount, self.armors)
         elif isinstance(item, Shield):
             self._add_item_to_specific_inventory(item, amount, self.shields)
+        elif isinstance(item, Charm):
+            self._add_item_to_specific_inventory(item, amount, self.charms)
         elif isinstance(item, Item):
             self._add_item_to_specific_inventory(item, amount, self.items)
 
-    def get_item_quantity(self, item_name):
+    def get_item_quantity(self, item_name, zone_level=None):
         stackable_sections = [self.items, self.trees, self.herbs, self.ore, self.gems, self.potions, self.weapons,
-                              self.armors, self.shields]
+                              self.armors, self.shields, self.charms]
 
         for section in stackable_sections:
             for item in section:
-                if item.name == item_name:
+                if item.name == item_name and (not zone_level or getattr(item, 'zone_level', None) == zone_level):
                     return item.stack
 
         return 0
 
     def _add_item_to_specific_inventory(self, item, amount, item_list):
-        existing_item = next((i for i in item_list if i.name == item.name), None)
+        # Check for the existence of a zone_level attribute. If not present, default to None.
+        item_zone_level = getattr(item, 'zone_level', None)
+
+        # Use both the name and the zone_level (if it exists) for the item check
+        existing_item = next(
+            (i for i in item_list if i.name == item.name and getattr(i, 'zone_level', None) == item_zone_level), None)
+
         if existing_item:
             existing_item.stack += amount
         else:
@@ -163,6 +171,11 @@ class Inventory:
             for idx, shield in enumerate(self.shields):
                 if shield.name == item_name:
                     del self.shields[idx]
+                    return True
+
+            for idx, charm in enumerate(self.charms):
+                if charm.name == item_name:
+                    del self.charms[idx]
                     return True
 
         return False

@@ -173,23 +173,7 @@ class CraftingStation:
                 player.stats.endurance = player.stats.max_endurance
                 return recipe.result  # Return the Trencher item even though it's consumed
 
-            if isinstance(recipe.result, Armor):
-                armor_exists = next((a for a in player.inventory.armors if a.name == recipe.result.name), None)
-                if armor_exists:
-                    armor_exists.stack += 1
-                else:
-                    # The new Armor instance will be created with a stack of 1 by default
-                    player.inventory.armors.append(recipe.result)
-
-            elif isinstance(recipe.result, Weapon):
-                weapon_exists = next((w for w in player.inventory.weapons if w.name == recipe.result.name), None)
-                if weapon_exists:
-                    weapon_exists.stack += 1
-                else:
-                    # The new Weapon instance will be created with a stack of 1 by default
-                    player.inventory.weapons.append(recipe.result)
-            else:
-                player.inventory.add_item_to_inventory(recipe.result)
+            player.inventory.add_item_to_inventory(recipe.result)
 
             save_player_data(guild_id, player_data)
 
@@ -235,6 +219,14 @@ class CraftButton(discord.ui.Button):
             5: 'legendary_emoji'
         }
 
+        zone_rarity = {
+            1: '(Common)',
+            2: '(Uncommon)',
+            3: '(Rare)',
+            4: '(Epic)',
+            5: '(Legendary)',
+        }
+
         # Colors for each zone
         color_mapping = {
             1: 0x969696,
@@ -246,6 +238,12 @@ class CraftButton(discord.ui.Button):
 
         zone_emoji = get_emoji(zone_emoji_mapping.get(zone_level))
         embed_color = color_mapping.get(zone_level)
+        zone_rarity_identifier = zone_rarity.get(zone_level)
+        zone_item_quantity = None
+
+
+        if hasattr(crafted_item, "zone_level"):
+            zone_item_quantity = self.player.inventory.get_item_quantity(crafted_item.name, zone_level)
 
         if crafted_item:
             # Update player endurance data after crafting bread or trencher
@@ -284,8 +282,12 @@ class CraftButton(discord.ui.Button):
 
             # Only show footer if not crafting bread or trencher
             if self.selected_recipe.result.name not in ["Bread", "Trencher"]:
-                crafted_item_count = self.player.inventory.get_item_quantity(crafted_item.name)
-                embed.set_footer(text=f"+1 {crafted_item.name}\n{crafted_item_count} in backpack")
+                if zone_item_quantity is not None:
+                    crafted_item_count = zone_item_quantity
+                else:
+                    crafted_item_count = self.player.inventory.get_item_quantity(crafted_item.name)
+
+                embed.set_footer(text=f"+1 {crafted_item.name} {zone_rarity_identifier}\n{crafted_item_count} in backpack")
 
             # Check if it's "Bread" or "Trencher" and add endurance bar to description
             if self.selected_recipe.result.name in ["Bread", "Trencher"]:
@@ -302,7 +304,6 @@ class CraftButton(discord.ui.Button):
                 embed.description += endurance_message
 
             await interaction.response.edit_message(embed=embed, view=self.view)
-
 
 class CraftingSelect(discord.ui.Select):
     def __init__(self, crafting_station):
