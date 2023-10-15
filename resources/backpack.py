@@ -170,7 +170,7 @@ class BackpackView(discord.ui.View):
         await interaction.response.defer(ephemeral=True)
 
         # Send an ephemeral message to let the user know the image is being generated
-        await interaction.followup.send("Image being generated...", ephemeral=True)
+        await interaction.followup.send("Image being generated...Please wait.", ephemeral=True)
 
         # Generate the backpack image
         backpack_img = generate_backpack_image(interaction)
