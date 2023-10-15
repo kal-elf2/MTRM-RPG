@@ -4,6 +4,24 @@ import copy
 from utils import load_player_data, update_and_save_player_data, save_player_data
 from images.urls import generate_urls
 from citadel.crafting import Armor
+import io
+from resources.backpackimage import generate_backpack_image
+from emojis import get_emoji
+
+ZONE_LEVEL_TO_RARITY = {
+            1: "Common",
+            2: "Uncommon",
+            3: "Rare",
+            4: "Epic",
+            5: "Legendary"
+        }
+ZONE_LEVEL_TO_EMOJI = {
+    1: 'common_emoji',
+    2: 'uncommon_emoji',
+    3: 'rare_emoji',
+    4: 'epic_emoji',
+    5: 'legendary_emoji'
+}
 
 class BackpackCog(commands.Cog):
     def __init__(self, bot):
@@ -11,6 +29,7 @@ class BackpackCog(commands.Cog):
 
     @commands.slash_command(description="Open your backpack!")
     async def backpack(self, ctx):
+
         # Display initial backpack view with Equip and Unequip buttons
         view = BackpackView(ctx)
         await ctx.respond("Here's your backpack:", view=view)
@@ -85,19 +104,18 @@ class BackpackView(discord.ui.View):
         self.equip_add_item_type_select("equip")
         await interaction.response.edit_message(content="Choose an item type to equip:", view=self)
 
-    @discord.ui.button(label="Unequip", custom_id="backpack_unequip", style=discord.ButtonStyle.grey, emoji="⛔")
+    @discord.ui.button(label="Unequip", custom_id="backpack_unequip", style=discord.ButtonStyle.blurple, emoji="⛔")
     async def unequip(self, button, interaction):
         # Open the select menu for item types for the Unequip action
         self.unequip_add_item_type_select("unequip")
         await interaction.response.edit_message(content="Choose an item type to unequip:", view=self)
 
-    @discord.ui.button(label="Inspect", custom_id="backpack_inspect", style=discord.ButtonStyle.blurple, emoji="🔍")
-    async def inspect(self, button, interaction):
-        pass
 
-    @discord.ui.button(label="Sort", custom_id="backpack_sort", style=discord.ButtonStyle.secondary, emoji="🔄")
+    @discord.ui.button(label="Sort", custom_id="backpack_sort", style=discord.ButtonStyle.blurple, emoji="🔄")
     async def sort(self, button, interaction):
         from exemplars.exemplars import Exemplar
+
+        self.clear_items()
         def sort_items(items, order):
             return sorted(items, key=lambda item: (getattr(item, 'zone_level', 0), order.index(item.name)))
 
@@ -143,7 +161,25 @@ class BackpackView(discord.ui.View):
                 setattr(player.inventory, category, sorted_items)
 
         save_player_data(guild_id, player_data)
-        await interaction.response.edit_message(content="Inventory sorted.", view=self)
+        await interaction.response.send_message(content="Inventory sorted.", view=self, ephemeral=True)
+
+    @discord.ui.button(label="View", custom_id="backpack_inspect", style=discord.ButtonStyle.blurple, emoji="🔍")
+    async def inspect(self, button, interaction):
+
+        # Defer the response to prevent the interaction from timing out
+        await interaction.response.defer(ephemeral=True)
+
+        # Send an ephemeral message to let the user know the image is being generated
+        await interaction.followup.send("Image being generated...", ephemeral=True)
+
+        # Generate the backpack image
+        backpack_img = generate_backpack_image(interaction)
+        with io.BytesIO() as image_binary:
+            backpack_img.save(image_binary, 'PNG')
+            image_binary.seek(0)
+
+            # Send the generated image
+            await interaction.followup.send(file=discord.File(fp=image_binary, filename='backpack_with_items.png'))
 
 class UnequipTypeSelect(discord.ui.Select):
     def __init__(self, action_type, options):
@@ -205,8 +241,11 @@ class UnequipTypeSelect(discord.ui.Select):
 
             # Populate the dropdown with currently equipped armor pieces
             for armor in equipped_armors:
-                option = discord.SelectOption(label=armor.name, value=armor.name,
-                                              emoji=getattr(armor, "emoji", None))
+                option = discord.SelectOption(
+                    label=armor.name,
+                    value=armor.name,
+                    emoji=get_emoji(ZONE_LEVEL_TO_EMOJI[armor.zone_level])
+                )
                 self.options.append(option)
 
             self.placeholder = f"Choose a specific {selected_value} to {self.action_type}"
@@ -270,9 +309,15 @@ class EquipTypeSelect(discord.ui.Select):
             await interaction.response.send_message(embed=embed, ephemeral=True)
             return
 
-        # Construct options for the specific items in the selected category
-        self.options = [discord.SelectOption(label=item.name, value=item.name, emoji=getattr(item, "emoji", None))
-                        for item in items]
+        # Modify the options creation to include the rarity in the label and value and emoji based on zone level
+        self.options = [
+            discord.SelectOption(
+                label=f"{item.name}",
+                value=f"{item.name} ({ZONE_LEVEL_TO_RARITY[item.zone_level]})",
+                emoji=get_emoji(ZONE_LEVEL_TO_EMOJI[item.zone_level])  # Use get_emoji function here
+            )
+            for item in items
+        ]
 
         await interaction.response.edit_message(content=f"Choose a specific {item_type} to equip:", view=self.view)
 
@@ -289,9 +334,9 @@ class EquipTypeSelect(discord.ui.Select):
         if not selected_item:
             return
 
-        message = await self.equip_item(interaction, inventory, selected_item)
+        message, _ = await self.equip_item(interaction, inventory, selected_item)  # Unpack the tuple here
 
-        if message:
+        if message:  # Only send a response if there's a message to send
             await interaction.response.send_message(message, ephemeral=True)
         else:
             embed = create_item_embed(self.action_type, selected_item)
@@ -301,11 +346,20 @@ class EquipTypeSelect(discord.ui.Select):
         self.view.refresh_view()
 
     @staticmethod
-    def find_item_by_name(inventory, item_name):
+    def find_item_by_name(inventory, item_name_with_rarity):
+        # Split the name and rarity
+        item_name, rarity = item_name_with_rarity.rsplit(" (", 1)
+        rarity = rarity.rstrip(")")
+
         for category in ["weapons", "armors", "shields", "charms"]:
-            selected_item = next((item for item in getattr(inventory, category, []) if item.name == item_name), None)
+            selected_item = next(
+                (item for item in getattr(inventory, category, [])
+                 if item.name == item_name and ZONE_LEVEL_TO_RARITY[item.zone_level] == rarity),
+                None
+            )
             if selected_item:
                 return selected_item
+
         return None
 
     async def equip_item(self, interaction, inventory, selected_item):
@@ -320,13 +374,13 @@ class EquipTypeSelect(discord.ui.Select):
         if isinstance(selected_item, Armor):
             current_equipped_armor = inventory.equipped_armor.get(selected_item.armor_type)
 
-            # Check if the armor is already equipped
-            if current_equipped_armor and current_equipped_armor.name == selected_item.name:
+            # Check if the armor is already equipped by name and zone_level
+            if current_equipped_armor and current_equipped_armor.name == selected_item.name and current_equipped_armor.zone_level == selected_item.zone_level:
                 return f"You already have {selected_item.name} equipped.", None
         else:
             current_equipped_item = getattr(inventory, equipped_item_key, None)
-            if current_equipped_item and current_equipped_item.name == selected_item.name:
-                return f"You already have this {category_singular} equipped."
+            if current_equipped_item and current_equipped_item.name == selected_item.name and current_equipped_item.zone_level == selected_item.zone_level:
+                return f"You already have this {category_singular} equipped.", None
 
         # Handle item stacking and removal
         existing_item_in_inventory = next((item for item in getattr(inventory, category, []) if item.name == selected_item.name), None)
@@ -356,23 +410,34 @@ class EquipTypeSelect(discord.ui.Select):
                     getattr(inventory, category).append(copy.deepcopy(current_equipped_item))
             setattr(inventory, equipped_item_key, selected_item)
 
-        return None
+        # At the end of the method, simply return None if there's no specific message to send
+        return None, None
 
+color_mapping = {
+    1: 0x969696,
+    2: 0x15ce00,
+    3: 0x0096f1,
+    4: 0x9900ff,
+    5: 0xfebd0d
+}
 
 def create_item_embed(action, item):
     if isinstance(item, str):  # Item doesn't exist, so it's a string (e.g., "Weapon", "Armor")
         title = f"{action.capitalize()} {item}"
         description = f"You don't have any {item} to {action}."
         thumbnail_url = generate_urls("Icons", "default")  # Set a default image for non-existent items
+        embed_color = 0x3498db  # Default color
     else:  # Item exists, so it has a `name` attribute
         title = f"{action.capitalize()}ped {item.name}"
         description = f"You have {action}ped the {item.name}."
         thumbnail_url = generate_urls("Icons", item.name)
+        embed_color = color_mapping.get(item.zone_level, 0x3498db)  # Fetch color based on zone_level or use default
 
-    embed = discord.Embed(title=title, description=description, color=0x3498db)
+    embed = discord.Embed(title=title, description=description, color=embed_color)
     embed.set_thumbnail(url=thumbnail_url)
 
     return embed
+
 
 def setup(bot):
     bot.add_cog(BackpackCog(bot))

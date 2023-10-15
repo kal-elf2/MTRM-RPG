@@ -30,7 +30,8 @@ def get_emoji(emoji_name):
         'common_emoji': '<:common:1157867391494144082>',
         'uncommon_emoji': '<:uncommon:1157867396078518394>',
         'rare_emoji': '<:rare:1157867394480492654>',
-        'epic_emoji': '<:epic:1157867392416895037>'
+        'epic_emoji': '<:epic:1157867392416895037>',
+        'legendary_emoji': '<:legendary:1157867393494810664>'
     }
 
     # Return the appropriate emoji string, or an empty string if not found
