@@ -5,7 +5,7 @@ class Materium(Item):
         super().__init__(
             name="Materium",
             description="A rare and valuable resource obtained while mining.",
-            value=1000,  # You can set an appropriate value for Materium here
+            value=1000,
         )
         self.stack = 0
 

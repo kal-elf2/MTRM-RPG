@@ -25,7 +25,7 @@
                     "name": "Charcoal",
                     "description": null,
                     "value": null,
-                    "stack": 1845
+                    "stack": 1839
                 },
                 {
                     "name": "Iron",
@@ -37,7 +37,7 @@
                     "name": "Steel",
                     "description": null,
                     "value": null,
-                    "stack": 2788
+                    "stack": 2773
                 },
                 {
                     "name": "Onyx",
@@ -61,7 +61,7 @@
                     "name": "Pine Strip",
                     "description": null,
                     "value": null,
-                    "stack": 85
+                    "stack": 55
                 },
                 {
                     "name": "Yew Strip",
@@ -145,7 +145,7 @@
                     "name": "Glowing Essence",
                     "description": "An ethereal essence that glows faintly. Used in powerful magical rituals and citadel.",
                     "value": 200,
-                    "stack": 89
+                    "stack": 86
                 },
                 {
                     "name": "Leather",
@@ -190,8 +190,7 @@
                     "stack": 996
                 }
             ],
-            "herbs": [
-            ],
+            "herbs": [],
             "ore": [
                 {
                     "name": "Iron Ore",
@@ -203,7 +202,7 @@
                 },
                 {
                     "name": "Carbon",
-                    "stack": 997
+                    "stack": 988
                 }
             ],
             "potions": [],
@@ -396,7 +395,20 @@
                 "defense_modifier": 1,
                 "zone_level": 2
             },
-            "charms": [],
+            "charms": [
+                {
+                    "name": "Woodcrafter's Charm",
+                    "description": null,
+                    "value": 10,
+                    "stack": 3,
+                    "zone_level": 2,
+                    "strength_modifier": 0,
+                    "woodcut_modifier": 1,
+                    "mining_modifier": 0,
+                    "defense_modifier": 0,
+                    "loot_multiplier": 1.0
+                }
+            ],
             "equipped_charm": null,
             "materium_count": 1
         },

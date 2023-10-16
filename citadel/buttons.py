@@ -80,7 +80,9 @@ class TanneryRow(discord.ui.View):
 
     @discord.ui.button(label="🍶 Potion Shop", custom_id="citadel_potion_shop", style=discord.ButtonStyle.blurple)
     async def potion_shop(self, button, interaction):
-        await interaction.response.send_message("You're at the Potion Shop!")
+        station = create_crafting_stations(interaction, "potion_shop")
+        self.update_or_add_crafting_select(station)
+        await interaction.response.edit_message(content="Choose an item from the Potion Shop:", view=self)
 
 
 class BreadRow(discord.ui.View):
