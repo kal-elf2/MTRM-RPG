@@ -1,11 +1,10 @@
 import random
-from resources.ore import GEM_TYPES
 from resources.herb import HERB_TYPES
 from resources.potion import POTION_LIST
 from resources.materium import Materium
 from resources.item import Item
 from emojis import get_emoji
-from probabilities import mtrm_drop_percent, potion_drop_percent, herb_drop_percent, gem_drop_percent
+from probabilities import mtrm_drop_percent, potion_drop_percent, herb_drop_percent
 
 class Loot:
     def __init__(self, name, rarity, value):
@@ -91,15 +90,6 @@ def generate_zone_loot(zone_level, monster_drop=None, name=None):
         loot_messages.append(f"{get_emoji('coppers_emoji')} You found {coppers_dropped} Copper!")
     else:
         loot_messages.append(f"{get_emoji('coppers_emoji')} You found {coppers_dropped} Coppers!")
-
-    # Gem drops
-    gem_drop_rate = gem_drop_percent * zone_level  # Increase the chance of getting a drop as zone level increases
-    if random.random() < gem_drop_rate:
-        gem_types_for_zone = GEM_TYPES[:zone_level]  # Adjust the gem types based on the zone level
-        gem_weights = [50, 30, 15, 4, 1][:zone_level]  # Adjust the weights based on the zone level
-        gem_dropped = random.choices(gem_types_for_zone, weights=gem_weights, k=1)[0]
-        loot.append(('gem', gem_dropped))
-        loot_messages.append(f"💎 You found a {gem_dropped.name}!")
 
     # Herb drops
     herb_drop_rate = herb_drop_percent * zone_level  # Increase the chance of getting a drop as zone level increases

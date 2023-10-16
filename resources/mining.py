@@ -6,7 +6,8 @@ import json
 import numpy as np
 from discord.ext import commands
 from discord.commands import Option
-from resources.ore import GEM_TYPES, ORE_TYPES, Ore
+from resources.ore import ORE_TYPES, Ore
+from resources.herb import HERB_TYPES
 from resources.materium import Materium
 from stats import ResurrectOptions
 from exemplars.exemplars import Exemplar
@@ -15,7 +16,7 @@ from monsters.monster import create_battle_embed, monster_battle, generate_monst
 from monsters.battle import BattleOptions, LootOptions
 from images.urls import generate_urls
 from emojis import get_emoji
-from probabilities import gem_drop_percent, mtrm_drop_percent, attack_percent
+from probabilities import herb_drop_percent, mtrm_drop_percent, attack_percent
 
 # Mining experience points for each ore type
 MINING_EXPERIENCE = {
@@ -47,17 +48,17 @@ def generate_random_monster(ore_type):
 
     return np.random.choice(monsters, p=probabilities)
 
-def attempt_gem_drop(zone_level):
-    base_gem_drop_rate = gem_drop_percent
-    gem_drop_rate = min(base_gem_drop_rate * zone_level, 1) # Adjust the drop rate based on zone level and cap at 1
+def attempt_herb_drop(zone_level):
+    base_herb_drop_rate = herb_drop_percent
+    herb_drop_rate = min(base_herb_drop_rate * zone_level, 1)  # Adjust the drop rate based on zone level and cap at 1
 
-    if random.random() < gem_drop_rate:
-        # Adjust the gem types based on the zone level
-        gem_types_for_zone = GEM_TYPES[:zone_level]
+    if random.random() < herb_drop_rate:
+        # Adjust the herb types based on the zone level
+        herb_types_for_zone = HERB_TYPES[:zone_level]
         # Adjust the weights based on the zone level, these are now 40%, 40%, 5%, 5%, 1%
-        gem_weights = [40, 40, 10, 5, 1][:zone_level]
-        gem_dropped = random.choices(gem_types_for_zone, weights=gem_weights, k=1)[0]
-        return gem_dropped
+        herb_weights = [40, 40, 10, 5, 1][:zone_level]
+        herb_dropped = random.choices(herb_types_for_zone, weights=herb_weights, k=1)[0]
+        return herb_dropped
     return None
 
 # Function to handle MTRM drop
@@ -141,12 +142,11 @@ class MineButton(discord.ui.View):
             exp_gain = MINING_EXPERIENCE[self.ore_type]
             level_up_message = await self.player.gain_experience(exp_gain, "mining", interaction)
 
-            # Attempt gem drop
-            zone_level = self.player.stats.zone_level
-            gem_dropped = attempt_gem_drop(zone_level)
-            if gem_dropped:
-                self.player.inventory.add_item_to_inventory(gem_dropped, amount=1)
-                message += f"\n💎 You also **found a {gem_dropped.name}!**"
+            # Attempt herb drop
+            herb_dropped = attempt_herb_drop(zone_level)
+            if herb_dropped:
+                self.player.inventory.add_item_to_inventory(herb_dropped, amount=1)
+                message += f"\n🌿 You also **found some {herb_dropped.name}!**"
 
             # Attempt MTRM drop
             mtrm_dropped = attempt_mtrm_drop(zone_level)

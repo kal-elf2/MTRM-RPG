@@ -2,7 +2,7 @@ from resources.materium import Materium
 from resources.herb import Herb
 from resources.potion import Potion
 from resources.item import Item
-from resources.ore import Gem, Ore
+from resources.ore import Ore
 from resources.tree import Tree
 
 class Inventory:
@@ -14,7 +14,6 @@ class Inventory:
         self.trees = []
         self.herbs = []
         self.ore = []
-        self.gems = []
         self.potions = []
         self.limit = limit
         self.armors = []
@@ -38,7 +37,6 @@ class Inventory:
             "trees": [tree.to_dict() for tree in self.trees],
             "herbs": [herb.to_dict() for herb in self.herbs],
             "ore": [ore.to_dict() for ore in self.ore],
-            "gems": [gem.to_dict() for gem in self.gems],
             "potions": [potion.to_dict() for potion in self.potions],
             "limit": self.limit,
             "armors": [armor.to_dict() for armor in self.armors],
@@ -62,7 +60,6 @@ class Inventory:
         inventory.herbs = [Herb.from_dict(herb_data) for herb_data in data["herbs"]]
         inventory.ore = [Ore.from_dict(ore_data) for ore_data in data["ore"]]
         inventory.potions = [Potion.from_dict(potion_data) for potion_data in data["potions"]]
-        inventory.gems = [Gem.from_dict(gem_data) for gem_data in data["gems"]]
         inventory.weapons = [Weapon.from_dict(weapon_data) for weapon_data in data["weapons"]]
         inventory.armors = [Armor.from_dict(armor_data) for armor_data in data["armors"]]
         inventory.equipped_armor = {k: Armor.from_dict(v_data) if v_data else None for k, v_data in data["equipped_armor"].items()}
@@ -89,8 +86,6 @@ class Inventory:
             self._add_item_to_specific_inventory(item, amount, self.ore)
         elif isinstance(item, Potion):
             self._add_item_to_specific_inventory(item, amount, self.potions)
-        elif isinstance(item, Gem):
-            self._add_item_to_specific_inventory(item, amount, self.gems)
         elif isinstance(item, Weapon):
             self._add_item_to_specific_inventory(item, amount, self.weapons)
         elif isinstance(item, Armor):
@@ -103,7 +98,7 @@ class Inventory:
             self._add_item_to_specific_inventory(item, amount, self.items)
 
     def get_item_quantity(self, item_name, zone_level=None):
-        stackable_sections = [self.items, self.trees, self.herbs, self.ore, self.gems, self.potions, self.weapons,
+        stackable_sections = [self.items, self.trees, self.herbs, self.ore, self.potions, self.weapons,
                               self.armors, self.shields, self.charms]
 
         for section in stackable_sections:
@@ -152,8 +147,6 @@ class Inventory:
         elif _remove_from_list(self.herbs, item_name, amount):
             return True
         elif _remove_from_list(self.ore, item_name, amount):
-            return True
-        elif _remove_from_list(self.gems, item_name, amount):
             return True
         elif _remove_from_list(self.potions, item_name, amount):
             return True

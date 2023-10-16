@@ -5,12 +5,13 @@ from exemplars.exemplars import Exemplar
 from citadel.crafting import ArmorType
 
 ZONE_LEVEL_TO_RARITY = {
-            1: "Common",
-            2: "Uncommon",
-            3: "Rare",
-            4: "Epic",
-            5: "Legendary"
-        }
+    1: "Common",
+    2: "Uncommon",
+    3: "Rare",
+    4: "Epic",
+    5: "Legendary"
+}
+
 
 def generate_backpack_image(interaction):
     from utils import load_player_data
@@ -30,7 +31,7 @@ def generate_backpack_image(interaction):
         draw = ImageDraw.Draw(base_img)
 
         # Define the categories and extract the icons based on the order
-        categories = ["items", "trees", "herbs", "ore", "gems", "potions", "armors", "weapons", "shields", "charms"]
+        categories = ["items", "trees", "herbs", "ore", "potions", "armors", "weapons", "shields", "charms"]
         # Adjusting the icons extraction:
         icons = []
         for category in categories:
@@ -95,7 +96,13 @@ def generate_backpack_image(interaction):
 
         for i, armor_item in enumerate(equipped_armor_items):
             if armor_item:
-                # Streamlined Rarity Image Fetching for equipped items
+                # Overlay a square of color #191919
+                square_overlay = Image.new('RGBA', (int(square_size), int(square_size)), color=(25, 25, 25, 255))
+                base_img.paste(square_overlay,
+                               (int(equipped_armor_positions[i][0]), int(equipped_armor_positions[i][1])),
+                               square_overlay)
+
+                # Fetch the rarity image for equipped items
                 rarity_image = None
                 rarity_name = ZONE_LEVEL_TO_RARITY.get(getattr(armor_item, "zone_level", None))
                 if rarity_name:
@@ -103,13 +110,67 @@ def generate_backpack_image(interaction):
                     rarity_image = Image.open(session.get(rarity_url, stream=True).raw).resize(
                         (int(square_size / 3), int(square_size / 3)))
 
+                # Fetch the armor item image
                 icon_url = generate_urls("Icons", armor_item.name)
-                icon_img = Image.open(session.get(icon_url, stream=True).raw).resize((int(square_size), int(square_size)))
-                base_img.paste(icon_img, (int(equipped_armor_positions[i][0]), int(equipped_armor_positions[i][1])), icon_img)
+                icon_img = Image.open(session.get(icon_url, stream=True).raw).resize(
+                    (int(square_size), int(square_size)))
+
+                # Paste the armor item image on the base image
+                base_img.paste(icon_img, (int(equipped_armor_positions[i][0]), int(equipped_armor_positions[i][1])),
+                               icon_img)
 
                 # If there's a rarity image for the equipped item, paste it in the bottom left corner of the item square
                 if rarity_image:
-                    base_img.paste(rarity_image, (int(equipped_armor_positions[i][0]), int(equipped_armor_positions[i][1] + 2 * square_size / 3)),
+                    base_img.paste(rarity_image, (
+                        int(equipped_armor_positions[i][0]), int(equipped_armor_positions[i][1] + 2 * square_size / 3)),
+                                   rarity_image)
+
+        # Display equipped weapon, shield, and charm
+        equipped_weapon = player.inventory.equipped_weapon
+        equipped_shield = player.inventory.equipped_shield
+        equipped_charm = player.inventory.equipped_charm
+
+        equipped_weapon_position = (x_offset_start - 2.285 * square_size, y_offset_start + 0 * square_size)  # Adjust position as needed
+        equipped_shield_position = (x_offset_start - 3.36 * square_size, y_offset_start + 5.35 * square_size)  # Adjust position as needed
+        equipped_charm_position = (x_offset_start - 3.36 * square_size, y_offset_start + 4.28 * square_size)  # Adjust position as needed
+
+        equipped_positions = [
+            equipped_weapon_position,
+            equipped_shield_position,
+            equipped_charm_position,
+        ]
+
+        equipped_items = [equipped_weapon, equipped_shield, equipped_charm]
+
+        for i, item in enumerate(equipped_items):
+            if item:
+                # Overlay a square of color #191919
+                square_overlay = Image.new('RGBA', (int(square_size), int(square_size)), color=(25, 25, 25, 255))
+                base_img.paste(square_overlay,
+                               (int(equipped_positions[i][0]), int(equipped_positions[i][1])),
+                               square_overlay)
+
+                # Fetch the rarity image for equipped items
+                rarity_image = None
+                rarity_name = ZONE_LEVEL_TO_RARITY.get(getattr(item, "zone_level", None))
+                if rarity_name:
+                    rarity_url = generate_urls("Icons", rarity_name)
+                    rarity_image = Image.open(session.get(rarity_url, stream=True).raw).resize(
+                        (int(square_size / 3), int(square_size / 3)))
+
+                # Fetch the equipped item image
+                icon_url = generate_urls("Icons", item.name)
+                icon_img = Image.open(session.get(icon_url, stream=True).raw).resize(
+                    (int(square_size), int(square_size)))
+
+                # Paste the equipped item image on the base image
+                base_img.paste(icon_img, (int(equipped_positions[i][0]), int(equipped_positions[i][1])),
+                               icon_img)
+
+                # If there's a rarity image for the equipped item, paste it in the bottom left corner of the item square
+                if rarity_image:
+                    base_img.paste(rarity_image, (
+                        int(equipped_positions[i][0]), int(equipped_positions[i][1] + 2 * square_size / 3)),
                                    rarity_image)
 
     base_img.save('backpack_with_items.png')

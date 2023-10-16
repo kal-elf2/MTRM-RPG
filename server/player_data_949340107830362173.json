@@ -2,30 +2,30 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "zone_level": 4,
-            "health": 152,
+            "zone_level": 2,
+            "health": 145,
             "max_health": 485,
             "strength": 206,
-            "stamina": 205,
+            "stamina": 208,
             "max_stamina": 208,
             "attack": 84,
             "defense": 85,
             "combat_level": 40,
-            "combat_experience": 24600,
+            "combat_experience": 24702,
             "mining_level": 40,
-            "mining_experience": 24490,
+            "mining_experience": 24715,
             "woodcutting_level": 40,
-            "woodcutting_experience": 24570,
+            "woodcutting_experience": 24680,
             "damage_taken": 0
         },
         "inventory": {
-            "coppers": 116,
+            "coppers": 178,
             "items": [
                 {
                     "name": "Charcoal",
                     "description": null,
                     "value": null,
-                    "stack": 1847
+                    "stack": 1845
                 },
                 {
                     "name": "Iron",
@@ -37,13 +37,13 @@
                     "name": "Steel",
                     "description": null,
                     "value": null,
-                    "stack": 2790
+                    "stack": 2788
                 },
                 {
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 895
+                    "stack": 894
                 },
                 {
                     "name": "Pole",
@@ -82,16 +82,22 @@
                     "stack": 100
                 },
                 {
+                    "name": "Flour",
+                    "description": null,
+                    "value": null,
+                    "stack": 3
+                },
+                {
                     "name": "Wheat",
                     "description": null,
                     "value": null,
-                    "stack": 1001
+                    "stack": 995
                 },
                 {
                     "name": "Flax",
                     "description": null,
                     "value": null,
-                    "stack": 2001
+                    "stack": 2005
                 },
                 {
                     "name": "Linen",
@@ -115,7 +121,7 @@
                     "name": "Rabbit Body",
                     "description": "A furry rabbit body, warm to the touch. Can be used for citadel soft armors.",
                     "value": 10,
-                    "stack": 100
+                    "stack": 101
                 },
                 {
                     "name": "Deer Parts",
@@ -163,13 +169,13 @@
                     "name": "Tough Leather Straps",
                     "description": null,
                     "value": null,
-                    "stack": 945
+                    "stack": 944
                 }
             ],
             "trees": [
                 {
                     "name": "Pine",
-                    "stack": 968
+                    "stack": 971
                 },
                 {
                     "name": "Yew",
@@ -177,14 +183,15 @@
                 },
                 {
                     "name": "Ash",
-                    "stack": 966
+                    "stack": 967
                 },
                 {
                     "name": "Poplar",
                     "stack": 996
                 }
             ],
-            "herbs": [],
+            "herbs": [
+            ],
             "ore": [
                 {
                     "name": "Iron Ore",
@@ -192,14 +199,13 @@
                 },
                 {
                     "name": "Coal",
-                    "stack": 994
+                    "stack": 1003
                 },
                 {
                     "name": "Carbon",
                     "stack": 997
                 }
             ],
-            "gems": [],
             "potions": [],
             "limit": 40,
             "armors": [
@@ -249,10 +255,19 @@
                     "zone_level": 2
                 },
                 {
+                    "name": "Brigandine Gloves",
+                    "description": null,
+                    "value": 10,
+                    "stack": 1,
+                    "defense_modifier": 1,
+                    "armor_type": "gloves",
+                    "zone_level": 2
+                },
+                {
                     "name": "Brigandine Boots",
                     "description": null,
                     "value": 10,
-                    "stack": 6,
+                    "stack": 5,
                     "defense_modifier": 1,
                     "armor_type": "boots",
                     "zone_level": 3
@@ -284,9 +299,17 @@
                     "stack": 1,
                     "defense_modifier": 1,
                     "armor_type": "chest",
-                    "zone_level": 4
+                    "zone_level": 2
                 },
-                "boots": null,
+                "boots": {
+                    "name": "Brigandine Boots",
+                    "description": null,
+                    "value": 10,
+                    "stack": 5,
+                    "defense_modifier": 1,
+                    "armor_type": "boots",
+                    "zone_level": 3
+                },
                 "gloves": {
                     "name": "Brigandine Gloves",
                     "description": null,
@@ -375,7 +398,7 @@
             },
             "charms": [],
             "equipped_charm": null,
-            "materium_count": 0
+            "materium_count": 1
         },
         "in_battle": false
     }
