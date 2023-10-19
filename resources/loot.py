@@ -92,10 +92,9 @@ def generate_zone_loot(zone_level, monster_drop=None, name=None):
         loot_messages.append(f"{get_emoji('coppers_emoji')} You found {coppers_dropped} Coppers!")
 
     # Herb drops
-    herb_drop_rate = herb_drop_percent * zone_level  # Increase the chance of getting a drop as zone level increases
-    if random.random() < herb_drop_rate:
-        herb_types_for_zone = HERB_TYPES[:zone_level]  # Adjust the herb types based on the zone level
-        herb_weights = [50, 30, 15, 4, 1][:zone_level]  # Adjust the weights based on the zone level
+    if random.random() < herb_drop_percent:
+        herb_types_for_zone = HERB_TYPES
+        herb_weights = [40, 40, 5, 5]
         herb_dropped = random.choices(herb_types_for_zone, weights=herb_weights, k=1)[0]
         loot.append(('herb', herb_dropped))
         loot_messages.append(f"🌿 You found some {herb_dropped.name}!")

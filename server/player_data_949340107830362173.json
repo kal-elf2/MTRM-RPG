@@ -25,7 +25,7 @@
                     "name": "Charcoal",
                     "description": null,
                     "value": null,
-                    "stack": 1839
+                    "stack": 1811
                 },
                 {
                     "name": "Iron",
@@ -37,13 +37,13 @@
                     "name": "Steel",
                     "description": null,
                     "value": null,
-                    "stack": 2773
+                    "stack": 2723
                 },
                 {
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 895
+                    "stack": 880
                 },
                 {
                     "name": "Pole",
@@ -55,13 +55,13 @@
                     "name": "Thick Pole",
                     "description": null,
                     "value": null,
-                    "stack": 278
+                    "stack": 268
                 },
                 {
                     "name": "Pine Strip",
                     "description": null,
                     "value": null,
-                    "stack": 55
+                    "stack": 25
                 },
                 {
                     "name": "Yew Strip",
@@ -73,7 +73,7 @@
                     "name": "Ash Strip",
                     "description": null,
                     "value": null,
-                    "stack": 73
+                    "stack": 68
                 },
                 {
                     "name": "Poplar Strip",
@@ -145,7 +145,7 @@
                     "name": "Glowing Essence",
                     "description": "An ethereal essence that glows faintly. Used in powerful magical rituals and citadel.",
                     "value": 200,
-                    "stack": 86
+                    "stack": 77
                 },
                 {
                     "name": "Leather",
@@ -169,7 +169,7 @@
                     "name": "Tough Leather Straps",
                     "description": null,
                     "value": null,
-                    "stack": 944
+                    "stack": 935
                 }
             ],
             "trees": [
@@ -190,26 +190,19 @@
                     "stack": 996
                 }
             ],
-            "herbs": [
-                {
-                    "name": "Spirit Weed",
-                    "rarity": 2,
-                    "value": 30,
-                    "stack": 1
-                }
-            ],
+            "herbs": [],
             "ore": [
                 {
                     "name": "Iron Ore",
-                    "stack": 999
+                    "stack": 996
                 },
                 {
                     "name": "Coal",
-                    "stack": 1003
+                    "stack": 999
                 },
                 {
                     "name": "Carbon",
-                    "stack": 988
+                    "stack": 971
                 }
             ],
             "potions": [],
@@ -404,15 +397,58 @@
             },
             "charms": [
                 {
-                    "name": "Woodcrafter's Charm",
+                    "name": "Woodcleaver",
                     "description": null,
                     "value": 10,
-                    "stack": 3,
-                    "zone_level": 2,
+                    "stack": 0,
                     "strength_modifier": 0,
                     "woodcut_modifier": 1,
                     "mining_modifier": 0,
                     "defense_modifier": 0,
+                    "loot_multiplier": 1.0
+                },
+                {
+                    "name": "Stonebreaker",
+                    "description": null,
+                    "value": 10,
+                    "stack": 0,
+                    "strength_modifier": 0,
+                    "woodcut_modifier": 0,
+                    "mining_modifier": 1,
+                    "defense_modifier": 0,
+                    "loot_multiplier": 1.0
+                },
+                {
+                    "name": "Loothaven",
+                    "description": null,
+                    "value": 10,
+                    "stack": 0,
+                    "strength_modifier": 0,
+                    "woodcut_modifier": 0,
+                    "mining_modifier": 0,
+                    "defense_modifier": 0,
+                    "loot_multiplier": 1
+                },
+                {
+                    "name": "Mightstone",
+                    "description": null,
+                    "value": 10,
+                    "stack": 0,
+                    "strength_modifier": 1,
+                    "woodcut_modifier": 0,
+                    "mining_modifier": 0,
+                    "defense_modifier": 0,
+                    "loot_multiplier": 1.0
+                },
+                {
+                    "name": "Ironhide",
+                    "description": null,
+                    "value": 10,
+                    "stack": 2,
+                    "strength_modifier": 0,
+                    "woodcut_modifier": 0,
+                    "mining_modifier": 0,
+                    "defense_modifier": 1,
                     "loot_multiplier": 1.0
                 }
             ],

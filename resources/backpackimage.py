@@ -26,12 +26,12 @@ def generate_backpack_image(interaction):
 
     with Session() as session:  # Start a session
         # Prepare base image
-        base_url = generate_urls("Icons", "Backpack")
+        base_url = generate_urls("Icons", "Backpack2")
         base_img = Image.open(session.get(base_url, stream=True).raw)
         draw = ImageDraw.Draw(base_img)
 
         # Define the categories and extract the icons based on the order
-        categories = ["items", "trees", "herbs", "ore", "potions", "armors", "weapons", "shields", "charms"]
+        categories = ["items", "trees", "herbs", "ore", "potions", "armors", "weapons", "shields"]
         # Adjusting the icons extraction:
         icons = []
         for category in categories:
@@ -82,6 +82,25 @@ def generate_backpack_image(interaction):
 
             x_offset += square_size + line_gap
             row_items += 1
+
+        # Determine the starting y_offset for charms based on the current y_offset
+        y_offset_for_charms = y_offset + 2 * (square_size + line_gap)  # 2 rows below the last row of the inventory
+
+        # Define the fixed order and corresponding x_offsets for charms
+        charm_order = ["Woodcleaver", "Stonebreaker", "Loothaven", "Mightstone", "Ironhide"]
+        charm_offsets = {name: 2 * square_size + i * (square_size + line_gap) for i, name in enumerate(charm_order)}
+
+        charms = getattr(player.inventory, "charms",
+                         [])  # Assuming "charms" is the attribute name for charms in the inventory
+
+        for charm in charms:
+            if charm.name in charm_offsets:
+                icon_url = generate_urls("Icons", charm.name)
+                icon_img = Image.open(session.get(icon_url, stream=True).raw).resize(
+                    (int(square_size), int(square_size)))
+                centered_x_offset = charm_offsets[charm.name] + (square_size - icon_img.width) / 2
+                centered_y_offset = y_offset_for_charms + (square_size - icon_img.height) / 2
+                base_img.paste(icon_img, (int(centered_x_offset), int(centered_y_offset)), icon_img)
 
         # Display equipped armor items
         equipped_armor_items = [player.inventory.equipped_armor[ArmorType.CHEST],

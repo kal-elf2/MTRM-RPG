@@ -151,7 +151,7 @@ class BackpackView(discord.ui.View):
                 "Hammer", "War Hammer", "Short Bow", "Long Bow", "Champion Bow"
             ],
             "shields": ["Buckler", "Small Shield", "Large Shield"],
-            "charms": ["Mining", "Woodcutting", "Loot"]
+            "charms": ["Woodcleaver", "Stonebreaker", "Loothaven", "Mightstone", "Ironhide"]
         }
 
         for category, sorting_order in order.items():

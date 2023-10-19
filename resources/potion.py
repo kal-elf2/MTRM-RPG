@@ -36,11 +36,10 @@ class Potion(Item):
         )
 
 HERB_TYPES = [
-    Herb("Ranarr", 1, 3),
-    Herb("Spirit Weed", 2, 6),
-    Herb("Bloodweed", 3, 12),
-    Herb("Snapdragon", 4, 24),
-    Herb("Dwarf Weed", 5, 48),
+    Herb("Ranarr", 25),
+    Herb("Spirit Weed", 25),
+    Herb("Bloodweed", 350),
+    Herb("Snapdragon", 350)
 ]
 
 POTION_LIST = [

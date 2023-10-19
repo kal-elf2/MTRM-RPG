@@ -87,40 +87,34 @@ class Shield(Item):
         )
 
 class Charm(Item):
-    def __init__(self, name, zone_level, woodcut_modifier = 0, mining_modifier = 0, strength_modifier=0, defense_modifier=0, loot_multiplier=1.0, description=None, value=None, stack=1):
+    def __init__(self, name, woodcut_modifier = 0, mining_modifier = 0, strength_modifier=0, defense_modifier=0, loot_multiplier=1.0, description=None, value=None):
         super().__init__(name, description, value)
-        self.zone_level = zone_level
         self.woodcut_modifier = woodcut_modifier
         self.mining_modifier = mining_modifier
         self.strength_modifier = strength_modifier
         self.defense_modifier = defense_modifier
         self.loot_multiplier = loot_multiplier
-        self.stack = stack
 
     def to_dict(self):
         charm_data = super().to_dict()
-        charm_data["zone_level"] = self.zone_level
         charm_data["strength_modifier"] = self.strength_modifier
         charm_data["woodcut_modifier"] = self.woodcut_modifier
         charm_data["mining_modifier"] = self.mining_modifier
         charm_data["defense_modifier"] = self.defense_modifier
         charm_data["loot_multiplier"] = self.loot_multiplier
-        charm_data["stack"] = self.stack
         return charm_data
 
     @classmethod
     def from_dict(cls, data):
         return cls(
             name=data["name"],
-            zone_level=data["zone_level"],
             strength_modifier=data.get("strength_modifier", 0),
             woodcut_modifier=data.get("woodcut_modifier", 0),
             mining_modifier=data.get("mining_modifier", 0),
             defense_modifier=data.get("defense_modifier", 0),
             loot_multiplier=data.get("loot_multiplier", 1.0),
             description=data.get("description"),
-            value=data.get("value"),
-            stack=data.get("stack", 1)
+            value=data.get("value")
         )
 
 # Recipe Classes
@@ -485,11 +479,11 @@ def create_crafting_stations(interaction, station_name=None):
     champion_bow = Weapon("Champion Bow", "Bow", attack_modifier=1, special_attack= 3, value=10, zone_level=zone_level)
 
     # Charms
-    woodcrafters_charm = Charm("Woodcleaver", woodcut_modifier=1, value = 10, zone_level=zone_level)
-    miners_charm = Charm("Stonebreaker", mining_modifier=1, value=10, zone_level=zone_level)
-    lootmasters_charm = Charm("Loothaven", loot_multiplier=1, value=10, zone_level=zone_level)
-    strength_charm = Charm("Mightstone", strength_modifier=1, value=10, zone_level=zone_level)
-    defenders_charm = Charm("Ironhide", defense_modifier=1, value=10, zone_level=zone_level)
+    woodcrafters_charm = Charm("Woodcleaver", woodcut_modifier=1, value = 10)
+    miners_charm = Charm("Stonebreaker", mining_modifier=1, value=10)
+    lootmasters_charm = Charm("Loothaven", loot_multiplier=1, value=10)
+    strength_charm = Charm("Mightstone", strength_modifier=1, value=10)
+    defenders_charm = Charm("Ironhide", defense_modifier=1, value=10)
 
     # Forge Crafting Station and Recipes
     forge = CraftingStation("Forge")
