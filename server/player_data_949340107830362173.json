@@ -3,23 +3,23 @@
         "exemplar": "elf",
         "stats": {
             "zone_level": 2,
-            "health": 145,
-            "max_health": 485,
-            "strength": 206,
-            "stamina": 208,
-            "max_stamina": 208,
-            "attack": 84,
-            "defense": 85,
-            "combat_level": 40,
-            "combat_experience": 24702,
-            "mining_level": 40,
-            "mining_experience": 24715,
-            "woodcutting_level": 40,
-            "woodcutting_experience": 24680,
+            "health": 475,
+            "max_health": 475,
+            "strength": 239,
+            "stamina": 203,
+            "max_stamina": 203,
+            "attack": 120,
+            "defense": 83,
+            "combat_level": 39,
+            "combat_experience": 23554,
+            "mining_level": 39,
+            "mining_experience": 23494,
+            "woodcutting_level": 39,
+            "woodcutting_experience": 23461,
             "damage_taken": 0
         },
         "inventory": {
-            "coppers": 178,
+            "coppers": 209,
             "items": [
                 {
                     "name": "Charcoal",
@@ -43,7 +43,7 @@
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 894
+                    "stack": 895
                 },
                 {
                     "name": "Pole",
@@ -139,7 +139,7 @@
                     "name": "Wolf Skin",
                     "description": "A skin of a wild wolf. Known for its durability and strength.",
                     "value": 50,
-                    "stack": 996
+                    "stack": 997
                 },
                 {
                     "name": "Glowing Essence",
@@ -190,7 +190,14 @@
                     "stack": 996
                 }
             ],
-            "herbs": [],
+            "herbs": [
+                {
+                    "name": "Spirit Weed",
+                    "rarity": 2,
+                    "value": 30,
+                    "stack": 1
+                }
+            ],
             "ore": [
                 {
                     "name": "Iron Ore",

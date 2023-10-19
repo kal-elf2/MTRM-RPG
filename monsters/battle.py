@@ -62,18 +62,20 @@ class BattleOptions(discord.ui.View):
     def __init__(self, interaction):
         super().__init__(timeout=None)
         self.interaction = interaction
-
-    @discord.ui.button(custom_id="attack", style=discord.ButtonStyle.blurple, emoji = '⚔️')
-    async def special_attack(self, button, interaction):
-        pass
-    @discord.ui.button(custom_id="health", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("potion_red_emoji")}')
-    async def health_potion(self, button, interaction):
-        pass
-    @discord.ui.button(custom_id="stamina", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("potion_yellow_emoji")}')
+    @discord.ui.button(custom_id="stamina", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("potion_stamina")}')
     async def stamina_potion(self, button, interaction):
         pass
-    @discord.ui.button(label="Run", custom_id="run", style=discord.ButtonStyle.blurple)
-    async def run_button(self, button, interaction):
+
+    @discord.ui.button(custom_id="super_stamina", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("potion_super_stamina")}')
+    async def super_stamina_potion(self, button, interaction):
+        pass
+
+    @discord.ui.button(custom_id="health", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("potion_health")}')
+    async def health(self, button, interaction):
+        pass
+
+    @discord.ui.button(custom_id="super_health", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("potion_super_health")}')
+    async def super_health(self, button, interaction):
         pass
 def create_health_bar(current, max_health):
     bar_length = 12  # Fixed bar length

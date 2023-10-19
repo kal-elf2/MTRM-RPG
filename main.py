@@ -172,6 +172,9 @@ class ConfirmExemplar(discord.ui.View):
 
 @bot.slash_command(description="Battle a monster!")
 async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=generate_monster_list(), required=True, default='')):
+    if not monster:
+        await ctx.respond("Please pick a monster to battle.", ephemeral=True)
+        return
 
     with open("level_data.json", "r") as f:
         LEVEL_DATA = json.load(f)

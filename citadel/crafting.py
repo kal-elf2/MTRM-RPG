@@ -485,11 +485,11 @@ def create_crafting_stations(interaction, station_name=None):
     champion_bow = Weapon("Champion Bow", "Bow", attack_modifier=1, special_attack= 3, value=10, zone_level=zone_level)
 
     # Charms
-    woodcrafters_charm = Charm("Woodcrafter's Charm", woodcut_modifier=1, value = 10, zone_level=zone_level)
-    miners_charm = Charm("Miner's Charm", mining_modifier=1, value=10, zone_level=zone_level)
-    lootmasters_charm = Charm("Lootmaster's Charm", loot_multiplier=1, value=10, zone_level=zone_level)
-    strength_charm = Charm("Strength Charm", strength_modifier=1, value=10, zone_level=zone_level)
-    defenders_charm = Charm("Defender's Charm", defense_modifier=1, value=10, zone_level=zone_level)
+    woodcrafters_charm = Charm("Woodcleaver", woodcut_modifier=1, value = 10, zone_level=zone_level)
+    miners_charm = Charm("Stonebreaker", mining_modifier=1, value=10, zone_level=zone_level)
+    lootmasters_charm = Charm("Loothaven", loot_multiplier=1, value=10, zone_level=zone_level)
+    strength_charm = Charm("Mightstone", strength_modifier=1, value=10, zone_level=zone_level)
+    defenders_charm = Charm("Ironhide", defense_modifier=1, value=10, zone_level=zone_level)
 
     # Forge Crafting Station and Recipes
     forge = CraftingStation("Forge")
