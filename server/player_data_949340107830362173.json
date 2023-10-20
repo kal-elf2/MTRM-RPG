@@ -25,25 +25,25 @@
                     "name": "Charcoal",
                     "description": null,
                     "value": null,
-                    "stack": 1811
+                    "stack": 1744
                 },
                 {
                     "name": "Iron",
                     "description": null,
                     "value": null,
-                    "stack": 965
+                    "stack": 962
                 },
                 {
                     "name": "Steel",
                     "description": null,
                     "value": null,
-                    "stack": 2723
+                    "stack": 2597
                 },
                 {
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 880
+                    "stack": 853
                 },
                 {
                     "name": "Pole",
@@ -55,25 +55,25 @@
                     "name": "Thick Pole",
                     "description": null,
                     "value": null,
-                    "stack": 268
+                    "stack": 25770
                 },
                 {
                     "name": "Pine Strip",
                     "description": null,
                     "value": null,
-                    "stack": 25
+                    "stack": 1460
                 },
                 {
                     "name": "Yew Strip",
                     "description": null,
                     "value": null,
-                    "stack": 84
+                    "stack": 8400
                 },
                 {
                     "name": "Ash Strip",
                     "description": null,
                     "value": null,
-                    "stack": 68
+                    "stack": 43
                 },
                 {
                     "name": "Poplar Strip",
@@ -85,7 +85,7 @@
                     "name": "Flour",
                     "description": null,
                     "value": null,
-                    "stack": 3
+                    "stack": 300
                 },
                 {
                     "name": "Wheat",
@@ -103,13 +103,13 @@
                     "name": "Linen",
                     "description": null,
                     "value": null,
-                    "stack": 982
+                    "stack": 979
                 },
                 {
                     "name": "Linen Thread",
                     "description": null,
                     "value": null,
-                    "stack": 982
+                    "stack": 979
                 },
                 {
                     "name": "Sinew",
@@ -145,7 +145,7 @@
                     "name": "Glowing Essence",
                     "description": "An ethereal essence that glows faintly. Used in powerful magical rituals and citadel.",
                     "value": 200,
-                    "stack": 77
+                    "stack": 57
                 },
                 {
                     "name": "Leather",
@@ -163,13 +163,13 @@
                     "name": "Leather Straps",
                     "description": null,
                     "value": null,
-                    "stack": 912
+                    "stack": 901
                 },
                 {
                     "name": "Tough Leather Straps",
                     "description": null,
                     "value": null,
-                    "stack": 935
+                    "stack": 924
                 }
             ],
             "trees": [
@@ -194,15 +194,15 @@
             "ore": [
                 {
                     "name": "Iron Ore",
-                    "stack": 996
+                    "stack": 981
                 },
                 {
                     "name": "Coal",
-                    "stack": 999
+                    "stack": 979
                 },
                 {
                     "name": "Carbon",
-                    "stack": 971
+                    "stack": 932
                 }
             ],
             "potions": [],
@@ -245,12 +245,30 @@
                     "zone_level": 1
                 },
                 {
+                    "name": "Padded Armor",
+                    "description": null,
+                    "value": 10,
+                    "stack": 1,
+                    "defense_modifier": 1,
+                    "armor_type": "chest",
+                    "zone_level": 2
+                },
+                {
                     "name": "Brigandine Armor",
                     "description": null,
                     "value": 10,
                     "stack": 1,
                     "defense_modifier": 1,
                     "armor_type": "chest",
+                    "zone_level": 2
+                },
+                {
+                    "name": "Brigandine Boots",
+                    "description": null,
+                    "value": 10,
+                    "stack": 1,
+                    "defense_modifier": 1,
+                    "armor_type": "boots",
                     "zone_level": 2
                 },
                 {
@@ -348,7 +366,37 @@
                     "wtype": "Sword",
                     "attack_modifier": 1,
                     "special_attack": 4,
+                    "zone_level": 2
+                },
+                {
+                    "name": "Voltaic Sword",
+                    "description": null,
+                    "value": 10,
+                    "stack": 1,
+                    "wtype": "Sword",
+                    "attack_modifier": 1,
+                    "special_attack": 4,
                     "zone_level": 4
+                },
+                {
+                    "name": "Short Sword",
+                    "description": null,
+                    "value": 10,
+                    "stack": 1,
+                    "wtype": "Sword",
+                    "attack_modifier": 1,
+                    "special_attack": 1,
+                    "zone_level": 2
+                },
+                {
+                    "name": "Long Sword",
+                    "description": null,
+                    "value": 10,
+                    "stack": 1,
+                    "wtype": "Sword",
+                    "attack_modifier": 1,
+                    "special_attack": 2,
+                    "zone_level": 2
                 }
             ],
             "equipped_weapon": {
@@ -400,7 +448,7 @@
                     "name": "Woodcleaver",
                     "description": null,
                     "value": 10,
-                    "stack": 0,
+                    "stack": 2,
                     "strength_modifier": 0,
                     "woodcut_modifier": 1,
                     "mining_modifier": 0,
@@ -411,7 +459,7 @@
                     "name": "Stonebreaker",
                     "description": null,
                     "value": 10,
-                    "stack": 0,
+                    "stack": 1,
                     "strength_modifier": 0,
                     "woodcut_modifier": 0,
                     "mining_modifier": 1,
@@ -422,7 +470,7 @@
                     "name": "Loothaven",
                     "description": null,
                     "value": 10,
-                    "stack": 0,
+                    "stack": 1,
                     "strength_modifier": 0,
                     "woodcut_modifier": 0,
                     "mining_modifier": 0,
@@ -433,7 +481,7 @@
                     "name": "Mightstone",
                     "description": null,
                     "value": 10,
-                    "stack": 0,
+                    "stack": 1,
                     "strength_modifier": 1,
                     "woodcut_modifier": 0,
                     "mining_modifier": 0,
@@ -444,7 +492,7 @@
                     "name": "Ironhide",
                     "description": null,
                     "value": 10,
-                    "stack": 2,
+                    "stack": 1,
                     "strength_modifier": 0,
                     "woodcut_modifier": 0,
                     "mining_modifier": 0,

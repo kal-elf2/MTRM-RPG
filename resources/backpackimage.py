@@ -11,7 +11,8 @@ ZONE_LEVEL_TO_RARITY = {
     4: "Epic",
     5: "Legendary"
 }
-
+def create_solid_square(size, color=(25, 25, 25, 255)):
+    return Image.new('RGBA', (size, size), color=color)
 
 def generate_backpack_image(interaction):
     from utils import load_player_data
@@ -83,24 +84,53 @@ def generate_backpack_image(interaction):
             x_offset += square_size + line_gap
             row_items += 1
 
-        # Determine the starting y_offset for charms based on the current y_offset
-        y_offset_for_charms = y_offset + 2 * (square_size + line_gap)  # 2 rows below the last row of the inventory
+        # Set a fixed starting y_offset for charms from the top of the image
+        fixed_distance_from_top = 9.45  # Set this value according to the required distance from the top
+        y_offset_for_charms = fixed_distance_from_top * (square_size + line_gap)
 
         # Define the fixed order and corresponding x_offsets for charms
         charm_order = ["Woodcleaver", "Stonebreaker", "Loothaven", "Mightstone", "Ironhide"]
         charm_offsets = {name: 2 * square_size + i * (square_size + line_gap) for i, name in enumerate(charm_order)}
 
-        charms = getattr(player.inventory, "charms",
-                         [])  # Assuming "charms" is the attribute name for charms in the inventory
+        # For manual adjustments in terms of number of squares:
+        # (dx, dy) adjustments. For example, (1, 0) will adjust the position 1 square to the right.
+        charm_adjustments = {
+            "Woodcleaver": (7, 0),
+            "Stonebreaker": (7.0, 0),
+            "Loothaven": (7, 0),
+            "Mightstone": (7, 0),
+            "Ironhide": (7, 0),
+        }
+
+        charms = getattr(player.inventory, "charms", [])
 
         for charm in charms:
             if charm.name in charm_offsets:
+                # Calculate the adjustment values in terms of pixels
+                dx_pixels = charm_adjustments[charm.name][0] * square_size
+                dy_pixels = charm_adjustments[charm.name][1] * square_size
+
+                # Overlay the solid square for charm
+                square_overlay = create_solid_square(int(square_size))
+                base_img.paste(square_overlay,
+                               (int(charm_offsets[charm.name] + dx_pixels),
+                                int(y_offset_for_charms + dy_pixels)),
+                               square_overlay)
+
                 icon_url = generate_urls("Icons", charm.name)
                 icon_img = Image.open(session.get(icon_url, stream=True).raw).resize(
                     (int(square_size), int(square_size)))
-                centered_x_offset = charm_offsets[charm.name] + (square_size - icon_img.width) / 2
-                centered_y_offset = y_offset_for_charms + (square_size - icon_img.height) / 2
-                base_img.paste(icon_img, (int(centered_x_offset), int(centered_y_offset)), icon_img)
+
+                adjusted_x_offset = charm_offsets[charm.name] + dx_pixels + (square_size - icon_img.width) / 2
+                adjusted_y_offset = y_offset_for_charms + dy_pixels + (square_size - icon_img.height) / 2
+
+                base_img.paste(icon_img, (int(adjusted_x_offset), int(adjusted_y_offset)), icon_img)
+
+                # Drawing the quantity on the image in the top right corner of the charm
+                text_width, text_height = draw.textsize(str(charm.stack),
+                                                        font=font)  # charm.stack is assumed to be the quantity of charms
+                draw.text((adjusted_x_offset + square_size - text_width - 5, adjusted_y_offset + 5), str(charm.stack),
+                          fill="white", font=font)
 
         # Display equipped armor items
         equipped_armor_items = [player.inventory.equipped_armor[ArmorType.CHEST],
@@ -151,7 +181,7 @@ def generate_backpack_image(interaction):
 
         equipped_weapon_position = (x_offset_start - 2.285 * square_size, y_offset_start + 0 * square_size)  # Adjust position as needed
         equipped_shield_position = (x_offset_start - 3.36 * square_size, y_offset_start + 5.35 * square_size)  # Adjust position as needed
-        equipped_charm_position = (x_offset_start - 3.36 * square_size, y_offset_start + 4.28 * square_size)  # Adjust position as needed
+        equipped_charm_position = (x_offset_start - 3.36 * square_size, y_offset_start + 4.3 * square_size)  # Adjust position as needed
 
         equipped_positions = [
             equipped_weapon_position,

@@ -309,15 +309,25 @@ class EquipTypeSelect(discord.ui.Select):
             await interaction.response.send_message(embed=embed, ephemeral=True)
             return
 
-        # Modify the options creation to include the rarity in the label and value and emoji based on zone level
-        self.options = [
-            discord.SelectOption(
-                label=f"{item.name}",
-                value=f"{item.name} ({ZONE_LEVEL_TO_RARITY[item.zone_level]})",
-                emoji=get_emoji(ZONE_LEVEL_TO_EMOJI[item.zone_level])  # Use get_emoji function here
-            )
-            for item in items
-        ]
+        # Modify the options creation to conditionally include the rarity
+        if item_type == "Charm":
+            self.options = [
+                discord.SelectOption(
+                    label=f"{item.name}",
+                    value=f"{item.name}",
+                    emoji=get_emoji(item.name)
+                )
+                for item in items
+            ]
+        else:
+            self.options = [
+                discord.SelectOption(
+                    label=f"{item.name}",
+                    value=f"{item.name} ({ZONE_LEVEL_TO_RARITY[item.zone_level]})",
+                    emoji=get_emoji(ZONE_LEVEL_TO_EMOJI[item.zone_level])  # Use get_emoji function here
+                )
+                for item in items
+            ]
 
         await interaction.response.edit_message(content=f"Choose a specific {item_type} to equip:", view=self.view)
 
@@ -347,16 +357,26 @@ class EquipTypeSelect(discord.ui.Select):
 
     @staticmethod
     def find_item_by_name(inventory, item_name_with_rarity):
-        # Split the name and rarity
-        item_name, rarity = item_name_with_rarity.rsplit(" (", 1)
-        rarity = rarity.rstrip(")")
+        # Check if rarity exists
+        if " (" in item_name_with_rarity:
+            item_name, rarity = item_name_with_rarity.rsplit(" (", 1)
+            rarity = rarity.rstrip(")")
+        else:
+            item_name = item_name_with_rarity
+            rarity = None
 
         for category in ["weapons", "armors", "shields", "charms"]:
-            selected_item = next(
-                (item for item in getattr(inventory, category, [])
-                 if item.name == item_name and ZONE_LEVEL_TO_RARITY[item.zone_level] == rarity),
-                None
-            )
+            if rarity:
+                selected_item = next(
+                    (item for item in getattr(inventory, category, [])
+                     if item.name == item_name and ZONE_LEVEL_TO_RARITY.get(item.zone_level) == rarity),
+                    None
+                )
+            else:
+                selected_item = next(
+                    (item for item in getattr(inventory, category, []) if item.name == item_name),
+                    None
+                )
             if selected_item:
                 return selected_item
 
@@ -431,7 +451,11 @@ def create_item_embed(action, item):
         title = f"{action.capitalize()}ped {item.name}"
         description = f"You have {action}ped the {item.name}."
         thumbnail_url = generate_urls("Icons", item.name)
-        embed_color = color_mapping.get(item.zone_level, 0x3498db)  # Fetch color based on zone_level or use default
+        # Check if the item has a zone_level attribute
+        if hasattr(item, 'zone_level'):
+            embed_color = color_mapping.get(item.zone_level, 0x3498db)
+        else:
+            embed_color = 0x3498db  # Default color
 
     embed = discord.Embed(title=title, description=description, color=embed_color)
     embed.set_thumbnail(url=thumbnail_url)

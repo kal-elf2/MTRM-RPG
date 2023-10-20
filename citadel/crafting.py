@@ -87,13 +87,15 @@ class Shield(Item):
         )
 
 class Charm(Item):
-    def __init__(self, name, woodcut_modifier = 0, mining_modifier = 0, strength_modifier=0, defense_modifier=0, loot_multiplier=1.0, description=None, value=None):
+    def __init__(self, name, woodcut_modifier=0, mining_modifier=0, strength_modifier=0,
+                 defense_modifier=0, loot_multiplier=1.0, description=None, value=None, stack=1):
         super().__init__(name, description, value)
         self.woodcut_modifier = woodcut_modifier
         self.mining_modifier = mining_modifier
         self.strength_modifier = strength_modifier
         self.defense_modifier = defense_modifier
         self.loot_multiplier = loot_multiplier
+        self.stack = stack
 
     def to_dict(self):
         charm_data = super().to_dict()
@@ -102,6 +104,7 @@ class Charm(Item):
         charm_data["mining_modifier"] = self.mining_modifier
         charm_data["defense_modifier"] = self.defense_modifier
         charm_data["loot_multiplier"] = self.loot_multiplier
+        charm_data["stack"] = self.stack
         return charm_data
 
     @classmethod
@@ -114,7 +117,8 @@ class Charm(Item):
             defense_modifier=data.get("defense_modifier", 0),
             loot_multiplier=data.get("loot_multiplier", 1.0),
             description=data.get("description"),
-            value=data.get("value")
+            value=data.get("value"),
+            stack=data.get("stack", 1)
         )
 
 # Recipe Classes
@@ -310,7 +314,7 @@ class CraftingSelect(discord.ui.Select):
         self.crafting_station = crafting_station
 
         # Define select options based on the provided recipes
-        options = [discord.SelectOption(label=recipe.result.name, value=recipe.result.name)
+        options = [discord.SelectOption(label=recipe.result.name, value=recipe.result.name, emoji=(get_emoji(recipe.result.name)))
                    for recipe in self.crafting_station.recipes]
 
         # Initialize the Select element with the generated options
