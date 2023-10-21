@@ -23,6 +23,37 @@ class LootOptions(discord.ui.View):
 
     @discord.ui.button(custom_id="loot", label="Loot", style=discord.ButtonStyle.blurple)
     async def collect_loot(self, button, interaction):
+        # Extract loot items and messages from the battle outcome
+        loot = self.battle_outcome[3]
+        print(f"Raw loot data: {loot}")
+
+        # Extract all item drops (excluding 'coppers', 'materium' as they don't occupy inventory slots)
+        new_items = [item for loot_type, loot_items in loot if loot_type in ('herb', 'items', 'gem', 'loot', 'potion')
+                     for item in (loot_items if isinstance(loot_items, list) else [loot_items])]
+        print(f"Filtered new items from loot: {new_items}")
+
+        # Calculate the number of new inventory slots required
+        required_slots = 0
+        for item in new_items:
+            if isinstance(item, tuple):  # This is for 'items' type which has (Item, quantity) structure
+                item_name = item[0].name
+            else:
+                item_name = item.name
+            print(f"Checking inventory for item: {item_name}")
+
+            if not self.player.inventory.has_item(item_name):
+                required_slots += 1
+                print(f"Player doesn't have {item_name}. Incrementing required slots.")
+
+        print(f"Total required slots for new items: {required_slots}")
+
+        # If player's inventory doesn't have enough space for new non-stackable items
+        available_slots = self.player.inventory.limit - self.player.inventory.total_items_count()
+        print(f"Available slots in inventory: {available_slots}")
+        if available_slots < required_slots:
+            await interaction.response.send_message("Inventory is full. Please make some room before collecting loot.",
+                                                    ephemeral=True)
+            return
 
         for loot_type, loot_items in self.battle_outcome[3]:
             if loot_type == 'coppers':
