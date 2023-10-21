@@ -103,6 +103,17 @@ class MineButton(discord.ui.View):
     @discord.ui.button(label="Mine", custom_id="mine", style=discord.ButtonStyle.blurple)
     async def mine(self, button, interaction):
 
+        # Check if the player has space in the inventory or if the item is already in the inventory
+        if self.player.inventory.total_items_count() >= self.player.inventory.limit and not self.player.inventory.has_item(
+                self.ore_type):
+            await interaction.response.send_message(
+                f"Inventory is full. Please make some room before mining {self.ore_type}.",
+                ephemeral=True)
+            # Re-enable the button after 3 seconds
+            await asyncio.sleep(2.5)
+            button.disabled = False
+            return
+
         # Disable the button immediately
         button.disabled = True
         await interaction.response.edit_message(embed=self.embed, view=self)
@@ -162,8 +173,7 @@ class MineButton(discord.ui.View):
 
             # Clear previous fields and add new ones
             self.embed.clear_fields()
-            # Include the yellow potion emoji for the stamina/stamina string
-            stamina_str = f"{get_emoji('potion_yellow_emoji')}  {self.player.stats.stamina}/{self.player.stats.max_stamina}"
+            stamina_str = f"{get_emoji('stamina_emoji')}  {self.player.stats.stamina}/{self.player.stats.max_stamina}"
             # Get the new ore count
             ore_count = self.player.inventory.get_item_quantity(self.ore_type)
             ore_str = str(ore_count)
@@ -315,8 +325,12 @@ class MineButton(discord.ui.View):
             self.player_data[self.author_id]["in_battle"] = False
             save_player_data(self.guild_id, self.player_data)
 
-    @discord.ui.button(custom_id="stamina", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("potion_yellow_emoji")}')
+    @discord.ui.button(custom_id="stamina", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("potion_stamina")}')
     async def stamina_potion(self, button, interaction):
+        pass
+
+    @discord.ui.button(custom_id="super_stamina", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("potion_super_stamina")}')
+    async def super_stamina_potion(self, button, interaction):
         pass
 
 class MiningCog(commands.Cog):
@@ -400,7 +414,7 @@ class MiningCog(commands.Cog):
         embed.set_image(url=generate_urls("ore", f'{ore_type}'))
 
         # Add the initial stamina and ore inventory here
-        stamina_str = f"{get_emoji('potion_yellow_emoji')}  {player.stats.stamina}/{player.stats.max_stamina}"
+        stamina_str = f"{get_emoji('stamina_emoji')}  {player.stats.stamina}/{player.stats.max_stamina}"
 
         # Use the get_ore_count method to get the wood count
         ore_count = player.inventory.get_item_quantity(ore_type)

@@ -107,6 +107,15 @@ class HarvestButton(discord.ui.View):
 
     @discord.ui.button(label="Harvest", custom_id="harvest", style=discord.ButtonStyle.blurple)
     async def harvest(self, button, interaction):
+        # Check if the player has space in the inventory or if the item is already in the inventory
+        if self.player.inventory.total_items_count() >= self.player.inventory.limit and not self.player.inventory.has_item(
+                self.tree_type):
+            await interaction.response.send_message(f"Inventory is full. Please make some room before chopping {self.tree_type}.",
+                                            ephemeral=True)
+            # Re-enable the button after 3 seconds
+            await asyncio.sleep(2.5)
+            button.disabled = False
+            return
 
         # Disable the button immediately
         button.disabled = True
@@ -168,8 +177,7 @@ class HarvestButton(discord.ui.View):
 
             # Clear previous fields and add new ones
             self.embed.clear_fields()
-            # Include the yellow potion emoji for the stamina/stamina string
-            stamina_str = f"{get_emoji('potion_yellow_emoji')}  {self.player.stats.stamina}/{self.player.stats.max_stamina}"
+            stamina_str = f"{get_emoji('stamina_emoji')}  {self.player.stats.stamina}/{self.player.stats.max_stamina}"
             # Get the new wood count
             wood_count = self.player.inventory.get_item_quantity(self.tree_type)
             wood_str = str(wood_count)
@@ -319,8 +327,12 @@ class HarvestButton(discord.ui.View):
             self.player_data[self.author_id]["in_battle"] = False
             save_player_data(self.guild_id, self.player_data)
 
-    @discord.ui.button(custom_id="stamina", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("potion_yellow_emoji")}')
+    @discord.ui.button(custom_id="stamina", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("potion_stamina")}')
     async def stamina_potion(self, button, interaction):
+        pass
+
+    @discord.ui.button(custom_id="super_stamina", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("potion_super_stamina")}')
+    async def super_stamina_potion(self, button, interaction):
         pass
 
 class WoodcuttingCog(commands.Cog):
@@ -405,7 +417,7 @@ class WoodcuttingCog(commands.Cog):
         embed.set_image(url=generate_urls("trees", f'{tree_type}'))
 
         # Add the initial stamina and wood inventory here
-        stamina_str = f"{get_emoji('potion_yellow_emoji')}  {player.stats.stamina}/{player.stats.max_stamina}"
+        stamina_str = f"{get_emoji('stamina_emoji')}  {player.stats.stamina}/{player.stats.max_stamina}"
 
         # Use the get_item_quantity method to get the wood count
         wood_count = player.inventory.get_item_quantity(tree_type)

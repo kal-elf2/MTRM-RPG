@@ -5,21 +5,21 @@
             "zone_level": 2,
             "health": 475,
             "max_health": 475,
-            "strength": 239,
+            "strength": 201,
             "stamina": 203,
             "max_stamina": 203,
-            "attack": 120,
+            "attack": 82,
             "defense": 83,
             "combat_level": 39,
-            "combat_experience": 23554,
+            "combat_experience": 23597,
             "mining_level": 39,
-            "mining_experience": 23494,
+            "mining_experience": 23514,
             "woodcutting_level": 39,
-            "woodcutting_experience": 23461,
+            "woodcutting_experience": 23481,
             "damage_taken": 0
         },
         "inventory": {
-            "coppers": 209,
+            "coppers": 224,
             "items": [
                 {
                     "name": "Charcoal",
@@ -127,19 +127,19 @@
                     "name": "Deer Parts",
                     "description": "Various parts of a deer. Some are useful for making tools and weapons.",
                     "value": 20,
-                    "stack": 388
+                    "stack": 390
                 },
                 {
                     "name": "Deer Skin",
                     "description": "Tough deer skin. Can be used for citadel sturdy armors.",
                     "value": 30,
-                    "stack": 596
+                    "stack": 599
                 },
                 {
                     "name": "Wolf Skin",
                     "description": "A skin of a wild wolf. Known for its durability and strength.",
                     "value": 50,
-                    "stack": 997
+                    "stack": 998
                 },
                 {
                     "name": "Glowing Essence",
@@ -175,7 +175,7 @@
             "trees": [
                 {
                     "name": "Pine",
-                    "stack": 971
+                    "stack": 1
                 },
                 {
                     "name": "Yew",
@@ -190,12 +190,14 @@
                     "stack": 996
                 }
             ],
-            "herbs": [],
-            "ore": [
+            "herbs": [
                 {
-                    "name": "Iron Ore",
-                    "stack": 981
-                },
+                    "name": "Spirit Weed",
+                    "value": 25,
+                    "stack": 1
+                }
+            ],
+            "ore": [
                 {
                     "name": "Coal",
                     "stack": 979
@@ -203,29 +205,15 @@
                 {
                     "name": "Carbon",
                     "stack": 932
+                },
+                {
+                    "name": "Iron Ore",
+                    "stack": 1
                 }
             ],
             "potions": [],
             "limit": 49,
             "armors": [
-                {
-                    "name": "Padded Armor",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
-                    "defense_modifier": 1,
-                    "armor_type": "chest",
-                    "zone_level": 1
-                },
-                {
-                    "name": "Padded Boots",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
-                    "defense_modifier": 1,
-                    "armor_type": "boots",
-                    "zone_level": 1
-                },
                 {
                     "name": "Padded Gloves",
                     "description": null,
@@ -290,6 +278,15 @@
                     "zone_level": 3
                 },
                 {
+                    "name": "Padded Armor",
+                    "description": null,
+                    "value": 10,
+                    "stack": 1,
+                    "defense_modifier": 1,
+                    "armor_type": "chest",
+                    "zone_level": 4
+                },
+                {
                     "name": "Brigandine Armor",
                     "description": null,
                     "value": 10,
@@ -306,6 +303,15 @@
                     "defense_modifier": 1,
                     "armor_type": "gloves",
                     "zone_level": 4
+                },
+                {
+                    "name": "Brigandine Gloves",
+                    "description": null,
+                    "value": 10,
+                    "stack": 1,
+                    "defense_modifier": 1,
+                    "armor_type": "gloves",
+                    "zone_level": 5
                 }
             ],
             "equipped_armor": {
@@ -352,7 +358,7 @@
                     "name": "Voltaic Sword",
                     "description": null,
                     "value": 10,
-                    "stack": 1,
+                    "stack": 2,
                     "wtype": "Sword",
                     "attack_modifier": 1,
                     "special_attack": 4,
@@ -379,16 +385,7 @@
                     "zone_level": 2
                 }
             ],
-            "equipped_weapon": {
-                "name": "Voltaic Sword",
-                "description": null,
-                "value": 10,
-                "stack": 1,
-                "wtype": "Sword",
-                "attack_modifier": 1,
-                "special_attack": 4,
-                "zone_level": 4
-            },
+            "equipped_weapon": null,
             "shields": [
                 {
                     "name": "Large Shield",
@@ -404,7 +401,7 @@
                     "value": 10,
                     "stack": 4,
                     "defense_modifier": 1,
-                    "zone_level": 2
+                    "zone_level": 5
                 }
             ],
             "equipped_shield": {
