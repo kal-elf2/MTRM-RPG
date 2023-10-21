@@ -7,7 +7,7 @@ from resources.tree import Tree
 
 class Inventory:
 
-    def __init__(self, limit=40):
+    def __init__(self, limit=49):
         from citadel.crafting import ArmorType
         self.coppers = 0
         self.items = []
@@ -96,6 +96,30 @@ class Inventory:
             self._add_item_to_specific_inventory(item, amount, self.charms)
         elif isinstance(item, Item):
             self._add_item_to_specific_inventory(item, amount, self.items)
+
+    def has_item(self, item_name, zone_level=None):
+
+        stackable_sections = [self.items, self.trees, self.herbs, self.ore, self.weapons,
+                              self.armors, self.shields]
+
+        for section in stackable_sections:
+            for item in section:
+                if item.name == item_name and (not zone_level or getattr(item, 'zone_level', None) == zone_level):
+                    return True
+
+        return False
+
+    def total_items_count(self):
+        total = (
+                len(self.items) +
+                len(self.trees) +
+                len(self.herbs) +
+                len(self.ore) +
+                len(self.armors) +
+                len(self.weapons) +
+                len(self.shields)
+        )
+        return total
 
     def get_item_quantity(self, item_name, zone_level=None):
         stackable_sections = [self.items, self.trees, self.herbs, self.ore, self.potions, self.weapons,

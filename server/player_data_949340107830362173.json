@@ -37,7 +37,7 @@
                     "name": "Steel",
                     "description": null,
                     "value": null,
-                    "stack": 2597
+                    "stack": 2595
                 },
                 {
                     "name": "Onyx",
@@ -73,7 +73,7 @@
                     "name": "Ash Strip",
                     "description": null,
                     "value": null,
-                    "stack": 43
+                    "stack": 40
                 },
                 {
                     "name": "Poplar Strip",
@@ -169,7 +169,7 @@
                     "name": "Tough Leather Straps",
                     "description": null,
                     "value": null,
-                    "stack": 924
+                    "stack": 922
                 }
             ],
             "trees": [
@@ -206,7 +206,7 @@
                 }
             ],
             "potions": [],
-            "limit": 40,
+            "limit": 49,
             "armors": [
                 {
                     "name": "Padded Armor",
@@ -359,26 +359,6 @@
                     "zone_level": 1
                 },
                 {
-                    "name": "Voltaic Sword",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
-                    "wtype": "Sword",
-                    "attack_modifier": 1,
-                    "special_attack": 4,
-                    "zone_level": 2
-                },
-                {
-                    "name": "Voltaic Sword",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
-                    "wtype": "Sword",
-                    "attack_modifier": 1,
-                    "special_attack": 4,
-                    "zone_level": 4
-                },
-                {
                     "name": "Short Sword",
                     "description": null,
                     "value": 10,
@@ -414,7 +394,7 @@
                     "name": "Large Shield",
                     "description": null,
                     "value": 10,
-                    "stack": 3,
+                    "stack": 2,
                     "defense_modifier": 1,
                     "zone_level": 1
                 },
@@ -422,26 +402,18 @@
                     "name": "Small Shield",
                     "description": null,
                     "value": 10,
-                    "stack": 2,
+                    "stack": 4,
                     "defense_modifier": 1,
                     "zone_level": 2
-                },
-                {
-                    "name": "Buckler",
-                    "description": null,
-                    "value": 10,
-                    "stack": 2,
-                    "defense_modifier": 1,
-                    "zone_level": 4
                 }
             ],
             "equipped_shield": {
-                "name": "Small Shield",
+                "name": "Large Shield",
                 "description": null,
                 "value": 10,
                 "stack": 2,
                 "defense_modifier": 1,
-                "zone_level": 2
+                "zone_level": 1
             },
             "charms": [
                 {

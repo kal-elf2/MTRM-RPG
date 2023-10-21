@@ -158,31 +158,28 @@ class CraftingStation:
         from utils import save_player_data
 
         recipe = next((r for r in self.recipes if r.result.name == recipe_name), None)
-        if not recipe:
-            print(f"Recipe not found for {recipe_name}.")
-            return None
-        if not recipe.can_craft(player.inventory):
-            print(f"Cannot craft {recipe_name} due to insufficient ingredients.")
-            return None
-        if recipe and recipe.can_craft(player.inventory):
 
-            for ingredient, quantity in recipe.ingredients:
-                player.inventory.remove_item(ingredient.name, quantity)
+        # Check if the player has space in the inventory or if the item is already in the inventory
+        if player.inventory.total_items_count() >= player.inventory.limit and not player.inventory.has_item(
+                recipe.result.name):
+            return "Inventory is full. Please make some room before crafting."
 
-            if recipe.result.name == "Bread":
-                added_stamina = 10
-                player.stats.stamina = min(player.stats.stamina + added_stamina, player.stats.max_stamina)
-                return recipe.result  # Return the Bread item even though it's consumed
-            elif recipe.result.name == "Trencher":
-                player.stats.stamina = player.stats.max_stamina
-                return recipe.result  # Return the Trencher item even though it's consumed
+        for ingredient, quantity in recipe.ingredients:
+            player.inventory.remove_item(ingredient.name, quantity)
 
-            player.inventory.add_item_to_inventory(recipe.result)
+        if recipe.result.name == "Bread":
+            added_stamina = 10
+            player.stats.stamina = min(player.stats.stamina + added_stamina, player.stats.max_stamina)
+            return recipe.result  # Return the Bread item even though it's consumed
+        elif recipe.result.name == "Trencher":
+            player.stats.stamina = player.stats.max_stamina
+            return recipe.result  # Return the Trencher item even though it's consumed
 
-            save_player_data(guild_id, player_data)
+        player.inventory.add_item_to_inventory(recipe.result)
 
-            return recipe.result
-        return None
+        save_player_data(guild_id, player_data)
+
+        return recipe.result
 
 
 class CraftButtonView(discord.ui.View):
@@ -210,6 +207,11 @@ class CraftButton(discord.ui.Button):
         # Use the CraftingStation's craft method
         crafted_item = self.station.craft(self.selected_recipe.result.name, self.player, self.player_data,
                                           self.guild_id)
+
+        # If crafted_item is a string, it indicates an error message.
+        if isinstance(crafted_item, str):
+            await interaction.response.send_message(crafted_item, ephemeral=True)
+            return  # Exit early since crafting failed.
 
         # Get zone level from player stats
         zone_level = self.player.stats.zone_level
