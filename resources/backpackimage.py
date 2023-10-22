@@ -93,7 +93,7 @@ def generate_backpack_image(interaction):
         charm_offsets = {name: 2 * square_size + i * (square_size + line_gap) for i, name in enumerate(charm_order)}
 
         # For manual adjustments in terms of number of squares:
-        # (dx, dy) adjustments. For example, (1, 0) will adjust the position 1 square to the right.
+        # (dx, dy) adjustments.
         charm_adjustments = {
             "Woodcleaver": (7, 0),
             "Stonebreaker": (7.0, 0),
@@ -138,16 +138,16 @@ def generate_backpack_image(interaction):
 
         # For manual adjustments in terms of number of squares:
         potion_adjustments = {
-            "Stamina Potion": (0, 0),
-            "Health Potion": (0, 0),
-            "Super Stamina Potion": (0, 0),
-            "Super Health Potion": (0, 0),
+            "Stamina Potion": (0.4, 0),
+            "Health Potion": (0.4, 0),
+            "Super Stamina Potion": (0.4, 0),
+            "Super Health Potion": (0.4, 0),
         }
 
         potions = getattr(player.inventory, "potions", [])
 
         # Set a fixed starting y_offset for potions from the top of the image
-        y_offset_for_potions = fixed_distance_from_top * (square_size + line_gap) + 1.075 * square_size
+        y_offset_for_potions = fixed_distance_from_top * (square_size + line_gap) + 0 * square_size
 
         for potion in potions:
             if potion.name in potion_offsets:

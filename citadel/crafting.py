@@ -350,6 +350,14 @@ class CraftingSelect(discord.ui.Select):
             5: 'legendary_emoji'
         }
 
+        zone_rarity = {
+            1: '(Common)',
+            2: '(Uncommon)',
+            3: '(Rare)',
+            4: '(Epic)',
+            5: '(Legendary)',
+        }
+
         # Colors for each zone
         color_mapping = {
             1: 0x969696,
@@ -365,6 +373,10 @@ class CraftingSelect(discord.ui.Select):
 
         # Retrieve the recipe for the selected item.
         selected_recipe = next((r for r in self.crafting_station.recipes if r.result.name == self.values[0]), None)
+
+        # Check player's inventory for quantity of the crafted item.
+        crafted_item_count = player.inventory.get_item_quantity(selected_recipe.result.name, zone_level)
+
         embed_title = f"{selected_recipe.result.name} {zone_emoji}"
         if selected_recipe.result.name == "Bread":
             embed_title = "Bread: Auto Consume"
@@ -388,6 +400,17 @@ class CraftingSelect(discord.ui.Select):
         embed = Embed(title=embed_title, description=message_content, color=embed_color)
         embed.set_thumbnail(url=crafted_item_url)
 
+        # Setting the footer with crafted item count in backpack, except for Bread and Trencher
+        if selected_recipe.result.name not in ["Bread", "Trencher"]:
+            footer_text = f"{crafted_item_count} in backpack"
+
+            # Check if the item class is Armor, Weapon, or Shield and adjust the footer text
+            if isinstance(selected_recipe.result, (Armor, Weapon, Shield)):
+                rarity_label = zone_rarity.get(zone_level)
+                footer_text += f" {rarity_label}"
+
+            embed.set_footer(text=footer_text)
+
         # Check if it's "Bread" or "Trencher" and add stamina bar to description
         if selected_recipe.result.name in ["Bread", "Trencher"]:
             stamina_progress = stamina_bar(player.stats.stamina, player.stats.max_stamina)
@@ -406,6 +429,7 @@ class CraftingSelect(discord.ui.Select):
                                disabled=not can_craft)
         message = await interaction.response.send_message(embed=embed, ephemeral=True, view=view)
         view.message = message
+
 
 def create_crafting_stations(interaction, station_name=None):
     from utils import load_player_data
