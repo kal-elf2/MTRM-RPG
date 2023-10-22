@@ -5,6 +5,7 @@ from images.urls import generate_urls
 from emojis import get_emoji
 from exemplars.exemplars import Exemplar
 from resources.ore import Ore
+from resources.potion import Potion
 
 
 class Weapon(Item):
@@ -451,6 +452,10 @@ def create_crafting_stations(interaction, station_name=None):
     linen = Item("Linen")
     linen_thread = Item("Linen Thread")
     flax = Item("Flax")
+    ranarr = Item("Ranarr")
+    spirit_weed = Item("Spirit Weed")
+    snapdragon = Item("Snapdragon")
+    bloodweed = Item("Bloodweed")
 
     #Shields
     buckler = Shield("Buckler", defense_modifier=1, value=10, zone_level=zone_level)
@@ -490,6 +495,16 @@ def create_crafting_stations(interaction, station_name=None):
     lootmasters_charm = Charm("Loothaven", loot_multiplier=1, value=10)
     strength_charm = Charm("Mightstone", strength_modifier=1, value=10)
     defenders_charm = Charm("Ironhide", defense_modifier=1, value=10)
+
+    # Potions
+    stamina_potion = Potion("Stamina Potion", effect_stat="stamina", effect_value=10, value=10,
+                            description="A potion that restores 10 stamina points.")
+    health_potion = Potion("Health Potion", effect_stat="health", effect_value=10, value=10,
+                           description="A basic potion that restores 10 health points.")
+    super_stamina_potion = Potion("Super Stamina Potion", effect_stat="stamina", effect_value=20, value=20,
+                                  description="A potent potion that restores 20 stamina points.")
+    super_health_potion = Potion("Super Health Potion", effect_stat="health", effect_value=20, value=20,
+                                 description="A potent potion that restores 20 health points.")
 
     # Forge Crafting Station and Recipes
     forge = CraftingStation("Forge")
@@ -560,7 +575,7 @@ def create_crafting_stations(interaction, station_name=None):
 
     # Tavern Trencher
     tavern = CraftingStation("Tavern")
-    tavern.add_recipe(Recipe(trencher, (venison, 10), (rabbit_meat, 10), (flour, 5)))
+    tavern.add_recipe(Recipe(trencher, (venison, 5), (rabbit_meat, 5), (flour, 5)))
 
     # Potion Shop
     potion_shop = CraftingStation("Potion Shop")
@@ -569,6 +584,11 @@ def create_crafting_stations(interaction, station_name=None):
     potion_shop.add_recipe(Recipe(lootmasters_charm, (glowing_essence, 1), (onyx, 3), (carbon, 5), (steel, 5), (charcoal, 5)))
     potion_shop.add_recipe(Recipe(strength_charm, (glowing_essence, 1), (thick_pole, 10), (steel, 10), (charcoal, 5), (carbon, 3)))
     potion_shop.add_recipe(Recipe(defenders_charm, (glowing_essence, 1), (onyx, 4), (tough_leather_straps, 3), (steel, 5), (charcoal, 4)))
+    potion_shop.add_recipe(Recipe(stamina_potion, (ranarr, 1), (sinew, 2)))
+    potion_shop.add_recipe(Recipe(health_potion, (spirit_weed, 1), (venison, 1)))
+    potion_shop.add_recipe(Recipe(super_stamina_potion, (snapdragon, 1), (sinew, 6), (onyx, 3)))
+    potion_shop.add_recipe(Recipe(super_health_potion, (bloodweed, 1), (venison, 3), (onyx, 3)))
+
 
     stations = {
         "forge": forge,

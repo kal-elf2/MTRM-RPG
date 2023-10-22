@@ -56,7 +56,7 @@ def attempt_herb_drop(zone_level):
         # Adjust the herb types based on the zone level
         herb_types_for_zone = HERB_TYPES[:zone_level]
         # Adjust the weights based on the zone level, these are now 40%, 40%, 5%, 5%, 1%
-        herb_weights = [40, 40, 10, 5, 1][:zone_level]
+        herb_weights = [40, 40, 5, 5][:zone_level]
         herb_dropped = random.choices(herb_types_for_zone, weights=herb_weights, k=1)[0]
         return herb_dropped
     return None
