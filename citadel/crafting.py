@@ -294,7 +294,12 @@ class CraftButton(discord.ui.Button):
                 else:
                     crafted_item_count = self.player.inventory.get_item_quantity(crafted_item.name)
 
-                embed.set_footer(text=f"+1 {crafted_item.name} {zone_rarity_identifier}\n{crafted_item_count} in backpack")
+                # Check if crafted item is of class Armor, Weapon, or Shield to conditionally add rarity
+                if isinstance(crafted_item, (Armor, Weapon, Shield)):
+                    embed.set_footer(
+                        text=f"+1 {crafted_item.name} {zone_rarity_identifier}\n{crafted_item_count} in backpack")
+                else:
+                    embed.set_footer(text=f"+1 {crafted_item.name}\n{crafted_item_count} in backpack")
 
             # Check if it's "Bread" or "Trencher" and add stamina bar to description
             if self.selected_recipe.result.name in ["Bread", "Trencher"]:

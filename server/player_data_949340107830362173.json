@@ -43,7 +43,7 @@
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 853
+                    "stack": 838
                 },
                 {
                     "name": "Pole",
@@ -115,7 +115,7 @@
                     "name": "Sinew",
                     "description": null,
                     "value": null,
-                    "stack": 988
+                    "stack": 966
                 },
                 {
                     "name": "Rabbit Body",
@@ -127,19 +127,19 @@
                     "name": "Deer Parts",
                     "description": "Various parts of a deer. Some are useful for making tools and weapons.",
                     "value": 20,
-                    "stack": 2
+                    "stack": 1996
                 },
                 {
                     "name": "Deer Skin",
                     "description": "Tough deer skin. Can be used for citadel sturdy armors.",
                     "value": 30,
-                    "stack": 3
+                    "stack": 300
                 },
                 {
                     "name": "Wolf Skin",
                     "description": "A skin of a wild wolf. Known for its durability and strength.",
                     "value": 50,
-                    "stack": 2
+                    "stack": 200
                 },
                 {
                     "name": "Leather",
@@ -164,6 +164,12 @@
                     "description": "An ethereal essence that glows faintly. Used in powerful magical rituals and citadel.",
                     "value": 200,
                     "stack": 998
+                },
+                {
+                    "name": "Venison",
+                    "description": null,
+                    "value": null,
+                    "stack": 993
                 }
             ],
             "trees": [
@@ -188,22 +194,22 @@
                 {
                     "name": "Ranarr",
                     "value": 25,
-                    "stack": 390
+                    "stack": 388
                 },
                 {
                     "name": "Spirit Weed",
                     "value": 25,
-                    "stack": 240
+                    "stack": 239
                 },
                 {
                     "name": "Snapdragon",
                     "value": 350,
-                    "stack": 600
+                    "stack": 597
                 },
                 {
                     "name": "Bloodweed",
                     "value": 350,
-                    "stack": 600
+                    "stack": 598
                 }
             ],
             "ore": [
@@ -224,17 +230,22 @@
                 {
                     "name": "Health Potion",
                     "value": 10,
-                    "stack": 6
+                    "stack": 7
                 },
                 {
                     "name": "Stamina Potion",
                     "value": 10,
-                    "stack": 2
+                    "stack": 4
                 },
                 {
                     "name": "Super Health Potion",
                     "value": 20,
-                    "stack": 2
+                    "stack": 4
+                },
+                {
+                    "name": "Super Stamina Potion",
+                    "value": 20,
+                    "stack": 3
                 }
             ],
             "limit": 49,
