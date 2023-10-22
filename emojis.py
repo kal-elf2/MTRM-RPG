@@ -4,10 +4,10 @@ def get_emoji(emoji_name):
         'heart_emoji': '<:heartlife:1150995915491000370>',
         'stamina_emoji': '<:endurance:1150995498342297610>',
         'strength_emoji': '<:strength:1150994770026569788>',
-        'potion_health': '<:health:1164232136753156098>',
-        'potion_stamina': '<:stamina:1164232132898607105>',
-        'potion_super_stamina': '<:super_stamina:1164232134672785541>',
-        'potion_super_health': '<:super_health:1164232129874509935>',
+        'Health Potion': '<:health:1164232136753156098>',
+        'Stamina Potion': '<:stamina:1164232132898607105>',
+        'Super Stamina Potion': '<:super_stamina:1164232134672785541>',
+        'Super Health Potion': '<:super_health:1164232129874509935>',
         'human_exemplar_emoji': '<:human_seafarer:1052760015372562453>',
         'dwarf_exemplar_emoji': '<:dwarf_glimmeringclan:1052760138987098122>',
         'orc_exemplar_emoji': '<:orcsofthelonghunt:1052760210357375046>',
@@ -92,7 +92,11 @@ def get_emoji(emoji_name):
         'Carbon': '<:carbon:1156402823748132874>',
         'Voltaic Sword': '<:voltaic_sword:1157417008145629304>',
         'Champion Spear': '<:champion_spear:1157417004756648086>',
-        'Champion Bow': '<:champion_bow:1157417003393486858>'
+        'Champion Bow': '<:champion_bow:1157417003393486858>',
+        'Ranarr': '<:Ranarr:1165469166870990868>',
+        'Spirit Weed': '<:SpiritWeed:1165469173753839656>',
+        'Snapdragon': '<:Snapdragon:1165469161837834341>',
+        'Bloodweed': '<:Bloodweed:1165469363311235112>'
     }
 
     # Return the appropriate emoji string, or an empty string if not found

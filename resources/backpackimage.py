@@ -32,7 +32,7 @@ def generate_backpack_image(interaction):
         draw = ImageDraw.Draw(base_img)
 
         # Define the categories and extract the icons based on the order
-        categories = ["items", "trees", "herbs", "ore", "potions", "armors", "weapons", "shields"]
+        categories = ["items", "trees", "herbs", "ore", "armors", "weapons", "shields"]
         # Adjusting the icons extraction:
         icons = []
         for category in categories:
@@ -130,6 +130,50 @@ def generate_backpack_image(interaction):
                 text_width, text_height = draw.textsize(str(charm.stack),
                                                         font=font)  # charm.stack is assumed to be the quantity of charms
                 draw.text((adjusted_x_offset + square_size - text_width - 5, adjusted_y_offset + 5), str(charm.stack),
+                          fill="white", font=font)
+
+        # Define the fixed order and corresponding x_offsets for potions (after charms)
+        potion_order = ["Stamina Potion", "Super Stamina Potion", "Health Potion", "Super Health Potion"]
+        potion_offsets = {name: 2 * square_size + i * (square_size + line_gap) for i, name in enumerate(potion_order)}
+
+        # For manual adjustments in terms of number of squares:
+        potion_adjustments = {
+            "Stamina Potion": (0, 0),
+            "Health Potion": (0, 0),
+            "Super Stamina Potion": (0, 0),
+            "Super Health Potion": (0, 0),
+        }
+
+        potions = getattr(player.inventory, "potions", [])
+
+        # Set a fixed starting y_offset for potions from the top of the image
+        y_offset_for_potions = fixed_distance_from_top * (square_size + line_gap) + 1.075 * square_size
+
+        for potion in potions:
+            if potion.name in potion_offsets:
+                # Calculate the adjustment values in terms of pixels
+                dx_pixels = potion_adjustments[potion.name][0] * square_size
+                dy_pixels = potion_adjustments[potion.name][1] * square_size
+
+                # Overlay the solid square for potion
+                square_overlay = create_solid_square(int(square_size))
+                base_img.paste(square_overlay,
+                               (int(potion_offsets[potion.name] + dx_pixels),
+                                int(y_offset_for_potions + dy_pixels)),
+                               square_overlay)
+
+                icon_url = generate_urls("Icons", potion.name)
+                icon_img = Image.open(session.get(icon_url, stream=True).raw).resize(
+                    (int(square_size), int(square_size)))
+
+                adjusted_x_offset = potion_offsets[potion.name] + dx_pixels + (square_size - icon_img.width) / 2
+                adjusted_y_offset = y_offset_for_potions + dy_pixels + (square_size - icon_img.height) / 2
+
+                base_img.paste(icon_img, (int(adjusted_x_offset), int(adjusted_y_offset)), icon_img)
+
+                # Drawing the quantity on the image in the top right corner of the potion
+                text_width, text_height = draw.textsize(str(potion.stack), font=font)
+                draw.text((adjusted_x_offset + square_size - text_width - 5, adjusted_y_offset + 5), str(potion.stack),
                           fill="white", font=font)
 
         # Display equipped armor items

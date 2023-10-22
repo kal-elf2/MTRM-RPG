@@ -136,7 +136,7 @@ class BackpackView(discord.ui.View):
                 "Tough Leather", "Leather Straps", "Tough Leather Straps"
             ],
             "trees": ["Pine", "Yew", "Ash", "Poplar"],
-            "herbs": ["Ranarr", "Spirit Weed", "Snapdragon", "Bloodweed", "Dwarf Weed"],
+            "herbs": ["Ranarr", "Spirit Weed", "Snapdragon", "Bloodweed"],
             "ore": ["Iron Ore", "Coal", "Carbon"],
             "gems": ["Sapphire", "Emerald", "Ruby", "Diamond", "Black Opal"],
             "potions": ["Stamina Potion", "Health Potion", "Super Stamina Potion", "Super Health Potion"],

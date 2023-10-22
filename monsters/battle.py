@@ -28,7 +28,7 @@ class LootOptions(discord.ui.View):
         print(f"Raw loot data: {loot}")
 
         # Extract all item drops (excluding 'coppers', 'materium' as they don't occupy inventory slots)
-        new_items = [item for loot_type, loot_items in loot if loot_type in ('herb', 'items', 'gem', 'loot', 'potion')
+        new_items = [item for loot_type, loot_items in loot if loot_type in ('herb', 'items', 'gem', 'loot')
                      for item in (loot_items if isinstance(loot_items, list) else [loot_items])]
         print(f"Filtered new items from loot: {new_items}")
 
@@ -93,19 +93,19 @@ class BattleOptions(discord.ui.View):
     def __init__(self, interaction):
         super().__init__(timeout=None)
         self.interaction = interaction
-    @discord.ui.button(custom_id="stamina", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("potion_stamina")}')
+    @discord.ui.button(custom_id="stamina", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("Stamina Potion")}')
     async def stamina_potion(self, button, interaction):
         pass
 
-    @discord.ui.button(custom_id="super_stamina", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("potion_super_stamina")}')
+    @discord.ui.button(custom_id="super_stamina", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("Super Stamina Potion")}')
     async def super_stamina_potion(self, button, interaction):
         pass
 
-    @discord.ui.button(custom_id="health", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("potion_health")}')
+    @discord.ui.button(custom_id="health", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("Health Potion")}')
     async def health(self, button, interaction):
         pass
 
-    @discord.ui.button(custom_id="super_health", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("potion_super_health")}')
+    @discord.ui.button(custom_id="super_health", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("Super Health Potion")}')
     async def super_health(self, button, interaction):
         pass
 def create_health_bar(current, max_health):

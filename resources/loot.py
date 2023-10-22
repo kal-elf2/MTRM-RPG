@@ -93,11 +93,23 @@ def generate_zone_loot(zone_level, monster_drop=None, name=None):
 
     # Herb drops
     if random.random() < herb_drop_percent:
-        herb_types_for_zone = HERB_TYPES
-        herb_weights = [40, 40, 5, 5]
-        herb_dropped = random.choices(herb_types_for_zone, weights=herb_weights, k=1)[0]
+        # Base weights
+        herb_weights = [40, 40, 10, 10]
+
+        # Increase the weights of the last two herbs based on zone_level
+        increase_per_zone = 5
+        herb_weights[2] += (zone_level - 1) * increase_per_zone
+        herb_weights[3] += (zone_level - 1) * increase_per_zone
+
+        # Decrease the weights of the first two herbs to maintain total weight
+        total_increase = (zone_level - 1) * 2 * increase_per_zone
+        herb_weights[0] -= total_increase // 2
+        herb_weights[1] -= total_increase // 2
+
+        herb_dropped = random.choices(HERB_TYPES, weights=herb_weights, k=1)[0]
         loot.append(('herb', herb_dropped))
-        loot_messages.append(f"🌿 You found some {herb_dropped.name}!")
+        loot_messages.append(f"{get_emoji(herb_dropped.name)} You found some {herb_dropped.name}!")
+
 
     # Materium drops
     materium_drop_rate = mtrm_drop_percent * zone_level  # Increase the chance of getting a drop as zone level increases
@@ -109,11 +121,22 @@ def generate_zone_loot(zone_level, monster_drop=None, name=None):
     # Potion drops
     potion_drop_rate = potion_drop_percent * zone_level  # Increase the chance of getting a drop as zone level increases
     if random.random() < potion_drop_rate:
-        potion_weights = [50, 30, 15, 4, 1][
-                         :len(POTION_LIST)]  # Adjust the weights based on the length of POTION_LIST
+        # Base weights
+        potion_weights = [40, 40, 10, 10][:len(POTION_LIST)]  # Adjust the weights based on the length of POTION_LIST
+
+        # Increase the weights of the last two potions based on zone_level
+        increase_per_zone_potion = 5
+        potion_weights[2] += (zone_level - 1) * increase_per_zone_potion
+        potion_weights[3] += (zone_level - 1) * increase_per_zone_potion
+
+        # Decrease the weights of the first two potions to maintain total weight
+        total_increase_potion = (zone_level - 1) * 2 * increase_per_zone_potion
+        potion_weights[0] -= total_increase_potion // 2
+        potion_weights[1] -= total_increase_potion // 2
+
         potion_dropped = random.choices(POTION_LIST, weights=potion_weights, k=1)[0]
         loot.append(('potion', potion_dropped))
-        loot_messages.append(f"⚗️ You found a {potion_dropped.name}!")
+        loot_messages.append(f"{get_emoji(potion_dropped.name)} You found a {potion_dropped.name}!")
 
     if monster_drop:
         for drop, quantity in monster_drop:  # Iterate over each drop item and its quantity

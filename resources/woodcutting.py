@@ -53,18 +53,27 @@ def generate_random_monster(tree_type):
 
     return np.random.choice(monsters, p=probabilities)
 
-def attempt_herb_drop(zone_level):
-    base_herb_drop_rate = herb_drop_percent
-    herb_drop_rate = min(base_herb_drop_rate * zone_level, 1)  # Adjust the drop rate based on zone level and cap at 1
 
-    if random.random() < herb_drop_rate:
-        # Adjust the herb types based on the zone level
-        herb_types_for_zone = HERB_TYPES[:zone_level]
-        # Adjust the weights based on the zone level, these are now 40%, 40%, 5%, 5%, 1%
-        herb_weights = [40, 40, 5, 5][:zone_level]
-        herb_dropped = random.choices(herb_types_for_zone, weights=herb_weights, k=1)[0]
+def attempt_herb_drop(zone_level):
+    if random.random() < herb_drop_percent:
+        # Base weights
+        weights = [40, 40, 10, 10]
+
+        # Increase the weights of the last two herbs based on zone_level
+        increase_per_zone = 5
+        weights[2] += (zone_level - 1) * increase_per_zone
+        weights[3] += (zone_level - 1) * increase_per_zone
+
+        # Decrease the weights of the first two herbs to maintain total weight
+        total_increase = (zone_level - 1) * 2 * increase_per_zone
+        weights[0] -= total_increase // 2
+        weights[1] -= total_increase // 2
+
+        herb_dropped = random.choices(HERB_TYPES, weights=weights, k=1)[0]
         return herb_dropped
+
     return None
+
 
 # Function to handle MTRM drop
 def attempt_mtrm_drop(zone_level):
@@ -161,7 +170,7 @@ class HarvestButton(discord.ui.View):
             herb_dropped = attempt_herb_drop(zone_level)
             if herb_dropped:
                 self.player.inventory.add_item_to_inventory(herb_dropped, amount=1)
-                message += f"\n🌿 You also **found some {herb_dropped.name}!**"
+                message += f"\n{get_emoji(herb_dropped.name)} You also **found some {herb_dropped.name}!**"
 
             # Attempt MTRM drop
             mtrm_dropped = attempt_mtrm_drop(zone_level)
@@ -327,11 +336,11 @@ class HarvestButton(discord.ui.View):
             self.player_data[self.author_id]["in_battle"] = False
             save_player_data(self.guild_id, self.player_data)
 
-    @discord.ui.button(custom_id="stamina", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("potion_stamina")}')
+    @discord.ui.button(custom_id="stamina", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("Stamina Potion")}')
     async def stamina_potion(self, button, interaction):
         pass
 
-    @discord.ui.button(custom_id="super_stamina", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("potion_super_stamina")}')
+    @discord.ui.button(custom_id="super_stamina", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("Super Stamina Potion")}')
     async def super_stamina_potion(self, button, interaction):
         pass
 

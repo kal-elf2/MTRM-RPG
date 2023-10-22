@@ -579,15 +579,15 @@ def create_crafting_stations(interaction, station_name=None):
 
     # Potion Shop
     potion_shop = CraftingStation("Potion Shop")
+    potion_shop.add_recipe(Recipe(stamina_potion, (ranarr, 1), (sinew, 2)))
+    potion_shop.add_recipe(Recipe(health_potion, (spirit_weed, 1), (venison, 1)))
+    potion_shop.add_recipe(Recipe(super_stamina_potion, (snapdragon, 1), (sinew, 6), (onyx, 3)))
+    potion_shop.add_recipe(Recipe(super_health_potion, (bloodweed, 1), (venison, 3), (onyx, 3)))
     potion_shop.add_recipe(Recipe(woodcrafters_charm, (glowing_essence, 1), (pine_strip, 10), (steel, 5), (carbon, 3), (charcoal, 2)))
     potion_shop.add_recipe(Recipe(miners_charm, (glowing_essence, 1), (ash_strip, 5), (steel, 5), (coal, 4), (iron_ore, 3)))
     potion_shop.add_recipe(Recipe(lootmasters_charm, (glowing_essence, 1), (onyx, 3), (carbon, 5), (steel, 5), (charcoal, 5)))
     potion_shop.add_recipe(Recipe(strength_charm, (glowing_essence, 1), (thick_pole, 10), (steel, 10), (charcoal, 5), (carbon, 3)))
     potion_shop.add_recipe(Recipe(defenders_charm, (glowing_essence, 1), (onyx, 4), (tough_leather_straps, 3), (steel, 5), (charcoal, 4)))
-    potion_shop.add_recipe(Recipe(stamina_potion, (ranarr, 1), (sinew, 2)))
-    potion_shop.add_recipe(Recipe(health_potion, (spirit_weed, 1), (venison, 1)))
-    potion_shop.add_recipe(Recipe(super_stamina_potion, (snapdragon, 1), (sinew, 6), (onyx, 3)))
-    potion_shop.add_recipe(Recipe(super_health_potion, (bloodweed, 1), (venison, 3), (onyx, 3)))
 
 
     stations = {
