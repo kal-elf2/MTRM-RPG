@@ -98,15 +98,12 @@ class Inventory:
             self._add_item_to_specific_inventory(item, amount, self.items)
 
     def has_item(self, item_name, zone_level=None):
-
         stackable_sections = [self.items, self.trees, self.herbs, self.ore, self.weapons,
                               self.armors, self.shields]
-
         for section in stackable_sections:
             for item in section:
                 if item.name == item_name and (not zone_level or getattr(item, 'zone_level', None) == zone_level):
                     return True
-
         return False
 
     def total_items_count(self):

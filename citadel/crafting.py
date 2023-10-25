@@ -160,10 +160,13 @@ class CraftingStation:
 
         recipe = next((r for r in self.recipes if r.result.name == recipe_name), None)
 
-        # Check if the player has space in the inventory or if the item is already in the inventory
-        if player.inventory.total_items_count() >= player.inventory.limit and not player.inventory.has_item(
-                recipe.result.name):
-            return "Inventory is full. Please make some room before crafting."
+        # Check if the result of the crafting operation is a Charm or Potion.
+        # If it is, we skip the inventory check and allow crafting regardless of inventory space.
+        if not isinstance(recipe.result, (Charm, Potion)):
+            item_already_exists = player.inventory.has_item(recipe.result.name,
+                                                            getattr(recipe.result, 'zone_level', None))
+            if not item_already_exists and player.inventory.total_items_count() >= player.inventory.limit:
+                return "Inventory is full. Please make some room before crafting."
 
         for ingredient, quantity in recipe.ingredients:
             player.inventory.remove_item(ingredient.name, quantity)

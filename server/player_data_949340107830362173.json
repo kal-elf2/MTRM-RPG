@@ -2,7 +2,7 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "zone_level": 5,
+            "zone_level": 1,
             "health": 95,
             "max_health": 775,
             "strength": 351,
@@ -25,25 +25,25 @@
                     "name": "Charcoal",
                     "description": null,
                     "value": null,
-                    "stack": 1722
+                    "stack": 1709
                 },
                 {
                     "name": "Iron",
                     "description": null,
                     "value": null,
-                    "stack": 964
+                    "stack": 961
                 },
                 {
                     "name": "Steel",
                     "description": null,
                     "value": null,
-                    "stack": 2563
+                    "stack": 2537
                 },
                 {
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 793
+                    "stack": 787
                 },
                 {
                     "name": "Pole",
@@ -58,22 +58,16 @@
                     "stack": 25770
                 },
                 {
-                    "name": "Pine Strip",
-                    "description": null,
-                    "value": null,
-                    "stack": 1460
-                },
-                {
                     "name": "Yew Strip",
                     "description": null,
                     "value": null,
-                    "stack": 8396
+                    "stack": 8392
                 },
                 {
                     "name": "Ash Strip",
                     "description": null,
                     "value": null,
-                    "stack": 33
+                    "stack": 21
                 },
                 {
                     "name": "Poplar Strip",
@@ -121,7 +115,7 @@
                     "name": "Sinew",
                     "description": null,
                     "value": null,
-                    "stack": 966
+                    "stack": 958
                 },
                 {
                     "name": "Rabbit Body",
@@ -151,7 +145,7 @@
                     "name": "Glowing Essence",
                     "description": "An ethereal essence that glows faintly. Used in powerful magical rituals and citadel.",
                     "value": 200,
-                    "stack": 998
+                    "stack": 997
                 },
                 {
                     "name": "Leather",
@@ -163,27 +157,29 @@
                     "name": "Leather Straps",
                     "description": null,
                     "value": null,
-                    "stack": 907
+                    "stack": 900
                 },
                 {
                     "name": "Tough Leather Straps",
                     "description": null,
                     "value": null,
-                    "stack": 907
+                    "stack": 895
+                },
+                {
+                    "name": "Pine Strip",
+                    "description": null,
+                    "value": null,
+                    "stack": 1000
                 }
             ],
             "trees": [
-                {
-                    "name": "Pine",
-                    "stack": 1026
-                },
                 {
                     "name": "Yew",
                     "stack": 996
                 },
                 {
                     "name": "Ash",
-                    "stack": 967
+                    "stack": 957
                 },
                 {
                     "name": "Poplar",
@@ -194,7 +190,7 @@
                 {
                     "name": "Ranarr",
                     "value": 25,
-                    "stack": 388
+                    "stack": 387
                 },
                 {
                     "name": "Spirit Weed",
@@ -204,7 +200,7 @@
                 {
                     "name": "Snapdragon",
                     "value": 350,
-                    "stack": 597
+                    "stack": 596
                 },
                 {
                     "name": "Bloodweed",
@@ -223,7 +219,7 @@
                 },
                 {
                     "name": "Carbon",
-                    "stack": 932
+                    "stack": 927
                 }
             ],
             "potions": [
@@ -236,10 +232,29 @@
                     "name": "Super Health Potion",
                     "value": 20,
                     "stack": 4
+                },
+                {
+                    "name": "Stamina Potion",
+                    "value": 10,
+                    "stack": 1
+                },
+                {
+                    "name": "Super Stamina Potion",
+                    "value": 20,
+                    "stack": 1
                 }
             ],
             "limit": 49,
             "armors": [
+                {
+                    "name": "Padded Armor",
+                    "description": null,
+                    "value": 10,
+                    "stack": 1,
+                    "defense_modifier": 1,
+                    "armor_type": "chest",
+                    "zone_level": 1
+                },
                 {
                     "name": "Brigandine Gloves",
                     "description": null,
@@ -248,15 +263,6 @@
                     "defense_modifier": 1,
                     "armor_type": "gloves",
                     "zone_level": 1
-                },
-                {
-                    "name": "Brigandine Boots",
-                    "description": null,
-                    "value": 10,
-                    "stack": 5,
-                    "defense_modifier": 1,
-                    "armor_type": "boots",
-                    "zone_level": 3
                 },
                 {
                     "name": "Brigandine Armor",
@@ -268,15 +274,6 @@
                     "zone_level": 2
                 },
                 {
-                    "name": "Brigandine Boots",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
-                    "defense_modifier": 1,
-                    "armor_type": "boots",
-                    "zone_level": 2
-                },
-                {
                     "name": "Brigandine Gloves",
                     "description": null,
                     "value": 10,
@@ -286,22 +283,13 @@
                     "zone_level": 2
                 },
                 {
-                    "name": "Padded Armor",
+                    "name": "Brigandine Boots",
                     "description": null,
                     "value": 10,
-                    "stack": 1,
-                    "defense_modifier": 1,
-                    "armor_type": "chest",
-                    "zone_level": 1
-                },
-                {
-                    "name": "Padded Boots",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
+                    "stack": 5,
                     "defense_modifier": 1,
                     "armor_type": "boots",
-                    "zone_level": 1
+                    "zone_level": 3
                 }
             ],
             "equipped_armor": {
@@ -353,6 +341,26 @@
                     "attack_modifier": 1,
                     "special_attack": 4,
                     "zone_level": 2
+                },
+                {
+                    "name": "War Hammer",
+                    "description": null,
+                    "value": 10,
+                    "stack": 1,
+                    "wtype": "Hammer",
+                    "attack_modifier": 1,
+                    "special_attack": 3,
+                    "zone_level": 5
+                },
+                {
+                    "name": "Champion Sword",
+                    "description": null,
+                    "value": 10,
+                    "stack": 1,
+                    "wtype": "Sword",
+                    "attack_modifier": 1,
+                    "special_attack": 3,
+                    "zone_level": 5
                 }
             ],
             "equipped_weapon": {
@@ -383,6 +391,14 @@
                     "zone_level": 2
                 },
                 {
+                    "name": "Large Shield",
+                    "description": null,
+                    "value": 10,
+                    "stack": 1,
+                    "defense_modifier": 1,
+                    "zone_level": 2
+                },
+                {
                     "name": "Buckler",
                     "description": null,
                     "value": 10,
@@ -391,12 +407,12 @@
                     "zone_level": 4
                 },
                 {
-                    "name": "Large Shield",
+                    "name": "Small Shield",
                     "description": null,
                     "value": 10,
-                    "stack": 1,
+                    "stack": 3,
                     "defense_modifier": 1,
-                    "zone_level": 2
+                    "zone_level": 5
                 }
             ],
             "equipped_shield": {
@@ -431,17 +447,6 @@
                     "loot_multiplier": 1.0
                 },
                 {
-                    "name": "Loothaven",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
-                    "strength_modifier": 0,
-                    "woodcut_modifier": 0,
-                    "mining_modifier": 0,
-                    "defense_modifier": 0,
-                    "loot_multiplier": 1
-                },
-                {
                     "name": "Mightstone",
                     "description": null,
                     "value": 10,
@@ -462,9 +467,30 @@
                     "mining_modifier": 0,
                     "defense_modifier": 1,
                     "loot_multiplier": 1.0
+                },
+                {
+                    "name": "Loothaven",
+                    "description": null,
+                    "value": 10,
+                    "stack": 1,
+                    "strength_modifier": 0,
+                    "woodcut_modifier": 0,
+                    "mining_modifier": 0,
+                    "defense_modifier": 0,
+                    "loot_multiplier": 1
                 }
             ],
-            "equipped_charm": null,
+            "equipped_charm": {
+                "name": "Loothaven",
+                "description": null,
+                "value": 10,
+                "stack": 1,
+                "strength_modifier": 0,
+                "woodcut_modifier": 0,
+                "mining_modifier": 0,
+                "defense_modifier": 0,
+                "loot_multiplier": 1
+            },
             "materium_count": 2
         },
         "in_battle": false
