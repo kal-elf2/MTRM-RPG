@@ -2,7 +2,7 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "zone_level": 2,
+            "zone_level": 5,
             "health": 95,
             "max_health": 775,
             "strength": 351,
@@ -25,7 +25,7 @@
                     "name": "Charcoal",
                     "description": null,
                     "value": null,
-                    "stack": 1746
+                    "stack": 1722
                 },
                 {
                     "name": "Iron",
@@ -37,13 +37,13 @@
                     "name": "Steel",
                     "description": null,
                     "value": null,
-                    "stack": 2583
+                    "stack": 2563
                 },
                 {
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 835
+                    "stack": 793
                 },
                 {
                     "name": "Pole",
@@ -169,7 +169,7 @@
                     "name": "Tough Leather Straps",
                     "description": null,
                     "value": null,
-                    "stack": 919
+                    "stack": 907
                 }
             ],
             "trees": [
@@ -241,6 +241,51 @@
             "limit": 49,
             "armors": [
                 {
+                    "name": "Brigandine Gloves",
+                    "description": null,
+                    "value": 10,
+                    "stack": 3,
+                    "defense_modifier": 1,
+                    "armor_type": "gloves",
+                    "zone_level": 1
+                },
+                {
+                    "name": "Brigandine Boots",
+                    "description": null,
+                    "value": 10,
+                    "stack": 5,
+                    "defense_modifier": 1,
+                    "armor_type": "boots",
+                    "zone_level": 3
+                },
+                {
+                    "name": "Brigandine Armor",
+                    "description": null,
+                    "value": 10,
+                    "stack": 2,
+                    "defense_modifier": 1,
+                    "armor_type": "chest",
+                    "zone_level": 2
+                },
+                {
+                    "name": "Brigandine Boots",
+                    "description": null,
+                    "value": 10,
+                    "stack": 1,
+                    "defense_modifier": 1,
+                    "armor_type": "boots",
+                    "zone_level": 2
+                },
+                {
+                    "name": "Brigandine Gloves",
+                    "description": null,
+                    "value": 10,
+                    "stack": 1,
+                    "defense_modifier": 1,
+                    "armor_type": "gloves",
+                    "zone_level": 2
+                },
+                {
                     "name": "Padded Armor",
                     "description": null,
                     "value": 10,
@@ -257,33 +302,6 @@
                     "defense_modifier": 1,
                     "armor_type": "boots",
                     "zone_level": 1
-                },
-                {
-                    "name": "Padded Gloves",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
-                    "defense_modifier": 1,
-                    "armor_type": "gloves",
-                    "zone_level": 1
-                },
-                {
-                    "name": "Brigandine Gloves",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
-                    "defense_modifier": 1,
-                    "armor_type": "gloves",
-                    "zone_level": 1
-                },
-                {
-                    "name": "Brigandine Gloves",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
-                    "defense_modifier": 1,
-                    "armor_type": "gloves",
-                    "zone_level": 5
                 }
             ],
             "equipped_armor": {
@@ -294,16 +312,16 @@
                     "stack": 1,
                     "defense_modifier": 1,
                     "armor_type": "chest",
-                    "zone_level": 2
+                    "zone_level": 5
                 },
                 "boots": {
                     "name": "Brigandine Boots",
                     "description": null,
                     "value": 10,
-                    "stack": 5,
+                    "stack": 1,
                     "defense_modifier": 1,
                     "armor_type": "boots",
-                    "zone_level": 3
+                    "zone_level": 5
                 },
                 "gloves": {
                     "name": "Brigandine Gloves",
@@ -312,7 +330,7 @@
                     "stack": 1,
                     "defense_modifier": 1,
                     "armor_type": "gloves",
-                    "zone_level": 4
+                    "zone_level": 5
                 }
             },
             "weapons": [
@@ -330,31 +348,11 @@
                     "name": "Voltaic Sword",
                     "description": null,
                     "value": 10,
-                    "stack": 1,
-                    "wtype": "Sword",
-                    "attack_modifier": 1,
-                    "special_attack": 4,
-                    "zone_level": 1
-                },
-                {
-                    "name": "Voltaic Sword",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
+                    "stack": 4,
                     "wtype": "Sword",
                     "attack_modifier": 1,
                     "special_attack": 4,
                     "zone_level": 2
-                },
-                {
-                    "name": "Voltaic Sword",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
-                    "wtype": "Sword",
-                    "attack_modifier": 1,
-                    "special_attack": 4,
-                    "zone_level": 4
                 }
             ],
             "equipped_weapon": {
@@ -380,9 +378,17 @@
                     "name": "Small Shield",
                     "description": null,
                     "value": 10,
-                    "stack": 2,
+                    "stack": 3,
                     "defense_modifier": 1,
                     "zone_level": 2
+                },
+                {
+                    "name": "Buckler",
+                    "description": null,
+                    "value": 10,
+                    "stack": 1,
+                    "defense_modifier": 1,
+                    "zone_level": 4
                 },
                 {
                     "name": "Large Shield",
@@ -391,23 +397,15 @@
                     "stack": 1,
                     "defense_modifier": 1,
                     "zone_level": 2
-                },
-                {
-                    "name": "Buckler",
-                    "description": null,
-                    "value": 10,
-                    "stack": 2,
-                    "defense_modifier": 1,
-                    "zone_level": 4
                 }
             ],
             "equipped_shield": {
-                "name": "Small Shield",
+                "name": "Buckler",
                 "description": null,
                 "value": 10,
-                "stack": 2,
+                "stack": 1,
                 "defense_modifier": 1,
-                "zone_level": 2
+                "zone_level": 4
             },
             "charms": [
                 {

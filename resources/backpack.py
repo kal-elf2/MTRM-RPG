@@ -187,6 +187,11 @@ class UnequipTypeSelect(discord.ui.Select):
         super().__init__(placeholder=f"Choose an item type to {action_type}", options=options, min_values=1, max_values=1)
 
     async def callback(self, interaction: discord.Interaction):
+
+        # Check if item exists in the inventory based on its name and zone level.
+        def item_exists_in_inventory(item_to_check, items_list):
+            return next((item for item in items_list if
+                         item.name == item_to_check.name and item.zone_level == item_to_check.zone_level), None)
         def get_armor_type_by_name(name: str, inventory):
             """Utility function to get armor type based on the name from the equipped armor."""
             for armor_key, armor_data in inventory.equipped_armor.items():
@@ -205,8 +210,7 @@ class UnequipTypeSelect(discord.ui.Select):
             equipped_item = getattr(inventory, equipped_item_key, None)
 
             if equipped_item:
-                existing_item = next((item for item in getattr(inventory, category_singular + "s", []) if
-                                      item.name == equipped_item.name), None)
+                existing_item = item_exists_in_inventory(equipped_item, getattr(inventory, category_singular + "s", []))
                 if existing_item:
                     existing_item.stack += 1
                 else:
@@ -268,7 +272,7 @@ class UnequipTypeSelect(discord.ui.Select):
         if isinstance(selected_item, Armor):
             armor_type = get_armor_type_by_name(selected_item_name, inventory)
             if inventory.equipped_armor[armor_type] and inventory.equipped_armor[armor_type].name == selected_item_name:
-                existing_armor = next((armor for armor in inventory.armors if armor.name == selected_item_name), None)
+                existing_armor = item_exists_in_inventory(inventory.equipped_armor[armor_type], inventory.armors)
                 if existing_armor:
                     existing_armor.stack += 1
                 else:
@@ -355,6 +359,16 @@ class EquipTypeSelect(discord.ui.Select):
         update_and_save_player_data(interaction, inventory, self.view.player_data)
         self.view.refresh_view()
 
+    def move_item_back_to_inventory(self, item, inventory_category):
+        existing_item_in_inventory = next((i for i in inventory_category if
+                                           i.name == item.name and
+                                           (hasattr(i, 'zone_level') and i.zone_level == item.zone_level or not hasattr(
+                                               i, 'zone_level'))), None)
+        if existing_item_in_inventory:
+            existing_item_in_inventory.stack += 1
+        else:
+            inventory_category.append(copy.deepcopy(item))
+
     @staticmethod
     def find_item_by_name(inventory, item_name_with_rarity):
         # Check if rarity exists
@@ -403,7 +417,10 @@ class EquipTypeSelect(discord.ui.Select):
                 return f"You already have this {category_singular} equipped.", None
 
         # Handle item stacking and removal
-        existing_item_in_inventory = next((item for item in getattr(inventory, category, []) if item.name == selected_item.name), None)
+        existing_item_in_inventory = next((item for item in getattr(inventory, category, []) if
+                                           item.name == selected_item.name and (hasattr(item,
+                                                                                        'zone_level') and item.zone_level == selected_item.zone_level or not hasattr(
+                                               item, 'zone_level'))), None)
         if existing_item_in_inventory:
             if existing_item_in_inventory.stack == 1:
                 getattr(inventory, category).remove(existing_item_in_inventory)
@@ -414,20 +431,12 @@ class EquipTypeSelect(discord.ui.Select):
         if isinstance(selected_item, Armor):
             existing_armor_piece = inventory.equipped_armor.get(selected_item.armor_type)
             if existing_armor_piece:
-                existing_armor_piece_in_inventory = next((item for item in inventory.armors if item.name == existing_armor_piece.name), None)
-                if existing_armor_piece_in_inventory:
-                    existing_armor_piece_in_inventory.stack += 1
-                else:
-                    inventory.armors.append(copy.deepcopy(existing_armor_piece))
+                self.move_item_back_to_inventory(existing_armor_piece, inventory.armors)
             inventory.equipped_armor[selected_item.armor_type] = selected_item
         else:
             current_equipped_item = getattr(inventory, equipped_item_key, None)
             if current_equipped_item:
-                existing_equipped_item = next((item for item in getattr(inventory, category, []) if item.name == current_equipped_item.name), None)
-                if existing_equipped_item:
-                    existing_equipped_item.stack += 1
-                else:
-                    getattr(inventory, category).append(copy.deepcopy(current_equipped_item))
+                self.move_item_back_to_inventory(current_equipped_item, getattr(inventory, category))
             setattr(inventory, equipped_item_key, selected_item)
 
         # At the end of the method, simply return None if there's no specific message to send
