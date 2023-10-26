@@ -270,14 +270,20 @@ def generate_backpack_image(interaction):
                                    rarity_image)
 
                 if isinstance(equipped_weapon, Weapon) and equipped_weapon.wtype == 'Bow':
-                    arrow_url = generate_urls("Icons", "Arrows")
+                    arrow_url = generate_urls("Icons", "Arrow")
                     arrow_img = Image.open(session.get(arrow_url, stream=True).raw).resize(
                         (int(square_size), int(square_size)))
 
-                    # Temporary placement. Adjust these offsets as needed:
-                    arrow_x_offset = x_offset_start
-                    arrow_y_offset = y_offset_start + 7.5 * square_size
-                    base_img.paste(arrow_img, (int(arrow_x_offset), int(arrow_y_offset)), arrow_img)
+                    # Create a colored square for the Arrow background
+                    arrow_bg_square = Image.new('RGBA', arrow_img.size, color=(25, 25, 25, 255))
 
-    base_img.save('backpack_with_items.png')
+                    # Paste the arrow image on top of the colored square
+                    arrow_bg_square.paste(arrow_img, (0, 0), arrow_img)
+
+                    # Placement based on charm's position
+                    charm_x, charm_y = equipped_positions[2]
+                    arrow_x_offset = charm_x
+                    arrow_y_offset = charm_y + 2.11 * square_size
+                    base_img.paste(arrow_bg_square, (int(arrow_x_offset), int(arrow_y_offset)), arrow_bg_square)
+
     return base_img
