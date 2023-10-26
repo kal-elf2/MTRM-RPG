@@ -442,6 +442,7 @@ class EquipTypeSelect(discord.ui.Select):
         return None
 
     async def equip_item(self, interaction, inventory, selected_item):
+        from citadel.crafting import Charm
         category = next((cat for cat in ["weapons", "armors", "shields", "charms"] if selected_item in getattr(inventory, cat, [])), None)
         if not category:
             return
@@ -449,17 +450,37 @@ class EquipTypeSelect(discord.ui.Select):
         category_singular = category[:-1]  # Convert 'weapons' to 'weapon', 'armors' to 'armor', etc.
         equipped_item_key = f"equipped_{category_singular}"
 
-        # Check if the item is already equipped
+        # Before handling equipping logic
+        # If you are going to unequip an item, make sure there's space in the inventory
         if isinstance(selected_item, Armor):
-            current_equipped_armor = inventory.equipped_armor.get(selected_item.armor_type)
+            existing_armor_piece = inventory.equipped_armor.get(selected_item.armor_type)
+            # Check if the currently equipped armor piece isn't already in the inventory
+            existing_item_in_inventory = inventory.has_item(existing_armor_piece.name,
+                                                            getattr(existing_armor_piece, 'zone_level', None))
 
-            # Check if the armor is already equipped by name and zone_level
-            if current_equipped_armor and current_equipped_armor.name == selected_item.name and current_equipped_armor.zone_level == selected_item.zone_level:
-                return f"You already have {selected_item.name} equipped.", None
+            # Check if the armor piece you're about to equip has a stack of 1 in the inventory
+            is_single_stack = selected_item.stack == 1 if hasattr(selected_item, "stack") else False
+
+            if existing_armor_piece and not existing_item_in_inventory:
+                if inventory.total_items_count() >= inventory.limit and not is_single_stack:
+                    return f"Your inventory is full. Make space before equipping {selected_item.name}.", None
+
+        elif isinstance(selected_item, Charm):
+            # For charms, just check if there's an existing one equipped
+            if inventory.equipped_charm:
+                inventory.add_item_to_inventory(
+                    inventory.equipped_charm)  # Add the unequipped charm back without checking for space
+
         else:
             current_equipped_item = getattr(inventory, equipped_item_key, None)
-            if current_equipped_item and current_equipped_item.name == selected_item.name and current_equipped_item.zone_level == selected_item.zone_level:
-                return f"You already have this {category_singular} equipped.", None
+            # Check if the current equipped item isn't already in the inventory
+            current_item_in_inventory = inventory.has_item(current_equipped_item.name,
+                                                           getattr(current_equipped_item, 'zone_level', None))
+            # Check if the selected item has a stack of 1 in the inventory
+            is_single_stack = selected_item.stack == 1 if hasattr(selected_item, "stack") else False
+            if current_equipped_item and not current_item_in_inventory:
+                if inventory.total_items_count() >= inventory.limit and not is_single_stack:
+                    return f"Your inventory is full. Make space before equipping {selected_item.name}.", None
 
         # Handle item stacking and removal
         existing_item_in_inventory = next((item for item in getattr(inventory, category, []) if

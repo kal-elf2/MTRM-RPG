@@ -97,13 +97,13 @@
                     "name": "Linen",
                     "description": null,
                     "value": null,
-                    "stack": 979
+                    "stack": 978
                 },
                 {
                     "name": "Linen Thread",
                     "description": null,
                     "value": null,
-                    "stack": 979
+                    "stack": 978
                 },
                 {
                     "name": "Venison",
@@ -247,15 +247,6 @@
             "limit": 49,
             "armors": [
                 {
-                    "name": "Padded Armor",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
-                    "defense_modifier": 1,
-                    "armor_type": "chest",
-                    "zone_level": 1
-                },
-                {
                     "name": "Brigandine Gloves",
                     "description": null,
                     "value": 10,
@@ -263,15 +254,6 @@
                     "defense_modifier": 1,
                     "armor_type": "gloves",
                     "zone_level": 1
-                },
-                {
-                    "name": "Brigandine Armor",
-                    "description": null,
-                    "value": 10,
-                    "stack": 3,
-                    "defense_modifier": 1,
-                    "armor_type": "chest",
-                    "zone_level": 2
                 },
                 {
                     "name": "Brigandine Boots",
@@ -283,6 +265,35 @@
                     "zone_level": 3
                 },
                 {
+                    "name": "Padded Armor",
+                    "description": null,
+                    "value": 10,
+                    "stack": 1,
+                    "defense_modifier": 1,
+                    "armor_type": "chest",
+                    "zone_level": 1
+                },
+                {
+                    "name": "Padded Gloves",
+                    "description": null,
+                    "value": 10,
+                    "stack": 1,
+                    "defense_modifier": 1,
+                    "armor_type": "gloves",
+                    "zone_level": 1
+                }
+            ],
+            "equipped_armor": {
+                "chest": {
+                    "name": "Brigandine Armor",
+                    "description": null,
+                    "value": 10,
+                    "stack": 1,
+                    "defense_modifier": 1,
+                    "armor_type": "chest",
+                    "zone_level": 2
+                },
+                "boots": {
                     "name": "Brigandine Boots",
                     "description": null,
                     "value": 10,
@@ -290,24 +301,10 @@
                     "defense_modifier": 1,
                     "armor_type": "boots",
                     "zone_level": 5
-                }
-            ],
-            "equipped_armor": {
-                "chest": null,
-                "boots": null,
+                },
                 "gloves": null
             },
             "weapons": [
-                {
-                    "name": "Short Sword",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
-                    "wtype": "Sword",
-                    "attack_modifier": 1,
-                    "special_attack": 1,
-                    "zone_level": 1
-                },
                 {
                     "name": "Voltaic Sword",
                     "description": null,
@@ -319,14 +316,34 @@
                     "zone_level": 2
                 },
                 {
-                    "name": "War Hammer",
+                    "name": "Champion Sword",
                     "description": null,
                     "value": 10,
                     "stack": 1,
-                    "wtype": "Hammer",
+                    "wtype": "Sword",
                     "attack_modifier": 1,
                     "special_attack": 3,
                     "zone_level": 5
+                },
+                {
+                    "name": "Voltaic Sword",
+                    "description": null,
+                    "value": 10,
+                    "stack": 1,
+                    "wtype": "Sword",
+                    "attack_modifier": 1,
+                    "special_attack": 4,
+                    "zone_level": 4
+                },
+                {
+                    "name": "Short Sword",
+                    "description": null,
+                    "value": 10,
+                    "stack": 1,
+                    "wtype": "Sword",
+                    "attack_modifier": 1,
+                    "special_attack": 1,
+                    "zone_level": 1
                 },
                 {
                     "name": "Long Spear",
@@ -337,34 +354,24 @@
                     "attack_modifier": 1,
                     "special_attack": 2,
                     "zone_level": 1
-                },
-                {
-                    "name": "Champion Sword",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
-                    "wtype": "Sword",
-                    "attack_modifier": 1,
-                    "special_attack": 3,
-                    "zone_level": 5
                 }
             ],
             "equipped_weapon": {
-                "name": "Voltaic Sword",
+                "name": "War Hammer",
                 "description": null,
                 "value": 10,
                 "stack": 1,
-                "wtype": "Sword",
+                "wtype": "Hammer",
                 "attack_modifier": 1,
-                "special_attack": 4,
-                "zone_level": 4
+                "special_attack": 3,
+                "zone_level": 5
             },
             "shields": [
                 {
                     "name": "Large Shield",
                     "description": null,
                     "value": 10,
-                    "stack": 3,
+                    "stack": 2,
                     "defense_modifier": 1,
                     "zone_level": 1
                 },
@@ -391,15 +398,23 @@
                     "stack": 1,
                     "defense_modifier": 1,
                     "zone_level": 4
+                },
+                {
+                    "name": "Large Shield",
+                    "description": null,
+                    "value": 10,
+                    "stack": 1,
+                    "defense_modifier": 1,
+                    "zone_level": 2
                 }
             ],
             "equipped_shield": {
                 "name": "Large Shield",
                 "description": null,
                 "value": 10,
-                "stack": 1,
+                "stack": 2,
                 "defense_modifier": 1,
-                "zone_level": 2
+                "zone_level": 1
             },
             "charms": [
                 {
@@ -425,40 +440,39 @@
                     "loot_multiplier": 1.0
                 },
                 {
-                    "name": "Mightstone",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
-                    "strength_modifier": 1,
-                    "woodcut_modifier": 0,
-                    "mining_modifier": 0,
-                    "defense_modifier": 0,
-                    "loot_multiplier": 1.0
-                },
-                {
-                    "name": "Ironhide",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
-                    "strength_modifier": 0,
-                    "woodcut_modifier": 0,
-                    "mining_modifier": 0,
-                    "defense_modifier": 1,
-                    "loot_multiplier": 1.0
-                },
-                {
                     "name": "Loothaven",
                     "description": null,
                     "value": 10,
-                    "stack": 2,
+                    "stack": 4,
                     "strength_modifier": 0,
                     "woodcut_modifier": 0,
                     "mining_modifier": 0,
                     "defense_modifier": 0,
                     "loot_multiplier": 1
+                },
+                {
+                    "name": "Mightstone",
+                    "description": null,
+                    "value": 10,
+                    "stack": 2,
+                    "strength_modifier": 1,
+                    "woodcut_modifier": 0,
+                    "mining_modifier": 0,
+                    "defense_modifier": 0,
+                    "loot_multiplier": 1.0
                 }
             ],
-            "equipped_charm": null,
+            "equipped_charm": {
+                "name": "Ironhide",
+                "description": null,
+                "value": 10,
+                "stack": 1,
+                "strength_modifier": 0,
+                "woodcut_modifier": 0,
+                "mining_modifier": 0,
+                "defense_modifier": 1,
+                "loot_multiplier": 1.0
+            },
             "materium_count": 2
         },
         "in_battle": false
