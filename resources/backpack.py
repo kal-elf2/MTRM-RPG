@@ -182,16 +182,42 @@ class BackpackView(discord.ui.View):
             await interaction.followup.send(file=discord.File(fp=image_binary, filename='backpack_with_items.png'))
 
 class UnequipTypeSelect(discord.ui.Select):
+
     def __init__(self, action_type, options):
         self.action_type = action_type
         super().__init__(placeholder=f"Choose an item type to {action_type}", options=options, min_values=1, max_values=1)
 
     async def callback(self, interaction: discord.Interaction):
+        from citadel.crafting import Charm
 
-        # Check if item exists in the inventory based on its name and zone level.
+        def get_existing_item_in_inventory(item_to_check):
+            """Check if an item exists in the inventory and return it if found."""
+            items_list = getattr(inventory, category_singular + "s", [])
+
+            # Check for charm first as they might not have a zone level.
+            if isinstance(item_to_check, Charm):
+                return next((item for item in items_list if item.name == item_to_check.name), None)
+            else:
+                if inventory.has_item(item_to_check.name, getattr(item_to_check, 'zone_level', None)):
+                    for item in items_list:
+                        if item.name == item_to_check.name and getattr(item, 'zone_level', None) == getattr(
+                                item_to_check, 'zone_level', None):
+                            return item
+            return None
+
+        def inventory_full(inventory, category):
+            """Check if the inventory is full for the specified category."""
+            items_count = len(getattr(inventory, category, []))
+            return items_count >= inventory.limit
+
+        # Check if item exists in the inventory based on its name and optionally its zone level.
         def item_exists_in_inventory(item_to_check, items_list):
-            return next((item for item in items_list if
-                         item.name == item_to_check.name and item.zone_level == item_to_check.zone_level), None)
+            if isinstance(item_to_check, Charm):
+                return next((item for item in items_list if item.name == item_to_check.name), None)
+            else:
+                return next((item for item in items_list if
+                             item.name == item_to_check.name and item.zone_level == item_to_check.zone_level), None)
+
         def get_armor_type_by_name(name: str, inventory):
             """Utility function to get armor type based on the name from the equipped armor."""
             for armor_key, armor_data in inventory.equipped_armor.items():
@@ -210,11 +236,26 @@ class UnequipTypeSelect(discord.ui.Select):
             equipped_item = getattr(inventory, equipped_item_key, None)
 
             if equipped_item:
-                existing_item = item_exists_in_inventory(equipped_item, getattr(inventory, category_singular + "s", []))
-                if existing_item:
-                    existing_item.stack += 1
+                if selected_value == "Charm":
+                    existing_charm = get_existing_item_in_inventory(equipped_item)
+                    if existing_charm:
+                        existing_charm.stack += 1
+                    else:
+                        getattr(inventory, category_singular + "s").append(copy.deepcopy(equipped_item))
                 else:
-                    getattr(inventory, category_singular + "s").append(copy.deepcopy(equipped_item))
+                    existing_item = get_existing_item_in_inventory(equipped_item)
+
+                    if existing_item:  # If the item exists in the inventory
+                        existing_item.stack += 1
+                    else:
+                        # Check for full inventory
+                        if inventory.total_items_count() >= inventory.limit:
+                            await interaction.response.send_message(
+                                f"You don't have enough space in your inventory to unequip the {selected_value}.",
+                                ephemeral=True)
+                            return
+                        else:
+                            getattr(inventory, category_singular + "s").append(copy.deepcopy(equipped_item))
 
                 # Unequip the item
                 setattr(inventory, equipped_item_key, None)
@@ -232,8 +273,9 @@ class UnequipTypeSelect(discord.ui.Select):
 
         # Handle Unequipping for Armor type
         if self.action_type == "unequip" and selected_value == "Armor":
-            equipped_armors = [Armor.from_dict(armor_data) if isinstance(armor_data, dict) else armor_data
-                               for armor_data in inventory.equipped_armor.values() if armor_data is not None]
+
+            equipped_armors = {armor_type: Armor.from_dict(armor_data) if isinstance(armor_data, dict) else armor_data
+                               for armor_type, armor_data in inventory.equipped_armor.items() if armor_data is not None}
 
             if not equipped_armors:
                 embed = create_item_embed(self.action_type, selected_value)
@@ -242,51 +284,54 @@ class UnequipTypeSelect(discord.ui.Select):
 
             # Clear existing options
             self.options.clear()
-
-            # Populate the dropdown with currently equipped armor pieces
-            for armor in equipped_armors:
+            for armor_type, armor in equipped_armors.items():
                 option = discord.SelectOption(
                     label=armor.name,
-                    value=armor.name,
+                    value=armor_type,
                     emoji=get_emoji(ZONE_LEVEL_TO_EMOJI[armor.zone_level])
                 )
                 self.options.append(option)
 
             self.placeholder = f"Choose a specific {selected_value} to {self.action_type}"
-            await interaction.response.edit_message(content=f"Choose a specific {selected_value} to {self.action_type}:", view=view)
+            await interaction.response.edit_message(
+                content=f"Choose a specific {selected_value} to {self.action_type}:", view=view)
             return
 
-        selected_item_name = self.values[0]
-        selected_item = None
+        selected_armor_type = self.values[0]
+        selected_armor = inventory.equipped_armor.get(selected_armor_type)
 
-        for armor_type, armor in inventory.equipped_armor.items():
-            if armor and armor.name == selected_item_name:
-                selected_item = armor
-                break
-
-        if not selected_item:
-            await interaction.response.send_message(f"No item found with name: {selected_item_name}", ephemeral=True)
+        if not selected_armor:
+            await interaction.response.send_message(f"No item found for type: {selected_armor_type}",
+                                                    ephemeral=True)
             return
 
-        # If the selected item is an armor, handle its unequipping
-        if isinstance(selected_item, Armor):
-            armor_type = get_armor_type_by_name(selected_item_name, inventory)
-            if inventory.equipped_armor[armor_type] and inventory.equipped_armor[armor_type].name == selected_item_name:
-                existing_armor = item_exists_in_inventory(inventory.equipped_armor[armor_type], inventory.armors)
-                if existing_armor:
-                    existing_armor.stack += 1
-                else:
-                    inventory.armors.append(copy.deepcopy(inventory.equipped_armor[armor_type]))
+        if isinstance(selected_armor, dict):
+            selected_armor_obj = Armor.from_dict(selected_armor)
+        else:
+            selected_armor_obj = selected_armor
 
-                # Unequip the armor
-                inventory.equipped_armor[armor_type] = None
+        existing_armor = item_exists_in_inventory(selected_armor_obj, inventory.armors)
 
-                # Save and send a response
-                update_and_save_player_data(interaction, inventory, view.player_data)
-                embed = create_item_embed(self.action_type, selected_item)
-                await interaction.response.send_message(embed=embed, ephemeral=True)
-                view.refresh_view()
+        if existing_armor:  # Stack the item
+            existing_armor.stack += 1
+        else:
+            # Check if there's room in the inventory
+            if inventory.total_items_count() >= inventory.limit:
+                await interaction.response.send_message(
+                    f"You don't have enough space in your inventory to unequip the {selected_armor_obj.name}.",
+                    ephemeral=True)
                 return
+            else:
+                inventory.armors.append(copy.deepcopy(selected_armor_obj))
+
+        # Unequip the armor
+        inventory.equipped_armor[selected_armor_type] = None
+
+        # Save and send a response
+        update_and_save_player_data(interaction, inventory, view.player_data)
+        embed = create_item_embed(self.action_type, selected_armor_obj)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+        view.refresh_view()
 
 class EquipTypeSelect(discord.ui.Select):
 
