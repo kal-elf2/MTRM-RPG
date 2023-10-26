@@ -29,10 +29,10 @@ class BackpackCog(commands.Cog):
 
     @commands.slash_command(description="Open your backpack!")
     async def backpack(self, ctx):
-
         # Display initial backpack view with Equip and Unequip buttons
         view = BackpackView(ctx)
-        await ctx.respond("Here's your backpack:", view=view)
+        await ctx.respond(f"Here's your backpack, {ctx.author.mention}:", view=view)
+
 
 class BackpackView(discord.ui.View):
     def __init__(self, ctx):
@@ -164,13 +164,12 @@ class BackpackView(discord.ui.View):
         await interaction.response.send_message(content="Inventory sorted.", view=self, ephemeral=True)
 
     @discord.ui.button(label="View", custom_id="backpack_inspect", style=discord.ButtonStyle.blurple, emoji="🔍")
-    async def inspect(self, button, interaction):
-
+    async def view(self, button, interaction):
         # Defer the response to prevent the interaction from timing out
-        await interaction.response.defer(ephemeral=True)
+        await interaction.response.defer()
 
-        # Send an ephemeral message to let the user know the image is being generated
-        await interaction.followup.send("Image being generated...Please wait.", ephemeral=True)
+        # Send a message to let the user know the image is being generated
+        generating_message = await interaction.followup.send("Image being generated...Please wait.")
 
         # Generate the backpack image
         backpack_img = generate_backpack_image(interaction)
@@ -178,8 +177,13 @@ class BackpackView(discord.ui.View):
             backpack_img.save(image_binary, 'PNG')
             image_binary.seek(0)
 
-            # Send the generated image
-            await interaction.followup.send(file=discord.File(fp=image_binary, filename='backpack_with_items.png'))
+            # Delete the original message
+            await generating_message.delete()
+
+            # Send the generated image as an ephemeral message
+            await interaction.followup.send(content="Here's your backpack:",
+                                            file=discord.File(fp=image_binary, filename='backpack_with_items.png'),
+                                            ephemeral=True)
 
 class UnequipTypeSelect(discord.ui.Select):
 
@@ -205,11 +209,6 @@ class UnequipTypeSelect(discord.ui.Select):
                             return item
             return None
 
-        def inventory_full(inventory, category):
-            """Check if the inventory is full for the specified category."""
-            items_count = len(getattr(inventory, category, []))
-            return items_count >= inventory.limit
-
         # Check if item exists in the inventory based on its name and optionally its zone level.
         def item_exists_in_inventory(item_to_check, items_list):
             if isinstance(item_to_check, Charm):
@@ -217,13 +216,6 @@ class UnequipTypeSelect(discord.ui.Select):
             else:
                 return next((item for item in items_list if
                              item.name == item_to_check.name and item.zone_level == item_to_check.zone_level), None)
-
-        def get_armor_type_by_name(name: str, inventory):
-            """Utility function to get armor type based on the name from the equipped armor."""
-            for armor_key, armor_data in inventory.equipped_armor.items():
-                if armor_data and armor_data.name == name:
-                    return armor_key  # Return the key, which corresponds to the armor type.
-            return None
 
         selected_value = self.values[0]
         view: BackpackView = self.view
@@ -441,8 +433,19 @@ class EquipTypeSelect(discord.ui.Select):
 
         return None
 
+    def remove_item_from_inventory(self, item, inventory_category):
+        existing_item_in_inventory = next((i for i in inventory_category if
+                                           i.name == item.name and (hasattr(i,
+                                                                            'zone_level') and i.zone_level == item.zone_level or not hasattr(
+                                               i, 'zone_level'))), None)
+        if existing_item_in_inventory:
+            if hasattr(existing_item_in_inventory, 'stack') and existing_item_in_inventory.stack > 1:
+                existing_item_in_inventory.stack -= 1
+            else:
+                inventory_category.remove(existing_item_in_inventory)
+
     async def equip_item(self, interaction, inventory, selected_item):
-        from citadel.crafting import Charm
+        from citadel.crafting import Charm, Weapon
         category = next(
             (cat for cat in ["weapons", "armors", "shields", "charms"] if selected_item in getattr(inventory, cat, [])),
             None)
@@ -460,42 +463,87 @@ class EquipTypeSelect(discord.ui.Select):
 
         if selected_item_name == current_equipped_item_name and getattr(selected_item, 'zone_level', None) == getattr(
                 current_equipped_item, 'zone_level', None):
-            return f"You already have the {selected_item_name} equipped.", None
+            if isinstance(selected_item, Charm):
+                return f"You already have the {selected_item_name} Charm equipped.", None
+            else:
+                return f"You already have the {selected_item_name} equipped.", None
 
         # Before handling equipping logic
-        # If you are going to unequip an item, make sure there's space in the inventory
+        # Check for inventory space based on what you're trying to equip
         if isinstance(selected_item, Armor):
             existing_armor_piece = inventory.equipped_armor.get(selected_item.armor_type)
-            # Check if the currently equipped armor piece isn't already in the inventory
             if existing_armor_piece:
                 existing_item_in_inventory = inventory.has_item(existing_armor_piece.name,
                                                                 getattr(existing_armor_piece, 'zone_level', None))
             else:
                 existing_item_in_inventory = False
 
-            # Check if the armor piece you're about to equip has a stack of 1 in the inventory
             is_single_stack = selected_item.stack == 1 if hasattr(selected_item, "stack") else False
 
             if existing_armor_piece and not existing_item_in_inventory:
                 if inventory.total_items_count() >= inventory.limit and not is_single_stack:
                     return f"Your inventory is full. Make space before equipping {selected_item.name}.", None
 
+        elif isinstance(selected_item, Weapon) and selected_item.wtype == "Bow":
+            current_weapon = getattr(inventory, "equipped_weapon", None)
+            current_shield = getattr(inventory, "equipped_shield", None)
+            required_slots = 0
+
+            if current_weapon:
+                current_item_in_inventory = inventory.has_item(current_weapon.name,
+                                                               getattr(current_weapon, 'zone_level', None))
+                if not current_item_in_inventory:
+                    required_slots += 1
+
+            if current_shield:
+                current_item_in_inventory = inventory.has_item(current_shield.name,
+                                                               getattr(current_shield, 'zone_level', None))
+                if not current_item_in_inventory:
+                    required_slots += 1
+
+            # Adjust for the scenario where the bow is a single stack
+            if hasattr(selected_item, 'stack') and selected_item.stack == 1:
+                required_slots -= 1  # Because it'll just swap places with the current weapon
+
+            if inventory.total_items_count() + required_slots > inventory.limit:
+                return f"Equipping {selected_item.name} requires additional space for removing a Weapon and Shield. Please make space.", None
+
+            # Now, actually remove the current weapon and shield
+            if current_weapon:
+                self.move_item_back_to_inventory(current_weapon, inventory.weapons)
+                inventory.equipped_weapon = None
+
+            if current_shield:
+                self.move_item_back_to_inventory(current_shield, inventory.shields)
+                inventory.equipped_shield = None
+
+            # Equip the bow to the weapon slot and set the shield slot to None
+            inventory.equipped_weapon = copy.deepcopy(selected_item)
+            if hasattr(inventory.equipped_weapon, 'stack'):
+                inventory.equipped_weapon.stack = 1
+            inventory.equipped_shield = None
+            # Remove the bow from the inventory after equipping
+            self.remove_item_from_inventory(selected_item, inventory.weapons)
+            return None, None
+
 
         elif isinstance(selected_item, Charm):
-            # For charms, just check if there's an existing one equipped
-            if inventory.equipped_charm:
-                self.move_item_back_to_inventory(inventory.equipped_charm, inventory.charms)
+            # Don't want charms being calculated in for an inventory space, equip logic handled in else block below
+            pass
 
         else:
-            current_equipped_item = getattr(inventory, equipped_item_key, None)
-            if current_equipped_item:  # Make sure it's not None before checking its attributes
+            current_equipped_item = getattr(inventory, f"equipped_{selected_item.__class__.__name__.lower()}", None)
+            if current_equipped_item:
+                # Check if there's an instance of the current equipped item in the inventory
                 current_item_in_inventory = inventory.has_item(current_equipped_item.name,
                                                                getattr(current_equipped_item, 'zone_level', None))
-                # Check if the selected item has a stack of 1 in the inventory
-                is_single_stack = selected_item.stack == 1 if hasattr(selected_item, "stack") else False
-                if not current_item_in_inventory:
-                    if inventory.total_items_count() >= inventory.limit and not is_single_stack:
-                        return f"Your inventory is full. Make space before equipping {selected_item.name}.", None
+
+                # Check if the selected item has a stack of 1
+                is_single_stack = hasattr(selected_item, 'stack') and selected_item.stack == 1
+
+                # If the current equipped item isn't in the inventory and the inventory is full and the selected item isn't a single stack item
+                if not current_item_in_inventory and inventory.total_items_count() >= inventory.limit and not is_single_stack:
+                    return f"Your inventory is full. Make space before equipping {selected_item.name}.", None
 
         # Handle item stacking and removal
         existing_item_in_inventory = next((item for item in getattr(inventory, category, []) if
