@@ -327,16 +327,6 @@
                     "zone_level": 1
                 },
                 {
-                    "name": "Champion Bow",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
-                    "wtype": "Bow",
-                    "attack_modifier": 1,
-                    "special_attack": 3,
-                    "zone_level": 1
-                },
-                {
                     "name": "Voltaic Sword",
                     "description": null,
                     "value": 10,
@@ -350,7 +340,7 @@
                     "name": "Voltaic Sword",
                     "description": null,
                     "value": 10,
-                    "stack": 1,
+                    "stack": 2,
                     "wtype": "Sword",
                     "attack_modifier": 1,
                     "special_attack": 4,
@@ -368,14 +358,14 @@
                 }
             ],
             "equipped_weapon": {
-                "name": "Voltaic Sword",
+                "name": "Champion Bow",
                 "description": null,
                 "value": 10,
                 "stack": 1,
-                "wtype": "Sword",
+                "wtype": "Bow",
                 "attack_modifier": 1,
-                "special_attack": 4,
-                "zone_level": 4
+                "special_attack": 3,
+                "zone_level": 1
             },
             "shields": [
                 {
@@ -390,7 +380,7 @@
                     "name": "Small Shield",
                     "description": null,
                     "value": 10,
-                    "stack": 2,
+                    "stack": 1,
                     "defense_modifier": 1,
                     "zone_level": 5
                 }

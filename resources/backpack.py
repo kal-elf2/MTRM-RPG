@@ -445,7 +445,7 @@ class EquipTypeSelect(discord.ui.Select):
                 inventory_category.remove(existing_item_in_inventory)
 
     async def equip_item(self, interaction, inventory, selected_item):
-        from citadel.crafting import Charm, Weapon
+        from citadel.crafting import Charm, Weapon, Shield
         category = next(
             (cat for cat in ["weapons", "armors", "shields", "charms"] if selected_item in getattr(inventory, cat, [])),
             None)
@@ -555,6 +555,12 @@ class EquipTypeSelect(discord.ui.Select):
                 existing_item_in_inventory.stack -= 1
             else:
                 getattr(inventory, category).remove(existing_item_in_inventory)
+
+        # Check if trying to equip a shield while a bow is equipped
+        if isinstance(selected_item, Shield):
+            current_weapon = getattr(inventory, "equipped_weapon", None)
+            if current_weapon and isinstance(current_weapon, Weapon) and current_weapon.wtype == "Bow":
+                return "You must first unequip your bow before equipping a shield.", None
 
         # Handle equipping logic
         if isinstance(selected_item, Armor):

@@ -218,6 +218,8 @@ def generate_backpack_image(interaction):
                         int(equipped_armor_positions[i][0]), int(equipped_armor_positions[i][1] + 2 * square_size / 3)),
                                    rarity_image)
 
+
+
         # Display equipped weapon, shield, and charm
         equipped_weapon = player.inventory.equipped_weapon
         equipped_shield = player.inventory.equipped_shield
@@ -236,6 +238,7 @@ def generate_backpack_image(interaction):
         equipped_items = [equipped_weapon, equipped_shield, equipped_charm]
 
         for i, item in enumerate(equipped_items):
+            from citadel.crafting import Weapon
             if item:
                 # Overlay a square of color #191919
                 square_overlay = Image.new('RGBA', (int(square_size), int(square_size)), color=(25, 25, 25, 255))
@@ -265,6 +268,16 @@ def generate_backpack_image(interaction):
                     base_img.paste(rarity_image, (
                         int(equipped_positions[i][0]), int(equipped_positions[i][1] + 2 * square_size / 3)),
                                    rarity_image)
+
+                if isinstance(equipped_weapon, Weapon) and equipped_weapon.wtype == 'Bow':
+                    arrow_url = generate_urls("Icons", "Arrows")
+                    arrow_img = Image.open(session.get(arrow_url, stream=True).raw).resize(
+                        (int(square_size), int(square_size)))
+
+                    # Temporary placement. Adjust these offsets as needed:
+                    arrow_x_offset = x_offset_start
+                    arrow_y_offset = y_offset_start + 7.5 * square_size
+                    base_img.paste(arrow_img, (int(arrow_x_offset), int(arrow_y_offset)), arrow_img)
 
     base_img.save('backpack_with_items.png')
     return base_img
