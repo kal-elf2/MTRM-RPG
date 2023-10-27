@@ -43,7 +43,7 @@
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 766
+                    "stack": 760
                 },
                 {
                     "name": "Pole",
@@ -115,13 +115,13 @@
                     "name": "Venison",
                     "description": null,
                     "value": null,
-                    "stack": 993
+                    "stack": 985
                 },
                 {
                     "name": "Sinew",
                     "description": null,
                     "value": null,
-                    "stack": 934
+                    "stack": 930
                 },
                 {
                     "name": "Rabbit Body",
@@ -194,12 +194,12 @@
                 {
                     "name": "Ranarr",
                     "value": 25,
-                    "stack": 387
+                    "stack": 385
                 },
                 {
                     "name": "Spirit Weed",
                     "value": 25,
-                    "stack": 239
+                    "stack": 237
                 },
                 {
                     "name": "Snapdragon",
@@ -209,7 +209,7 @@
                 {
                     "name": "Bloodweed",
                     "value": 350,
-                    "stack": 598
+                    "stack": 596
                 }
             ],
             "ore": [
@@ -226,7 +226,23 @@
                     "stack": 902
                 }
             ],
-            "potions": [],
+            "potions": [
+                {
+                    "name": "Stamina Potion",
+                    "value": 10,
+                    "stack": 2
+                },
+                {
+                    "name": "Health Potion",
+                    "value": 10,
+                    "stack": 2
+                },
+                {
+                    "name": "Super Health Potion",
+                    "value": 20,
+                    "stack": 2
+                }
+            ],
             "limit": 49,
             "armors": [
                 {
