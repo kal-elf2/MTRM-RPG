@@ -2,7 +2,7 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "zone_level": 2,
+            "zone_level": 4,
             "health": 95,
             "max_health": 775,
             "strength": 351,
@@ -273,8 +273,10 @@
                     "defense_modifier": 3,
                     "armor_type": "gloves",
                     "zone_level": 1
-                },
-                {
+                }
+            ],
+            "equipped_armor": {
+                "chest": {
                     "name": "Brigandine Armor",
                     "description": null,
                     "value": 325,
@@ -283,7 +285,7 @@
                     "armor_type": "chest",
                     "zone_level": 2
                 },
-                {
+                "boots": {
                     "name": "Brigandine Boots",
                     "description": null,
                     "value": 197,
@@ -292,7 +294,7 @@
                     "armor_type": "boots",
                     "zone_level": 2
                 },
-                {
+                "gloves": {
                     "name": "Brigandine Gloves",
                     "description": null,
                     "value": 197,
@@ -301,11 +303,6 @@
                     "armor_type": "gloves",
                     "zone_level": 2
                 }
-            ],
-            "equipped_armor": {
-                "chest": null,
-                "boots": null,
-                "gloves": null
             },
             "weapons": [
                 {
@@ -317,19 +314,18 @@
                     "attack_modifier": 9,
                     "special_attack": 4,
                     "zone_level": 1
-                },
-                {
-                    "name": "Voltaic Sword",
-                    "description": null,
-                    "value": 286,
-                    "stack": 1,
-                    "wtype": "Sword",
-                    "attack_modifier": 13,
-                    "special_attack": 4,
-                    "zone_level": 2
                 }
             ],
-            "equipped_weapon": null,
+            "equipped_weapon": {
+                "name": "Voltaic Sword",
+                "description": null,
+                "value": 286,
+                "stack": 1,
+                "wtype": "Sword",
+                "attack_modifier": 13,
+                "special_attack": 4,
+                "zone_level": 2
+            },
             "shields": [
                 {
                     "name": "Large Shield",
@@ -338,17 +334,16 @@
                     "stack": 1,
                     "defense_modifier": 3,
                     "zone_level": 1
-                },
-                {
-                    "name": "Large Shield",
-                    "description": null,
-                    "value": 148,
-                    "stack": 1,
-                    "defense_modifier": 5,
-                    "zone_level": 2
                 }
             ],
-            "equipped_shield": null,
+            "equipped_shield": {
+                "name": "Large Shield",
+                "description": null,
+                "value": 148,
+                "stack": 1,
+                "defense_modifier": 5,
+                "zone_level": 2
+            },
             "charms": [
                 {
                     "name": "Woodcleaver",

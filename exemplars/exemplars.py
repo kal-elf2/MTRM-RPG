@@ -53,6 +53,37 @@ class Exemplar:
     def health(self, value):
         self.stats.health = value
 
+    def update_total_armor(self):
+        """
+        Sums up the defense_modifier attributes for all equipped armor
+        and shields, then stores the total in the 'armor' attribute of the player's stats.
+        """
+        total_defense = 0
+
+        # Sum the defense_modifier for each equipped armor
+        for armor_type, armor in self.inventory.equipped_armor.items():
+            if armor:
+                total_defense += armor.defense_modifier
+
+        # Add the defense_modifier for the equipped shield, if there is one
+        if self.inventory.equipped_shield:
+            total_defense += self.inventory.equipped_shield.defense_modifier
+
+        # Update the player's stats with the total defense
+        self.stats.armor = total_defense
+
+    def update_total_damage(self):
+        """
+        Updates the 'damage' attribute of the player's stats based
+        on the attack_modifier of the equipped weapon.
+        """
+        # Check if a weapon is equipped and update the damage value based on its attack_modifier
+        if self.inventory.equipped_weapon:
+            self.stats.damage = self.inventory.equipped_weapon.attack_modifier
+        else:
+            # If no weapon is equipped, reset the damage to its base value
+            self.stats.damage = 0
+
     async def send_level_up_message(self, interaction, skill, new_level):
         embed = discord.Embed(color=discord.Color.blue(), title="Level Up!")
         embed.description = f"Congratulations, {interaction.user.mention}! You have reached **Level {new_level} in {skill.capitalize()}**."
