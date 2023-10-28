@@ -489,37 +489,71 @@ def create_crafting_stations(interaction, station_name=None):
     snapdragon = Item("Snapdragon")
     bloodweed = Item("Bloodweed")
 
-    #Shields
-    buckler = Shield("Buckler", defense_modifier=1, value=10, zone_level=zone_level)
-    small_shield = Shield("Small Shield", defense_modifier=1, value=10, zone_level=zone_level)
-    large_shield = Shield("Large Shield", defense_modifier=1, value=10, zone_level=zone_level)
+    base = zone_level * 6 - 5
+
+    # Shields
+    buckler = Shield("Buckler", defense_modifier=round(1 + base / 10), value=30 + (base ** 2) * 1,
+                     zone_level=zone_level)
+    small_shield = Shield("Small Shield", defense_modifier=round(2 + base / 5), value=40 + (base ** 2) * 1.5,
+                          zone_level=zone_level)
+    large_shield = Shield("Large Shield", defense_modifier=round(3 + base / 3), value=50 + (base ** 2) * 2,
+                          zone_level=zone_level)
 
     # Armors
-    brigandine_armor = Armor("Brigandine Armor", defense_modifier=1, armor_type=ArmorType.CHEST, value=10, zone_level=zone_level)
-    brigandine_boots = Armor("Brigandine Boots", defense_modifier=1, armor_type=ArmorType.BOOTS, value=10, zone_level=zone_level)
-    brigandine_gloves = Armor("Brigandine Gloves", defense_modifier=1, armor_type=ArmorType.GLOVES, value=10, zone_level=zone_level)
-    leather_armor = Armor("Leather Armor", defense_modifier=1, armor_type=ArmorType.CHEST, value=10, zone_level=zone_level)
-    leather_boots = Armor("Leather Boots", defense_modifier=1, armor_type=ArmorType.BOOTS, value=10, zone_level=zone_level)
-    leather_gloves = Armor("Leather Gloves", defense_modifier=1, armor_type=ArmorType.GLOVES, value=10, zone_level=zone_level)
-    padded_armor = Armor("Padded Armor", defense_modifier=1, armor_type=ArmorType.CHEST, value=10, zone_level=zone_level)
-    padded_boots = Armor("Padded Boots", defense_modifier=1, armor_type=ArmorType.BOOTS, value=10, zone_level=zone_level)
-    padded_gloves = Armor("Padded Gloves", defense_modifier=1, armor_type=ArmorType.GLOVES, value=10, zone_level=zone_level)
+    brigandine_armor = Armor("Brigandine Armor", defense_modifier=round(4 + base / 2), armor_type=ArmorType.CHEST,
+                             value=80 + (base ** 2) * 5, zone_level=zone_level)
+    brigandine_boots = Armor("Brigandine Boots", defense_modifier=round(3 + base / 4), armor_type=ArmorType.BOOTS,
+                             value=50 + (base ** 2) * 3, zone_level=zone_level)
+    brigandine_gloves = Armor("Brigandine Gloves", defense_modifier=round(3 + base / 4), armor_type=ArmorType.GLOVES,
+                              value=50 + (base ** 2) * 3, zone_level=zone_level)
 
+    leather_armor = Armor("Leather Armor", defense_modifier=round(3 + base / 3), armor_type=ArmorType.CHEST,
+                          value=60 + (base ** 2) * 4, zone_level=zone_level)
+    leather_boots = Armor("Leather Boots", defense_modifier=round(2 + base / 5), armor_type=ArmorType.BOOTS,
+                          value=40 + (base ** 2) * 2.5, zone_level=zone_level)
+    leather_gloves = Armor("Leather Gloves", defense_modifier=round(2 + base / 5), armor_type=ArmorType.GLOVES,
+                           value=40 + (base ** 2) * 2.5, zone_level=zone_level)
 
-    # Weapons
-    short_sword = Weapon("Short Sword", "Sword", attack_modifier=1, special_attack= 1, value=10, zone_level=zone_level)
-    long_sword = Weapon("Long Sword", "Sword", attack_modifier=1, special_attack= 2, value=10, zone_level=zone_level)
-    champion_sword = Weapon("Champion Sword", "Sword", attack_modifier=1, special_attack= 3, value=10, zone_level=zone_level)
-    voltaic_sword = Weapon("Voltaic Sword", "Sword", attack_modifier=1, special_attack= 4, value=10, zone_level=zone_level)
-    short_spear = Weapon("Short Spear", "Spear", attack_modifier=1, special_attack= 1, value=10, zone_level=zone_level)
-    long_spear = Weapon("Long Spear", "Spear", attack_modifier=1, special_attack= 2, value=10, zone_level=zone_level)
-    champion_spear = Weapon("Champion Spear", "Spear", attack_modifier=1, special_attack= 3, value=10, zone_level=zone_level)
-    club = Weapon("Club", "Hammer", attack_modifier=1, special_attack= 1, value=10, zone_level=zone_level)
-    hammer = Weapon("Hammer", "Hammer", attack_modifier=1, special_attack= 2, value=10, zone_level=zone_level)
-    war_hammer = Weapon("War Hammer", "Hammer", attack_modifier=1, special_attack= 3, value=10, zone_level=zone_level)
-    short_bow = Weapon("Short Bow", "Bow", attack_modifier=1, special_attack= 1, value=10, zone_level=zone_level)
-    long_bow = Weapon("Long Bow", "Bow", attack_modifier=1, special_attack= 2, value=10, zone_level=zone_level)
-    champion_bow = Weapon("Champion Bow", "Bow", attack_modifier=1, special_attack= 3, value=10, zone_level=zone_level)
+    padded_armor = Armor("Padded Armor", defense_modifier=round(2 + base / 4), armor_type=ArmorType.CHEST,
+                         value=40 + (base ** 2) * 4, zone_level=zone_level)
+    padded_boots = Armor("Padded Boots", defense_modifier=round(1 + base / 6), armor_type=ArmorType.BOOTS,
+                         value=20 + (base ** 2) * 2, zone_level=zone_level)
+    padded_gloves = Armor("Padded Gloves", defense_modifier=round(1 + base / 6), armor_type=ArmorType.GLOVES,
+                          value=20 + (base ** 2) * 2, zone_level=zone_level)
+
+    # Swords
+    short_sword = Weapon("Short Sword", "Sword", attack_modifier=round(2 + base / 5), special_attack=1,
+                         value=30 + (base ** 2) * 1, zone_level=zone_level)
+    long_sword = Weapon("Long Sword", "Sword", attack_modifier=round(4 + base / 3), special_attack=2,
+                        value=50 + (base ** 2) * 2, zone_level=zone_level)
+    champion_sword = Weapon("Champion Sword", "Sword", attack_modifier=round(6 + base / 2), special_attack=3,
+                            value=70 + (base ** 2) * 3, zone_level=zone_level)
+    voltaic_sword = Weapon("Voltaic Sword", "Sword", attack_modifier=round(8 + base / 1.5), special_attack=4,
+                           value=90 + (base ** 2) * 4, zone_level=zone_level)
+
+    # Spears
+    short_spear = Weapon("Short Spear", "Spear", attack_modifier=round(3 + base / 5), special_attack=1,
+                         value=35 + (base ** 2) * 1.5, zone_level=zone_level)
+    long_spear = Weapon("Long Spear", "Spear", attack_modifier=round(5 + base / 3), special_attack=2,
+                        value=55 + (base ** 2) * 2.5, zone_level=zone_level)
+    champion_spear = Weapon("Champion Spear", "Spear", attack_modifier=round(7 + base / 2), special_attack=3,
+                            value=75 + (base ** 2) * 3.5, zone_level=zone_level)
+
+    # Hammers
+    club = Weapon("Club", "Hammer", attack_modifier=round(2 + base / 4), special_attack=1, value=20 + (base ** 2) * 1,
+                  zone_level=zone_level)
+    hammer = Weapon("Hammer", "Hammer", attack_modifier=round(4 + base / 3), special_attack=2,
+                    value=40 + (base ** 2) * 2, zone_level=zone_level)
+    war_hammer = Weapon("War Hammer", "Hammer", attack_modifier=round(6 + base / 1.5), special_attack=3,
+                        value=60 + (base ** 2) * 3, zone_level=zone_level)
+
+    # Bows
+    short_bow = Weapon("Short Bow", "Bow", attack_modifier=round(3 + base / 5), special_attack=1,
+                       value=40 + (base ** 2) * 1, zone_level=zone_level)
+    long_bow = Weapon("Long Bow", "Bow", attack_modifier=round(5 + base / 3), special_attack=2,
+                      value=60 + (base ** 2) * 2, zone_level=zone_level)
+    champion_bow = Weapon("Champion Bow", "Bow", attack_modifier=round(7 + base / 2), special_attack=3,
+                          value=80 + (base ** 2) * 3, zone_level=zone_level)
 
     # Charms
     woodcrafters_charm = Charm("Woodcleaver", woodcut_modifier=1, value = 10)

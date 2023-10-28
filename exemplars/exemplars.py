@@ -23,7 +23,9 @@ class Exemplar:
             stats["stamina"],
             stats["max_stamina"],
             stats["attack"],
+            stats["damage"],
             stats["defense"],
+            stats["armor"],
             stats["combat_level"],
             stats["combat_experience"],
             stats["mining_level"],
@@ -273,7 +275,9 @@ class PlayerStats:
         stamina,
         max_stamina,
         attack,
+        damage,
         defense,
+        armor,
         combat_level=1,
         combat_experience=0,
         mining_level=1,
@@ -290,7 +294,9 @@ class PlayerStats:
         self.stamina = stamina
         self.max_stamina = max_stamina
         self.attack = attack
+        self.damage = damage
         self.defense = defense
+        self.armor = armor
         self.combat_level = combat_level
         self.combat_experience = combat_experience
         self.mining_level = mining_level
@@ -299,7 +305,6 @@ class PlayerStats:
         self.woodcutting_experience = woodcutting_experience
         self.zone_level = zone_level
         self.damage_taken = damage_taken
-
 
     def update_health(self, update):
         self.health = update
@@ -332,7 +337,9 @@ class Human(Exemplar):
             "stamina": 12,
             "max_stamina": 12,
             "attack": 6,
+            "damage": 0,
             "defense": 6,
+            "armor": 0,
             "combat_level": 1,
             "combat_experience": 0,
             "mining_level": 1,
@@ -352,7 +359,9 @@ class Dwarf(Exemplar):
             "stamina": 10,
             "max_stamina": 10,
             "attack": 7,
+            "damage": 0,
             "defense": 5,
+            "armor": 0,
             "combat_level": 1,
             "combat_experience": 0,
             "mining_level": 1,
@@ -372,7 +381,9 @@ class Orc(Exemplar):
             "stamina": 8,
             "max_stamina": 8,
             "attack": 8,
+            "damage": 0,
             "defense": 4,
+            "armor": 0,
             "combat_level": 1,
             "combat_experience": 0,
             "mining_level": 1,
@@ -392,7 +403,9 @@ class Halfling(Exemplar):
             "stamina": 14,
             "max_stamina": 14,
             "attack": 5,
+            "damage": 0,
             "defense": 7,
+            "armor": 0,
             "combat_level": 1,
             "combat_experience": 0,
             "mining_level": 1,
@@ -412,7 +425,9 @@ class Elf(Exemplar):
             "stamina": 13,
             "max_stamina": 13,
             "attack": 6,
+            "damage": 0,
             "defense": 7,
+            "armor": 0,
             "combat_level": 1,
             "combat_experience": 0,
             "mining_level": 1,
