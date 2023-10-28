@@ -320,29 +320,71 @@ class CraftButton(discord.ui.Button):
 
             await interaction.response.edit_message(embed=embed, view=self.view)
 
+
 class CraftingSelect(discord.ui.Select):
-    def __init__(self, crafting_station):
+    def __init__(self, crafting_station, interaction):
         self.crafting_station = crafting_station
+        self.interaction = interaction
+
+        # Load the player data here
+        from utils import load_player_data
+        self.guild_id = self.interaction.guild.id
+        self.author_id = str(self.interaction.user.id)
+        self.player_data = load_player_data(self.guild_id)
+        self.player = Exemplar(self.player_data[self.author_id]["exemplar"],
+                               self.player_data[self.author_id]["stats"],
+                               self.player_data[self.author_id]["inventory"])
 
         # Define select options based on the provided recipes
-        options = [discord.SelectOption(label=recipe.result.name, value=recipe.result.name, emoji=(get_emoji(recipe.result.name)))
-                   for recipe in self.crafting_station.recipes]
+        options = [
+            discord.SelectOption(
+                label=self._get_item_label(recipe.result),
+                value=recipe.result.name,
+                emoji=get_emoji(recipe.result.name)
+            )
+            for recipe in self.crafting_station.recipes
+        ]
 
         # Initialize the Select element with the generated options
         super().__init__(placeholder="Choose an item to craft", options=options, min_values=1, max_values=1)
 
-    async def callback(self, interaction: discord.Interaction):
-        from utils import load_player_data
+    def _get_item_label(self, item):
+        """Return the appropriate label for the item, including defense or attack modifier if applicable."""
+        label = item.name
+        delta = ""  # Difference string, choice to apply later
 
-        guild_id = interaction.guild.id
-        author_id = str(interaction.user.id)
-        player_data = load_player_data(guild_id)
-        player = Exemplar(player_data[author_id]["exemplar"],
-                          player_data[author_id]["stats"],
-                          player_data[author_id]["inventory"])
+        if isinstance(item, Weapon):
+            equipped_weapon = self.player.inventory.equipped_weapon
+            if equipped_weapon:
+                diff = item.attack_modifier - equipped_weapon.attack_modifier
+            else:
+                diff = item.attack_modifier
+            if diff > 0:
+                delta = f"(+{diff})"
+            elif diff < 0:
+                delta = f"({diff})"
+            label += f" [{item.attack_modifier} Damage]"
+
+        elif isinstance(item, (Armor, Shield)):
+            if isinstance(item, Armor):
+                equipped_armor = self.player.inventory.equipped_armor[item.armor_type]
+            else:
+                equipped_armor = self.player.inventory.equipped_shield
+            if equipped_armor:
+                diff = item.defense_modifier - equipped_armor.defense_modifier
+            else:
+                diff = item.defense_modifier
+            if diff > 0:
+                delta = f"(+{diff})"
+            elif diff < 0:
+                delta = f"({diff})"
+            label += f" [{item.defense_modifier} Armor]"
+        return label
+
+    async def callback(self, interaction: discord.Interaction):
 
         # Get zone level from player stats
-        zone_level = player.stats.zone_level
+        zone_level = self.player.stats.zone_level
 
         # Emojis for each zone
         zone_emoji_mapping = {
@@ -378,7 +420,7 @@ class CraftingSelect(discord.ui.Select):
         selected_recipe = next((r for r in self.crafting_station.recipes if r.result.name == self.values[0]), None)
 
         # Check player's inventory for quantity of the crafted item.
-        crafted_item_count = player.inventory.get_item_quantity(selected_recipe.result.name, zone_level)
+        crafted_item_count = self.player.inventory.get_item_quantity(selected_recipe.result.name, zone_level)
 
         embed_title = f"{selected_recipe.result.name} {zone_emoji}"
         if selected_recipe.result.name == "Bread":
@@ -390,7 +432,7 @@ class CraftingSelect(discord.ui.Select):
         ingredients_list = []
         can_craft = True
         for ingredient, required_quantity in selected_recipe.ingredients:
-            available_quantity = player.inventory.get_item_quantity(ingredient.name)
+            available_quantity = self.player.inventory.get_item_quantity(ingredient.name)
             if available_quantity < required_quantity:
                 can_craft = False
                 ingredients_list.append(f"❌ {ingredient.name} {available_quantity}/{required_quantity}")
@@ -416,19 +458,19 @@ class CraftingSelect(discord.ui.Select):
 
         # Check if it's "Bread" or "Trencher" and add stamina bar to description
         if selected_recipe.result.name in ["Bread", "Trencher"]:
-            stamina_progress = stamina_bar(player.stats.stamina, player.stats.max_stamina)
+            stamina_progress = stamina_bar(self.player.stats.stamina, self.player.stats.max_stamina)
             stamina_emoji = get_emoji('stamina_emoji')
 
             # Check if stamina is full and modify the message accordingly
-            if player.stats.stamina >= player.stats.max_stamina:
-                stamina_message = f"\n\n{stamina_emoji} Stamina: {stamina_progress} {player.stats.stamina}/{player.stats.max_stamina} **FULL!**"
+            if self.player.stats.stamina >= self.player.stats.max_stamina:
+                stamina_message = f"\n\n{stamina_emoji} Stamina: {stamina_progress} {self.player.stats.stamina}/{self.player.stats.max_stamina} **FULL!**"
                 can_craft = False  # Disable the Craft button if stamina is full
             else:
-                stamina_message = f"\n\n{stamina_emoji} Stamina: {stamina_progress} {player.stats.stamina}/{player.stats.max_stamina}"
+                stamina_message = f"\n\n{stamina_emoji} Stamina: {stamina_progress} {self.player.stats.stamina}/{self.player.stats.max_stamina}"
 
             embed.description += stamina_message
 
-        view = CraftButtonView(player, player_data, self.crafting_station, selected_recipe, guild_id, author_id,
+        view = CraftButtonView(self.player, self.player_data, self.crafting_station, selected_recipe, self.guild_id, self.author_id,
                                disabled=not can_craft)
         message = await interaction.response.send_message(embed=embed, ephemeral=True, view=view)
         view.message = message
@@ -540,7 +582,7 @@ def create_crafting_stations(interaction, station_name=None):
                             value=75 + (base ** 2) * 3.5, zone_level=zone_level)
 
     # Hammers
-    club = Weapon("Club", "Hammer", attack_modifier=round(2 + base / 4), special_attack=1, value=20 + (base ** 2) * 1,
+    club = Weapon("Club", "Hammer", attack_modifier=round(1 + base / 4), special_attack=1, value=20 + (base ** 2) * 1,
                   zone_level=zone_level)
     hammer = Weapon("Hammer", "Hammer", attack_modifier=round(4 + base / 3), special_attack=2,
                     value=40 + (base ** 2) * 2, zone_level=zone_level)
