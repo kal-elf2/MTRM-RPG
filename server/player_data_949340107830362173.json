@@ -2,7 +2,7 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "zone_level": 1,
+            "zone_level": 2,
             "health": 95,
             "max_health": 775,
             "strength": 351,
@@ -27,25 +27,25 @@
                     "name": "Charcoal",
                     "description": null,
                     "value": null,
-                    "stack": 1668
+                    "stack": 1634
                 },
                 {
                     "name": "Iron",
                     "description": null,
                     "value": null,
-                    "stack": 956
+                    "stack": 950
                 },
                 {
                     "name": "Steel",
                     "description": null,
                     "value": null,
-                    "stack": 2500
+                    "stack": 2450
                 },
                 {
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 760
+                    "stack": 718
                 },
                 {
                     "name": "Pole",
@@ -57,7 +57,7 @@
                     "name": "Thick Pole",
                     "description": null,
                     "value": null,
-                    "stack": 25766
+                    "stack": 25746
                 },
                 {
                     "name": "Pine Strip",
@@ -69,7 +69,7 @@
                     "name": "Yew Strip",
                     "description": null,
                     "value": null,
-                    "stack": 8392
+                    "stack": 8384
                 },
                 {
                     "name": "Ash Strip",
@@ -153,7 +153,7 @@
                     "name": "Glowing Essence",
                     "description": "An ethereal essence that glows faintly. Used in powerful magical rituals and citadel.",
                     "value": 200,
-                    "stack": 992
+                    "stack": 990
                 },
                 {
                     "name": "Leather",
@@ -165,13 +165,13 @@
                     "name": "Leather Straps",
                     "description": null,
                     "value": null,
-                    "stack": 894
+                    "stack": 884
                 },
                 {
                     "name": "Tough Leather Straps",
                     "description": null,
                     "value": null,
-                    "stack": 893
+                    "stack": 873
                 }
             ],
             "trees": [
@@ -248,159 +248,104 @@
             "limit": 49,
             "armors": [
                 {
-                    "name": "Padded Armor",
+                    "name": "Brigandine Armor",
                     "description": null,
-                    "value": 10,
+                    "value": 85,
                     "stack": 1,
-                    "defense_modifier": 1,
+                    "defense_modifier": 4,
                     "armor_type": "chest",
+                    "zone_level": 1
+                },
+                {
+                    "name": "Brigandine Boots",
+                    "description": null,
+                    "value": 53,
+                    "stack": 1,
+                    "defense_modifier": 3,
+                    "armor_type": "boots",
                     "zone_level": 1
                 },
                 {
                     "name": "Brigandine Gloves",
                     "description": null,
-                    "value": 10,
-                    "stack": 2,
-                    "defense_modifier": 1,
+                    "value": 53,
+                    "stack": 1,
+                    "defense_modifier": 3,
                     "armor_type": "gloves",
                     "zone_level": 1
                 },
                 {
-                    "name": "Brigandine Boots",
-                    "description": null,
-                    "value": 10,
-                    "stack": 2,
-                    "defense_modifier": 1,
-                    "armor_type": "boots",
-                    "zone_level": 3
-                },
-                {
-                    "name": "Brigandine Boots",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
-                    "defense_modifier": 1,
-                    "armor_type": "boots",
-                    "zone_level": 5
-                }
-            ],
-            "equipped_armor": {
-                "chest": {
                     "name": "Brigandine Armor",
                     "description": null,
-                    "value": 10,
+                    "value": 325,
                     "stack": 1,
-                    "defense_modifier": 1,
+                    "defense_modifier": 8,
                     "armor_type": "chest",
                     "zone_level": 2
                 },
-                "boots": {
+                {
                     "name": "Brigandine Boots",
                     "description": null,
-                    "value": 10,
+                    "value": 197,
                     "stack": 1,
-                    "defense_modifier": 1,
+                    "defense_modifier": 5,
                     "armor_type": "boots",
-                    "zone_level": 1
-                },
-                "gloves": {
-                    "name": "Padded Gloves",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
-                    "defense_modifier": 1,
-                    "armor_type": "gloves",
-                    "zone_level": 1
-                }
-            },
-            "weapons": [
-                {
-                    "name": "Champion Spear",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
-                    "wtype": "Spear",
-                    "attack_modifier": 1,
-                    "special_attack": 3,
-                    "zone_level": 1
-                },
-                {
-                    "name": "Hammer",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
-                    "wtype": "Hammer",
-                    "attack_modifier": 1,
-                    "special_attack": 2,
-                    "zone_level": 1
-                },
-                {
-                    "name": "Long Bow",
-                    "description": null,
-                    "value": 10,
-                    "stack": 1,
-                    "wtype": "Bow",
-                    "attack_modifier": 1,
-                    "special_attack": 2,
-                    "zone_level": 1
-                },
-                {
-                    "name": "Voltaic Sword",
-                    "description": null,
-                    "value": 10,
-                    "stack": 6,
-                    "wtype": "Sword",
-                    "attack_modifier": 1,
-                    "special_attack": 4,
                     "zone_level": 2
                 },
                 {
-                    "name": "Voltaic Sword",
+                    "name": "Brigandine Gloves",
                     "description": null,
-                    "value": 10,
-                    "stack": 2,
-                    "wtype": "Sword",
-                    "attack_modifier": 1,
-                    "special_attack": 4,
-                    "zone_level": 4
-                },
-                {
-                    "name": "Champion Sword",
-                    "description": null,
-                    "value": 10,
+                    "value": 197,
                     "stack": 1,
-                    "wtype": "Sword",
-                    "attack_modifier": 1,
-                    "special_attack": 3,
-                    "zone_level": 5
+                    "defense_modifier": 5,
+                    "armor_type": "gloves",
+                    "zone_level": 2
                 }
             ],
-            "equipped_weapon": {
-                "name": "Champion Bow",
-                "description": null,
-                "value": 10,
-                "stack": 1,
-                "wtype": "Bow",
-                "attack_modifier": 1,
-                "special_attack": 3,
-                "zone_level": 1
+            "equipped_armor": {
+                "chest": null,
+                "boots": null,
+                "gloves": null
             },
+            "weapons": [
+                {
+                    "name": "Voltaic Sword",
+                    "description": null,
+                    "value": 94,
+                    "stack": 1,
+                    "wtype": "Sword",
+                    "attack_modifier": 9,
+                    "special_attack": 4,
+                    "zone_level": 1
+                },
+                {
+                    "name": "Voltaic Sword",
+                    "description": null,
+                    "value": 286,
+                    "stack": 1,
+                    "wtype": "Sword",
+                    "attack_modifier": 13,
+                    "special_attack": 4,
+                    "zone_level": 2
+                }
+            ],
+            "equipped_weapon": null,
             "shields": [
                 {
                     "name": "Large Shield",
                     "description": null,
-                    "value": 10,
-                    "stack": 2,
-                    "defense_modifier": 1,
-                    "zone_level": 2
+                    "value": 52,
+                    "stack": 1,
+                    "defense_modifier": 3,
+                    "zone_level": 1
                 },
                 {
-                    "name": "Small Shield",
+                    "name": "Large Shield",
                     "description": null,
-                    "value": 10,
+                    "value": 148,
                     "stack": 1,
-                    "defense_modifier": 1,
-                    "zone_level": 5
+                    "defense_modifier": 5,
+                    "zone_level": 2
                 }
             ],
             "equipped_shield": null,
