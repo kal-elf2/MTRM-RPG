@@ -39,6 +39,7 @@ class BackpackView(discord.ui.View):
         super().__init__(timeout=None)
         self.ctx = ctx
         self.item_type_select = None
+        self.original_selection = None
 
         # Load the player's data
         self.player_data = load_player_data(ctx.guild.id)
@@ -79,8 +80,11 @@ class BackpackView(discord.ui.View):
 
     def update_item_select_options(self):
         if self.item_type_select:
-            selected_type = self.item_type_select.placeholder.split(" ")[-3]  # e.g. "Choose an item type to equip"
+            selected_type = self.item_type_select.values[0]
+            print(f"[DEBUG] Selected Type: {selected_type}")  # Debug statement
+
             items = getattr(self.inventory, selected_type.lower() + "s", [])
+            print(f"[DEBUG] Items for {selected_type}: {items}")  # Debug statement
 
             self.item_type_select.options.clear()
 
@@ -88,15 +92,19 @@ class BackpackView(discord.ui.View):
                 option = discord.SelectOption(label=item.name, value=item.name, emoji=getattr(item, "emoji", None))
                 self.item_type_select.options.append(option)
 
-    def refresh_view(self):
+            print(f"[DEBUG] Updated Options: {self.item_type_select.options}")  # Debug statement
+
+    async def refresh_view(self):
         # Load the player's updated data
         self.player_data = load_player_data(self.ctx.guild.id)
         player_id = str(self.ctx.author.id)
         self.inventory = self.player_data[player_id]["inventory"]
 
-        # If item type select exists, update its options
-        if self.item_type_select:
-            self.update_item_select_options()
+        print(f"[DEBUG] Loaded Player Data for {player_id}: {self.player_data[player_id]}")  # Debug statement
+
+        if self.original_selection:
+            # This will set the dropdown back to the originally selected type
+            self.equip_add_item_type_select("equip")
 
     @discord.ui.button(label="Equip", custom_id="backpack_equip", style=discord.ButtonStyle.primary, emoji="⚔️")
     async def equip(self, button, interaction):
@@ -255,7 +263,7 @@ class UnequipTypeSelect(discord.ui.Select):
                 update_and_save_player_data(interaction, inventory, view.player_data)
                 embed = create_item_embed(self.action_type, equipped_item)
                 await interaction.response.send_message(embed=embed, ephemeral=True)
-                view.refresh_view()
+                await view.refresh_view()
                 return
 
             else:
@@ -323,19 +331,29 @@ class UnequipTypeSelect(discord.ui.Select):
         update_and_save_player_data(interaction, inventory, view.player_data)
         embed = create_item_embed(self.action_type, selected_armor_obj)
         await interaction.response.send_message(embed=embed, ephemeral=True)
-        view.refresh_view()
+        await view.refresh_view()
 
 class EquipTypeSelect(discord.ui.Select):
 
     def __init__(self, action_type, options):
+        self._values = []
         self.action_type = action_type
         super().__init__(placeholder=f"Choose an item type to {action_type}", options=options, min_values=1,
                          max_values=1)
+    @property
+    def values(self):
+        return self._values
+
+    @values.setter
+    def values(self, new_values):
+        self._values = new_values
 
     async def callback(self, interaction: discord.Interaction):
         view: BackpackView = self.view
         inventory = view.inventory
-        selected_value = self.values[0]
+        selected_value = interaction.data['values'][0]
+
+        view.original_selection = selected_value
 
         if selected_value in ["Weapon", "Armor", "Shield", "Charm"]:
             await self.handle_item_type_selection(interaction, inventory, selected_value)
@@ -387,14 +405,28 @@ class EquipTypeSelect(discord.ui.Select):
 
         message, _ = await self.equip_item(interaction, inventory, selected_item)  # Unpack the tuple here
 
-        if message:  # Only send a response if there's a message to send
-            await interaction.response.send_message(message, ephemeral=True)
+        # Determine the content or embed you want to send
+        if message:
+            content_to_send = message
+            embed_to_send = None
         else:
-            embed = create_item_embed(self.action_type, selected_item)
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            content_to_send = None
+            embed_to_send = create_item_embed(self.action_type, selected_item)
 
         update_and_save_player_data(interaction, inventory, self.view.player_data)
-        self.view.refresh_view()
+
+        # Reset the dropdown's options to its initial state
+        self.options = [
+            discord.SelectOption(label='Weapon', value='Weapon'),
+            discord.SelectOption(label='Armor', value='Armor'),
+            discord.SelectOption(label='Shield', value='Shield'),
+            discord.SelectOption(label='Charm', value='Charm')
+        ]
+
+        # Use a single call to send your response and update the UI
+        await interaction.response.edit_message(content=content_to_send or "Choose an item type to equip:",
+                                                embed=embed_to_send,
+                                                view=self.view)
 
     def move_item_back_to_inventory(self, item, inventory_category):
         existing_item_in_inventory = next((i for i in inventory_category if

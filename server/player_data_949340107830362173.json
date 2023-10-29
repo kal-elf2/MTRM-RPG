@@ -248,15 +248,6 @@
             "limit": 49,
             "armors": [
                 {
-                    "name": "Brigandine Armor",
-                    "description": null,
-                    "value": 85,
-                    "stack": 1,
-                    "defense_modifier": 4,
-                    "armor_type": "chest",
-                    "zone_level": 1
-                },
-                {
                     "name": "Brigandine Boots",
                     "description": null,
                     "value": 53,
@@ -272,6 +263,15 @@
                     "stack": 1,
                     "defense_modifier": 3,
                     "armor_type": "gloves",
+                    "zone_level": 1
+                },
+                {
+                    "name": "Brigandine Armor",
+                    "description": null,
+                    "value": 85,
+                    "stack": 1,
+                    "defense_modifier": 4,
+                    "armor_type": "chest",
                     "zone_level": 1
                 }
             ],
@@ -304,18 +304,7 @@
                     "zone_level": 2
                 }
             },
-            "weapons": [
-                {
-                    "name": "Voltaic Sword",
-                    "description": null,
-                    "value": 94,
-                    "stack": 1,
-                    "wtype": "Sword",
-                    "attack_modifier": 9,
-                    "special_attack": 4,
-                    "zone_level": 1
-                }
-            ],
+            "weapons": [],
             "equipped_weapon": {
                 "name": "Voltaic Sword",
                 "description": null,
