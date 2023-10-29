@@ -1,6 +1,7 @@
 from discord.ext import commands
 import discord
 import copy
+from exemplars.exemplars import Exemplar
 from utils import load_player_data, update_and_save_player_data, save_player_data
 from images.urls import generate_urls
 from citadel.crafting import Armor
@@ -43,10 +44,14 @@ class BackpackView(discord.ui.View):
 
         # Load the player's data
         self.player_data = load_player_data(ctx.guild.id)
+        self.guild_id = self.ctx.guild.id
+        self.author_id = str(self.ctx.user.id)
+        self.player_data = load_player_data(self.guild_id)
+        self.player = Exemplar(self.player_data[self.author_id]["exemplar"],
+                               self.player_data[self.author_id]["stats"],
+                               self.player_data[self.author_id]["inventory"])
 
-        # Find the specific player's inventory from the loaded data
-        player_id = str(ctx.author.id)
-        self.inventory = self.player_data[player_id]["inventory"]
+        self.inventory = self.player.inventory
 
     def unequip_add_item_type_select(self, action_type):
         # Always present all the options
@@ -260,7 +265,11 @@ class UnequipTypeSelect(discord.ui.Select):
                 # Unequip the item
                 setattr(inventory, equipped_item_key, None)
 
-                update_and_save_player_data(interaction, inventory, view.player_data)
+                # Need to call both because Shield & Weapon
+                self.view.player.update_total_armor()
+                self.view.player.update_total_damage()
+
+                update_and_save_player_data(interaction, inventory, view.player_data, player=self.view.player)
                 embed = create_item_embed(self.action_type, equipped_item)
                 await interaction.response.send_message(embed=embed, ephemeral=True)
                 await view.refresh_view()
@@ -327,8 +336,10 @@ class UnequipTypeSelect(discord.ui.Select):
         # Unequip the armor
         inventory.equipped_armor[selected_armor_type] = None
 
+        self.view.player.update_total_armor()
+
         # Save and send a response
-        update_and_save_player_data(interaction, inventory, view.player_data)
+        update_and_save_player_data(interaction, inventory, view.player_data, player = self.view.player)
         embed = create_item_embed(self.action_type, selected_armor_obj)
         await interaction.response.send_message(embed=embed, ephemeral=True)
         await view.refresh_view()
@@ -605,6 +616,9 @@ class EquipTypeSelect(discord.ui.Select):
             if hasattr(equipped_selected_item, 'stack'):
                 equipped_selected_item.stack = 1
             inventory.equipped_armor[selected_item.armor_type] = equipped_selected_item
+
+            self.view.player.update_total_armor()
+
         else:
             current_equipped_item = getattr(inventory, equipped_item_key, None)
             if current_equipped_item:
@@ -615,6 +629,12 @@ class EquipTypeSelect(discord.ui.Select):
             if hasattr(equipped_selected_item, 'stack'):
                 equipped_selected_item.stack = 1
             setattr(inventory, equipped_item_key, equipped_selected_item)
+
+            # Need to call both because Shield & Weapon
+            self.view.player.update_total_armor()
+            self.view.player.update_total_damage()
+
+        update_and_save_player_data(interaction, inventory, self.view.player_data, player = self.view.player)
 
         # At the end of the method, simply return None if there's no specific message to send
         return None, None

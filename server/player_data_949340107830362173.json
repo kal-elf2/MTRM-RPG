@@ -2,7 +2,6 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "zone_level": 4,
             "health": 95,
             "max_health": 775,
             "strength": 351,
@@ -11,13 +10,14 @@
             "attack": 142,
             "damage": 0,
             "defense": 143,
-            "armor": 0,
+            "armor": 33,
             "combat_level": 69,
             "combat_experience": 250173,
             "mining_level": 99,
             "mining_experience": 23754,
             "woodcutting_level": 40,
             "woodcutting_experience": 24621,
+            "zone_level": 4,
             "damage_taken": 0
         },
         "inventory": {
@@ -27,25 +27,25 @@
                     "name": "Charcoal",
                     "description": null,
                     "value": null,
-                    "stack": 1634
+                    "stack": 1615
                 },
                 {
                     "name": "Iron",
                     "description": null,
                     "value": null,
-                    "stack": 950
+                    "stack": 947
                 },
                 {
                     "name": "Steel",
                     "description": null,
                     "value": null,
-                    "stack": 2450
+                    "stack": 2422
                 },
                 {
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 718
+                    "stack": 697
                 },
                 {
                     "name": "Pole",
@@ -57,7 +57,7 @@
                     "name": "Thick Pole",
                     "description": null,
                     "value": null,
-                    "stack": 25746
+                    "stack": 25732
                 },
                 {
                     "name": "Pine Strip",
@@ -69,7 +69,7 @@
                     "name": "Yew Strip",
                     "description": null,
                     "value": null,
-                    "stack": 8384
+                    "stack": 8380
                 },
                 {
                     "name": "Ash Strip",
@@ -153,7 +153,7 @@
                     "name": "Glowing Essence",
                     "description": "An ethereal essence that glows faintly. Used in powerful magical rituals and citadel.",
                     "value": 200,
-                    "stack": 990
+                    "stack": 989
                 },
                 {
                     "name": "Leather",
@@ -165,13 +165,13 @@
                     "name": "Leather Straps",
                     "description": null,
                     "value": null,
-                    "stack": 884
+                    "stack": 879
                 },
                 {
                     "name": "Tough Leather Straps",
                     "description": null,
                     "value": null,
-                    "stack": 873
+                    "stack": 863
                 }
             ],
             "trees": [
@@ -273,10 +273,26 @@
                     "defense_modifier": 4,
                     "armor_type": "chest",
                     "zone_level": 1
-                }
-            ],
-            "equipped_armor": {
-                "chest": {
+                },
+                {
+                    "name": "Brigandine Boots",
+                    "description": null,
+                    "value": 1133,
+                    "stack": 1,
+                    "defense_modifier": 8,
+                    "armor_type": "boots",
+                    "zone_level": 4
+                },
+                {
+                    "name": "Brigandine Gloves",
+                    "description": null,
+                    "value": 1133,
+                    "stack": 1,
+                    "defense_modifier": 8,
+                    "armor_type": "gloves",
+                    "zone_level": 4
+                },
+                {
                     "name": "Brigandine Armor",
                     "description": null,
                     "value": 325,
@@ -285,7 +301,16 @@
                     "armor_type": "chest",
                     "zone_level": 2
                 },
-                "boots": {
+                {
+                    "name": "Brigandine Armor",
+                    "description": null,
+                    "value": 1885,
+                    "stack": 1,
+                    "defense_modifier": 14,
+                    "armor_type": "chest",
+                    "zone_level": 4
+                },
+                {
                     "name": "Brigandine Boots",
                     "description": null,
                     "value": 197,
@@ -293,7 +318,11 @@
                     "defense_modifier": 5,
                     "armor_type": "boots",
                     "zone_level": 2
-                },
+                }
+            ],
+            "equipped_armor": {
+                "chest": null,
+                "boots": null,
                 "gloves": {
                     "name": "Brigandine Gloves",
                     "description": null,
@@ -304,17 +333,39 @@
                     "zone_level": 2
                 }
             },
-            "weapons": [],
-            "equipped_weapon": {
-                "name": "Voltaic Sword",
-                "description": null,
-                "value": 286,
-                "stack": 1,
-                "wtype": "Sword",
-                "attack_modifier": 13,
-                "special_attack": 4,
-                "zone_level": 2
-            },
+            "weapons": [
+                {
+                    "name": "Champion Spear",
+                    "description": null,
+                    "value": 1338.5,
+                    "stack": 1,
+                    "wtype": "Spear",
+                    "attack_modifier": 16,
+                    "special_attack": 3,
+                    "zone_level": 4
+                },
+                {
+                    "name": "Voltaic Sword",
+                    "description": null,
+                    "value": 1534,
+                    "stack": 1,
+                    "wtype": "Sword",
+                    "attack_modifier": 21,
+                    "special_attack": 4,
+                    "zone_level": 4
+                },
+                {
+                    "name": "Voltaic Sword",
+                    "description": null,
+                    "value": 286,
+                    "stack": 1,
+                    "wtype": "Sword",
+                    "attack_modifier": 13,
+                    "special_attack": 4,
+                    "zone_level": 2
+                }
+            ],
+            "equipped_weapon": null,
             "shields": [
                 {
                     "name": "Large Shield",
@@ -323,15 +374,23 @@
                     "stack": 1,
                     "defense_modifier": 3,
                     "zone_level": 1
+                },
+                {
+                    "name": "Large Shield",
+                    "description": null,
+                    "value": 148,
+                    "stack": 1,
+                    "defense_modifier": 5,
+                    "zone_level": 2
                 }
             ],
             "equipped_shield": {
                 "name": "Large Shield",
                 "description": null,
-                "value": 148,
+                "value": 772,
                 "stack": 1,
-                "defense_modifier": 5,
-                "zone_level": 2
+                "defense_modifier": 9,
+                "zone_level": 4
             },
             "charms": [
                 {

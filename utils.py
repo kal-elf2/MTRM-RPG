@@ -48,7 +48,12 @@ def save_player_data(guild_id, player_data):
 async def send_message(ctx: commands.Context, embed):
     return await ctx.send(embed=embed)
 
-def update_and_save_player_data(interaction: discord.Interaction, inventory, player_data):
+
+def update_and_save_player_data(interaction: discord.Interaction, inventory, player_data, player=None):
     player_id = str(interaction.user.id)
     player_data[player_id]["inventory"] = inventory
+
+    if player:
+        player_data[player_id]["stats"] = player.stats
+
     save_player_data(interaction.guild.id, player_data)
