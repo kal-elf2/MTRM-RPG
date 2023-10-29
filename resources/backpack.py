@@ -86,10 +86,8 @@ class BackpackView(discord.ui.View):
     def update_item_select_options(self):
         if self.item_type_select:
             selected_type = self.item_type_select.values[0]
-            print(f"[DEBUG] Selected Type: {selected_type}")  # Debug statement
 
             items = getattr(self.inventory, selected_type.lower() + "s", [])
-            print(f"[DEBUG] Items for {selected_type}: {items}")  # Debug statement
 
             self.item_type_select.options.clear()
 
@@ -97,9 +95,7 @@ class BackpackView(discord.ui.View):
                 option = discord.SelectOption(label=item.name, value=item.name, emoji=getattr(item, "emoji", None))
                 self.item_type_select.options.append(option)
 
-            print(f"[DEBUG] Updated Options: {self.item_type_select.options}")  # Debug statement
-
-    async def refresh_view(self):
+    async def refresh_view(self, action_type):
         # Load the player's updated data
         self.player_data = load_player_data(self.ctx.guild.id)
         player_id = str(self.ctx.author.id)
@@ -109,7 +105,7 @@ class BackpackView(discord.ui.View):
 
         if self.original_selection:
             # This will set the dropdown back to the originally selected type
-            self.equip_add_item_type_select("equip")
+            self.equip_add_item_type_select(f"{action_type}")
 
     @discord.ui.button(label="Equip", custom_id="backpack_equip", style=discord.ButtonStyle.primary, emoji="⚔️")
     async def equip(self, button, interaction):
@@ -272,7 +268,6 @@ class UnequipTypeSelect(discord.ui.Select):
                 update_and_save_player_data(interaction, inventory, view.player_data, player=self.view.player)
                 embed = create_item_embed(self.action_type, equipped_item)
                 await interaction.response.send_message(embed=embed, ephemeral=True)
-                await view.refresh_view()
                 return
 
             else:
@@ -338,11 +333,22 @@ class UnequipTypeSelect(discord.ui.Select):
 
         self.view.player.update_total_armor()
 
-        # Save and send a response
-        update_and_save_player_data(interaction, inventory, view.player_data, player = self.view.player)
+        # Save data
+        update_and_save_player_data(interaction, inventory, view.player_data, player=self.view.player)
+
+        # Generate the embed for the unequipped item
         embed = create_item_embed(self.action_type, selected_armor_obj)
-        await interaction.response.send_message(embed=embed, ephemeral=True)
-        await view.refresh_view()
+
+        # Reset the dropdown's options to its initial state
+        self.options = [
+            discord.SelectOption(label='Weapon', value='Weapon'),
+            discord.SelectOption(label='Armor', value='Armor'),
+            discord.SelectOption(label='Shield', value='Shield'),
+            discord.SelectOption(label='Charm', value='Charm')
+        ]
+
+        # Update the UI and send the embed with a single response
+        await interaction.response.edit_message(content="Choose an item type to unequip:", embed=embed, view=self.view)
 
 class EquipTypeSelect(discord.ui.Select):
 
@@ -371,6 +377,45 @@ class EquipTypeSelect(discord.ui.Select):
         else:
             await self.handle_item_equipping(interaction, inventory, selected_value)
 
+    @staticmethod
+    def get_item_label(item, player):
+        from citadel.crafting import Weapon, Shield
+        """Return the appropriate label for the item, including defense or attack modifier if applicable."""
+        label = item.name
+        delta = ""  # Difference string, choice to apply later
+
+        if isinstance(item, Weapon):
+            equipped_weapon = player.inventory.equipped_weapon
+            if equipped_weapon:
+                diff = item.attack_modifier - equipped_weapon.attack_modifier
+            else:
+                diff = item.attack_modifier
+
+            # Set delta based on diff value
+            if diff >= 0:
+                delta = f"(+{diff})"
+            else:
+                delta = f"({diff})"
+            label += f" [{item.attack_modifier} Damage {delta}]"
+
+        elif isinstance(item, (Armor, Shield)):
+            if isinstance(item, Armor):
+                equipped_armor = player.inventory.equipped_armor[item.armor_type]
+            else:
+                equipped_armor = player.inventory.equipped_shield
+            if equipped_armor:
+                diff = item.defense_modifier - equipped_armor.defense_modifier
+            else:
+                diff = item.defense_modifier
+
+            # Set delta based on diff value
+            if diff >= 0:
+                delta = f"(+{diff})"
+            else:
+                delta = f"({diff})"
+            label += f" [{item.defense_modifier} Armor {delta}]"
+        return label
+
     async def handle_item_type_selection(self, interaction, inventory, item_type):
         items = getattr(inventory, item_type.lower() + "s", [])
 
@@ -379,11 +424,13 @@ class EquipTypeSelect(discord.ui.Select):
             await interaction.response.send_message(embed=embed, ephemeral=True)
             return
 
-        # Modify the options creation to conditionally include the rarity
+        player = self.view.player
+
+        # Modify the options creation to conditionally include the rarity and the detailed label
         if item_type == "Charm":
             self.options = [
                 discord.SelectOption(
-                    label=f"{item.name}",
+                    label=self.get_item_label(item, player),  # Change here for Charm
                     value=f"{item.name}",
                     emoji=get_emoji(item.name)
                 )
@@ -392,9 +439,9 @@ class EquipTypeSelect(discord.ui.Select):
         else:
             self.options = [
                 discord.SelectOption(
-                    label=f"{item.name}",
+                    label=self.get_item_label(item, player),  # Change here for other types
                     value=f"{item.name} ({ZONE_LEVEL_TO_RARITY[item.zone_level]})",
-                    emoji=get_emoji(ZONE_LEVEL_TO_EMOJI[item.zone_level])  # Use get_emoji function here
+                    emoji=get_emoji(ZONE_LEVEL_TO_EMOJI[item.zone_level])
                 )
                 for item in items
             ]
