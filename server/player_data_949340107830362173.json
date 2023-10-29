@@ -8,16 +8,16 @@
             "stamina": 352,
             "max_stamina": 353,
             "attack": 142,
-            "damage": 21,
+            "damage": 25,
             "defense": 143,
-            "armor": 23,
+            "armor": 36,
             "combat_level": 69,
             "combat_experience": 250173,
             "mining_level": 99,
             "mining_experience": 23754,
             "woodcutting_level": 40,
             "woodcutting_experience": 24621,
-            "zone_level": 4,
+            "zone_level": 5,
             "damage_taken": 0
         },
         "inventory": {
@@ -27,19 +27,19 @@
                     "name": "Charcoal",
                     "description": null,
                     "value": null,
-                    "stack": 1603
+                    "stack": 1595
                 },
                 {
                     "name": "Iron",
                     "description": null,
                     "value": null,
-                    "stack": 947
+                    "stack": 944
                 },
                 {
                     "name": "Steel",
                     "description": null,
                     "value": null,
-                    "stack": 2403
+                    "stack": 2385
                 },
                 {
                     "name": "Onyx",
@@ -51,13 +51,13 @@
                     "name": "Pole",
                     "description": null,
                     "value": null,
-                    "stack": 391
+                    "stack": 389
                 },
                 {
                     "name": "Thick Pole",
                     "description": null,
                     "value": null,
-                    "stack": 25712
+                    "stack": 25700
                 },
                 {
                     "name": "Pine Strip",
@@ -69,13 +69,13 @@
                     "name": "Yew Strip",
                     "description": null,
                     "value": null,
-                    "stack": 8380
+                    "stack": 8376
                 },
                 {
                     "name": "Ash Strip",
                     "description": null,
                     "value": null,
-                    "stack": 1000
+                    "stack": 995
                 },
                 {
                     "name": "Poplar Strip",
@@ -105,13 +105,13 @@
                     "name": "Linen",
                     "description": null,
                     "value": null,
-                    "stack": 978
+                    "stack": 968
                 },
                 {
                     "name": "Linen Thread",
                     "description": null,
                     "value": null,
-                    "stack": 978
+                    "stack": 968
                 },
                 {
                     "name": "Venison",
@@ -123,7 +123,7 @@
                     "name": "Sinew",
                     "description": null,
                     "value": null,
-                    "stack": 930
+                    "stack": 925
                 },
                 {
                     "name": "Rabbit Body",
@@ -153,25 +153,25 @@
                     "name": "Glowing Essence",
                     "description": "An ethereal essence that glows faintly. Used in powerful magical rituals and citadel.",
                     "value": 200,
-                    "stack": 988
+                    "stack": 987
                 },
                 {
                     "name": "Leather",
                     "description": null,
                     "value": null,
-                    "stack": 995
+                    "stack": 991
                 },
                 {
                     "name": "Leather Straps",
                     "description": null,
                     "value": null,
-                    "stack": 871
+                    "stack": 857
                 },
                 {
                     "name": "Tough Leather Straps",
                     "description": null,
                     "value": null,
-                    "stack": 863
+                    "stack": 859
                 }
             ],
             "trees": [
@@ -246,9 +246,8 @@
                 }
             ],
             "limit": 49,
-            "armors": [],
-            "equipped_armor": {
-                "chest": {
+            "armors": [
+                {
                     "name": "Brigandine Armor",
                     "description": null,
                     "value": 1885,
@@ -256,11 +255,58 @@
                     "defense_modifier": 14,
                     "armor_type": "chest",
                     "zone_level": 4
+                }
+            ],
+            "equipped_armor": {
+                "chest": {
+                    "name": "Leather Armor",
+                    "description": null,
+                    "value": 2560,
+                    "stack": 1,
+                    "defense_modifier": 11,
+                    "armor_type": "chest",
+                    "zone_level": 5
                 },
-                "boots": null,
-                "gloves": null
+                "boots": {
+                    "name": "Leather Boots",
+                    "description": null,
+                    "value": 1602,
+                    "stack": 1,
+                    "defense_modifier": 7,
+                    "armor_type": "boots",
+                    "zone_level": 5
+                },
+                "gloves": {
+                    "name": "Leather Gloves",
+                    "description": null,
+                    "value": 1602,
+                    "stack": 1,
+                    "defense_modifier": 7,
+                    "armor_type": "gloves",
+                    "zone_level": 5
+                }
             },
             "weapons": [
+                {
+                    "name": "War Hammer",
+                    "description": null,
+                    "value": 1935,
+                    "stack": 1,
+                    "wtype": "Hammer",
+                    "attack_modifier": 23,
+                    "special_attack": 3,
+                    "zone_level": 5
+                },
+                {
+                    "name": "Club",
+                    "description": null,
+                    "value": 645,
+                    "stack": 1,
+                    "wtype": "Hammer",
+                    "attack_modifier": 7,
+                    "special_attack": 1,
+                    "zone_level": 5
+                },
                 {
                     "name": "Champion Spear",
                     "description": null,
@@ -270,9 +316,28 @@
                     "attack_modifier": 16,
                     "special_attack": 3,
                     "zone_level": 4
+                },
+                {
+                    "name": "Champion Bow",
+                    "description": null,
+                    "value": 1955,
+                    "stack": 1,
+                    "wtype": "Bow",
+                    "attack_modifier": 20,
+                    "special_attack": 3,
+                    "zone_level": 5
                 }
             ],
-            "equipped_weapon": null,
+            "equipped_weapon": {
+                "name": "Voltaic Sword",
+                "description": null,
+                "value": 2590,
+                "stack": 1,
+                "wtype": "Sword",
+                "attack_modifier": 25,
+                "special_attack": 4,
+                "zone_level": 5
+            },
             "shields": [
                 {
                     "name": "Large Shield",
@@ -289,15 +354,23 @@
                     "stack": 1,
                     "defense_modifier": 5,
                     "zone_level": 2
+                },
+                {
+                    "name": "Large Shield",
+                    "description": null,
+                    "value": 772,
+                    "stack": 1,
+                    "defense_modifier": 9,
+                    "zone_level": 4
                 }
             ],
             "equipped_shield": {
                 "name": "Large Shield",
                 "description": null,
-                "value": 772,
+                "value": 1300,
                 "stack": 1,
-                "defense_modifier": 9,
-                "zone_level": 4
+                "defense_modifier": 11,
+                "zone_level": 5
             },
             "charms": [
                 {
@@ -326,7 +399,7 @@
                     "name": "Loothaven",
                     "description": null,
                     "value": 10,
-                    "stack": 6,
+                    "stack": 7,
                     "strength_modifier": 0,
                     "woodcut_modifier": 0,
                     "mining_modifier": 0,
@@ -356,17 +429,7 @@
                     "loot_multiplier": 1.0
                 }
             ],
-            "equipped_charm": {
-                "name": "Loothaven",
-                "description": null,
-                "value": 10,
-                "stack": 1,
-                "strength_modifier": 0,
-                "woodcut_modifier": 0,
-                "mining_modifier": 0,
-                "defense_modifier": 0,
-                "loot_multiplier": 1
-            },
+            "equipped_charm": null,
             "materium_count": 2
         },
         "in_battle": false

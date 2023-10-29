@@ -266,12 +266,12 @@ class UnequipTypeSelect(discord.ui.Select):
                 self.view.player.update_total_damage()
 
                 update_and_save_player_data(interaction, inventory, view.player_data, player=self.view.player)
-                embed = create_item_embed(self.action_type, equipped_item)
+                embed = create_item_embed(self.action_type, equipped_item, self.view.player.stats.zone_level)
                 await interaction.response.send_message(embed=embed, ephemeral=True)
                 return
 
             else:
-                embed = create_item_embed(self.action_type, selected_value)
+                embed = create_item_embed(self.action_type, selected_value,self.view.player.stats.zone_level)
                 await interaction.response.send_message(embed=embed, ephemeral=True)
                 return
 
@@ -282,7 +282,7 @@ class UnequipTypeSelect(discord.ui.Select):
                                for armor_type, armor_data in inventory.equipped_armor.items() if armor_data is not None}
 
             if not equipped_armors:
-                embed = create_item_embed(self.action_type, selected_value)
+                embed = create_item_embed(self.action_type, selected_value, self.view.player.stats.zone_level)
                 await interaction.response.send_message(embed=embed, ephemeral=True)
                 return
 
@@ -337,7 +337,7 @@ class UnequipTypeSelect(discord.ui.Select):
         update_and_save_player_data(interaction, inventory, view.player_data, player=self.view.player)
 
         # Generate the embed for the unequipped item
-        embed = create_item_embed(self.action_type, selected_armor_obj)
+        embed = create_item_embed(self.action_type, selected_armor_obj, self.view.player.stats.zone_level)
 
         # Reset the dropdown's options to its initial state
         self.options = [
@@ -420,7 +420,7 @@ class EquipTypeSelect(discord.ui.Select):
         items = getattr(inventory, item_type.lower() + "s", [])
 
         if not items:
-            embed = create_item_embed(self.action_type, item_type)
+            embed = create_item_embed(self.action_type, item_type, self.view.player.stats.zone_level)
             await interaction.response.send_message(embed=embed, ephemeral=True)
             return
 
@@ -469,7 +469,7 @@ class EquipTypeSelect(discord.ui.Select):
             embed_to_send = None
         else:
             content_to_send = None
-            embed_to_send = create_item_embed(self.action_type, selected_item)
+            embed_to_send = create_item_embed(self.action_type, selected_item, self.view.player.stats.zone_level)
 
         update_and_save_player_data(interaction, inventory, self.view.player_data)
 
@@ -694,12 +694,12 @@ color_mapping = {
     5: 0xfebd0d
 }
 
-def create_item_embed(action, item):
+def create_item_embed(action, item, player_zone_level):
     if isinstance(item, str):  # Item doesn't exist, so it's a string (e.g., "Weapon", "Armor")
         title = f"{action.capitalize()} {item}"
         description = f"You don't have any {item} to {action}."
         thumbnail_url = generate_urls("Icons", "default")  # Set a default image for non-existent items
-        embed_color = 0x3498db  # Default color
+        embed_color = color_mapping.get(player_zone_level, 0x3498db)  # Default color based on zone level
     else:  # Item exists, so it has a `name` attribute
         title = f"{action.capitalize()}ped {item.name}"
         description = f"You have {action}ped the {item.name}."
@@ -708,7 +708,7 @@ def create_item_embed(action, item):
         if hasattr(item, 'zone_level'):
             embed_color = color_mapping.get(item.zone_level, 0x3498db)
         else:
-            embed_color = 0x3498db  # Default color
+            embed_color = color_mapping.get(player_zone_level, 0x3498db)  # Default color based on zone level
 
     embed = discord.Embed(title=title, description=description, color=embed_color)
     embed.set_thumbnail(url=thumbnail_url)
