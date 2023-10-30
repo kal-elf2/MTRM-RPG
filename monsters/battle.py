@@ -23,6 +23,15 @@ class LootOptions(discord.ui.View):
 
     @discord.ui.button(custom_id="loot", label="Loot", style=discord.ButtonStyle.blurple)
     async def collect_loot(self, button, interaction):
+
+        from exemplars.exemplars import Exemplar
+
+        # Reload the latest player data
+        self.player_data = load_player_data(self.guild_id)
+        self.player = Exemplar(self.player_data[self.author_id]["exemplar"],
+                               self.player_data[self.author_id]["stats"],
+                               self.player_data[self.author_id]["inventory"])
+
         # Extract loot items and messages from the battle outcome
         loot = self.battle_outcome[3]
         print(f"Raw loot data: {loot}")

@@ -2,17 +2,17 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "health": 775,
+            "health": 512,
             "max_health": 775,
             "strength": 351,
-            "stamina": 350,
+            "stamina": 353,
             "max_stamina": 353,
             "attack": 142,
             "damage": 25,
             "defense": 143,
-            "armor": 11,
+            "armor": 27,
             "combat_level": 69,
-            "combat_experience": 250173,
+            "combat_experience": 250489,
             "mining_level": 99,
             "mining_experience": 23774,
             "woodcutting_level": 40,
@@ -21,13 +21,13 @@
             "damage_taken": 0
         },
         "inventory": {
-            "coppers": 345,
+            "coppers": 494,
             "items": [
                 {
                     "name": "Charcoal",
                     "description": null,
                     "value": null,
-                    "stack": 1540
+                    "stack": 1535
                 },
                 {
                     "name": "Iron",
@@ -39,13 +39,13 @@
                     "name": "Steel",
                     "description": null,
                     "value": null,
-                    "stack": 2325
+                    "stack": 2320
                 },
                 {
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 652
+                    "stack": 669
                 },
                 {
                     "name": "Pole",
@@ -225,7 +225,7 @@
                 },
                 {
                     "name": "Carbon",
-                    "stack": 867
+                    "stack": 862
                 }
             ],
             "potions": [
@@ -275,15 +275,6 @@
                     "zone_level": 4
                 },
                 {
-                    "name": "Leather Armor",
-                    "description": null,
-                    "value": 2560,
-                    "stack": 1,
-                    "defense_modifier": 16,
-                    "armor_type": "chest",
-                    "zone_level": 5
-                },
-                {
                     "name": "Leather Boots",
                     "description": null,
                     "value": 1602,
@@ -303,7 +294,15 @@
                 }
             ],
             "equipped_armor": {
-                "chest": null,
+                "chest": {
+                    "name": "Leather Armor",
+                    "description": null,
+                    "value": 2560,
+                    "stack": 1,
+                    "defense_modifier": 16,
+                    "armor_type": "chest",
+                    "zone_level": 5
+                },
                 "boots": null,
                 "gloves": null
             },
@@ -420,7 +419,7 @@
                     "name": "Loothaven",
                     "description": null,
                     "value": 10,
-                    "stack": 14,
+                    "stack": 15,
                     "strength_modifier": 0,
                     "woodcut_modifier": 0,
                     "mining_modifier": 0,
@@ -451,7 +450,7 @@
                 }
             ],
             "equipped_charm": null,
-            "materium": 965
+            "materium": 960
         },
         "in_battle": false
     }

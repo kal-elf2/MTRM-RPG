@@ -536,6 +536,7 @@ def create_crafting_stations(interaction, station_name=None):
     snapdragon = Item("Snapdragon")
     bloodweed = Item("Bloodweed")
     materium = Materium()
+    goblin_crown = Item("Goblin Crown")
 
     # Shields
     buckler = Shield("Buckler", defense_modifier=round(1 * zone_level), value=30 + round(zone_level ** 2) * 1,
@@ -697,10 +698,9 @@ def create_crafting_stations(interaction, station_name=None):
     potion_shop.add_recipe(Recipe(super_health_potion, (bloodweed, 1), (venison, 3), (onyx, 3)))
     potion_shop.add_recipe(Recipe(woodcrafters_charm, (materium, 5), (poplar_strip, 5), (steel, 5), (carbon, 3), (charcoal, 2)))
     potion_shop.add_recipe(Recipe(miners_charm, (materium, 5), (ash_strip, 5), (steel, 5), (coal, 4), (iron_ore, 3)))
-    potion_shop.add_recipe(Recipe(lootmasters_charm, (materium, 5), (onyx, 3), (carbon, 5), (steel, 5), (charcoal, 5)))
+    potion_shop.add_recipe(Recipe(lootmasters_charm, (goblin_crown, 1), (materium, 5), (onyx, 30), (carbon, 5), (charcoal, 5)))
     potion_shop.add_recipe(Recipe(strength_charm, (materium, 5), (thick_pole, 10), (steel, 10), (charcoal, 5), (carbon, 3)))
     potion_shop.add_recipe(Recipe(defenders_charm, (materium, 5), (onyx, 4), (tough_leather_straps, 3), (steel, 5), (charcoal, 4)))
-
 
     stations = {
         "forge": forge,

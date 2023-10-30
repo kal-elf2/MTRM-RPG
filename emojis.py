@@ -28,6 +28,7 @@ def get_emoji(emoji_name):
         'rabbit_body_emoji': '<:Ico_rabbit_body:1157347837676363796>',
         'glowing_essence_emoji': '<:glowing_essence:1156402835257307197>',
         'wolf_skin_emoji': '<:ico_wolf_skin:1157347839064670358>',
+        'goblin_crown_emoji': '<:GoblinCrown:1158371908488810618>',
         'coppers_emoji': '<:Mirandus_Coppers:1157348717008011345>',
         'common_emoji': '<:common:1157867391494144082>',
         'uncommon_emoji': '<:uncommon:1157867396078518394>',

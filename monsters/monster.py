@@ -33,8 +33,9 @@ def generate_monster_by_name(name, zone_level):
         ('Wolf', 50, 6, 5, 'warhammer', 'staff', 1.8, [Item('Wolf Skin')], [1]),
         ('Goblin', 100, 10, 10, 'longsword', 'longbow', 2, [Item('Onyx')], [1]),
         ('Goblin Hunter', 200, 20, 20, 'dual_daggers', 'warhammer', 2.2, [Item('Onyx')], [5]),
-        ('Mega Brute', 3000, 45, 40, 'longsword', 'staff', 2.5, [Item('Onyx')], [10]),
-        ('Wisp', 3000, 55, 50, 'staff', 'longbow', 2.7, [Item('Glowing Essence')], [1]),
+        ('Mega Brute', 1500, 35, 30, 'longsword', 'staff', 2.5, [Item('Onyx')], [10]),
+        ('Wisp', 2000, 45, 40, 'staff', 'longbow', 2.7, [Item('Glowing Essence')], [1]),
+        ('Mother', 3000, 55, 50, 'sword', 'hammer', 3, [Item('Goblin Crown'), Item('Onyx')], [1, 20])
     ]
 
     monster = next((m for m in monster_types if m[0] == name), None)
@@ -65,6 +66,7 @@ def generate_monster_list():
         'Goblin Hunter',
         'Mega Brute',
         'Wisp',
+        'Mother'
     ]
     return monster_names
 

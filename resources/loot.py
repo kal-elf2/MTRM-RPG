@@ -55,6 +55,10 @@ loot_definitions = {
     'Glowing Essence': {
         'description': 'An ethereal essence that glows faintly. Used in powerful magical rituals and citadel.',
         'value': 200
+    },
+    'Goblin Crown': {
+        'description': 'A powerful relic obtained from the Goblin Mother. Used to create powerful Charms.',
+        'value': 5000
     }
 }
 
@@ -64,7 +68,8 @@ item_emoji_mapping = {
     'Deer Parts': 'deer_parts_emoji',
     'Rabbit Body': 'rabbit_body_emoji',
     'Glowing Essence': 'glowing_essence_emoji',
-    'Wolf Skin': 'wolf_skin_emoji'
+    'Wolf Skin': 'wolf_skin_emoji',
+    'Goblin Crown': 'goblin_crown_emoji'
 }
 
 monster_difficulty_multiplier = {
@@ -76,6 +81,7 @@ monster_difficulty_multiplier = {
     'Goblin Hunter': 10,
     'Mega Brute': 20,
     'Wisp': 20,
+    'Mother': 30
 }
 
 def generate_zone_loot(zone_level, monster_drop=None, name=None):
