@@ -2,10 +2,10 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "health": 95,
+            "health": 775,
             "max_health": 775,
             "strength": 351,
-            "stamina": 353,
+            "stamina": 350,
             "max_stamina": 353,
             "attack": 142,
             "damage": 25,
@@ -14,10 +14,10 @@
             "combat_level": 69,
             "combat_experience": 250173,
             "mining_level": 99,
-            "mining_experience": 23754,
+            "mining_experience": 23774,
             "woodcutting_level": 40,
-            "woodcutting_experience": 24621,
-            "zone_level": 4,
+            "woodcutting_experience": 24661,
+            "zone_level": 1,
             "damage_taken": 0
         },
         "inventory": {
@@ -27,7 +27,7 @@
                     "name": "Charcoal",
                     "description": null,
                     "value": null,
-                    "stack": 1578
+                    "stack": 1540
                 },
                 {
                     "name": "Iron",
@@ -39,13 +39,13 @@
                     "name": "Steel",
                     "description": null,
                     "value": null,
-                    "stack": 2365
+                    "stack": 2325
                 },
                 {
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 673
+                    "stack": 652
                 },
                 {
                     "name": "Pole",
@@ -165,7 +165,7 @@
                     "name": "Leather Straps",
                     "description": null,
                     "value": null,
-                    "stack": 846
+                    "stack": 842
                 },
                 {
                     "name": "Tough Leather Straps",
@@ -217,7 +217,7 @@
             "ore": [
                 {
                     "name": "Iron Ore",
-                    "stack": 984
+                    "stack": 985
                 },
                 {
                     "name": "Coal",
@@ -225,7 +225,7 @@
                 },
                 {
                     "name": "Carbon",
-                    "stack": 902
+                    "stack": 867
                 }
             ],
             "potions": [
@@ -337,6 +337,16 @@
                     "attack_modifier": 48,
                     "special_attack": 4,
                     "zone_level": 4
+                },
+                {
+                    "name": "Champion Sword",
+                    "description": null,
+                    "value": 73,
+                    "stack": 1,
+                    "wtype": "Sword",
+                    "attack_modifier": 7,
+                    "special_attack": 3,
+                    "zone_level": 1
                 }
             ],
             "equipped_weapon": {
@@ -410,7 +420,7 @@
                     "name": "Loothaven",
                     "description": null,
                     "value": 10,
-                    "stack": 7,
+                    "stack": 14,
                     "strength_modifier": 0,
                     "woodcut_modifier": 0,
                     "mining_modifier": 0,
@@ -441,7 +451,7 @@
                 }
             ],
             "equipped_charm": null,
-            "materium_count": 2
+            "materium": 965
         },
         "in_battle": false
     }

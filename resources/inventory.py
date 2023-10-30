@@ -28,7 +28,7 @@ class Inventory:
         self.equipped_shield = None
         self.charms = []
         self.equipped_charm = None
-        self.materium_count = 0
+        self.materium = 0
 
     def to_dict(self):
         return {
@@ -47,7 +47,7 @@ class Inventory:
             "equipped_shield": self.equipped_shield.to_dict() if self.equipped_shield else None,
             "charms": [charm.to_dict() for charm in self.charms],
             "equipped_charm": self.equipped_charm.to_dict() if self.equipped_charm else None,
-            "materium_count": self.materium_count,
+            "materium": self.materium,
         }
 
     @classmethod
@@ -68,7 +68,7 @@ class Inventory:
         inventory.equipped_shield = Shield.from_dict(data["equipped_shield"]) if data["equipped_shield"] else None
         inventory.charms = [Charm.from_dict(charm_data) for charm_data in data.get("charms", [])]
         inventory.equipped_charm = Charm.from_dict(data["equipped_charm"]) if data.get("equipped_charm") else None
-        inventory.materium_count = data["materium_count"]
+        inventory.materium = data["materium"]
         return inventory
 
     def add_coppers(self, amount):
@@ -77,7 +77,7 @@ class Inventory:
     def add_item_to_inventory(self, item, amount=1):
         from citadel.crafting import Weapon, Armor, Shield, Charm
         if isinstance(item, Materium):
-            self.materium_count += amount
+            self.materium += amount
         elif isinstance(item, Tree):
             self._add_item_to_specific_inventory(item, amount, self.trees)
         elif isinstance(item, Herb):
@@ -119,6 +119,10 @@ class Inventory:
         return total
 
     def get_item_quantity(self, item_name, zone_level=None):
+        # Check for materium specifically
+        if item_name == "Materium":
+            return self.materium
+
         stackable_sections = [self.items, self.trees, self.herbs, self.ore, self.potions, self.weapons,
                               self.armors, self.shields, self.charms]
 
@@ -149,6 +153,12 @@ class Inventory:
         return True
 
     def remove_item(self, item_name, amount=1):
+
+        # If the item to remove is a Materium
+        if item_name == "Materium":
+            if self.materium >= amount:
+                self.materium -= amount
+                return True
         # Helper function to remove or decrease the quantity of an item from a specific inventory list
         def _remove_from_list(item_list, item_name, amount):
             for idx, item in enumerate(item_list):

@@ -13,7 +13,7 @@ def get_emoji(emoji_name):
         'orc_exemplar_emoji': '<:orcsofthelonghunt:1052760210357375046>',
         'halfling_exemplar_emoji': '<:halflinglongsong:1052760240954822678>',
         'elf_exemplar_emoji': '<:elf_darksun:1052760309875622009>',
-        'mtrm_emoji': '<:mtrm:1148449848085979167>',
+        'Materium': '<:mtrm:1148449848085979167>',
         'rip_emoji': '<:rip:1150987930320523315>',
         'coal_emoji': '<:coal:1156402825652338799>',
         'iron_emoji': '<:iron_ore:1156402842341478453>',

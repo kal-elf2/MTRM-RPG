@@ -6,6 +6,7 @@ from emojis import get_emoji
 from exemplars.exemplars import Exemplar
 from resources.ore import Ore
 from resources.potion import Potion
+from resources.materium import Materium
 
 
 class Weapon(Item):
@@ -419,8 +420,12 @@ class CraftingSelect(discord.ui.Select):
         # Retrieve the recipe for the selected item.
         selected_recipe = next((r for r in self.crafting_station.recipes if r.result.name == self.values[0]), None)
 
-        # Check player's inventory for quantity of the crafted item.
-        crafted_item_count = self.player.inventory.get_item_quantity(selected_recipe.result.name, zone_level)
+        # Check player's inventory for quantity of the crafted item with zone_level rarity
+        if isinstance(selected_recipe.result, (Weapon, Armor, Shield)):
+            crafted_item_count = self.player.inventory.get_item_quantity(selected_recipe.result.name, zone_level)
+        # Check player's inventory for quantity of other items without zone_level rarity
+        else:
+            crafted_item_count = self.player.inventory.get_item_quantity(selected_recipe.result.name)
 
         embed_title = f"{selected_recipe.result.name} {zone_emoji}"
         if selected_recipe.result.name == "Bread":
@@ -530,6 +535,7 @@ def create_crafting_stations(interaction, station_name=None):
     spirit_weed = Item("Spirit Weed")
     snapdragon = Item("Snapdragon")
     bloodweed = Item("Bloodweed")
+    materium = Materium()
 
     # Shields
     buckler = Shield("Buckler", defense_modifier=round(1 * zone_level), value=30 + round(zone_level ** 2) * 1,
@@ -689,11 +695,11 @@ def create_crafting_stations(interaction, station_name=None):
     potion_shop.add_recipe(Recipe(health_potion, (spirit_weed, 1), (venison, 1)))
     potion_shop.add_recipe(Recipe(super_stamina_potion, (snapdragon, 1), (sinew, 6), (onyx, 3)))
     potion_shop.add_recipe(Recipe(super_health_potion, (bloodweed, 1), (venison, 3), (onyx, 3)))
-    potion_shop.add_recipe(Recipe(woodcrafters_charm, (glowing_essence, 1), (poplar_strip, 5), (steel, 5), (carbon, 3), (charcoal, 2)))
-    potion_shop.add_recipe(Recipe(miners_charm, (glowing_essence, 1), (ash_strip, 5), (steel, 5), (coal, 4), (iron_ore, 3)))
-    potion_shop.add_recipe(Recipe(lootmasters_charm, (glowing_essence, 1), (onyx, 3), (carbon, 5), (steel, 5), (charcoal, 5)))
-    potion_shop.add_recipe(Recipe(strength_charm, (glowing_essence, 1), (thick_pole, 10), (steel, 10), (charcoal, 5), (carbon, 3)))
-    potion_shop.add_recipe(Recipe(defenders_charm, (glowing_essence, 1), (onyx, 4), (tough_leather_straps, 3), (steel, 5), (charcoal, 4)))
+    potion_shop.add_recipe(Recipe(woodcrafters_charm, (materium, 5), (poplar_strip, 5), (steel, 5), (carbon, 3), (charcoal, 2)))
+    potion_shop.add_recipe(Recipe(miners_charm, (materium, 5), (ash_strip, 5), (steel, 5), (coal, 4), (iron_ore, 3)))
+    potion_shop.add_recipe(Recipe(lootmasters_charm, (materium, 5), (onyx, 3), (carbon, 5), (steel, 5), (charcoal, 5)))
+    potion_shop.add_recipe(Recipe(strength_charm, (materium, 5), (thick_pole, 10), (steel, 10), (charcoal, 5), (carbon, 3)))
+    potion_shop.add_recipe(Recipe(defenders_charm, (materium, 5), (onyx, 4), (tough_leather_straps, 3), (steel, 5), (charcoal, 4)))
 
 
     stations = {

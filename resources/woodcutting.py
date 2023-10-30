@@ -176,7 +176,7 @@ class HarvestButton(discord.ui.View):
             mtrm_dropped = attempt_mtrm_drop(zone_level)
             if mtrm_dropped:
                 self.player.inventory.add_item_to_inventory(mtrm_dropped, amount=1)
-                message += f"\n{get_emoji('mtrm_emoji')} You also **found some Materium!**"
+                message += f"\n{get_emoji('Materium')} You also **found some Materium!**"
 
             self.player_data[self.author_id]["stats"][
                 "woodcutting_experience"] = self.player.stats.woodcutting_experience
@@ -320,7 +320,7 @@ class HarvestButton(discord.ui.View):
                                                 f"☠️ You have been **DEFEATED** by the **{monster.name}**!\n"
                                                 f"{get_emoji('rip_emoji')} *Your spirit lingers, seeking renewal.* {get_emoji('rip_emoji')}\n\n"
                                                 f"__**Options for Revival:**__\n"
-                                                f"1. Use {get_emoji('mtrm_emoji')} to revive without penalty.\n"
+                                                f"1. Use {get_emoji('Materium')} to revive without penalty.\n"
                                                 f"2. Resurrect with 2.5% penalty to all skills.")
 
                 # Clear the previous BattleOptions view

@@ -134,11 +134,11 @@ class ResurrectOptions(discord.ui.View):
                                player_data[author_id]["stats"],
                                player_data[author_id]["inventory"])
 
-    mtrm = get_emoji('mtrm_emoji')
+    mtrm = get_emoji('Materium')
     @discord.ui.button(custom_id="use_mtrm", label="MTRM", style=discord.ButtonStyle.primary, emoji=mtrm)
     async def use_mtrm(self, button, interaction):
-        if self.player_data[self.author_id]["inventory"].materium_count >= 1:
-            self.player_data[self.author_id]["inventory"].materium_count -= 1
+        if self.player_data[self.author_id]["inventory"].materium >= 1:
+            self.player_data[self.author_id]["inventory"].materium -= 1
             self.player.stats.health = self.player.stats.max_health
             self.player_data[self.author_id]["stats"].update(self.player.stats.__dict__)  # Save the updated stats
 
@@ -151,7 +151,7 @@ class ResurrectOptions(discord.ui.View):
                                 value=f"{get_emoji('heart_emoji')}  {self.player.stats.health}/{self.player.stats.max_health}")
 
             new_embed.add_field(name=f"{self.mtrm}  Remaining",
-                                value=f"{self.player_data[self.author_id]['inventory'].materium_count}")
+                                value=f"{self.player_data[self.author_id]['inventory'].materium}")
 
             # Add the "Revive" image to the embed
             new_embed.set_image(url="https://raw.githubusercontent.com/kal-elf2/MTRM-RPG/master/images/cemetery/Revive.png")

@@ -258,7 +258,7 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
         f"☠️ You have been **DEFEATED** by the **{monster.name}**!\n"
         f"{get_emoji('rip_emoji')} *Your spirit lingers, seeking renewal.* {get_emoji('rip_emoji')}\n\n"
         f"__**Options for Revival:**__\n"
-        f"1. Use {get_emoji('mtrm_emoji')} to revive without penalty.\n"
+        f"1. Use {get_emoji('Materium')} to revive without penalty.\n"
         f"2. Resurrect with 2.5% penalty to all skills.")
 
         # Clear the previous BattleOptions view
