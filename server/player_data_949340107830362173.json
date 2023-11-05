@@ -2,50 +2,50 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "health": 512,
-            "max_health": 775,
-            "strength": 351,
-            "stamina": 353,
-            "max_stamina": 353,
-            "attack": 142,
+            "health": 456,
+            "max_health": 1075,
+            "strength": 501,
+            "stamina": 503,
+            "max_stamina": 503,
+            "attack": 202,
             "damage": 48,
-            "defense": 143,
-            "armor": 35,
-            "combat_level": 69,
-            "combat_experience": 250489,
-            "mining_level": 99,
-            "mining_experience": 23774,
-            "woodcutting_level": 40,
-            "woodcutting_experience": 24661,
-            "zone_level": 1,
+            "defense": 203,
+            "armor": 40,
+            "combat_level": 84,
+            "combat_experience": 750000,
+            "mining_level": 80,
+            "mining_experience": 607100,
+            "woodcutting_level": 90,
+            "woodcutting_experience": 841376,
+            "zone_level":5,
             "damage_taken": 0
         },
         "inventory": {
-            "coppers": 494,
+            "coppers": 2759,
             "items": [
                 {
                     "name": "Charcoal",
                     "description": null,
                     "value": null,
-                    "stack": 1535
+                    "stack": 1520
                 },
                 {
                     "name": "Iron",
                     "description": null,
                     "value": null,
-                    "stack": 944
+                    "stack": 941
                 },
                 {
                     "name": "Steel",
                     "description": null,
                     "value": null,
-                    "stack": 2320
+                    "stack": 2303
                 },
                 {
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 669
+                    "stack": 647
                 },
                 {
                     "name": "Pole",
@@ -57,7 +57,7 @@
                     "name": "Thick Pole",
                     "description": null,
                     "value": null,
-                    "stack": 25690
+                    "stack": 25680
                 },
                 {
                     "name": "Pine Strip",
@@ -69,13 +69,13 @@
                     "name": "Yew Strip",
                     "description": null,
                     "value": null,
-                    "stack": 8377
+                    "stack": 8373
                 },
                 {
                     "name": "Ash Strip",
                     "description": null,
                     "value": null,
-                    "stack": 985
+                    "stack": 977
                 },
                 {
                     "name": "Poplar Strip",
@@ -123,7 +123,7 @@
                     "name": "Sinew",
                     "description": null,
                     "value": null,
-                    "stack": 918
+                    "stack": 895
                 },
                 {
                     "name": "Rabbit Body",
@@ -135,25 +135,25 @@
                     "name": "Deer Parts",
                     "description": "Various parts of a deer. Some are useful for making tools and weapons.",
                     "value": 20,
-                    "stack": 1986
+                    "stack": 1988
                 },
                 {
                     "name": "Deer Skin",
                     "description": "Tough deer skin. Can be used for citadel sturdy armors.",
                     "value": 30,
-                    "stack": 300
+                    "stack": 303
                 },
                 {
                     "name": "Wolf Skin",
                     "description": "A skin of a wild wolf. Known for its durability and strength.",
                     "value": 50,
-                    "stack": 200
+                    "stack": 204
                 },
                 {
                     "name": "Glowing Essence",
                     "description": "An ethereal essence that glows faintly. Used in powerful magical rituals and citadel.",
                     "value": 200,
-                    "stack": 986
+                    "stack": 985
                 },
                 {
                     "name": "Leather",
@@ -165,23 +165,23 @@
                     "name": "Leather Straps",
                     "description": null,
                     "value": null,
-                    "stack": 842
+                    "stack": 837
                 },
                 {
                     "name": "Tough Leather Straps",
                     "description": null,
                     "value": null,
-                    "stack": 853
+                    "stack": 847
                 }
             ],
             "trees": [
                 {
                     "name": "Pine",
-                    "stack": 1000
+                    "stack": 1012
                 },
                 {
                     "name": "Yew",
-                    "stack": 988
+                    "stack": 1011
                 },
                 {
                     "name": "Ash",
@@ -196,17 +196,17 @@
                 {
                     "name": "Ranarr",
                     "value": 25,
-                    "stack": 385
+                    "stack": 387
                 },
                 {
                     "name": "Spirit Weed",
                     "value": 25,
-                    "stack": 237
+                    "stack": 240
                 },
                 {
                     "name": "Snapdragon",
                     "value": 350,
-                    "stack": 596
+                    "stack": 595
                 },
                 {
                     "name": "Bloodweed",
@@ -217,15 +217,15 @@
             "ore": [
                 {
                     "name": "Iron Ore",
-                    "stack": 985
+                    "stack": 988
                 },
                 {
                     "name": "Coal",
-                    "stack": 971
+                    "stack": 981
                 },
                 {
                     "name": "Carbon",
-                    "stack": 862
+                    "stack": 854
                 }
             ],
             "potions": [
@@ -240,21 +240,26 @@
                     "stack": 2
                 },
                 {
+                    "name": "Super Stamina Potion",
+                    "value": 20,
+                    "stack": 4
+                },
+                {
                     "name": "Super Health Potion",
                     "value": 20,
-                    "stack": 3
+                    "stack": 4
                 }
             ],
             "limit": 49,
             "armors": [
                 {
-                    "name": "Leather Boots",
+                    "name": "Brigandine Boots",
                     "description": null,
-                    "value": 1602,
+                    "value": 1133,
                     "stack": 1,
-                    "defense_modifier": 8,
+                    "defense_modifier": 9,
                     "armor_type": "boots",
-                    "zone_level": 5
+                    "zone_level": 4
                 },
                 {
                     "name": "Leather Armor",
@@ -286,13 +291,13 @@
                     "zone_level": 4
                 },
                 "boots": {
-                    "name": "Brigandine Boots",
+                    "name": "Leather Boots",
                     "description": null,
-                    "value": 1133,
+                    "value": 1602,
                     "stack": 1,
-                    "defense_modifier": 9,
+                    "defense_modifier": 8,
                     "armor_type": "boots",
-                    "zone_level": 4
+                    "zone_level": 5
                 },
                 "gloves": {
                     "name": "Brigandine Gloves",
@@ -305,6 +310,16 @@
                 }
             },
             "weapons": [
+                {
+                    "name": "Champion Sword",
+                    "description": null,
+                    "value": 73,
+                    "stack": 1,
+                    "wtype": "Sword",
+                    "attack_modifier": 7,
+                    "special_attack": 3,
+                    "zone_level": 1
+                },
                 {
                     "name": "Club",
                     "description": null,
@@ -326,14 +341,14 @@
                     "zone_level": 1
                 },
                 {
-                    "name": "Champion Sword",
+                    "name": "Voltaic Sword",
                     "description": null,
-                    "value": 73,
+                    "value": 154,
                     "stack": 1,
                     "wtype": "Sword",
-                    "attack_modifier": 7,
-                    "special_attack": 3,
-                    "zone_level": 1
+                    "attack_modifier": 48,
+                    "special_attack": 4,
+                    "zone_level": 4
                 },
                 {
                     "name": "Voltaic Sword",
@@ -344,6 +359,16 @@
                     "attack_modifier": 25,
                     "special_attack": 4,
                     "zone_level": 5
+                },
+                {
+                    "name": "Champion Bow",
+                    "description": null,
+                    "value": 92,
+                    "stack": 1,
+                    "wtype": "Bow",
+                    "attack_modifier": 14,
+                    "special_attack": 3,
+                    "zone_level": 2
                 }
             ],
             "equipped_weapon": {
@@ -377,7 +402,7 @@
                     "name": "Large Shield",
                     "description": null,
                     "value": 772,
-                    "stack": 1,
+                    "stack": 2,
                     "defense_modifier": 9,
                     "zone_level": 4
                 },
@@ -390,62 +415,25 @@
                     "zone_level": 5
                 }
             ],
-            "equipped_shield": null,
+            "equipped_shield": {
+                "name": "Small Shield",
+                "description": null,
+                "value": 46,
+                "stack": 1,
+                "defense_modifier": 6,
+                "zone_level": 2
+            },
             "charms": [
                 {
-                    "name": "Woodcleaver",
-                    "description": null,
-                    "value": 10,
-                    "stack": 3,
-                    "strength_modifier": 0,
-                    "woodcut_modifier": 1,
-                    "mining_modifier": 0,
-                    "defense_modifier": 0,
-                    "loot_multiplier": 1.0
-                },
-                {
-                    "name": "Stonebreaker",
-                    "description": null,
-                    "value": 10,
-                    "stack": 3,
-                    "strength_modifier": 0,
-                    "woodcut_modifier": 0,
-                    "mining_modifier": 1,
-                    "defense_modifier": 0,
-                    "loot_multiplier": 1.0
-                },
-                {
                     "name": "Loothaven",
-                    "description": null,
-                    "value": 10,
-                    "stack": 14,
-                    "strength_modifier": 0,
-                    "woodcut_modifier": 0,
-                    "mining_modifier": 0,
-                    "defense_modifier": 0,
-                    "loot_multiplier": 1
-                },
-                {
-                    "name": "Mightstone",
-                    "description": null,
-                    "value": 10,
-                    "stack": 5,
-                    "strength_modifier": 1,
-                    "woodcut_modifier": 0,
-                    "mining_modifier": 0,
-                    "defense_modifier": 0,
-                    "loot_multiplier": 1.0
-                },
-                {
-                    "name": "Ironhide",
                     "description": null,
                     "value": 10,
                     "stack": 2,
                     "strength_modifier": 0,
                     "woodcut_modifier": 0,
                     "mining_modifier": 0,
-                    "defense_modifier": 1,
-                    "loot_multiplier": 1.0
+                    "defense_modifier": 0,
+                    "loot_multiplier": 1
                 }
             ],
             "equipped_charm": {
@@ -459,7 +447,7 @@
                 "defense_modifier": 0,
                 "loot_multiplier": 1
             },
-            "materium": 960
+            "materium": 79
         },
         "in_battle": false
     }

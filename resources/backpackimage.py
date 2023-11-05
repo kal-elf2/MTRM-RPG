@@ -300,54 +300,93 @@ def generate_backpack_image(interaction):
                     # Add the text to the image
                     draw.text((int(text_x_offset), int(text_y_offset)), text_to_add, fill="white", font=font)
 
-            # Define stats text position offset
-            stats_offset_x = 1.5 * square_size  # 3 squares right
-            stats_offset_y = 1.5 * square_size  # 3 squares down + additional space for player name and title
+        # Define stats text position offset
+        stats_offset_x = 2 * square_size
+        stats_offset_y = 1.25 * square_size
 
-            # Load font files with the specified sizes
-            name_font = ImageFont.truetype("arial.ttf", 40)
-            title_font = ImageFont.truetype("arial.ttf", 30)
-            stats_font = ImageFont.truetype("arial.ttf", 25)
+        # Load font files with the specified sizes
+        name_font = ImageFont.truetype("arial.ttf", 35)
+        title_font = ImageFont.truetype("arial.ttf", 30)
+        stats_font = ImageFont.truetype("arial.ttf", 25)
 
-            # Draw player name
-            draw.text((stats_offset_x, stats_offset_y), player.name.upper(), fill="white", font=name_font)
+        # Calculate the offset for moving 1.5 squares to the right
+        offset_x = 1.5 * square_size
 
-            # Increase offset for the title 'Exemplar'
-            stats_offset_y += 40  # Adjusted for the player name size
+        # Draw player name centered and right-aligned above the stats
+        name_text = player.name.upper()
+        name_width, name_height = draw.textsize(name_text, font=name_font)
+        name_x = stats_offset_x - name_width + offset_x  # Right-align the name with offset
+        draw.text((name_x, stats_offset_y), name_text, fill="white", font=name_font)
+        stats_offset_y += name_height + 10
 
-            # Draw title 'Exemplar'
-            draw.text((stats_offset_x, stats_offset_y), "Exemplar", fill="white", font=title_font)
+        # Draw title 'Exemplar' centered and right-aligned above the stats
+        title_text = "Exemplar"
+        title_width, title_height = draw.textsize(title_text, font=title_font)
+        title_x = stats_offset_x - title_width + offset_x  # Right-align the title with offset
+        draw.text((title_x, stats_offset_y), title_text, fill="white", font=title_font)
+        stats_offset_y += title_height + 20
 
-            # Update Y offset for the stats, increase the space as needed
-            stats_offset_y += 60  # Adjusted for the title size and some extra spacing
+        # Define the stats text to be added, excluding 'Coppers' and 'MTRM'
+        stats_text = [
+            f"HP: {player.stats.health}/{player.stats.max_health}",
+            f"Stamina: {player.stats.stamina}/{player.stats.max_stamina}",
+            f"Damage: {player.stats.damage}",
+            f"Armor: {player.stats.armor}"
+        ]
 
-            # Define the stats text to be added
-            stats_text = [
-                f"HP: {player.stats.health}/{player.stats.max_health}",
-                f"Stamina: {player.stats.stamina}/{player.stats.max_stamina}",
-                f"Damage: {player.stats.damage}",
-                f"Armor: {player.stats.armor}",
-                f"Coppers: {player.inventory.coppers}",
-                f"MTRM: {player.inventory.materium}"
-            ]
+        # Now calculate the center x position for the text
+        max_key_width = max(
+            [draw.textsize(key, font=stats_font)[0] for key, _ in (line.split(': ') for line in stats_text)])
+        center_x = stats_offset_x + max_key_width / 2
 
-            # Calculate maximum width of the keys for right alignment
-            key_widths = [draw.textsize(line.split(': ')[0], font=stats_font)[0] for line in stats_text]
-            max_key_width = max(key_widths)
+        # Draw each line of stats text
+        for k, line in enumerate(stats_text):
+            key, value = line.split(': ')
+            # Calculate x positions
+            key_x = center_x - draw.textsize(key + ':', font=stats_font)[0]
+            value_x = center_x + 10  # 10 pixels space between key and value
 
-            # Draw each line of stats text
-            for k, line in enumerate(stats_text):
-                key, value = line.split(': ')
-                # Calculate x positions
-                key_x = stats_offset_x + max_key_width - draw.textsize(key, font=stats_font)[0]
-                value_x = stats_offset_x + max_key_width + 10  # 10 pixels space between key and value
+            # Draw key (right aligned) with color fill #828282
+            draw.text((key_x, stats_offset_y + k * 35), key + ':', fill="#828282", font=stats_font)
+            # Draw value (left aligned, right next to the key) with white color fill
+            draw.text((value_x, stats_offset_y + k * 35), value, fill="white", font=stats_font)
 
-                # Draw key (right aligned) with color fill #828282
-                draw.text((key_x, stats_offset_y + k * 30), key, fill="#828282",
-                          font=stats_font)  # Increased line spacing
-                # Draw value (left aligned, right next to the key) with white color fill
-                draw.text((value_x, stats_offset_y + k * 30), value, fill="white",
-                          font=stats_font)  # Increased line spacing
+        # Skip a line space before 'Coppers' and 'MTRM'
+        stats_offset_y += (k + 1) * 35 + 35
+
+        # Retrieve icons using the 'generate_urls' function
+        coppers_url = generate_urls("Icons", "Coppers")
+        mtrm_url = generate_urls("Icons", "MTRM")
+
+        # Load images for 'Coppers' and 'MTRM'
+        coppers_image = Image.open(session.get(coppers_url, stream=True).raw).resize(
+            (int(square_size / 3), int(square_size / 3)), Image.ANTIALIAS)
+        mtrm_image = Image.open(session.get(mtrm_url, stream=True).raw).resize(
+            (int(square_size / 3), int(square_size / 3)), Image.ANTIALIAS)
+
+        # Calculate x positions for 'Coppers' and 'MTRM' images side by side
+        coppers_icon_width, coppers_icon_height = coppers_image.size
+        mtrm_icon_width, mtrm_icon_height = mtrm_image.size
+
+        # Convert floating-point coordinates to integers
+        coppers_x = int(center_x - (
+                coppers_icon_width + draw.textsize(str(player.inventory.coppers), font=stats_font)[0] + 20))
+        stats_offset_y = int(stats_offset_y)
+        mtrm_x = center_x + 10  # 10 pixels space between center and MTRM image
+
+        coppers_box = (int(coppers_x), int(stats_offset_y), int(coppers_x + coppers_icon_width),
+                       int(stats_offset_y + coppers_icon_height))
+        mtrm_box = (
+        int(mtrm_x), int(stats_offset_y), int(mtrm_x + mtrm_icon_width), int(stats_offset_y + mtrm_icon_height))
+
+        base_img.paste(coppers_image, coppers_box)
+        base_img.paste(mtrm_image, mtrm_box)
+
+        # Draw values next to the images
+        draw.text((coppers_x + coppers_icon_width + 10, stats_offset_y), f"{player.inventory.coppers}",
+                  fill="white", font=stats_font)
+        draw.text((mtrm_x + mtrm_icon_width + 10, stats_offset_y), f"{player.inventory.materium}", fill="white",
+                  font=stats_font)
 
     return base_img
 
