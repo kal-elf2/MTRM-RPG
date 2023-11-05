@@ -300,4 +300,54 @@ def generate_backpack_image(interaction):
                     # Add the text to the image
                     draw.text((int(text_x_offset), int(text_y_offset)), text_to_add, fill="white", font=font)
 
+            # Define stats text position offset
+            stats_offset_x = 1.5 * square_size  # 3 squares right
+            stats_offset_y = 1.5 * square_size  # 3 squares down + additional space for player name and title
+
+            # Load font files with the specified sizes
+            name_font = ImageFont.truetype("arial.ttf", 40)
+            title_font = ImageFont.truetype("arial.ttf", 30)
+            stats_font = ImageFont.truetype("arial.ttf", 25)
+
+            # Draw player name
+            draw.text((stats_offset_x, stats_offset_y), player.name.upper(), fill="white", font=name_font)
+
+            # Increase offset for the title 'Exemplar'
+            stats_offset_y += 40  # Adjusted for the player name size
+
+            # Draw title 'Exemplar'
+            draw.text((stats_offset_x, stats_offset_y), "Exemplar", fill="white", font=title_font)
+
+            # Update Y offset for the stats, increase the space as needed
+            stats_offset_y += 60  # Adjusted for the title size and some extra spacing
+
+            # Define the stats text to be added
+            stats_text = [
+                f"HP: {player.stats.health}/{player.stats.max_health}",
+                f"Stamina: {player.stats.stamina}/{player.stats.max_stamina}",
+                f"Damage: {player.stats.damage}",
+                f"Armor: {player.stats.armor}",
+                f"Coppers: {player.inventory.coppers}",
+                f"MTRM: {player.inventory.materium}"
+            ]
+
+            # Calculate maximum width of the keys for right alignment
+            key_widths = [draw.textsize(line.split(': ')[0], font=stats_font)[0] for line in stats_text]
+            max_key_width = max(key_widths)
+
+            # Draw each line of stats text
+            for k, line in enumerate(stats_text):
+                key, value = line.split(': ')
+                # Calculate x positions
+                key_x = stats_offset_x + max_key_width - draw.textsize(key, font=stats_font)[0]
+                value_x = stats_offset_x + max_key_width + 10  # 10 pixels space between key and value
+
+                # Draw key (right aligned) with color fill #828282
+                draw.text((key_x, stats_offset_y + k * 30), key, fill="#828282",
+                          font=stats_font)  # Increased line spacing
+                # Draw value (left aligned, right next to the key) with white color fill
+                draw.text((value_x, stats_offset_y + k * 30), value, fill="white",
+                          font=stats_font)  # Increased line spacing
+
     return base_img
+

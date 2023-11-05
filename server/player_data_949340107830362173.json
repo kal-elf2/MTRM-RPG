@@ -8,9 +8,9 @@
             "stamina": 353,
             "max_stamina": 353,
             "attack": 142,
-            "damage": 25,
+            "damage": 48,
             "defense": 143,
-            "armor": 27,
+            "armor": 35,
             "combat_level": 69,
             "combat_experience": 250489,
             "mining_level": 99,
@@ -75,7 +75,7 @@
                     "name": "Ash Strip",
                     "description": null,
                     "value": null,
-                    "stack": 990
+                    "stack": 985
                 },
                 {
                     "name": "Poplar Strip",
@@ -123,7 +123,7 @@
                     "name": "Sinew",
                     "description": null,
                     "value": null,
-                    "stack": 923
+                    "stack": 918
                 },
                 {
                     "name": "Rabbit Body",
@@ -248,39 +248,21 @@
             "limit": 49,
             "armors": [
                 {
-                    "name": "Brigandine Armor",
-                    "description": null,
-                    "value": 1885,
-                    "stack": 1,
-                    "defense_modifier": 17,
-                    "armor_type": "chest",
-                    "zone_level": 4
-                },
-                {
-                    "name": "Brigandine Boots",
-                    "description": null,
-                    "value": 1133,
-                    "stack": 1,
-                    "defense_modifier": 9,
-                    "armor_type": "boots",
-                    "zone_level": 4
-                },
-                {
-                    "name": "Brigandine Gloves",
-                    "description": null,
-                    "value": 1133,
-                    "stack": 1,
-                    "defense_modifier": 9,
-                    "armor_type": "gloves",
-                    "zone_level": 4
-                },
-                {
                     "name": "Leather Boots",
                     "description": null,
                     "value": 1602,
                     "stack": 1,
                     "defense_modifier": 8,
                     "armor_type": "boots",
+                    "zone_level": 5
+                },
+                {
+                    "name": "Leather Armor",
+                    "description": null,
+                    "value": 2560,
+                    "stack": 1,
+                    "defense_modifier": 16,
+                    "armor_type": "chest",
                     "zone_level": 5
                 },
                 {
@@ -295,16 +277,32 @@
             ],
             "equipped_armor": {
                 "chest": {
-                    "name": "Leather Armor",
+                    "name": "Brigandine Armor",
                     "description": null,
-                    "value": 2560,
+                    "value": 1885,
                     "stack": 1,
-                    "defense_modifier": 16,
+                    "defense_modifier": 17,
                     "armor_type": "chest",
-                    "zone_level": 5
+                    "zone_level": 4
                 },
-                "boots": null,
-                "gloves": null
+                "boots": {
+                    "name": "Brigandine Boots",
+                    "description": null,
+                    "value": 1133,
+                    "stack": 1,
+                    "defense_modifier": 9,
+                    "armor_type": "boots",
+                    "zone_level": 4
+                },
+                "gloves": {
+                    "name": "Brigandine Gloves",
+                    "description": null,
+                    "value": 1133,
+                    "stack": 1,
+                    "defense_modifier": 9,
+                    "armor_type": "gloves",
+                    "zone_level": 4
+                }
             },
             "weapons": [
                 {
@@ -321,21 +319,11 @@
                     "name": "Champion Bow",
                     "description": null,
                     "value": 83,
-                    "stack": 1,
+                    "stack": 2,
                     "wtype": "Bow",
                     "attack_modifier": 7,
                     "special_attack": 3,
                     "zone_level": 1
-                },
-                {
-                    "name": "Voltaic Sword",
-                    "description": null,
-                    "value": 154,
-                    "stack": 1,
-                    "wtype": "Sword",
-                    "attack_modifier": 48,
-                    "special_attack": 4,
-                    "zone_level": 4
                 },
                 {
                     "name": "Champion Sword",
@@ -346,17 +334,27 @@
                     "attack_modifier": 7,
                     "special_attack": 3,
                     "zone_level": 1
+                },
+                {
+                    "name": "Voltaic Sword",
+                    "description": null,
+                    "value": 2590,
+                    "stack": 1,
+                    "wtype": "Sword",
+                    "attack_modifier": 25,
+                    "special_attack": 4,
+                    "zone_level": 5
                 }
             ],
             "equipped_weapon": {
                 "name": "Voltaic Sword",
                 "description": null,
-                "value": 2590,
+                "value": 154,
                 "stack": 1,
                 "wtype": "Sword",
-                "attack_modifier": 25,
+                "attack_modifier": 48,
                 "special_attack": 4,
-                "zone_level": 5
+                "zone_level": 4
             },
             "shields": [
                 {
@@ -382,16 +380,17 @@
                     "stack": 1,
                     "defense_modifier": 9,
                     "zone_level": 4
+                },
+                {
+                    "name": "Large Shield",
+                    "description": null,
+                    "value": 1300,
+                    "stack": 1,
+                    "defense_modifier": 11,
+                    "zone_level": 5
                 }
             ],
-            "equipped_shield": {
-                "name": "Large Shield",
-                "description": null,
-                "value": 1300,
-                "stack": 1,
-                "defense_modifier": 11,
-                "zone_level": 5
-            },
+            "equipped_shield": null,
             "charms": [
                 {
                     "name": "Woodcleaver",
@@ -419,7 +418,7 @@
                     "name": "Loothaven",
                     "description": null,
                     "value": 10,
-                    "stack": 15,
+                    "stack": 14,
                     "strength_modifier": 0,
                     "woodcut_modifier": 0,
                     "mining_modifier": 0,
@@ -449,7 +448,17 @@
                     "loot_multiplier": 1.0
                 }
             ],
-            "equipped_charm": null,
+            "equipped_charm": {
+                "name": "Loothaven",
+                "description": null,
+                "value": 10,
+                "stack": 1,
+                "strength_modifier": 0,
+                "woodcut_modifier": 0,
+                "mining_modifier": 0,
+                "defense_modifier": 0,
+                "loot_multiplier": 1
+            },
             "materium": 960
         },
         "in_battle": false

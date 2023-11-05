@@ -396,7 +396,7 @@ class EquipTypeSelect(discord.ui.Select):
                 delta = f"(+{diff})"
             else:
                 delta = f"({diff})"
-            label += f" [{item.attack_modifier} Damage {delta}]"
+            label += f" | {item.attack_modifier} Damage {delta}"
 
         elif isinstance(item, (Armor, Shield)):
             if isinstance(item, Armor):
@@ -413,7 +413,7 @@ class EquipTypeSelect(discord.ui.Select):
                 delta = f"(+{diff})"
             else:
                 delta = f"({diff})"
-            label += f" [{item.defense_modifier} Armor {delta}]"
+            label += f" | {item.defense_modifier} Armor {delta}"
         return label
 
     async def handle_item_type_selection(self, interaction, inventory, item_type):
