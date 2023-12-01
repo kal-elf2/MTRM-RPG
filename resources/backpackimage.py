@@ -379,8 +379,8 @@ def generate_backpack_image(interaction):
         mtrm_box = (
         int(mtrm_x), int(stats_offset_y), int(mtrm_x + mtrm_icon_width), int(stats_offset_y + mtrm_icon_height))
 
-        base_img.paste(coppers_image, coppers_box)
-        base_img.paste(mtrm_image, mtrm_box)
+        base_img.paste(coppers_image, coppers_box, mask=coppers_image)
+        base_img.paste(mtrm_image, mtrm_box, mask=mtrm_image)
 
         # Draw values next to the images
         draw.text((coppers_x + coppers_icon_width + 10, stats_offset_y), f"{player.inventory.coppers}",
