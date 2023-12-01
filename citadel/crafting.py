@@ -7,6 +7,7 @@ from exemplars.exemplars import Exemplar
 from resources.ore import Ore
 from resources.potion import Potion
 from resources.materium import Materium
+from probabilities import stonebreaker_percent, woodcleaver_percent, loothaven_percent, mightstone_percent, ironhide_percent
 
 
 class Weapon(Item):
@@ -89,23 +90,12 @@ class Shield(Item):
         )
 
 class Charm(Item):
-    def __init__(self, name, woodcut_modifier=0, mining_modifier=0, strength_modifier=0,
-                 defense_modifier=0, loot_multiplier=1.0, description=None, value=None, stack=1):
+    def __init__(self, name, description=None, value=None, stack=1):
         super().__init__(name, description, value)
-        self.woodcut_modifier = woodcut_modifier
-        self.mining_modifier = mining_modifier
-        self.strength_modifier = strength_modifier
-        self.defense_modifier = defense_modifier
-        self.loot_multiplier = loot_multiplier
         self.stack = stack
 
     def to_dict(self):
         charm_data = super().to_dict()
-        charm_data["strength_modifier"] = self.strength_modifier
-        charm_data["woodcut_modifier"] = self.woodcut_modifier
-        charm_data["mining_modifier"] = self.mining_modifier
-        charm_data["defense_modifier"] = self.defense_modifier
-        charm_data["loot_multiplier"] = self.loot_multiplier
         charm_data["stack"] = self.stack
         return charm_data
 
@@ -113,11 +103,6 @@ class Charm(Item):
     def from_dict(cls, data):
         return cls(
             name=data["name"],
-            strength_modifier=data.get("strength_modifier", 0),
-            woodcut_modifier=data.get("woodcut_modifier", 0),
-            mining_modifier=data.get("mining_modifier", 0),
-            defense_modifier=data.get("defense_modifier", 0),
-            loot_multiplier=data.get("loot_multiplier", 1.0),
             description=data.get("description"),
             value=data.get("value"),
             stack=data.get("stack", 1)
@@ -285,7 +270,13 @@ class CraftButton(discord.ui.Button):
             # If any ingredient is not available in the required quantity, disable the button
             self.disabled = not can_craft_again
 
+            # Construct the message content
             message_content = "\n".join(ingredients_list)
+
+            # Check and include the description of the crafted item, if it exists
+            if hasattr(crafted_item, "description") and crafted_item.description:
+                message_content += f"\n\n**Description:** {crafted_item.description}"
+
             crafted_item_url = generate_urls('Icons', self.selected_recipe.result.name.replace(" ", "%20"))
             embed = Embed(title=f"{self.selected_recipe.result.name} {zone_emoji}", description=message_content,
                           color=embed_color)
@@ -446,6 +437,11 @@ class CraftingSelect(discord.ui.Select):
 
         # Construct the embed message.
         message_content = "\n".join(ingredients_list)
+
+        # Check and include the description of the selected item, if it exists
+        if hasattr(selected_recipe.result, "description") and selected_recipe.result.description:
+            message_content += f"\n\n**Description:** {selected_recipe.result.description}"
+
         crafted_item_url = generate_urls('Icons', selected_recipe.result.name.replace(" ", "%20"))
         embed = Embed(title=embed_title, description=message_content, color=embed_color)
         embed.set_thumbnail(url=crafted_item_url)
@@ -603,11 +599,21 @@ def create_crafting_stations(interaction, station_name=None):
                           value=80 + round(zone_level ** 2) * 3, zone_level=zone_level)
 
     # Charms
-    woodcrafters_charm = Charm("Woodcleaver", woodcut_modifier=1, value = 15)
-    miners_charm = Charm("Stonebreaker", mining_modifier=1, value=15)
-    lootmasters_charm = Charm("Loothaven", loot_multiplier=1, value=10)
-    strength_charm = Charm("Mightstone", strength_modifier=1, value=10)
-    defenders_charm = Charm("Ironhide", defense_modifier=1, value=10)
+    woodcrafters_charm = Charm("Woodcleaver",
+                               description=f"Increase woodcutting success rate by {int(round(woodcleaver_percent * 100))}%",
+                               value=25000)
+    miners_charm = Charm("Stonebreaker",
+                         description=f"Increase mining success rate by {int(round(stonebreaker_percent * 100))}%",
+                         value=25000)
+    lootmasters_charm = Charm("Loothaven",
+                              description=f"Gives a {int(round(loothaven_percent * 100))}% chance to DOUBLE your monster loot drops",
+                              value=25000)
+    strength_charm = Charm("Mightstone",
+                           description=f"Increases all damage done by {int(round(mightstone_percent * 100))}%",
+                           value=25000)
+    defenders_charm = Charm("Ironhide",
+                            description=f"Increases your chance to evade attacks by {int(round(ironhide_percent * 100))}%",
+                            value=25000)
 
     # Potions
     stamina_potion = Potion("Stamina Potion", effect_stat="stamina", effect_value=10, value=10,
