@@ -96,11 +96,13 @@ def footer_text_for_mining_embed(ctx, player, player_level, zone_level, ore_type
             footer_text = f"⛏️ Mining Level:\u00A0\u00A0{mining_level}\u00A0\u00A0\u00A0\u00A0|\u00A0\u00A0\u00A0\u00A0✅ Success Rate: 100% (Max)"
         else:
             adjusted_percentage = min(success_percentage + stonebreaker_percent * 100, 100)
-            footer_text = f"⛏️ Mining Level:\u00A0\u00A0{mining_level}\u00A0\u00A0\u00A0\u00A0|\u00A0\u00A0\u00A0\u00A0✅ Success Rate:\u00A0\u00A0{success_percentage:.1f}% (+{adjusted_percentage - success_percentage:.1f})"
+            charm_boost = round(adjusted_percentage - success_percentage)
+            footer_text = f"⛏️ Mining Level:\u00A0\u00A0{mining_level}\u00A0\u00A0\u00A0\u00A0|\u00A0\u00A0\u00A0\u00A0✅ Success Rate:\u00A0\u00A0{success_percentage:.1f}% (+{charm_boost}%)"
     else:
         footer_text = f"⛏️ Mining Level:\u00A0\u00A0{mining_level}\u00A0\u00A0\u00A0\u00A0|\u00A0\u00A0\u00A0\u00A0✅ Success Rate:\u00A0\u00A0{success_percentage:.1f}%"
 
     return footer_text
+
 
 
 

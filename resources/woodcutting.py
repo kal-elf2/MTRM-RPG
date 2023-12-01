@@ -16,7 +16,7 @@ from utils import load_player_data, save_player_data, send_message
 from monsters.monster import create_battle_embed, monster_battle, generate_monster_by_name
 from monsters.battle import BattleOptions, LootOptions, footer_text_for_embed
 from images.urls import generate_urls
-from probabilities import herb_drop_percent, mtrm_drop_percent, attack_percent
+from probabilities import herb_drop_percent, mtrm_drop_percent, attack_percent, woodcleaver_percent
 
 # Woodcutting experience points for each tree type
 WOODCUTTING_EXPERIENCE = {
@@ -85,18 +85,28 @@ def attempt_mtrm_drop(zone_level):
         return mtrm_dropped
     return None
 
-def footer_text_for_woodcutting_embed(ctx, player_level, zone_level, tree_type):
+def footer_text_for_woodcutting_embed(ctx, player, player_level, zone_level, tree_type):
     guild_id = ctx.guild.id
     author_id = str(ctx.user.id)
     player_data = load_player_data(guild_id)
 
     # Use the provided WoodcuttingCog method to calculate the success probability
-    probability = WoodcuttingCog.calculate_probability(player_level, zone_level, tree_type)
+    probability = WoodcuttingCog.calculate_probability(player, player_level, zone_level, tree_type)
     success_percentage = probability * 100  # Convert to percentage for display
 
     woodcutting_level = player_data[author_id]["stats"]["woodcutting_level"]
 
-    footer_text = f"🪓 Woodcutting Level:\u00A0\u00A0{woodcutting_level}\u00A0\u00A0\u00A0\u00A0|\u00A0\u00A0\u00A0\u00A0✅ Success Rate:\u00A0\u00A0{success_percentage:.1f}%"
+    # Check if the player has the Woodcleaver charm equipped
+    if player.inventory.equipped_charm and player.inventory.equipped_charm.name == "Woodcleaver":
+        # Check if the success rate is already 100% before charm boost
+        if success_percentage >= 100:
+            footer_text = f"🪓 Woodcut Level:\u00A0\u00A0{woodcutting_level}\u00A0\u00A0|\u00A0\u00A0✅ Success Rate: 100% (Max)"
+        else:
+            adjusted_percentage = min(success_percentage + woodcleaver_percent * 100, 100)
+            charm_boost = round(adjusted_percentage - success_percentage)
+            footer_text = f"🪓 Woodcut Level:\u00A0\u00A0{woodcutting_level}\u00A0\u00A0|\u00A0\u00A0✅ Success Rate:\u00A0\u00A0{success_percentage:.1f}% (+{charm_boost}%)"
+    else:
+        footer_text = f"🪓 Woodcut Level:\u00A0\u00A0{woodcutting_level}\u00A0\u00A0|\u00A0\u00A0✅ Success Rate:\u00A0\u00A0{success_percentage:.1f}%"
 
     return footer_text
 
@@ -146,7 +156,7 @@ class HarvestButton(discord.ui.View):
             return
 
         # Calculate probability using the zone level and the tree type
-        success_prob = WoodcuttingCog.calculate_probability(player_level, self.player.stats.zone_level, self.tree_type)
+        success_prob = WoodcuttingCog.calculate_probability(self.player, player_level, self.player.stats.zone_level, self.tree_type)
 
         success = random.random() < success_prob
 
@@ -210,7 +220,7 @@ class HarvestButton(discord.ui.View):
                                      value=f"📊  {current_experience} / {next_level_experience_needed}", inline=True)
 
             #Set footer to show Woodcutting level and Probability
-            footer = footer_text_for_woodcutting_embed(interaction, current_woodcutting_level, zone_level,
+            footer = footer_text_for_woodcutting_embed(self.player, interaction, current_woodcutting_level, zone_level,
                                                        self.tree_type)
             self.embed.set_footer(text=footer)
 
@@ -256,7 +266,7 @@ class HarvestButton(discord.ui.View):
             updated_description = "\n".join(self.chop_messages)
             self.embed.description = updated_description
 
-            footer = footer_text_for_woodcutting_embed(interaction, current_woodcutting_level, zone_level,
+            footer = footer_text_for_woodcutting_embed(interaction, self.player, current_woodcutting_level, zone_level,
                                                        self.tree_type)
             self.embed.set_footer(text=footer)
 
@@ -349,7 +359,7 @@ class WoodcuttingCog(commands.Cog):
         self.bot = bot
 
     @staticmethod
-    def calculate_probability(player_level, zone_level, tree_type):
+    def calculate_probability(player, player_level, zone_level, tree_type):
         base_min_levels = {
             "Pine": 0,
             "Yew": 5,
@@ -369,6 +379,11 @@ class WoodcuttingCog(commands.Cog):
 
         # Determine the success probability
         probability = 0.25 + level_difference * 0.0375
+
+        # Check if the player has the Stonebreaker charm equipped
+        if player.inventory.equipped_charm and player.inventory.equipped_charm.name == "Woodcleaver":
+            probability += woodcleaver_percent  # Increase probability by if Woodcleaver is equipped
+
         return min(1, probability)  # Ensure it doesn't exceed 100%
 
     @commands.slash_command(description="Chop some wood!")
@@ -450,7 +465,7 @@ class WoodcuttingCog(commands.Cog):
                             value=f"📊  {current_experience} / {next_level_experience_needed}", inline=True)
 
         # Set footer to show Woodcutting level and Probability
-        footer = footer_text_for_woodcutting_embed(ctx, current_woodcutting_level, player.stats.zone_level, tree_type)
+        footer = footer_text_for_woodcutting_embed(ctx, player, current_woodcutting_level, player.stats.zone_level, tree_type)
         embed.set_footer(text=footer)
 
         # Create the view and send the response
