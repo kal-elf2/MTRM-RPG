@@ -14,3 +14,9 @@ potion_drop_percent = 0.05
 
 # Original value: 0.15 (15% chance)
 attack_percent = 0.15
+
+# Original value: 0.15 (15% chance)
+stonebreaker_percent = 0.15
+
+# Original value: 0.15 (15% chance)
+woodcleaver_percent = 0.15

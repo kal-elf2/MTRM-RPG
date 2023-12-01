@@ -603,8 +603,8 @@ def create_crafting_stations(interaction, station_name=None):
                           value=80 + round(zone_level ** 2) * 3, zone_level=zone_level)
 
     # Charms
-    woodcrafters_charm = Charm("Woodcleaver", woodcut_modifier=1, value = 10)
-    miners_charm = Charm("Stonebreaker", mining_modifier=1, value=10)
+    woodcrafters_charm = Charm("Woodcleaver", woodcut_modifier=1, value = 15)
+    miners_charm = Charm("Stonebreaker", mining_modifier=1, value=15)
     lootmasters_charm = Charm("Loothaven", loot_multiplier=1, value=10)
     strength_charm = Charm("Mightstone", strength_modifier=1, value=10)
     defenders_charm = Charm("Ironhide", defense_modifier=1, value=10)

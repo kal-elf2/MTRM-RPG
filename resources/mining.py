@@ -16,7 +16,7 @@ from monsters.monster import create_battle_embed, monster_battle, generate_monst
 from monsters.battle import BattleOptions, LootOptions
 from images.urls import generate_urls
 from emojis import get_emoji
-from probabilities import herb_drop_percent, mtrm_drop_percent, attack_percent
+from probabilities import herb_drop_percent, mtrm_drop_percent, attack_percent, stonebreaker_percent
 
 # Mining experience points for each ore type
 MINING_EXPERIENCE = {
@@ -78,20 +78,30 @@ def attempt_mtrm_drop(zone_level):
         return mtrm_dropped
     return None
 
-def footer_text_for_mining_embed(ctx, player_level, zone_level, ore_type):
+def footer_text_for_mining_embed(ctx, player, player_level, zone_level, ore_type):
     guild_id = ctx.guild.id
     author_id = str(ctx.user.id)
     player_data = load_player_data(guild_id)
 
-    # Use the provided WoodcuttingCog method to calculate the success probability
-    probability = MiningCog.calculate_probability(player_level, zone_level, ore_type)
+    # Use the provided MiningCog method to calculate the success probability
+    probability = MiningCog.calculate_probability(player, player_level, zone_level, ore_type)
     success_percentage = probability * 100  # Convert to percentage for display
 
     mining_level = player_data[author_id]["stats"]["mining_level"]
 
-    footer_text = f"⛏️ Mining Level:\u00A0\u00A0{mining_level}\u00A0\u00A0\u00A0\u00A0|\u00A0\u00A0\u00A0\u00A0✅ Success Rate:\u00A0\u00A0{success_percentage:.1f}%"
+    # Check if the player has the Stonebreaker charm equipped
+    if player.inventory.equipped_charm and player.inventory.equipped_charm.name == "Stonebreaker":
+        # Check if the success rate is already 100% before charm boost
+        if success_percentage >= 100:
+            footer_text = f"⛏️ Mining Level:\u00A0\u00A0{mining_level}\u00A0\u00A0\u00A0\u00A0|\u00A0\u00A0\u00A0\u00A0✅ Success Rate: 100% (Max)"
+        else:
+            adjusted_percentage = min(success_percentage + stonebreaker_percent * 100, 100)
+            footer_text = f"⛏️ Mining Level:\u00A0\u00A0{mining_level}\u00A0\u00A0\u00A0\u00A0|\u00A0\u00A0\u00A0\u00A0✅ Success Rate:\u00A0\u00A0{success_percentage:.1f}% (+{adjusted_percentage - success_percentage:.1f})"
+    else:
+        footer_text = f"⛏️ Mining Level:\u00A0\u00A0{mining_level}\u00A0\u00A0\u00A0\u00A0|\u00A0\u00A0\u00A0\u00A0✅ Success Rate:\u00A0\u00A0{success_percentage:.1f}%"
 
     return footer_text
+
 
 
 # View class for Harvest button
@@ -140,7 +150,7 @@ class MineButton(discord.ui.View):
             await interaction.followup.send(f"Invalid ore type selected.", ephemeral=True)
             return
 
-        success_prob = MiningCog.calculate_probability(player_level, self.player.stats.zone_level, self.ore_type)
+        success_prob = MiningCog.calculate_probability(self.player, player_level, self.player.stats.zone_level, self.ore_type)
 
         success = random.random() < success_prob
 
@@ -149,7 +159,7 @@ class MineButton(discord.ui.View):
         message = ""
         if success:
             ore_emoji = get_emoji(ore_emoji_mapping.get(self.ore_type, "🪨"))
-            message = f"{ore_emoji} **Successfully chopped 1 {self.ore_type}!**"
+            message = f"{ore_emoji} **Successfully mined 1 {self.ore_type}!**"
 
             # Update inventory and decrement stamina
             mined_ore = Ore(name=self.ore_type)
@@ -204,7 +214,7 @@ class MineButton(discord.ui.View):
                                      value=f"📊  {current_experience} / {next_level_experience_needed}", inline=True)
 
             # Set footer to show Woodcutting level and Probability
-            footer = footer_text_for_mining_embed(interaction, current_mining_level, zone_level,
+            footer = footer_text_for_mining_embed(interaction, self.player, current_mining_level, zone_level,
                                                        self.ore_type)
             self.embed.set_footer(text=footer)
 
@@ -250,7 +260,7 @@ class MineButton(discord.ui.View):
             self.embed.description = updated_description
 
             # Set footer to show Woodcutting level and Probability
-            footer = footer_text_for_mining_embed(interaction, current_mining_level, zone_level,
+            footer = footer_text_for_mining_embed(interaction, self.player, current_mining_level, zone_level,
                                                   self.ore_type)
             self.embed.set_footer(text=footer)
 
@@ -345,7 +355,7 @@ class MiningCog(commands.Cog):
         self.bot = bot
 
     @staticmethod
-    def calculate_probability(player_level, zone_level, ore_type):
+    def calculate_probability(player, player_level, zone_level, ore_type):
         base_min_levels = {
             "Iron Ore": 0,
             "Coal": 7,
@@ -364,6 +374,11 @@ class MiningCog(commands.Cog):
 
         # Determine the success probability
         probability = 0.25 + level_difference * 0.0375
+
+        # Check if the player has the Stonebreaker charm equipped
+        if player.inventory.equipped_charm and player.inventory.equipped_charm.name == "Stonebreaker":
+            probability += stonebreaker_percent  # Increase probability by if Stonebreaker is equipped
+
         return min(1, probability)  # Ensure it doesn't exceed 100%
 
     @commands.slash_command(description="Mine some Ore!")
@@ -445,7 +460,7 @@ class MiningCog(commands.Cog):
                             value=f"📊  {current_experience} / {next_level_experience_needed}", inline=True)
 
         # Set footer to show Woodcutting level and Probability
-        footer = footer_text_for_mining_embed(ctx, current_mining_level, player.stats.zone_level, ore_type)
+        footer = footer_text_for_mining_embed(ctx, player, current_mining_level, player.stats.zone_level, ore_type)
         embed.set_footer(text=footer)
 
         # Create the view and send the response
