@@ -273,9 +273,25 @@ class CraftButton(discord.ui.Button):
             # Construct the message content
             message_content = "\n".join(ingredients_list)
 
+            # Check and include damage if attack_modifier exists
+            if hasattr(crafted_item, "attack_modifier") and crafted_item.attack_modifier is not None:
+                message_content += f"\n\n**Damage:** {crafted_item.attack_modifier}"
+
+            # Check and include armor if defense_modifier exists
+            if hasattr(crafted_item, "defense_modifier") and crafted_item.defense_modifier is not None:
+                message_content += f"\n\n**Armor:** {crafted_item.defense_modifier}"
+
+            # Check and include special attacks if special_attack exists
+            if hasattr(crafted_item, "special_attack") and crafted_item.special_attack is not None:
+                message_content += f"\n**Special Attack:** {crafted_item.special_attack}"
+
             # Check and include the description of the crafted item, if it exists
             if hasattr(crafted_item, "description") and crafted_item.description:
                 message_content += f"\n\n**Description:** {crafted_item.description}"
+
+            # Check and include the value of the crafted item
+            if hasattr(crafted_item, "value") and crafted_item.value is not None:
+                message_content += f"\n\n**Value:** {crafted_item.value} coins"
 
             crafted_item_url = generate_urls('Icons', self.selected_recipe.result.name.replace(" ", "%20"))
             embed = Embed(title=f"{self.selected_recipe.result.name} {zone_emoji}", description=message_content,
@@ -422,7 +438,7 @@ class CraftingSelect(discord.ui.Select):
         if selected_recipe.result.name == "Bread":
             embed_title = "Bread: Auto Consume"
         elif selected_recipe.result.name == "Trencher":
-            embed_title = "Trencher: Stamina Refill"
+            embed_title = "Trencher: Auto Consume"
 
         # Check player's inventory for required ingredients.
         ingredients_list = []
@@ -438,9 +454,25 @@ class CraftingSelect(discord.ui.Select):
         # Construct the embed message.
         message_content = "\n".join(ingredients_list)
 
+        # Check and include damage if attack_modifier exists
+        if hasattr(selected_recipe.result, "attack_modifier") and selected_recipe.result.attack_modifier is not None:
+            message_content += f"\n\n**Damage:** {selected_recipe.result.attack_modifier}"
+
+        # Check and include armor if defense_modifier exists
+        if hasattr(selected_recipe.result, "defense_modifier") and selected_recipe.result.defense_modifier is not None:
+            message_content += f"\n\n**Armor:** {selected_recipe.result.defense_modifier}"
+
+        # Check and include special attacks if special_attack exists
+        if hasattr(selected_recipe.result, "special_attack") and selected_recipe.result.special_attack is not None:
+            message_content += f"\n**Special Attack:** {selected_recipe.result.special_attack}"
+
         # Check and include the description of the selected item, if it exists
         if hasattr(selected_recipe.result, "description") and selected_recipe.result.description:
             message_content += f"\n\n**Description:** {selected_recipe.result.description}"
+
+        # Check and include the value of the selected item
+        if hasattr(selected_recipe.result, "value") and selected_recipe.result.value is not None:
+            message_content += f"\n\n**Value:** {selected_recipe.result.value} coins"
 
         crafted_item_url = generate_urls('Icons', selected_recipe.result.name.replace(" ", "%20"))
         embed = Embed(title=embed_title, description=message_content, color=embed_color)
@@ -513,7 +545,7 @@ def create_crafting_stations(interaction, station_name=None):
     poplar_strip = Item("Poplar Strip")
     wheat = Item("Wheat")
     flour = Item("Flour")
-    bread = Item("Bread")
+    bread = Item("Bread", description="Restore 10 Stamina")
     deer_part = Item("Deer Parts")
     rabbit_body = Item("Rabbit Body")
     venison = Item("Venison")
@@ -522,7 +554,7 @@ def create_crafting_stations(interaction, station_name=None):
     deer_skin = Item("Deer Skin")
     wolf_skin = Item("Wolf Skin")
     leather = Item("Leather")
-    trencher = Item("Trencher")
+    trencher = Item("Trencher", description="Restore Stamina to 100%")
     tough_leather = Item("Tough Leather")
     linen = Item("Linen")
     linen_thread = Item("Linen Thread")
