@@ -273,13 +273,16 @@ class CraftButton(discord.ui.Button):
             # Construct the message content
             message_content = "\n".join(ingredients_list)
 
+            # Add an extra newline to separate the ingredients from the attributes
+            message_content += "\n"
+
             # Check and include damage if attack_modifier exists
             if hasattr(crafted_item, "attack_modifier") and crafted_item.attack_modifier is not None:
-                message_content += f"\n\n**Damage:** {crafted_item.attack_modifier}"
+                message_content += f"\n**Damage:** {crafted_item.attack_modifier}"
 
             # Check and include armor if defense_modifier exists
             if hasattr(crafted_item, "defense_modifier") and crafted_item.defense_modifier is not None:
-                message_content += f"\n\n**Armor:** {crafted_item.defense_modifier}"
+                message_content += f"\n**Armor:** {crafted_item.defense_modifier}"
 
             # Check and include special attacks if special_attack exists
             if hasattr(crafted_item, "special_attack") and crafted_item.special_attack is not None:
@@ -287,11 +290,11 @@ class CraftButton(discord.ui.Button):
 
             # Check and include the description of the crafted item, if it exists
             if hasattr(crafted_item, "description") and crafted_item.description:
-                message_content += f"\n\n**Description:** {crafted_item.description}"
+                message_content += f"\n**Description:** {crafted_item.description}"
 
             # Check and include the value of the crafted item
             if hasattr(crafted_item, "value") and crafted_item.value is not None:
-                message_content += f"\n\n**Value:** {crafted_item.value} coins"
+                message_content += f"\n**Value:** {crafted_item.value} {get_emoji('coppers_emoji')}"
 
             crafted_item_url = generate_urls('Icons', self.selected_recipe.result.name.replace(" ", "%20"))
             embed = Embed(title=f"{self.selected_recipe.result.name} {zone_emoji}", description=message_content,
@@ -454,13 +457,16 @@ class CraftingSelect(discord.ui.Select):
         # Construct the embed message.
         message_content = "\n".join(ingredients_list)
 
+        # Add an extra newline to separate the ingredients from the attributes
+        message_content += "\n"
+
         # Check and include damage if attack_modifier exists
         if hasattr(selected_recipe.result, "attack_modifier") and selected_recipe.result.attack_modifier is not None:
-            message_content += f"\n\n**Damage:** {selected_recipe.result.attack_modifier}"
+            message_content += f"\n**Damage:** {selected_recipe.result.attack_modifier}"
 
         # Check and include armor if defense_modifier exists
         if hasattr(selected_recipe.result, "defense_modifier") and selected_recipe.result.defense_modifier is not None:
-            message_content += f"\n\n**Armor:** {selected_recipe.result.defense_modifier}"
+            message_content += f"\n**Armor:** {selected_recipe.result.defense_modifier}"
 
         # Check and include special attacks if special_attack exists
         if hasattr(selected_recipe.result, "special_attack") and selected_recipe.result.special_attack is not None:
@@ -468,11 +474,11 @@ class CraftingSelect(discord.ui.Select):
 
         # Check and include the description of the selected item, if it exists
         if hasattr(selected_recipe.result, "description") and selected_recipe.result.description:
-            message_content += f"\n\n**Description:** {selected_recipe.result.description}"
+            message_content += f"\n**Description:** {selected_recipe.result.description}"
 
         # Check and include the value of the selected item
         if hasattr(selected_recipe.result, "value") and selected_recipe.result.value is not None:
-            message_content += f"\n\n**Value:** {selected_recipe.result.value} coins"
+            message_content += f"\n**Value:** {selected_recipe.result.value} {get_emoji('coppers_emoji')}"
 
         crafted_item_url = generate_urls('Icons', selected_recipe.result.name.replace(" ", "%20"))
         embed = Embed(title=embed_title, description=message_content, color=embed_color)
