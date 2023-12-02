@@ -36,7 +36,7 @@ loot_definitions = {
         'description': 'A furry rabbit body, warm to the touch. Can be used for citadel soft armors.',
         'value': 10
     },
-    'Deer Parts': {
+    'Deer Part': {
         'description': 'Various parts of a deer. Some are useful for making tools and weapons.',
         'value': 20
     },
@@ -65,7 +65,7 @@ loot_definitions = {
 item_emoji_mapping = {
     'Onyx': 'onyx_emoji',
     'Deer Skin': 'deer_skin_emoji',
-    'Deer Parts': 'deer_parts_emoji',
+    'Deer Part': 'deer_part_emoji',
     'Rabbit Body': 'rabbit_body_emoji',
     'Glowing Essence': 'glowing_essence_emoji',
     'Wolf Skin': 'wolf_skin_emoji',

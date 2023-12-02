@@ -5,6 +5,7 @@ from monsters.battle import create_battle_embed, footer_text_for_embed
 import asyncio
 from resources.item import Item
 import math
+from probabilities import CRITICAL_HIT_CHANCE, CRITICAL_HIT_MULTIPLIER
 
 class Monster:
     def __init__(self, name, health, max_health, attack, stamina, experience_reward, weak_against, strong_against, attack_speed, drop):
@@ -70,10 +71,6 @@ def generate_monster_list():
     ]
     return monster_names
 
-# Constants
-CRITICAL_HIT_CHANCE = 0.1  # 10% chance of a critical hit
-CRITICAL_HIT_MULTIPLIER = 1.5  # 1.5 times the damage for a critical hit
-
 def calculate_hit_probability(attacker_attack, defender_defense):
     base_hit_probability = 0.75  # base hit chance, can be adjusted as needed
     attack_defense_ratio = attacker_attack / (defender_defense + 1)  # add 1 to avoid division by zero
@@ -82,7 +79,7 @@ def calculate_hit_probability(attacker_attack, defender_defense):
     max_hit_chance = 0.9  # maximum hit chance regardless of stats
     return min(max(hit_probability, min_hit_chance), max_hit_chance)
 
-def calculate_damage(attacker_attack, defender_defense, is_critical_hit=False):
+def calculate_damage(player, attacker_attack, defender_defense, is_critical_hit=False):
     attack_defense_ratio = attacker_attack / (defender_defense + 1)
 
     # Cap the ratio between 0.5 and 1.5 for more balanced gameplay
@@ -118,7 +115,7 @@ async def player_attack_task(ctx, user, player, monster, attack_modifier, messag
             is_critical_hit = False
 
         if random.random() < hit_probability:
-            damage_dealt = calculate_damage(player.stats.attack * attack_modifier, monster.defense, is_critical_hit)
+            damage_dealt = calculate_damage(player, player.stats.attack * attack_modifier, monster.defense, is_critical_hit)
             monster.health = max(monster.health - damage_dealt, 0)
             update_message = f"{user.mention} dealt {damage_dealt} damage to the {monster.name}!"
             if is_critical_hit:

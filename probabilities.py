@@ -4,14 +4,14 @@
 # Original value: 0.01 (1% chance)
 mtrm_drop_percent = 0.01
 # Original value: 0.1 (10% chance)
-herb_drop_percent = 0.10
+herb_drop_percent = 0.1
 # Original value: 0.1 (10% chance)
-loot_drop_percent = 0.10
+loot_drop_percent = 0.1
 # Original value: 0.05 (5% chance)
 potion_drop_percent = 0.05
 
 # Original value: 0.15 (15% chance)
-attack_percent = 0.15
+attack_percent = 0.99
 
 #CHARMS
 # Original value: 0.15 (15% chance)
@@ -24,3 +24,7 @@ loothaven_percent = 0.99
 ironhide_percent = 0.15
 # Original value: 0.15 (15% chance)
 mightstone_percent = 0.15
+
+# Constants
+CRITICAL_HIT_CHANCE = 0.15  # 10% chance of a critical hit
+CRITICAL_HIT_MULTIPLIER = 1.5  # 1.5 times the damage for a critical hit

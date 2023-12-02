@@ -140,8 +140,8 @@ class BackpackView(discord.ui.View):
                 "Charcoal", "Iron", "Steel", "Onyx", "Pole", "Thick Pole",
                 "Pine Strip", "Yew Strip", "Ash Strip", "Poplar Strip",
                 "Flour", "Wheat", "Flax", "Linen", "Linen Thread", "Venison",
-                "Sinew", "Rabbit Body", "Rabbit Meat", "Deer Parts",
-                "Deer Skin", "Wolf Skin", "Glowing Essence", "Leather",
+                "Sinew", "Rabbit Body", "Rabbit Meat", "Deer Part",
+                "Deer Skin", "Wolf Skin", "Glowing Essence", "Goblin Crown", "Leather",
                 "Tough Leather", "Leather Straps", "Tough Leather Straps"
             ],
             "trees": ["Pine", "Yew", "Ash", "Poplar"],

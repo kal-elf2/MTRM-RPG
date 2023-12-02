@@ -2,7 +2,7 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "health": 627,
+            "health": 127,
             "max_health": 915,
             "strength": 421,
             "stamina": 423,
@@ -12,22 +12,22 @@
             "defense": 171,
             "armor": 40,
             "combat_level": 83,
-            "combat_experience": 752050,
+            "combat_experience": 752176,
             "mining_level": 99,
-            "mining_experience": 607480,
+            "mining_experience": 607540,
             "woodcutting_level": 90,
-            "woodcutting_experience": 841796,
+            "woodcutting_experience": 841856,
             "zone_level": 1,
             "damage_taken": 0
         },
         "inventory": {
-            "coppers": 4396,
+            "coppers": 4510,
             "items": [
                 {
                     "name": "Charcoal",
                     "description": null,
                     "value": null,
-                    "stack": 1478
+                    "stack": 1473
                 },
                 {
                     "name": "Iron",
@@ -39,7 +39,7 @@
                     "name": "Steel",
                     "description": null,
                     "value": null,
-                    "stack": 2208
+                    "stack": 2198
                 },
                 {
                     "name": "Onyx",
@@ -57,7 +57,7 @@
                     "name": "Thick Pole",
                     "description": null,
                     "value": null,
-                    "stack": 25610
+                    "stack": 25600
                 },
                 {
                     "name": "Pine Strip",
@@ -129,31 +129,43 @@
                     "name": "Rabbit Body",
                     "description": "A furry rabbit body, warm to the touch. Can be used for citadel soft armors.",
                     "value": 10,
-                    "stack": 1089
+                    "stack": 1095
                 },
                 {
-                    "name": "Deer Parts",
+                    "name": "Rabbit Meat",
+                    "description": null,
+                    "value": null,
+                    "stack": 9960
+                },
+                {
+                    "name": "Deer Part",
                     "description": "Various parts of a deer. Some are useful for making tools and weapons.",
                     "value": 20,
-                    "stack": 307
+                    "stack": 8
                 },
                 {
                     "name": "Deer Skin",
                     "description": "Tough deer skin. Can be used for citadel sturdy armors.",
                     "value": 30,
-                    "stack": 310
+                    "stack": 340
                 },
                 {
                     "name": "Wolf Skin",
                     "description": "A skin of a wild wolf. Known for its durability and strength.",
                     "value": 50,
-                    "stack": 205
+                    "stack": 211
                 },
                 {
                     "name": "Glowing Essence",
                     "description": "An ethereal essence that glows faintly. Used in powerful magical rituals and citadel.",
                     "value": 200,
                     "stack": 980
+                },
+                {
+                    "name": "Goblin Crown",
+                    "description": "A powerful relic obtained from the Goblin Mother. Used to create powerful Charms.",
+                    "value": 5000,
+                    "stack": 104
                 },
                 {
                     "name": "Leather",
@@ -172,24 +184,12 @@
                     "description": null,
                     "value": null,
                     "stack": 835
-                },
-                {
-                    "name": "Rabbit Meat",
-                    "description": null,
-                    "value": null,
-                    "stack": 9960
-                },
-                {
-                    "name": "Goblin Crown",
-                    "description": "A powerful relic obtained from the Goblin Mother. Used to create powerful Charms.",
-                    "value": 5000,
-                    "stack": 104
                 }
             ],
             "trees": [
                 {
                     "name": "Pine",
-                    "stack": 1033
+                    "stack": 1036
                 },
                 {
                     "name": "Yew",
@@ -208,12 +208,12 @@
                 {
                     "name": "Ranarr",
                     "value": 25,
-                    "stack": 1006
+                    "stack": 1008
                 },
                 {
                     "name": "Spirit Weed",
                     "value": 25,
-                    "stack": 1008
+                    "stack": 1012
                 },
                 {
                     "name": "Snapdragon",
@@ -229,7 +229,7 @@
             "ore": [
                 {
                     "name": "Iron Ore",
-                    "stack": 989
+                    "stack": 992
                 },
                 {
                     "name": "Coal",
@@ -237,19 +237,19 @@
                 },
                 {
                     "name": "Carbon",
-                    "stack": 851
+                    "stack": 848
                 }
             ],
             "potions": [
                 {
                     "name": "Stamina Potion",
                     "value": 10,
-                    "stack": 104
+                    "stack": 108
                 },
                 {
                     "name": "Health Potion",
                     "value": 10,
-                    "stack": 110
+                    "stack": 114
                 },
                 {
                     "name": "Super Stamina Potion",
@@ -259,7 +259,7 @@
                 {
                     "name": "Super Health Potion",
                     "value": 20,
-                    "stack": 102
+                    "stack": 104
                 }
             ],
             "limit": 49,
@@ -379,12 +379,6 @@
             },
             "charms": [
                 {
-                    "name": "Loothaven",
-                    "description": null,
-                    "value": 10,
-                    "stack": 3
-                },
-                {
                     "name": "Woodcleaver",
                     "description": null,
                     "value": 15,
@@ -394,6 +388,18 @@
                     "name": "Stonebreaker",
                     "description": null,
                     "value": 10,
+                    "stack": 1
+                },
+                {
+                    "name": "Loothaven",
+                    "description": null,
+                    "value": 10,
+                    "stack": 3
+                },
+                {
+                    "name": "Mightstone",
+                    "description": "Doubles your critical hit chance *and* damage multiplier (**30%** and **3x**) while wearing",
+                    "value": 25000,
                     "stack": 1
                 }
             ],

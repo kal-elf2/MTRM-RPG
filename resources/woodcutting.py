@@ -220,7 +220,7 @@ class HarvestButton(discord.ui.View):
                                      value=f"📊  {current_experience} / {next_level_experience_needed}", inline=True)
 
             #Set footer to show Woodcutting level and Probability
-            footer = footer_text_for_woodcutting_embed(self.player, interaction, current_woodcutting_level, zone_level,
+            footer = footer_text_for_woodcutting_embed(interaction, self.player, current_woodcutting_level, zone_level,
                                                        self.tree_type)
             self.embed.set_footer(text=footer)
 
@@ -293,6 +293,7 @@ class HarvestButton(discord.ui.View):
             if battle_outcome[0]:
 
                 experience_gained = monster.experience_reward
+                loothaven_effect = battle_outcome[5]  # Get the Loothaven effect status
                 await self.player.gain_experience(experience_gained, 'combat', interaction)
                 self.player_data[self.author_id]["stats"]["combat_level"] = self.player.stats.combat_level
                 self.player_data[self.author_id]["stats"]["combat_experience"] = self.player.stats.combat_experience
@@ -308,7 +309,7 @@ class HarvestButton(discord.ui.View):
                 # Clear the previous BattleOptions view
                 await battle_options_msg.delete()
                 loot_view = LootOptions(interaction, self.player, monster, battle_embed, self.player_data, self.author_id, battle_outcome,
-                                        loot_messages, self.guild_id, interaction, experience_gained)
+                                        loot_messages, self.guild_id, interaction, experience_gained, loothaven_effect)
 
                 await battle_embed.edit(
                     embed=create_battle_embed(interaction.user, self.player, monster, footer_text_for_embed(self.ctx),
