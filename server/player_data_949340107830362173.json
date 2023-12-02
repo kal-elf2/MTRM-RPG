@@ -27,7 +27,7 @@
                     "name": "Charcoal",
                     "description": null,
                     "value": null,
-                    "stack": 1469
+                    "stack": 1457
                 },
                 {
                     "name": "Iron",
@@ -39,13 +39,13 @@
                     "name": "Steel",
                     "description": null,
                     "value": null,
-                    "stack": 2193
+                    "stack": 2183
                 },
                 {
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 347
+                    "stack": 287
                 },
                 {
                     "name": "Pole",
@@ -75,13 +75,13 @@
                     "name": "Ash Strip",
                     "description": null,
                     "value": null,
-                    "stack": 972
+                    "stack": 967
                 },
                 {
                     "name": "Poplar Strip",
                     "description": null,
                     "value": null,
-                    "stack": 95
+                    "stack": 90
                 },
                 {
                     "name": "Flour",
@@ -165,7 +165,7 @@
                     "name": "Goblin Crown",
                     "description": "A powerful relic obtained from the Goblin Mother. Used to create powerful Charms.",
                     "value": 5000,
-                    "stack": 109
+                    "stack": 107
                 },
                 {
                     "name": "Leather",
@@ -229,15 +229,15 @@
             "ore": [
                 {
                     "name": "Iron Ore",
-                    "stack": 994
+                    "stack": 991
                 },
                 {
                     "name": "Coal",
-                    "stack": 979
+                    "stack": 975
                 },
                 {
                     "name": "Carbon",
-                    "stack": 850
+                    "stack": 837
                 }
             ],
             "potions": [
@@ -379,26 +379,26 @@
             },
             "charms": [
                 {
+                    "name": "Mightstone",
+                    "description": "Doubles your critical hit chance *and* damage multiplier (**30%** and **3x**) while wearing",
+                    "value": 25000,
+                    "stack": 1
+                },
+                {
                     "name": "Woodcleaver",
-                    "description": null,
+                    "description": "Increase woodcutting success rate by 15% while wearing",
                     "value": 25000,
                     "stack": 1
                 },
                 {
                     "name": "Stonebreaker",
-                    "description": null,
+                    "description": "Increase mining success rate by 15% while wearing",
                     "value": 25000,
                     "stack": 1
                 },
                 {
                     "name": "Loothaven",
-                    "description": null,
-                    "value": 25000,
-                    "stack": 4
-                },
-                {
-                    "name": "Mightstone",
-                    "description": "Doubles your critical hit chance *and* damage multiplier (**30%** and **3x**) while wearing",
+                    "description": "Gives a 25% chance to **double** your monster loot *and* their drop rates while wearing",
                     "value": 25000,
                     "stack": 1
                 }
@@ -409,7 +409,7 @@
                 "value": 25000,
                 "stack": 1
             },
-            "materium": 108
+            "materium": 88
         },
         "in_battle": false
     }

@@ -11,7 +11,7 @@ loot_drop_percent = 0.1
 potion_drop_percent = 0.05
 
 # Original value: 0.15 (15% chance)
-attack_percent = 0.99
+attack_percent = 0.15
 
 #CHARMS
 # Original value: 0.15 (15% chance)
@@ -19,7 +19,7 @@ stonebreaker_percent = 0.15
 # Original value: 0.15 (15% chance)
 woodcleaver_percent = 0.15
 # Original value: 0.25 (25% chance)
-loothaven_percent = 0.99
+loothaven_percent = 0.25
 # Original value: 0.15 (15% chance)
 ironhide_percent = 0.15
 # Original value: 2 (double multiplier)
