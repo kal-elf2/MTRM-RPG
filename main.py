@@ -173,10 +173,7 @@ class ConfirmExemplar(discord.ui.View):
 
 
 @bot.slash_command(description="Battle a monster!")
-async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=generate_monster_list(), required=True, default='')):
-    if not monster:
-        await ctx.respond("Please pick a monster to battle.", ephemeral=True)
-        return
+async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=generate_monster_list(), required=True)):
 
     with open("level_data.json", "r") as f:
         LEVEL_DATA = json.load(f)
@@ -217,6 +214,7 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
     if battle_outcome[0]:
 
         experience_gained = monster.experience_reward
+        loothaven_effect = battle_outcome[5]  # Get the Loothaven effect status
         await player.gain_experience(experience_gained, 'combat', ctx)
         player_data[author_id]["stats"]["combat_level"] = player.stats.combat_level
         player_data[author_id]["stats"]["combat_experience"] = player.stats.combat_experience
@@ -231,7 +229,7 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
 
         # Clear the previous BattleOptions view
         await battle_options_msg.delete()
-        loot_view = LootOptions(ctx, player, monster, battle_embed, player_data, author_id, battle_outcome, loot_messages, guild_id, ctx, experience_gained)
+        loot_view = LootOptions(ctx, player, monster, battle_embed, player_data, author_id, battle_outcome, loot_messages, guild_id, ctx, experience_gained, loothaven_effect)
 
         # Construct the embed with the footer
         battle_outcome_embed = create_battle_embed(ctx.user, player, monster, footer_text_for_embed(ctx),
@@ -244,7 +242,6 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
             embed=battle_outcome_embed,
             view=loot_view
         )
-
 
     else:
 

@@ -292,10 +292,6 @@ class CraftButton(discord.ui.Button):
             if hasattr(crafted_item, "description") and crafted_item.description:
                 message_content += f"\n**Description:** {crafted_item.description}"
 
-            # Check and include the value of the crafted item
-            if hasattr(crafted_item, "value") and crafted_item.value is not None:
-                message_content += f"\n**Value:** {crafted_item.value} {get_emoji('coppers_emoji')}"
-
             crafted_item_url = generate_urls('Icons', self.selected_recipe.result.name.replace(" ", "%20"))
             embed = Embed(title=f"{self.selected_recipe.result.name} {zone_emoji}", description=message_content,
                           color=embed_color)
@@ -476,10 +472,6 @@ class CraftingSelect(discord.ui.Select):
         if hasattr(selected_recipe.result, "description") and selected_recipe.result.description:
             message_content += f"\n**Description:** {selected_recipe.result.description}"
 
-        # Check and include the value of the selected item
-        if hasattr(selected_recipe.result, "value") and selected_recipe.result.value is not None:
-            message_content += f"\n**Value:** {selected_recipe.result.value} {get_emoji('coppers_emoji')}"
-
         crafted_item_url = generate_urls('Icons', selected_recipe.result.name.replace(" ", "%20"))
         embed = Embed(title=embed_title, description=message_content, color=embed_color)
         embed.set_thumbnail(url=crafted_item_url)
@@ -644,7 +636,7 @@ def create_crafting_stations(interaction, station_name=None):
                          description=f"Increase mining success rate by {int(round(stonebreaker_percent * 100))}%",
                          value=25000)
     lootmasters_charm = Charm("Loothaven",
-                              description=f"Gives a {int(round(loothaven_percent * 100))}% chance to DOUBLE your monster loot drops",
+                              description=f"Gives a {int(round(loothaven_percent * 100))}% chance to DOUBLE your monster loot",
                               value=25000)
     strength_charm = Charm("Mightstone",
                            description=f"Increases all damage done by {int(round(mightstone_percent * 100))}%",

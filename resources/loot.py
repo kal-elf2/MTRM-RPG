@@ -4,7 +4,7 @@ from resources.potion import POTION_LIST
 from resources.materium import Materium
 from resources.item import Item
 from emojis import get_emoji
-from probabilities import mtrm_drop_percent, potion_drop_percent, herb_drop_percent
+from probabilities import mtrm_drop_percent, potion_drop_percent, herb_drop_percent, loothaven_percent
 
 class Loot:
     def __init__(self, name, rarity, value):
@@ -84,21 +84,29 @@ monster_difficulty_multiplier = {
     'Mother': 30
 }
 
-def generate_zone_loot(zone_level, monster_drop=None, name=None):
+def generate_zone_loot(player, zone_level, monster_drop=None, name=None):
     loot_messages = []
     loot = []
 
+    # Check if the player has the Loothaven charm equipped
+    loothaven_effect = (player.inventory.equipped_charm and player.inventory.equipped_charm.name == "Loothaven") and random.random() < loothaven_percent
+
+    # Doubling the drop rates if Loothaven charm is active
+    herb_drop_chance = herb_drop_percent * (2 if loothaven_effect else 1)
+    materium_drop_chance = mtrm_drop_percent * zone_level * (2 if loothaven_effect else 1)
+    potion_drop_chance = potion_drop_percent * zone_level * (2 if loothaven_effect else 1)
+
+    # Coppers drop
     monster_multiplier = monster_difficulty_multiplier.get(name, 1)  # Get the multiplier for the monster or default to 1
     coppers_dropped = random.randint(int(zone_level * 2 * monster_multiplier), int(zone_level * 5 * monster_multiplier))
+    if loothaven_effect:
+        coppers_dropped *= 2  # Double the coppers if Loothaven effect is active
     loot.append(('coppers', coppers_dropped))
-
-    if coppers_dropped == 1:
-        loot_messages.append(f"{get_emoji('coppers_emoji')} You found {coppers_dropped} Copper!")
-    else:
-        loot_messages.append(f"{get_emoji('coppers_emoji')} You found {coppers_dropped} Coppers!")
+    coppers_message = "Coppers" if coppers_dropped > 1 else "Copper"
+    loot_messages.append(f"{get_emoji('coppers_emoji')} You found {coppers_dropped} {coppers_message}!")
 
     # Herb drops
-    if random.random() < herb_drop_percent:
+    if random.random() < herb_drop_chance:
         # Base weights
         herb_weights = [40, 40, 10, 10]
 
@@ -113,36 +121,40 @@ def generate_zone_loot(zone_level, monster_drop=None, name=None):
         herb_weights[1] -= total_increase // 2
 
         herb_dropped = random.choices(HERB_TYPES, weights=herb_weights, k=1)[0]
-        loot.append(('herb', herb_dropped))
-        loot_messages.append(f"{get_emoji(herb_dropped.name)} You found some {herb_dropped.name}!")
-
+        herb_count = 2 if loothaven_effect else 1
+        for _ in range(herb_count):
+            loot.append(('herb', herb_dropped))
+        loot_messages.append(f"{get_emoji(herb_dropped.name)} You found {herb_count} {herb_dropped.name}!")
 
     # Materium drops
-    materium_drop_rate = mtrm_drop_percent * zone_level  # Increase the chance of getting a drop as zone level increases
-    if random.random() < materium_drop_rate:
+    if random.random() < materium_drop_chance:
         materium_dropped = Materium()
-        loot.append(('materium', materium_dropped))
-        loot_messages.append(f"{get_emoji('mtrm_emoji')} You found some Materium!")
+        materium_count = 2 if loothaven_effect else 1
+        for _ in range(materium_count):
+            loot.append(('materium', materium_dropped))
+        loot_messages.append(f"{get_emoji('Materium')} You found {materium_count} Materium!")
 
     # Potion drops
-    potion_drop_rate = potion_drop_percent * zone_level  # Increase the chance of getting a drop as zone level increases
-    if random.random() < potion_drop_rate:
+    if random.random() < potion_drop_chance:
         # Base weights
-        potion_weights = [40, 40, 10, 10][:len(POTION_LIST)]  # Adjust the weights based on the length of POTION_LIST
+        potion_weights = [40, 40, 10, 10][:len(POTION_LIST)]
 
-        # Increase the weights of the last two potions based on zone_level
-        increase_per_zone_potion = 5
-        potion_weights[2] += (zone_level - 1) * increase_per_zone_potion
-        potion_weights[3] += (zone_level - 1) * increase_per_zone_potion
+        # Adjust the weights based on zone level and Loothaven charm effect
+        increase_per_zone_potion = (zone_level - 1) * 5 * (2 if loothaven_effect else 1)
+        potion_weights[2] += increase_per_zone_potion
+        potion_weights[3] += increase_per_zone_potion
 
         # Decrease the weights of the first two potions to maintain total weight
-        total_increase_potion = (zone_level - 1) * 2 * increase_per_zone_potion
+        total_increase_potion = increase_per_zone_potion * 2
         potion_weights[0] -= total_increase_potion // 2
         potion_weights[1] -= total_increase_potion // 2
 
         potion_dropped = random.choices(POTION_LIST, weights=potion_weights, k=1)[0]
-        loot.append(('potion', potion_dropped))
-        loot_messages.append(f"{get_emoji(potion_dropped.name)} You found a {potion_dropped.name}!")
+        potion_count = 2 if loothaven_effect else 1
+        for _ in range(potion_count):
+            loot.append(('potion', potion_dropped))
+        potion_name = potion_dropped.name + "s" if potion_count > 1 else potion_dropped.name
+        loot_messages.append(f"{get_emoji(potion_dropped.name)} You found {potion_count} {potion_name}!")
 
     if monster_drop:
         for drop, quantity in monster_drop:  # Iterate over each drop item and its quantity
@@ -157,11 +169,32 @@ def generate_zone_loot(zone_level, monster_drop=None, name=None):
             else:
                 continue  # Ignore the drop if it's not a string or an Item
 
-            loot.append(('items', [(item, quantity)]))
-            loot_messages.append(f"{get_emoji(item_emoji_mapping.get(item.name, ''))}  You found {quantity} {item.name}!")
+            # Double the quantity if Loothaven charm's effect is active
+            final_quantity = quantity * 2 if loothaven_effect else quantity
+
+            loot.append(('items', [(item, final_quantity)]))
+
+            # Custom pluralization rules
+            if final_quantity > 1:
+                if item.name == "Onyx":
+                    item_name_plural = "Onyx"
+                elif item.name == "Rabbit Body":
+                    item_name_plural = "Rabbit Bodies"
+                elif item.name == "Glowing Essence":
+                    item_name_plural = "Glowing Essence"
+                else:
+                    item_name_plural = item.name + "s"
+            else:
+                item_name_plural = item.name
+
+            loot_messages.append(
+                f"{get_emoji(item_emoji_mapping.get(item.name, ''))} You found {final_quantity} {item_name_plural}!")
 
         # Return the loot dropped (empty list if no loot is dropped) and the loot messages
-    return loot, loot_messages
+        return loot, loot_messages, loothaven_effect
+
+
+
 
 
 

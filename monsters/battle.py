@@ -7,7 +7,7 @@ from images.urls import generate_urls
 
 class LootOptions(discord.ui.View):
     def __init__(self, interaction, player, monster, battle_embed, player_data, author_id, battle_outcome,
-                 loot_messages, guild_id, ctx, experience_gained):
+                 loot_messages, guild_id, ctx, experience_gained, loothaven_effect):
         super().__init__(timeout=None)
         self.interaction = interaction
         self.player = player
@@ -20,6 +20,7 @@ class LootOptions(discord.ui.View):
         self.guild_id = guild_id
         self.ctx = ctx
         self.experience_gained = experience_gained
+        self.loothaven_effect = loothaven_effect
 
     @discord.ui.button(custom_id="loot", label="Loot", style=discord.ButtonStyle.blurple)
     async def collect_loot(self, button, interaction):
@@ -34,12 +35,10 @@ class LootOptions(discord.ui.View):
 
         # Extract loot items and messages from the battle outcome
         loot = self.battle_outcome[3]
-        print(f"Raw loot data: {loot}")
 
         # Extract all item drops (excluding 'coppers', 'materium' as they don't occupy inventory slots)
         new_items = [item for loot_type, loot_items in loot if loot_type in ('herb', 'items', 'gem', 'loot')
                      for item in (loot_items if isinstance(loot_items, list) else [loot_items])]
-        print(f"Filtered new items from loot: {new_items}")
 
         # Calculate the number of new inventory slots required
         required_slots = 0
@@ -48,17 +47,12 @@ class LootOptions(discord.ui.View):
                 item_name = item[0].name
             else:
                 item_name = item.name
-            print(f"Checking inventory for item: {item_name}")
 
             if not self.player.inventory.has_item(item_name):
                 required_slots += 1
-                print(f"Player doesn't have {item_name}. Incrementing required slots.")
-
-        print(f"Total required slots for new items: {required_slots}")
 
         # If player's inventory doesn't have enough space for new non-stackable items
         available_slots = self.player.inventory.limit - self.player.inventory.total_items_count()
-        print(f"Available slots in inventory: {available_slots}")
         if available_slots < required_slots:
             await interaction.response.send_message("Inventory is full. Please make some room before collecting loot.",
                                                     ephemeral=True)
@@ -84,11 +78,14 @@ class LootOptions(discord.ui.View):
         self.player_data[self.author_id]["inventory"] = self.player.inventory.to_dict()
 
         loot_message_string = '\n'.join(self.loot_messages)
+        # Incorporate Loothaven charm effect in the message
+        loothaven_message = f"{get_emoji('Loothaven')} Your **Loothaven charm** is *glowing*!\n" if self.loothaven_effect else ""
 
         message_text = (
             f"You have **DEFEATED** the {self.monster.name}!\n"
             f"You dealt **{self.battle_outcome[1]} damage** to the monster and took **{self.battle_outcome[2]} damage**.\n"
-            f"You gained {self.experience_gained} combat XP.\n\n" 
+            f"You gained {self.experience_gained} combat XP.\n\n"
+            f"{loothaven_message}\n"
             f"__**Loot picked up:**__\n"
             f"{loot_message_string}\n\n"
         )
