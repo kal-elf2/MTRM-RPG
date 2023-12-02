@@ -5,7 +5,8 @@ from monsters.battle import create_battle_embed, footer_text_for_embed
 import asyncio
 from resources.item import Item
 import math
-from probabilities import CRITICAL_HIT_CHANCE, CRITICAL_HIT_MULTIPLIER
+from probabilities import CRITICAL_HIT_CHANCE, CRITICAL_HIT_MULTIPLIER, ironhide_percent, mightstone_multiplier
+from emojis import get_emoji
 
 class Monster:
     def __init__(self, name, health, max_health, attack, stamina, experience_reward, weak_against, strong_against, attack_speed, drop):
@@ -71,13 +72,22 @@ def generate_monster_list():
     ]
     return monster_names
 
-def calculate_hit_probability(attacker_attack, defender_defense):
-    base_hit_probability = 0.75  # base hit chance, can be adjusted as needed
+def calculate_hit_probability(attacker_attack, defender_defense, player=None):
+    # Check if player is wearing the Ironhide charm
+    if player and player.inventory.equipped_charm and player.inventory.equipped_charm.name == "Ironhide":
+        base_hit_probability = 0.75 - ironhide_percent  # Decrease base hit chance
+        min_hit_chance = 0.4 - ironhide_percent  # Decrease minimum hit chance
+    else:
+        base_hit_probability = 0.75  # Standard base hit chance
+        min_hit_chance = 0.4  # Standard minimum hit chance
+
     attack_defense_ratio = attacker_attack / (defender_defense + 1)  # add 1 to avoid division by zero
     hit_probability = base_hit_probability * attack_defense_ratio
-    min_hit_chance = 0.4  # minimum hit chance regardless of stats
     max_hit_chance = 0.9  # maximum hit chance regardless of stats
+
+    # Return the final hit probability, ensuring it's within the defined range
     return min(max(hit_probability, min_hit_chance), max_hit_chance)
+
 
 def calculate_damage(player, attacker_attack, defender_defense, is_critical_hit=False):
     attack_defense_ratio = attacker_attack / (defender_defense + 1)
@@ -96,7 +106,12 @@ def calculate_damage(player, attacker_attack, defender_defense, is_critical_hit=
 
     # Apply critical hit multiplier if applicable
     if is_critical_hit:
-        damage_dealt = round(damage_dealt * CRITICAL_HIT_MULTIPLIER)
+        crit_multiplier = CRITICAL_HIT_MULTIPLIER
+        # Check if player is the actual player and has Mightstone equipped
+        if hasattr(player,
+                   'inventory') and player.inventory.equipped_charm and player.inventory.equipped_charm.name == "Mightstone":
+            crit_multiplier *= mightstone_multiplier  # Increases critical hit by factor of mightstone_multiplier
+        damage_dealt = round(damage_dealt * crit_multiplier)
 
     return damage_dealt
 
@@ -109,17 +124,25 @@ async def player_attack_task(ctx, user, player, monster, attack_modifier, messag
     while not monster.is_defeated() and not player.is_defeated():
         hit_probability = calculate_hit_probability(player.stats.attack * attack_modifier, monster.defense)
 
-        if random.random() < CRITICAL_HIT_CHANCE:
-            is_critical_hit = True
-        else:
-            is_critical_hit = False
+        # Adjust critical hit chance if Mightstone is equipped
+        crit_chance = CRITICAL_HIT_CHANCE * mightstone_multiplier if player.inventory.equipped_charm and player.inventory.equipped_charm.name == "Mightstone" else CRITICAL_HIT_CHANCE
+        is_critical_hit = random.random() < crit_chance
 
         if random.random() < hit_probability:
             damage_dealt = calculate_damage(player, player.stats.attack * attack_modifier, monster.defense, is_critical_hit)
             monster.health = max(monster.health - damage_dealt, 0)
-            update_message = f"{user.mention} dealt {damage_dealt} damage to the {monster.name}!"
+
+            # Determine the critical hit message
             if is_critical_hit:
-                update_message += " ***Critical hit!***"
+                # Special message if wearing Mightstone and it's a critical hit
+                if player.inventory.equipped_charm and player.inventory.equipped_charm.name == "Mightstone":
+                    # Combine critical hit message with damage dealt message
+                    update_message = f"Your {get_emoji('Mightstone')}**Mightstone Charm** glows! ***Critical hit!***\n{user.mention} dealt {damage_dealt} damage to the {monster.name}!"
+                else:
+                    update_message = f"{user.mention} dealt {damage_dealt} damage to the {monster.name}! ***Critical hit!***"
+            else:
+                update_message = f"{user.mention} dealt {damage_dealt} damage to the {monster.name}!"
+
         else:
             update_message = f"The {monster.name} ***evaded*** the attack of {user.mention}!"
 
@@ -136,28 +159,28 @@ async def player_attack_task(ctx, user, player, monster, attack_modifier, messag
 
         await asyncio.sleep(attack_speed_modifier)
 
+
 async def monster_attack_task(ctx, user, player, monster, message, battle_messages):
     attack_speed_modifier = calculate_attack_speed_modifier(monster.attack)
     while not monster.is_defeated() and not player.is_defeated():
-        hit_probability = calculate_hit_probability(monster.attack, player.stats.defense)
+        hit_probability = calculate_hit_probability(monster.attack, player.stats.defense, player)
 
         # Determine if it's a critical hit
-        if random.random() < CRITICAL_HIT_CHANCE:
-            is_critical_hit = True
-        else:
-            is_critical_hit = False
+        is_critical_hit = random.random() < CRITICAL_HIT_CHANCE
 
         # Check if the attack hits
         if random.random() < hit_probability:
-            damage_dealt = calculate_damage(monster.attack, player.stats.defense, is_critical_hit)
+            damage_dealt = calculate_damage(monster, monster.attack, player.stats.defense, is_critical_hit)
             player.stats.damage_taken += damage_dealt
             player.stats.health = max(player.stats.health - damage_dealt, 0)
-
             update_message = f"The {monster.name} dealt {damage_dealt} damage to {user.mention}!"
             if is_critical_hit:
                 update_message += " ***Critical hit!***"
         else:
-            update_message = f"{user.mention} ***evaded*** the {monster.name}'s attack!"
+            if player.inventory.equipped_charm and player.inventory.equipped_charm.name == "Ironhide":
+                update_message = f" Your {get_emoji('Ironhide')}**Ironhide Charm** is glowing!\n{user.mention} ***evaded*** the {monster.name}'s attack!"
+            else:
+                update_message = f"{user.mention} ***evaded*** the {monster.name}'s attack!"
 
         # Update the battle messages list
         if len(battle_messages) >= 5:
@@ -167,7 +190,6 @@ async def monster_attack_task(ctx, user, player, monster, message, battle_messag
         battle_embed = create_battle_embed(user, player, monster, footer_text_for_embed(ctx), battle_messages)
         await message.edit(embed=battle_embed)
 
-        # Break out of loop if the player is defeated
         if player.is_defeated():
             break
 

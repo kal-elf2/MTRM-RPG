@@ -2,7 +2,7 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "health": 127,
+            "health": 593,
             "max_health": 915,
             "strength": 421,
             "stamina": 423,
@@ -12,22 +12,22 @@
             "defense": 171,
             "armor": 40,
             "combat_level": 83,
-            "combat_experience": 752176,
+            "combat_experience": 754394,
             "mining_level": 99,
-            "mining_experience": 607540,
+            "mining_experience": 607680,
             "woodcutting_level": 90,
             "woodcutting_experience": 841856,
-            "zone_level": 1,
+            "zone_level": 5,
             "damage_taken": 0
         },
         "inventory": {
-            "coppers": 4510,
+            "coppers": 5549,
             "items": [
                 {
                     "name": "Charcoal",
                     "description": null,
                     "value": null,
-                    "stack": 1473
+                    "stack": 1469
                 },
                 {
                     "name": "Iron",
@@ -39,13 +39,13 @@
                     "name": "Steel",
                     "description": null,
                     "value": null,
-                    "stack": 2198
+                    "stack": 2193
                 },
                 {
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 222
+                    "stack": 347
                 },
                 {
                     "name": "Pole",
@@ -159,13 +159,13 @@
                     "name": "Glowing Essence",
                     "description": "An ethereal essence that glows faintly. Used in powerful magical rituals and citadel.",
                     "value": 200,
-                    "stack": 980
+                    "stack": 981
                 },
                 {
                     "name": "Goblin Crown",
                     "description": "A powerful relic obtained from the Goblin Mother. Used to create powerful Charms.",
                     "value": 5000,
-                    "stack": 104
+                    "stack": 109
                 },
                 {
                     "name": "Leather",
@@ -183,7 +183,7 @@
                     "name": "Tough Leather Straps",
                     "description": null,
                     "value": null,
-                    "stack": 835
+                    "stack": 832
                 }
             ],
             "trees": [
@@ -208,7 +208,7 @@
                 {
                     "name": "Ranarr",
                     "value": 25,
-                    "stack": 1008
+                    "stack": 1009
                 },
                 {
                     "name": "Spirit Weed",
@@ -229,7 +229,7 @@
             "ore": [
                 {
                     "name": "Iron Ore",
-                    "stack": 992
+                    "stack": 994
                 },
                 {
                     "name": "Coal",
@@ -237,7 +237,7 @@
                 },
                 {
                     "name": "Carbon",
-                    "stack": 848
+                    "stack": 850
                 }
             ],
             "potions": [
@@ -381,20 +381,20 @@
                 {
                     "name": "Woodcleaver",
                     "description": null,
-                    "value": 15,
+                    "value": 25000,
                     "stack": 1
                 },
                 {
                     "name": "Stonebreaker",
                     "description": null,
-                    "value": 10,
+                    "value": 25000,
                     "stack": 1
                 },
                 {
                     "name": "Loothaven",
                     "description": null,
-                    "value": 10,
-                    "stack": 3
+                    "value": 25000,
+                    "stack": 4
                 },
                 {
                     "name": "Mightstone",
@@ -404,12 +404,12 @@
                 }
             ],
             "equipped_charm": {
-                "name": "Loothaven",
-                "description": null,
-                "value": 10,
+                "name": "Ironhide",
+                "description": "Increases your chance to **evade all attacks** by 15% while wearing",
+                "value": 25000,
                 "stack": 1
             },
-            "materium": 116
+            "materium": 108
         },
         "in_battle": false
     }

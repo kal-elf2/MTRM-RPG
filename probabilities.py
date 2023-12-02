@@ -22,9 +22,9 @@ woodcleaver_percent = 0.15
 loothaven_percent = 0.99
 # Original value: 0.15 (15% chance)
 ironhide_percent = 0.15
-# Original value: 0.15 (15% chance)
-mightstone_percent = 0.15
+# Original value: 2 (double multiplier)
+mightstone_multiplier = 2
 
 # Constants
-CRITICAL_HIT_CHANCE = 0.15  # 10% chance of a critical hit
+CRITICAL_HIT_CHANCE = 0.10  # 10% chance of a critical hit
 CRITICAL_HIT_MULTIPLIER = 1.5  # 1.5 times the damage for a critical hit
