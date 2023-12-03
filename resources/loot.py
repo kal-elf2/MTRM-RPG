@@ -4,7 +4,7 @@ from resources.potion import POTION_LIST
 from resources.materium import Materium
 from resources.item import Item
 from emojis import get_emoji
-from probabilities import mtrm_drop_percent, potion_drop_percent, herb_drop_percent, loothaven_percent
+from probabilities import mtrm_drop_percent, potion_drop_percent, herb_drop_percent, loothaven_percent, spork_chance
 
 class Loot:
     def __init__(self, name, rarity, value):
@@ -192,7 +192,7 @@ def generate_zone_loot(player, zone_level, monster_drop=None, name=None):
 
         # Rusty Spork drop logic
         if random.random() < spork_chance:
-            spork_dropped = Item("Rusty Spork", description="A rusty and useless trinket", value=50000)
+            spork_dropped = Item("Rusty Spork", description="A rusty and useless trinket", value=100000)
             spork_count = 2 if loothaven_effect else 1
             for _ in range(spork_count):
                 loot.append(('items', [(spork_dropped, 1)]))  # Each drop is 1 item, even if doubled

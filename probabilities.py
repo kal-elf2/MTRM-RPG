@@ -10,7 +10,7 @@ loot_drop_percent = 0.1
 # Original value: 0.05 (5% chance)
 potion_drop_percent = 0.05
 # Original value: 0.0002 (.02% chance)
-spork_chance = 0.0002
+spork_chance = 0.99
 # Original value: 0.15 (15% chance)
 attack_percent = 0.15
 
