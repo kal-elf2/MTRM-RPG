@@ -12,7 +12,7 @@
             "defense": 171,
             "armor": 40,
             "combat_level": 83,
-            "combat_experience": 754733,
+            "combat_experience": 754769,
             "mining_level": 99,
             "mining_experience": 607680,
             "woodcutting_level": 90,
@@ -21,7 +21,7 @@
             "damage_taken": 0
         },
         "inventory": {
-            "coppers": 6094,
+            "coppers": 6139,
             "items": [
                 {
                     "name": "Charcoal",
@@ -129,7 +129,7 @@
                     "name": "Rabbit Body",
                     "description": "A furry rabbit body, warm to the touch. Can be used for citadel soft armors.",
                     "value": 10,
-                    "stack": 1096
+                    "stack": 1101
                 },
                 {
                     "name": "Rabbit Meat",
@@ -189,7 +189,7 @@
                     "name": "Rusty Spork",
                     "description": "A rusty and useless trinket",
                     "value": 100000,
-                    "stack": 2
+                    "stack": 6
                 }
             ],
             "trees": [
@@ -224,7 +224,7 @@
                 {
                     "name": "Snapdragon",
                     "value": 350,
-                    "stack": 1002
+                    "stack": 1003
                 },
                 {
                     "name": "Bloodweed",
@@ -260,12 +260,12 @@
                 {
                     "name": "Super Stamina Potion",
                     "value": 20,
-                    "stack": 100
+                    "stack": 101
                 },
                 {
                     "name": "Super Health Potion",
                     "value": 20,
-                    "stack": 105
+                    "stack": 107
                 }
             ],
             "limit": 49,
@@ -397,21 +397,21 @@
                     "stack": 1
                 },
                 {
-                    "name": "Loothaven",
-                    "description": "Gives a 25% chance to **double** your monster loot *and* their drop rates while wearing",
+                    "name": "Mightstone",
+                    "description": "Doubles your critical hit chance *and* damage multiplier (**30%** and **3x**) while wearing",
                     "value": 25000,
                     "stack": 1
                 },
                 {
-                    "name": "Mightstone",
-                    "description": "Doubles your critical hit chance *and* damage multiplier (**30%** and **3x**) while wearing",
+                    "name": "Ironhide",
+                    "description": "Increases your chance to **evade all attacks** by 15% while wearing",
                     "value": 25000,
                     "stack": 1
                 }
             ],
             "equipped_charm": {
-                "name": "Ironhide",
-                "description": "Increases your chance to **evade all attacks** by 15% while wearing",
+                "name": "Loothaven",
+                "description": "Gives a 25% chance to **double** your monster loot *and* their drop rates while wearing",
                 "value": 25000,
                 "stack": 1
             },

@@ -196,8 +196,8 @@ def generate_zone_loot(player, zone_level, monster_drop=None, name=None):
             spork_count = 2 if loothaven_effect else 1
             for _ in range(spork_count):
                 loot.append(('items', [(spork_dropped, 1)]))  # Each drop is 1 item, even if doubled
-            spork_message = "Rusty Sporks" if spork_count > 1 else "a Rusty Spork"
-            loot_messages.append(f"{get_emoji('Rusty Spork')} You found {spork_message}!")
+            spork_message = "Rusty Sporks" if spork_count > 1 else "Rusty Spork"
+            loot_messages.append(f"{get_emoji('Rusty Spork')} You found {spork_count} {spork_message}!")
 
         # Return the loot dropped (empty list if no loot is dropped) and the loot messages
         return loot, loot_messages, loothaven_effect
