@@ -97,7 +97,11 @@ def get_emoji(emoji_name):
         'Ranarr': '<:Ranarr:1165469166870990868>',
         'Spirit Weed': '<:SpiritWeed:1165469173753839656>',
         'Snapdragon': '<:Snapdragon:1165469161837834341>',
-        'Bloodweed': '<:Bloodweed:1165469363311235112>'
+        'Bloodweed': '<:Bloodweed:1165469363311235112>',
+        'left_click': '<:LeftClick:1160445973559001219>',
+        'right_click': '<:RightClick:1160445974771154984>',
+        'q': '<:Q_:1160444478046359724>',
+        'e': '<:E_:1160444475676565544>'
     }
 
     # Return the appropriate emoji string, or an empty string if not found

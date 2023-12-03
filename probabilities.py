@@ -9,7 +9,8 @@ herb_drop_percent = 0.1
 loot_drop_percent = 0.1
 # Original value: 0.05 (5% chance)
 potion_drop_percent = 0.05
-
+# Original value: 0.0002 (.02% chance)
+spork_chance = 0.0002
 # Original value: 0.15 (15% chance)
 attack_percent = 0.15
 
@@ -24,6 +25,7 @@ loothaven_percent = 0.25
 ironhide_percent = 0.15
 # Original value: 2 (double multiplier)
 mightstone_multiplier = 2
+
 
 # Constants
 CRITICAL_HIT_CHANCE = 0.10  # 10% chance of a critical hit

@@ -190,6 +190,15 @@ def generate_zone_loot(player, zone_level, monster_drop=None, name=None):
             loot_messages.append(
                 f"{get_emoji(item_emoji_mapping.get(item.name, ''))} You found {final_quantity} {item_name_plural}!")
 
+        # Rusty Spork drop logic
+        if random.random() < spork_chance:
+            spork_dropped = Item("Rusty Spork", description="A rusty and useless trinket", value=50000)
+            spork_count = 2 if loothaven_effect else 1
+            for _ in range(spork_count):
+                loot.append(('items', [(spork_dropped, 1)]))  # Each drop is 1 item, even if doubled
+            spork_message = "Rusty Sporks" if spork_count > 1 else "a Rusty Spork"
+            loot_messages.append(f"You found {spork_message}!")
+
         # Return the loot dropped (empty list if no loot is dropped) and the loot messages
         return loot, loot_messages, loothaven_effect
 
