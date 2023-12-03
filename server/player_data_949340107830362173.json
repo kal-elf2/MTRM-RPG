@@ -2,7 +2,7 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "health": 593,
+            "health": 915,
             "max_health": 915,
             "strength": 421,
             "stamina": 423,
@@ -12,7 +12,7 @@
             "defense": 171,
             "armor": 40,
             "combat_level": 83,
-            "combat_experience": 754394,
+            "combat_experience": 754733,
             "mining_level": 99,
             "mining_experience": 607680,
             "woodcutting_level": 90,
@@ -21,7 +21,7 @@
             "damage_taken": 0
         },
         "inventory": {
-            "coppers": 5549,
+            "coppers": 6094,
             "items": [
                 {
                     "name": "Charcoal",
@@ -45,7 +45,7 @@
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 287
+                    "stack": 298
                 },
                 {
                     "name": "Pole",
@@ -129,7 +129,7 @@
                     "name": "Rabbit Body",
                     "description": "A furry rabbit body, warm to the touch. Can be used for citadel soft armors.",
                     "value": 10,
-                    "stack": 1095
+                    "stack": 1096
                 },
                 {
                     "name": "Rabbit Meat",
@@ -184,6 +184,12 @@
                     "description": null,
                     "value": null,
                     "stack": 832
+                },
+                {
+                    "name": "Rusty Spork",
+                    "description": "A rusty and useless trinket",
+                    "value": 100000,
+                    "stack": 2
                 }
             ],
             "trees": [
@@ -259,7 +265,7 @@
                 {
                     "name": "Super Health Potion",
                     "value": 20,
-                    "stack": 104
+                    "stack": 105
                 }
             ],
             "limit": 49,
@@ -379,12 +385,6 @@
             },
             "charms": [
                 {
-                    "name": "Mightstone",
-                    "description": "Doubles your critical hit chance *and* damage multiplier (**30%** and **3x**) while wearing",
-                    "value": 25000,
-                    "stack": 1
-                },
-                {
                     "name": "Woodcleaver",
                     "description": "Increase woodcutting success rate by 15% while wearing",
                     "value": 25000,
@@ -399,6 +399,12 @@
                 {
                     "name": "Loothaven",
                     "description": "Gives a 25% chance to **double** your monster loot *and* their drop rates while wearing",
+                    "value": 25000,
+                    "stack": 1
+                },
+                {
+                    "name": "Mightstone",
+                    "description": "Doubles your critical hit chance *and* damage multiplier (**30%** and **3x**) while wearing",
                     "value": 25000,
                     "stack": 1
                 }

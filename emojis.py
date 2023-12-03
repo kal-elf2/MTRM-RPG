@@ -101,7 +101,8 @@ def get_emoji(emoji_name):
         'left_click': '<:LeftClick:1160445973559001219>',
         'right_click': '<:RightClick:1160445974771154984>',
         'q': '<:Q_:1160444478046359724>',
-        'e': '<:E_:1160444475676565544>'
+        'e': '<:E_:1160444475676565544>',
+        'Rusty Spork': '<:RustySpork:1180716935604875305>'
     }
 
     # Return the appropriate emoji string, or an empty string if not found

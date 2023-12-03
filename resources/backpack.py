@@ -142,7 +142,7 @@ class BackpackView(discord.ui.View):
                 "Flour", "Wheat", "Flax", "Linen", "Linen Thread", "Venison",
                 "Sinew", "Rabbit Body", "Rabbit Meat", "Deer Part",
                 "Deer Skin", "Wolf Skin", "Glowing Essence", "Goblin Crown", "Leather",
-                "Tough Leather", "Leather Straps", "Tough Leather Straps"
+                "Tough Leather", "Leather Straps", "Tough Leather Straps", "Rusty Spork"
             ],
             "trees": ["Pine", "Yew", "Ash", "Poplar"],
             "herbs": ["Ranarr", "Spirit Weed", "Snapdragon", "Bloodweed"],
