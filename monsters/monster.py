@@ -119,108 +119,112 @@ def calculate_attack_speed_modifier(attack_value):
     # Cap the attack speed to a minimum and maximum value
     return max(1, min(3, 2 - attack_value * 0.05))
 
-async def player_attack_task(ctx, user, player, monster, attack_modifier, message, battle_messages):
-    attack_speed_modifier = calculate_attack_speed_modifier(player.stats.attack * attack_modifier)
-    while not monster.is_defeated() and not player.is_defeated():
-        hit_probability = calculate_hit_probability(player.stats.attack * attack_modifier, monster.defense)
+class BattleContext:
+    def __init__(self, ctx, user, player, monster, message, zone_level):
+        self.lock = asyncio.Lock()
+        self.ctx = ctx
+        self.user = user
+        self.player = player
+        self.monster = monster
+        self.message = message
+        self.battle_messages = []
+        self.zone_level = zone_level
 
-        # Adjust critical hit chance if Mightstone is equipped
-        crit_chance = CRITICAL_HIT_CHANCE * mightstone_multiplier if player.inventory.equipped_charm and player.inventory.equipped_charm.name == "Mightstone" else CRITICAL_HIT_CHANCE
-        is_critical_hit = random.random() < crit_chance
+    async def add_battle_message(self, new_message):
+        async with self.lock:
+            if len(self.battle_messages) >= 5:
+                self.battle_messages.pop(0)
+            self.battle_messages.append(new_message)
+            await self.update_battle_embed()
 
-        if random.random() < hit_probability:
-            damage_dealt = calculate_damage(player, player.stats.attack * attack_modifier, monster.defense, is_critical_hit)
-            monster.health = max(monster.health - damage_dealt, 0)
+    async def update_battle_embed(self):
+        battle_embed = create_battle_embed(self.user, self.player, self.monster, footer_text_for_embed(self.ctx), self.battle_messages)
+        await self.message.edit(embed=battle_embed)
 
-            # Determine the critical hit message
-            if is_critical_hit:
-                # Special message if wearing Mightstone and it's a critical hit
-                if player.inventory.equipped_charm and player.inventory.equipped_charm.name == "Mightstone":
-                    # Combine critical hit message with damage dealt message
-                    update_message = f"Your {get_emoji('Mightstone')}**Mightstone Charm** glows! ***Critical hit!***\n{user.mention} dealt {damage_dealt} damage to the {monster.name}!"
-                else:
-                    update_message = f"{user.mention} dealt {damage_dealt} damage to the {monster.name}! ***Critical hit!***"
+async def player_attack_task(battle_context, attack_modifier):
+    # Calculate attack speed modifier
+    attack_speed_modifier = calculate_attack_speed_modifier(battle_context.player.stats.attack * attack_modifier)
+
+    hit_probability = calculate_hit_probability(battle_context.player.stats.attack * attack_modifier, battle_context.monster.defense)
+
+    # Adjust critical hit chance if Mightstone is equipped
+    crit_chance = CRITICAL_HIT_CHANCE * mightstone_multiplier if battle_context.player.inventory.equipped_charm and battle_context.player.inventory.equipped_charm.name == "Mightstone" else CRITICAL_HIT_CHANCE
+    is_critical_hit = random.random() < crit_chance
+
+    if random.random() < hit_probability:
+        damage_dealt = calculate_damage(battle_context.player, battle_context.player.stats.attack * attack_modifier, battle_context.monster.defense, is_critical_hit)
+        battle_context.monster.health = max(battle_context.monster.health - damage_dealt, 0)
+
+        if is_critical_hit:
+            if battle_context.player.inventory.equipped_charm and battle_context.player.inventory.equipped_charm.name == "Mightstone":
+                update_message = f"Your {get_emoji('Mightstone')}**Mightstone Charm** glows! ***Critical hit!***\n{battle_context.user.mention} dealt {damage_dealt} damage to the {battle_context.monster.name}!"
             else:
-                update_message = f"{user.mention} dealt {damage_dealt} damage to the {monster.name}!"
-
+                update_message = f"{battle_context.user.mention} dealt {damage_dealt} damage to the {battle_context.monster.name}! ***Critical hit!***"
         else:
-            update_message = f"The {monster.name} ***evaded*** the attack of {user.mention}!"
+            update_message = f"{battle_context.user.mention} dealt {damage_dealt} damage to the {battle_context.monster.name}!"
 
-        # Update the battle messages list
-        if len(battle_messages) >= 5:
-            battle_messages.pop(0)
-        battle_messages.append(update_message)
+    else:
+        update_message = f"The {battle_context.monster.name} ***evaded*** the attack of {battle_context.user.mention}!"
 
-        battle_embed = create_battle_embed(user, player, monster, footer_text_for_embed(ctx), battle_messages)
-        await message.edit(embed=battle_embed)
+    # Add the update message to the battle context
+    await battle_context.add_battle_message(update_message)
 
-        if monster.is_defeated():
-            break
+    # Check if monster is defeated and return control to the caller
+    if battle_context.monster.is_defeated():
+        return
 
-        await asyncio.sleep(attack_speed_modifier)
+    await asyncio.sleep(attack_speed_modifier)
 
-
-async def monster_attack_task(ctx, user, player, monster, message, battle_messages):
-    attack_speed_modifier = calculate_attack_speed_modifier(monster.attack)
-    while not monster.is_defeated() and not player.is_defeated():
-        hit_probability = calculate_hit_probability(monster.attack, player.stats.defense, player)
+async def monster_attack_task(battle_context):
+    attack_speed_modifier = calculate_attack_speed_modifier(battle_context.monster.attack)
+    while not battle_context.monster.is_defeated() and not battle_context.player.is_defeated():
+        hit_probability = calculate_hit_probability(battle_context.monster.attack, battle_context.player.stats.defense, battle_context.player)
 
         # Determine if it's a critical hit
         is_critical_hit = random.random() < CRITICAL_HIT_CHANCE
 
         # Check if the attack hits
         if random.random() < hit_probability:
-            damage_dealt = calculate_damage(monster, monster.attack, player.stats.defense, is_critical_hit)
-            player.stats.damage_taken += damage_dealt
-            player.stats.health = max(player.stats.health - damage_dealt, 0)
-            update_message = f"The {monster.name} dealt {damage_dealt} damage to {user.mention}!"
+            damage_dealt = calculate_damage(battle_context.monster, battle_context.monster.attack, battle_context.player.stats.defense, is_critical_hit)
+            battle_context.player.stats.damage_taken += damage_dealt
+            battle_context.player.stats.health = max(battle_context.player.stats.health - damage_dealt, 0)
+            update_message = f"The {battle_context.monster.name} dealt {damage_dealt} damage to {battle_context.user.mention}!"
             if is_critical_hit:
                 update_message += " ***Critical hit!***"
         else:
-            if player.inventory.equipped_charm and player.inventory.equipped_charm.name == "Ironhide":
-                update_message = f" Your {get_emoji('Ironhide')}**Ironhide Charm** is glowing!\n{user.mention} ***evaded*** the {monster.name}'s attack!"
-            else:
-                update_message = f"{user.mention} ***evaded*** the {monster.name}'s attack!"
+            update_message = generate_evasion_message(battle_context.player, battle_context.monster, battle_context.user)
 
-        # Update the battle messages list
-        if len(battle_messages) >= 5:
-            battle_messages.pop(0)
-        battle_messages.append(update_message)
+        # Add the update message to the battle context
+        await battle_context.add_battle_message(update_message)
 
-        battle_embed = create_battle_embed(user, player, monster, footer_text_for_embed(ctx), battle_messages)
-        await message.edit(embed=battle_embed)
-
-        if player.is_defeated():
+        if battle_context.player.is_defeated():
             break
 
         await asyncio.sleep(attack_speed_modifier)
 
-
-async def monster_battle(ctx, user, player, monster, zone_level, message):
-    # Initialize battle messages list
-    battle_messages = []
-    player_weapon_type = player.equipped_weapon.type if player.equipped_weapon else None
-
-    if player_weapon_type == monster.weak_against:
-        print(f"The {monster.name} is weak against your {player_weapon_type}!")
-        attack_modifier = 1.25
-    elif player_weapon_type == monster.strong_against:
-        print(f"The {monster.name} is strong against your {player_weapon_type}!")
-        attack_modifier = 0.75
+def generate_evasion_message(player, monster, user):
+    if player.inventory.equipped_charm and player.inventory.equipped_charm.name == "Ironhide":
+        return f" Your {get_emoji('Ironhide')}**Ironhide Charm** glows!\n{user.mention} ***evaded*** the {monster.name}'s attack!"
     else:
-        attack_modifier = 1
+        return f"{user.mention} ***evaded*** the {monster.name}'s attack!"
 
-    player_attack = asyncio.create_task(
-        player_attack_task(ctx, user, player, monster, attack_modifier, message, battle_messages))
-    monster_attack = asyncio.create_task(monster_attack_task(ctx, user, player, monster, message, battle_messages))
+async def monster_battle(battle_context):
+    # Execute the monster's attack task using the battle context
+    monster_attack = asyncio.create_task(monster_attack_task(battle_context))
 
-    await asyncio.gather(player_attack, monster_attack)
+    # Await the completion of the monster attack task
+    await monster_attack
 
-    if monster.is_defeated():
-        loot, loot_messages, loothaven_effect = generate_zone_loot(player, zone_level, monster.drop, monster.name)
-        return (True, monster.max_health, player.stats.damage_taken, loot, monster.experience_reward,
-                loothaven_effect), loot_messages
-    else:
-        return (False, monster.max_health, player.stats.damage_taken, None, None, False), None
+    # Determine the battle outcome
+    if battle_context.monster.is_defeated():
+        # Handle monster defeat
+        loot, loot_messages, loothaven_effect = generate_zone_loot(battle_context.player, battle_context.zone_level, battle_context.monster.drop, battle_context.monster.name)
+        return (True, battle_context.monster.max_health, battle_context.player.stats.damage_taken, loot, battle_context.monster.experience_reward, loothaven_effect), loot_messages
+    elif battle_context.player.is_defeated():
+        # Handle player defeat
+        return (False, battle_context.monster.max_health, battle_context.player.stats.damage_taken, None, None, False), None
+
+
+
 
 

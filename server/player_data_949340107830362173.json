@@ -2,26 +2,26 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "health": 889,
+            "health": 3390,
             "max_health": 915,
             "strength": 421,
             "stamina": 423,
             "max_stamina": 423,
             "attack": 170,
-            "damage": 0,
+            "damage": 60,
             "defense": 171,
-            "armor": 40,
+            "armor": 34,
             "combat_level": 83,
-            "combat_experience": 755186,
+            "combat_experience": 757807,
             "mining_level": 99,
             "mining_experience": 607680,
             "woodcutting_level": 90,
             "woodcutting_experience": 841856,
-            "zone_level": 5,
+            "zone_level": 1,
             "damage_taken": 0
         },
         "inventory": {
-            "coppers": 6866,
+            "coppers": 11012,
             "items": [
                 {
                     "name": "Charcoal",
@@ -45,7 +45,7 @@
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 314
+                    "stack": 437
                 },
                 {
                     "name": "Pole",
@@ -129,7 +129,7 @@
                     "name": "Rabbit Body",
                     "description": "A furry rabbit body, warm to the touch. Can be used for citadel soft armors.",
                     "value": 10,
-                    "stack": 1103
+                    "stack": 1105
                 },
                 {
                     "name": "Rabbit Meat",
@@ -141,13 +141,13 @@
                     "name": "Deer Part",
                     "description": "Various parts of a deer. Some are useful for making tools and weapons.",
                     "value": 20,
-                    "stack": 8
+                    "stack": 12
                 },
                 {
                     "name": "Deer Skin",
                     "description": "Tough deer skin. Can be used for citadel sturdy armors.",
                     "value": 30,
-                    "stack": 340
+                    "stack": 346
                 },
                 {
                     "name": "Wolf Skin",
@@ -159,13 +159,13 @@
                     "name": "Glowing Essence",
                     "description": "An ethereal essence that glows faintly. Used in powerful magical rituals and citadel.",
                     "value": 200,
-                    "stack": 981
+                    "stack": 983
                 },
                 {
                     "name": "Goblin Crown",
                     "description": "A powerful relic obtained from the Goblin Mother. Used to create powerful Charms.",
                     "value": 5000,
-                    "stack": 107
+                    "stack": 109
                 },
                 {
                     "name": "Leather",
@@ -213,12 +213,12 @@
                 {
                     "name": "Spirit Weed",
                     "value": 25,
-                    "stack": 1012
+                    "stack": 1014
                 },
                 {
                     "name": "Snapdragon",
                     "value": 350,
-                    "stack": 1003
+                    "stack": 1009
                 },
                 {
                     "name": "Bloodweed",
@@ -254,7 +254,7 @@
                 {
                     "name": "Super Stamina Potion",
                     "value": 20,
-                    "stack": 103
+                    "stack": 107
                 },
                 {
                     "name": "Super Health Potion",
@@ -305,34 +305,14 @@
                     "zone_level": 1
                 },
                 {
-                    "name": "Champion Bow",
-                    "description": null,
-                    "value": 92,
-                    "stack": 1,
-                    "wtype": "Bow",
-                    "attack_modifier": 14,
-                    "special_attack": 3,
-                    "zone_level": 2
-                },
-                {
                     "name": "Voltaic Sword",
                     "description": null,
                     "value": 190,
-                    "stack": 3,
+                    "stack": 2,
                     "wtype": "Sword",
                     "attack_modifier": 60,
                     "special_attack": 4,
                     "zone_level": 5
-                },
-                {
-                    "name": "Voltaic Sword",
-                    "description": null,
-                    "value": 154,
-                    "stack": 1,
-                    "wtype": "Sword",
-                    "attack_modifier": 48,
-                    "special_attack": 4,
-                    "zone_level": 4
                 },
                 {
                     "name": "Short Sword",
@@ -363,18 +343,49 @@
                     "attack_modifier": 35,
                     "special_attack": 3,
                     "zone_level": 5
+                },
+                {
+                    "name": "Champion Bow",
+                    "description": null,
+                    "value": 92,
+                    "stack": 1,
+                    "wtype": "Bow",
+                    "attack_modifier": 14,
+                    "special_attack": 3,
+                    "zone_level": 2
+                },
+                {
+                    "name": "Voltaic Sword",
+                    "description": null,
+                    "value": 154,
+                    "stack": 1,
+                    "wtype": "Sword",
+                    "attack_modifier": 48,
+                    "special_attack": 4,
+                    "zone_level": 4
                 }
             ],
-            "equipped_weapon": null,
-            "shields": [],
-            "equipped_shield": {
-                "name": "Small Shield",
+            "equipped_weapon": {
+                "name": "Voltaic Sword",
                 "description": null,
-                "value": 46,
+                "value": 190,
                 "stack": 1,
-                "defense_modifier": 6,
-                "zone_level": 2
+                "wtype": "Sword",
+                "attack_modifier": 60,
+                "special_attack": 4,
+                "zone_level": 5
             },
+            "shields": [
+                {
+                    "name": "Small Shield",
+                    "description": null,
+                    "value": 46,
+                    "stack": 1,
+                    "defense_modifier": 6,
+                    "zone_level": 2
+                }
+            ],
+            "equipped_shield": null,
             "charms": [
                 {
                     "name": "Woodcleaver",
@@ -407,7 +418,7 @@
                 "value": 25000,
                 "stack": 1
             },
-            "materium": 88
+            "materium": 86
         },
         "in_battle": false
     }

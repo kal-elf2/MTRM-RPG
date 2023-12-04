@@ -115,37 +115,70 @@ class BattleOptions(discord.ui.View):
     async def super_health(self, button, interaction):
         pass
 
+
 class SpecialAttackOptions(discord.ui.View):
-    def __init__(self, interaction, player):
+
+    def __init__(self, battle_context):
         super().__init__(timeout=None)
-        self.interaction = interaction
-        self.player = player
+        self.battle_context = battle_context
+        # Access attributes from battle_context
+        self.ctx = battle_context.ctx
+        self.player = battle_context.player
+        self.monster = battle_context.monster
+        self.battle_embed_message = battle_context.message
+        self.author_id = battle_context.user.id
+        self.battle_messages = battle_context.battle_messages
+
+        self.equip_weapon = self.player.inventory.equipped_weapon
+        self.special_attack = self.equip_weapon.special_attack if self.equip_weapon else 0
+
+        # Determine the maximum special attack level based on player's special_attack
+        self.max_special_attack_level = min(4, self.special_attack)
+
+        # Create buttons based on the maximum special attack level
         self.create_buttons()
 
     def create_buttons(self):
-        equipped_weapon = self.player.inventory.equipped_weapon
+        attack_emojis = ["left_click", "right_click", "q", "e"]  # Define the appropriate emoji names here
 
-        if equipped_weapon is not None:
-            special_attack = equipped_weapon.special_attack
-        else:
-            special_attack = 0  # Set to 0 when unarmed
+        for i in range(1, self.max_special_attack_level + 1):
+            emoji = get_emoji(attack_emojis[i - 1])
+            custom_id = f"attack_{i}"
 
-        if special_attack >= 1:
-            self.add_item(discord.ui.Button(custom_id="left_click", style=discord.ButtonStyle.blurple,
-                                            emoji=f'{get_emoji("left_click")}'))
-        if special_attack >= 2:
-            self.add_item(discord.ui.Button(custom_id="right_click", style=discord.ButtonStyle.blurple,
-                                            emoji=f'{get_emoji("right_click")}'))
-        if special_attack >= 3:
-            self.add_item(
-                discord.ui.Button(custom_id="q_button", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("q")}'))
-        if special_attack >= 4:
-            self.add_item(
-                discord.ui.Button(custom_id="e_button", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("e")}'))
+            # Create a button for the current special attack level
+            button = discord.ui.Button(style=discord.ButtonStyle.blurple, custom_id=custom_id, emoji=emoji, disabled=False)
+            button.callback = self.on_button_click  # Assigning the callback function
 
-        # Add an "Unarmed" button if the player is unarmed
-        if not equipped_weapon:
-            self.add_item(discord.ui.Button(custom_id="unarmed", style=discord.ButtonStyle.blurple, emoji='👊'))
+            # Add the button to the view
+            self.add_item(button)
+
+        # Add the unarmed button if no weapon is equipped
+        if not self.equip_weapon:
+            button = discord.ui.Button(style=discord.ButtonStyle.blurple, custom_id="unarmed", emoji="👊🏽", disabled=False)
+            button.callback = self.on_button_click  # Assigning the callback function
+            self.add_item(button)
+
+    async def on_button_click(self, interaction: discord.Interaction):
+
+        if interaction.user.id != self.author_id:
+            return await interaction.response.send_message("This is not your battle!", ephemeral=True)
+
+        # Acknowledge the interaction to prevent "interaction failed" message
+        await interaction.response.defer()
+
+        # Parse the custom_id to determine the attack level
+        custom_id = interaction.data["custom_id"]
+        attack_level = 1 if custom_id == "unarmed" else int(custom_id.split("_")[-1])
+
+        # Call handle_attack with the attack level
+        await self.handle_attack(interaction, attack_level)
+
+    async def handle_attack(self, interaction, attack_level):
+        from monsters.monster import player_attack_task
+
+        # Use the existing battle_context
+        await player_attack_task(self.battle_context, attack_level)
+
 def create_health_bar(current, max_health):
     bar_length = 12  # Fixed bar length
     health_percentage = current / max_health
