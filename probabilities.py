@@ -5,8 +5,6 @@
 mtrm_drop_percent = 0.01
 # Original value: 0.1 (10% chance)
 herb_drop_percent = 0.1
-# Original value: 0.1 (10% chance)
-loot_drop_percent = 0.1
 # Original value: 0.05 (5% chance)
 potion_drop_percent = 0.05
 # Original value: 0.0002 (.02% chance)

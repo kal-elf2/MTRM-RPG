@@ -114,6 +114,38 @@ class BattleOptions(discord.ui.View):
     @discord.ui.button(custom_id="super_health", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("Super Health Potion")}')
     async def super_health(self, button, interaction):
         pass
+
+class SpecialAttackOptions(discord.ui.View):
+    def __init__(self, interaction, player):
+        super().__init__(timeout=None)
+        self.interaction = interaction
+        self.player = player
+        self.create_buttons()
+
+    def create_buttons(self):
+        equipped_weapon = self.player.inventory.equipped_weapon
+
+        if equipped_weapon is not None:
+            special_attack = equipped_weapon.special_attack
+        else:
+            special_attack = 0  # Set to 0 when unarmed
+
+        if special_attack >= 1:
+            self.add_item(discord.ui.Button(custom_id="left_click", style=discord.ButtonStyle.blurple,
+                                            emoji=f'{get_emoji("left_click")}'))
+        if special_attack >= 2:
+            self.add_item(discord.ui.Button(custom_id="right_click", style=discord.ButtonStyle.blurple,
+                                            emoji=f'{get_emoji("right_click")}'))
+        if special_attack >= 3:
+            self.add_item(
+                discord.ui.Button(custom_id="q_button", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("q")}'))
+        if special_attack >= 4:
+            self.add_item(
+                discord.ui.Button(custom_id="e_button", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("e")}'))
+
+        # Add an "Unarmed" button if the player is unarmed
+        if not equipped_weapon:
+            self.add_item(discord.ui.Button(custom_id="unarmed", style=discord.ButtonStyle.blurple, emoji='👊'))
 def create_health_bar(current, max_health):
     bar_length = 12  # Fixed bar length
     health_percentage = current / max_health

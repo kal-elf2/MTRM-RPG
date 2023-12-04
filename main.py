@@ -12,7 +12,7 @@ from monsters.monster import generate_monster_list, generate_monster_by_name, mo
 from discord import Embed
 from resources.inventory import Inventory
 from stats import ResurrectOptions
-from monsters.battle import BattleOptions, LootOptions
+from monsters.battle import BattleOptions, LootOptions, SpecialAttackOptions
 from emojis import get_emoji
 from images.urls import generate_urls
 
@@ -206,6 +206,9 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
 
     await ctx.respond(f"{ctx.author.mention} encounters a {monster.name}")
 
+    # Create SpecialAttackOptions view
+    special_attack_options_view = await ctx.send(view=SpecialAttackOptions(ctx, player))
+
     # Store the message object that is sent
     battle_options_msg = await ctx.send(view=BattleOptions(ctx))
 
@@ -227,8 +230,11 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
         # Save the player data after common actions
         save_player_data(guild_id, player_data)
 
-        # Clear the previous BattleOptions view
+        # Clear the previous views
+        await special_attack_options_view.delete()
         await battle_options_msg.delete()
+
+
         loot_view = LootOptions(ctx, player, monster, battle_embed, player_data, author_id, battle_outcome, loot_messages, guild_id, ctx, experience_gained, loothaven_effect)
 
         # Construct the embed with the footer
@@ -259,6 +265,7 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
         f"2. Resurrect with 2.5% penalty to all skills.")
 
         # Clear the previous BattleOptions view
+        await special_attack_options_view.delete()
         await battle_options_msg.delete()
 
         # Add the "dead.png" image to the embed

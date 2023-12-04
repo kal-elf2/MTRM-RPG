@@ -2,17 +2,17 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "health": 915,
+            "health": 889,
             "max_health": 915,
             "strength": 421,
             "stamina": 423,
             "max_stamina": 423,
             "attack": 170,
-            "damage": 48,
+            "damage": 0,
             "defense": 171,
             "armor": 40,
             "combat_level": 83,
-            "combat_experience": 754769,
+            "combat_experience": 755186,
             "mining_level": 99,
             "mining_experience": 607680,
             "woodcutting_level": 90,
@@ -21,31 +21,31 @@
             "damage_taken": 0
         },
         "inventory": {
-            "coppers": 6139,
+            "coppers": 6866,
             "items": [
                 {
                     "name": "Charcoal",
                     "description": null,
                     "value": null,
-                    "stack": 1457
+                    "stack": 1446
                 },
                 {
                     "name": "Iron",
                     "description": null,
                     "value": null,
-                    "stack": 932
+                    "stack": 929
                 },
                 {
                     "name": "Steel",
                     "description": null,
                     "value": null,
-                    "stack": 2183
+                    "stack": 2175
                 },
                 {
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 298
+                    "stack": 314
                 },
                 {
                     "name": "Pole",
@@ -129,7 +129,7 @@
                     "name": "Rabbit Body",
                     "description": "A furry rabbit body, warm to the touch. Can be used for citadel soft armors.",
                     "value": 10,
-                    "stack": 1101
+                    "stack": 1103
                 },
                 {
                     "name": "Rabbit Meat",
@@ -177,19 +177,13 @@
                     "name": "Leather Straps",
                     "description": null,
                     "value": null,
-                    "stack": 802
+                    "stack": 792
                 },
                 {
                     "name": "Tough Leather Straps",
                     "description": null,
                     "value": null,
                     "stack": 832
-                },
-                {
-                    "name": "Rusty Spork",
-                    "description": "A rusty and useless trinket",
-                    "value": 100000,
-                    "stack": 6
                 }
             ],
             "trees": [
@@ -260,7 +254,7 @@
                 {
                     "name": "Super Stamina Potion",
                     "value": 20,
-                    "stack": 101
+                    "stack": 103
                 },
                 {
                     "name": "Super Health Potion",
@@ -329,52 +323,50 @@
                     "attack_modifier": 60,
                     "special_attack": 4,
                     "zone_level": 5
-                }
-            ],
-            "equipped_weapon": {
-                "name": "Voltaic Sword",
-                "description": null,
-                "value": 154,
-                "stack": 1,
-                "wtype": "Sword",
-                "attack_modifier": 48,
-                "special_attack": 4,
-                "zone_level": 4
-            },
-            "shields": [
-                {
-                    "name": "Large Shield",
-                    "description": null,
-                    "value": 52,
-                    "stack": 1,
-                    "defense_modifier": 3,
-                    "zone_level": 1
                 },
                 {
-                    "name": "Large Shield",
+                    "name": "Voltaic Sword",
                     "description": null,
-                    "value": 148,
+                    "value": 154,
                     "stack": 1,
-                    "defense_modifier": 5,
-                    "zone_level": 2
-                },
-                {
-                    "name": "Large Shield",
-                    "description": null,
-                    "value": 772,
-                    "stack": 2,
-                    "defense_modifier": 9,
+                    "wtype": "Sword",
+                    "attack_modifier": 48,
+                    "special_attack": 4,
                     "zone_level": 4
                 },
                 {
-                    "name": "Large Shield",
+                    "name": "Short Sword",
                     "description": null,
-                    "value": 1300,
-                    "stack": 4,
-                    "defense_modifier": 11,
+                    "value": 55,
+                    "stack": 1,
+                    "wtype": "Sword",
+                    "attack_modifier": 15,
+                    "special_attack": 1,
+                    "zone_level": 5
+                },
+                {
+                    "name": "Long Sword",
+                    "description": null,
+                    "value": 100,
+                    "stack": 1,
+                    "wtype": "Sword",
+                    "attack_modifier": 25,
+                    "special_attack": 2,
+                    "zone_level": 5
+                },
+                {
+                    "name": "Champion Sword",
+                    "description": null,
+                    "value": 145,
+                    "stack": 1,
+                    "wtype": "Sword",
+                    "attack_modifier": 35,
+                    "special_attack": 3,
                     "zone_level": 5
                 }
             ],
+            "equipped_weapon": null,
+            "shields": [],
             "equipped_shield": {
                 "name": "Small Shield",
                 "description": null,
