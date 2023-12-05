@@ -2,7 +2,7 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "health": 274,
+            "health": 915,
             "max_health": 915,
             "strength": 421,
             "stamina": 423,
@@ -418,7 +418,7 @@
                 "value": 25000,
                 "stack": 1
             },
-            "materium": 86
+            "materium": 85
         },
         "in_battle": false
     }
