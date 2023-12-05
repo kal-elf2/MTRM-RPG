@@ -2,7 +2,7 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "health": 915,
+            "health": 423,
             "max_health": 915,
             "strength": 421,
             "stamina": 423,
@@ -12,7 +12,7 @@
             "defense": 171,
             "armor": 34,
             "combat_level": 83,
-            "combat_experience": 759020,
+            "combat_experience": 759316,
             "mining_level": 99,
             "mining_experience": 607780,
             "woodcutting_level": 90,
