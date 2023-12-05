@@ -79,15 +79,15 @@ class LootOptions(discord.ui.View):
 
         loot_message_string = '\n'.join(self.loot_messages)
         # Incorporate Loothaven charm effect in the message
-        loothaven_message = f"{get_emoji('Loothaven')} Your **Loothaven charm** is *glowing*!\n" if self.loothaven_effect else ""
+        loothaven_message = f"\n{get_emoji('Loothaven')} Your **Loothaven charm** is *glowing*!\n" if self.loothaven_effect else ""
 
         message_text = (
             f"You have **DEFEATED** the {self.monster.name}!\n"
             f"You dealt **{self.battle_outcome[1]} damage** to the monster and took **{self.battle_outcome[2]} damage**.\n"
-            f"You gained {self.experience_gained} combat XP.\n\n"
+            f"You gained {self.experience_gained} combat XP.\n"
             f"{loothaven_message}\n"
             f"__**Loot picked up:**__\n"
-            f"{loot_message_string}\n\n"
+            f"{loot_message_string}"
         )
 
         final_embed = create_battle_embed(self.ctx.user, self.player, self.monster, footer_text_for_embed(self.ctx), message_text)
@@ -180,7 +180,7 @@ class SpecialAttackOptions(discord.ui.View):
         await player_attack_task(self.battle_context, attack_level)
 
 def create_health_bar(current, max_health):
-    bar_length = 12  # Fixed bar length
+    bar_length = 25  # Fixed bar length
     health_percentage = current / max_health
     filled_length = round(bar_length * health_percentage)
 
@@ -191,9 +191,35 @@ def create_health_bar(current, max_health):
     empty_symbols = '◻' * (bar_length - filled_length)
     return filled_symbols + empty_symbols
 
+def create_monster_health_bar(current, max_health):
+    bar_length = 25  # Fixed bar length
+    health_percentage = current / max_health
+    filled_length = round(bar_length * health_percentage)
+
+    # Calculate how many '▣' symbols to display
+    filled_symbols = '◼' * filled_length
+
+    # Calculate how many '-' symbols to display
+    empty_symbols = '◻' * (bar_length - filled_length)
+    return filled_symbols + empty_symbols
+
+def create_stamina_bar(current, max_stamina):
+    bar_length = 25  # Fixed bar length
+    stamina_percentage = current / max_stamina
+    filled_length = round(bar_length * stamina_percentage)
+
+    # Calculate how many '◼' symbols to display
+    filled_symbols = '◼' * filled_length
+
+    # Calculate how many '◻' symbols to display
+    empty_symbols = '◻' * (bar_length - filled_length)
+    return filled_symbols + empty_symbols
+
 def create_battle_embed(user, player, monster, footer_text, messages=None):
-    player_health_bar = create_health_bar(player.health, player.stats.max_health)
-    monster_health_bar = create_health_bar(monster.health, monster.max_health)
+
+    player_health_bar = create_health_bar(player.stats.health, player.stats.max_health)
+    player_stamina_bar = create_stamina_bar(player.stats.stamina, player.stats.max_stamina)
+    monster_health_bar = create_monster_health_bar(monster.health, monster.max_health)
 
     zone_level = player.stats.zone_level
 
@@ -227,11 +253,27 @@ def create_battle_embed(user, player, monster, footer_text, messages=None):
         messages = "\n".join(messages)
     elif isinstance(messages, str):
         messages = messages
+    else:
+        messages = ""
 
     embed = Embed(title=f"{zone_emoji} {monster.name}", color=embed_color)
+
+    # Add Battle Messages
     embed.add_field(name="Battle Outcome", value=messages, inline=False)
-    embed.add_field(name=f"{get_emoji('heart_emoji')}  {user.name}'s Health", value=f"{player.health}/{player.stats.max_health}\n{player_health_bar}", inline=True)
-    embed.add_field(name=f"{monster.name}'s Health", value=f"{monster.health}/{monster.max_health}\n{monster_health_bar}", inline=True)
+
+    # Add an extra blank space before the player's health and stamina bars
+    embed.add_field(name='', value='', inline=False)
+
+    # Add Health and Stamina Bars
+    embed.add_field(name=user.name,
+                    value=f"{get_emoji('heart_emoji')} {player.stats.health}/{player.stats.max_health}\n{player_health_bar}",
+                    inline=False)
+    embed.add_field(name="",
+                    value=f"{get_emoji('stamina_emoji')} {player.stats.stamina}/{player.stats.max_stamina}\n{player_stamina_bar}",
+                    inline=False)
+    embed.add_field(name=f"{monster.name}",
+                    value=f"{get_emoji('heart_emoji')} {monster.health}/{monster.max_health}\n{monster_health_bar}",
+                    inline=False)
 
     # Add image to embed
     embed.set_image(url=image_url)

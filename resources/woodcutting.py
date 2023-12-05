@@ -283,12 +283,22 @@ class HarvestButton(discord.ui.View):
             battle_embed = await send_message(interaction.channel,
                                               create_battle_embed(interaction.user, self.player, monster, footer_text_for_embed(self.ctx), messages=""))
 
+            from monsters.monster import BattleContext
+            from monsters.battle import SpecialAttackOptions
+
+            # Create BattleContext instance
+            battle_context = BattleContext(self.ctx, self.ctx.author, self.player, monster, battle_embed, zone_level)
+
+            # Pass BattleContext to SpecialAttackOptions view
+            special_attack_options_view = await self.ctx.send(view=SpecialAttackOptions(battle_context))
+
             # Store the message object that is sent
             battle_options_msg = await self.ctx.send(view=BattleOptions(self.ctx))
 
             await interaction.followup.send(f"**❗ LOOK OUT {interaction.user.mention} ❗** \n You got **attacked by a {monster.name}** while harvesting {self.tree_type}.", ephemeral = True)
 
-            battle_outcome, loot_messages = await monster_battle(self.ctx, interaction.user, self.player, monster, self.player.stats.zone_level, battle_embed)
+            # Start the monster attack task
+            battle_outcome, loot_messages = await monster_battle(battle_context)
 
             if battle_outcome[0]:
 
@@ -306,7 +316,8 @@ class HarvestButton(discord.ui.View):
                 # Save the player data after common actions
                 save_player_data(self.guild_id, self.player_data)
 
-                # Clear the previous BattleOptions view
+                # Clear the previous views
+                await special_attack_options_view.delete()
                 await battle_options_msg.delete()
                 loot_view = LootOptions(interaction, self.player, monster, battle_embed, self.player_data, self.author_id, battle_outcome,
                                         loot_messages, self.guild_id, interaction, experience_gained, loothaven_effect)
@@ -334,7 +345,8 @@ class HarvestButton(discord.ui.View):
                                                 f"1. Use {get_emoji('Materium')} to revive without penalty.\n"
                                                 f"2. Resurrect with 2.5% penalty to all skills.")
 
-                # Clear the previous BattleOptions view
+                # Clear the previous views
+                await special_attack_options_view.delete()
                 await battle_options_msg.delete()
 
                 # Add the "dead.png" image to the embed

@@ -17,8 +17,8 @@ attack_percent = 0.15
 stonebreaker_percent = 0.15
 # Original value: 0.15 (15% chance)
 woodcleaver_percent = 0.15
-# Original value: 0.25 (25% chance)
-loothaven_percent = 0.25
+# Original value: 0.15 (15% chance)
+loothaven_percent = 0.15
 # Original value: 0.15 (15% chance)
 ironhide_percent = 0.15
 # Original value: 2 (double multiplier)

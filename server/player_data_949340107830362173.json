@@ -2,7 +2,7 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "health": 3390,
+            "health": 274,
             "max_health": 915,
             "strength": 421,
             "stamina": 423,
@@ -12,16 +12,16 @@
             "defense": 171,
             "armor": 34,
             "combat_level": 83,
-            "combat_experience": 757807,
+            "combat_experience": 759020,
             "mining_level": 99,
-            "mining_experience": 607680,
+            "mining_experience": 607780,
             "woodcutting_level": 90,
-            "woodcutting_experience": 841856,
-            "zone_level": 1,
+            "woodcutting_experience": 842676,
+            "zone_level": 4,
             "damage_taken": 0
         },
         "inventory": {
-            "coppers": 11012,
+            "coppers": 13084,
             "items": [
                 {
                     "name": "Charcoal",
@@ -45,7 +45,7 @@
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 437
+                    "stack": 465
                 },
                 {
                     "name": "Pole",
@@ -129,7 +129,7 @@
                     "name": "Rabbit Body",
                     "description": "A furry rabbit body, warm to the touch. Can be used for citadel soft armors.",
                     "value": 10,
-                    "stack": 1105
+                    "stack": 1107
                 },
                 {
                     "name": "Rabbit Meat",
@@ -153,13 +153,13 @@
                     "name": "Wolf Skin",
                     "description": "A skin of a wild wolf. Known for its durability and strength.",
                     "value": 50,
-                    "stack": 211
+                    "stack": 213
                 },
                 {
                     "name": "Glowing Essence",
                     "description": "An ethereal essence that glows faintly. Used in powerful magical rituals and citadel.",
                     "value": 200,
-                    "stack": 983
+                    "stack": 987
                 },
                 {
                     "name": "Goblin Crown",
@@ -189,7 +189,7 @@
             "trees": [
                 {
                     "name": "Pine",
-                    "stack": 1036
+                    "stack": 1037
                 },
                 {
                     "name": "Yew",
@@ -201,24 +201,24 @@
                 },
                 {
                     "name": "Poplar",
-                    "stack": 996
+                    "stack": 1004
                 }
             ],
             "herbs": [
                 {
                     "name": "Ranarr",
                     "value": 25,
-                    "stack": 1009
+                    "stack": 1010
                 },
                 {
                     "name": "Spirit Weed",
                     "value": 25,
-                    "stack": 1014
+                    "stack": 1016
                 },
                 {
                     "name": "Snapdragon",
                     "value": 350,
-                    "stack": 1009
+                    "stack": 1011
                 },
                 {
                     "name": "Bloodweed",
@@ -237,7 +237,7 @@
                 },
                 {
                     "name": "Carbon",
-                    "stack": 837
+                    "stack": 839
                 }
             ],
             "potions": [
@@ -254,7 +254,7 @@
                 {
                     "name": "Super Stamina Potion",
                     "value": 20,
-                    "stack": 107
+                    "stack": 109
                 },
                 {
                     "name": "Super Health Potion",
