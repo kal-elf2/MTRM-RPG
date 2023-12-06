@@ -289,7 +289,7 @@ class MineButton(discord.ui.View):
             special_attack_options_view = await self.ctx.send(view=SpecialAttackOptions(battle_context))
 
             # Store the message object that is sent
-            battle_options_msg = await self.ctx.send(view=BattleOptions(self.ctx))
+            battle_options_msg = await self.ctx.send(view=BattleOptions(self.ctx, self.player, battle_context))
 
             await interaction.followup.send(f"**❗ LOOK OUT {interaction.user.mention} ❗** \n You got **attacked by a {monster.name}** while mining {self.ore_type}.", ephemeral = True)
 

@@ -2,7 +2,7 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "health": 730,
+            "health": 499,
             "max_health": 915,
             "strength": 421,
             "stamina": 423,
@@ -12,16 +12,16 @@
             "defense": 171,
             "armor": 34,
             "combat_level": 83,
-            "combat_experience": 759961,
+            "combat_experience": 760817,
             "mining_level": 99,
-            "mining_experience": 607780,
+            "mining_experience": 607800,
             "woodcutting_level": 90,
-            "woodcutting_experience": 842676,
+            "woodcutting_experience": 842696,
             "zone_level": 4,
             "damage_taken": 0
         },
         "inventory": {
-            "coppers": 13716,
+            "coppers": 14564,
             "items": [
                 {
                     "name": "Charcoal",
@@ -45,7 +45,7 @@
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 471
+                    "stack": 501
                 },
                 {
                     "name": "Pole",
@@ -153,7 +153,7 @@
                     "name": "Wolf Skin",
                     "description": "A skin of a wild wolf. Known for its durability and strength.",
                     "value": 50,
-                    "stack": 213
+                    "stack": 216
                 },
                 {
                     "name": "Glowing Essence",
@@ -189,7 +189,7 @@
             "trees": [
                 {
                     "name": "Pine",
-                    "stack": 1037
+                    "stack": 1038
                 },
                 {
                     "name": "Yew",
@@ -223,13 +223,13 @@
                 {
                     "name": "Bloodweed",
                     "value": 350,
-                    "stack": 998
+                    "stack": 1000
                 }
             ],
             "ore": [
                 {
                     "name": "Iron Ore",
-                    "stack": 991
+                    "stack": 992
                 },
                 {
                     "name": "Coal",
@@ -247,7 +247,7 @@
                     "effect_value": 50,
                     "value": 10,
                     "description": "Restores 50 stamina points.",
-                    "stack": 101
+                    "stack": 100
                 },
                 {
                     "name": "Health Potion",
@@ -255,7 +255,7 @@
                     "effect_value": 50,
                     "value": 10,
                     "description": "Restores 50 health points.",
-                    "stack": 96
+                    "stack": 92
                 },
                 {
                     "name": "Super Stamina Potion",
@@ -263,7 +263,7 @@
                     "effect_value": 250,
                     "value": 20,
                     "description": "Restores 250 stamina points.",
-                    "stack": 99
+                    "stack": 97
                 },
                 {
                     "name": "Super Health Potion",
@@ -271,7 +271,7 @@
                     "effect_value": 250,
                     "value": 20,
                     "description": "Restores 250 health points.",
-                    "stack": 97
+                    "stack": 98
                 }
             ],
             "limit": 49,
@@ -430,8 +430,8 @@
                 "value": 25000,
                 "stack": 1
             },
-            "materium": 85
+            "materium": 87
         },
-        "in_battle": true
+        "in_battle": false
     }
 }

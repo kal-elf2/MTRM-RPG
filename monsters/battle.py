@@ -169,11 +169,7 @@ class BattleOptions(discord.ui.View):
 
     def is_potion_disabled(self, potion_name):
         potion = next((item for item in self.player.inventory.potions if item.name == potion_name), None)
-        if potion_name in ["Health Potion", "Super Health Potion"]:
-            return potion is None or self.player.stats.health >= self.player.stats.max_health
-        elif potion_name in ["Stamina Potion", "Super Stamina Potion"]:
-            return potion is None or self.player.stats.stamina >= self.player.stats.max_stamina
-        return True
+        return potion is None or potion.stack <= 0
 
     async def use_potion(self, potion_name, interaction, button):
         potion_used = use_potion_logic(self.player, potion_name)
@@ -185,10 +181,18 @@ class BattleOptions(discord.ui.View):
             # Check if the potion is now disabled (e.g., stack is 0 or max stat reached)
             button.disabled = self.is_potion_disabled(potion_name)
 
-            # Update battle embed with new footer text
+            # Generate and append the potion usage message
+            potion = next((p for p in self.player.inventory.potions if p.name == potion_name), None)
+            if potion:
+                emoji_str = get_emoji(potion_name)
+                potion_message = f"{emoji_str} **{potion_name} used to restore {potion.effect_value} {potion.effect_stat}**"
+                await self.battle_context.add_battle_message(potion_message)
+
+            # Update battle embed with new footer text and messages
             updated_footer_text = footer_text_for_embed(self.interaction)
             battle_embed = create_battle_embed(
-                self.interaction.user, self.player, self.battle_context.monster, updated_footer_text, messages=None
+                self.interaction.user, self.player, self.battle_context.monster, updated_footer_text,
+                self.battle_context.battle_messages
             )
             await self.battle_context.message.edit(embed=battle_embed)
 

@@ -3,14 +3,14 @@
 #LOOT DROPS
 # Original value: 0.01 (1% chance)
 mtrm_drop_percent = 0.01
-# Original value: 0.1 (10% chance)
-herb_drop_percent = 0.1
-# Original value: 0.05 (5% chance)
-potion_drop_percent = 0.05
+# Original value: 0.25 (25% chance)
+herb_drop_percent = 0.25
+# Original value: 0.10 (10% chance)
+potion_drop_percent = 0.10
 # Original value: 0.0002 (.02% chance)
 spork_chance = 0.0002
 # Original value: 0.15 (15% chance)
-attack_percent = 0.15
+attack_percent = 0.99
 
 #CHARMS
 # Original value: 0.15 (15% chance)
