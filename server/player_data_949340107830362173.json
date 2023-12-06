@@ -2,7 +2,7 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "health": 423,
+            "health": 730,
             "max_health": 915,
             "strength": 421,
             "stamina": 423,
@@ -12,7 +12,7 @@
             "defense": 171,
             "armor": 34,
             "combat_level": 83,
-            "combat_experience": 759316,
+            "combat_experience": 759961,
             "mining_level": 99,
             "mining_experience": 607780,
             "woodcutting_level": 90,
@@ -21,7 +21,7 @@
             "damage_taken": 0
         },
         "inventory": {
-            "coppers": 13084,
+            "coppers": 13716,
             "items": [
                 {
                     "name": "Charcoal",
@@ -45,7 +45,7 @@
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 465
+                    "stack": 471
                 },
                 {
                     "name": "Pole",
@@ -117,13 +117,13 @@
                     "name": "Venison",
                     "description": null,
                     "value": null,
-                    "stack": 977
+                    "stack": 969
                 },
                 {
                     "name": "Sinew",
                     "description": null,
                     "value": null,
-                    "stack": 871
+                    "stack": 855
                 },
                 {
                     "name": "Rabbit Body",
@@ -141,13 +141,13 @@
                     "name": "Deer Part",
                     "description": "Various parts of a deer. Some are useful for making tools and weapons.",
                     "value": 20,
-                    "stack": 12
+                    "stack": 14
                 },
                 {
                     "name": "Deer Skin",
                     "description": "Tough deer skin. Can be used for citadel sturdy armors.",
                     "value": 30,
-                    "stack": 346
+                    "stack": 349
                 },
                 {
                     "name": "Wolf Skin",
@@ -208,22 +208,22 @@
                 {
                     "name": "Ranarr",
                     "value": 25,
-                    "stack": 1010
+                    "stack": 1008
                 },
                 {
                     "name": "Spirit Weed",
                     "value": 25,
-                    "stack": 1016
+                    "stack": 1014
                 },
                 {
                     "name": "Snapdragon",
                     "value": 350,
-                    "stack": 1011
+                    "stack": 1009
                 },
                 {
                     "name": "Bloodweed",
                     "value": 350,
-                    "stack": 1000
+                    "stack": 998
                 }
             ],
             "ore": [
@@ -243,23 +243,35 @@
             "potions": [
                 {
                     "name": "Stamina Potion",
+                    "effect_stat": "stamina",
+                    "effect_value": 50,
                     "value": 10,
-                    "stack": 108
+                    "description": "Restores 50 stamina points.",
+                    "stack": 101
                 },
                 {
                     "name": "Health Potion",
+                    "effect_stat": "health",
+                    "effect_value": 50,
                     "value": 10,
-                    "stack": 114
+                    "description": "Restores 50 health points.",
+                    "stack": 96
                 },
                 {
                     "name": "Super Stamina Potion",
+                    "effect_stat": "stamina",
+                    "effect_value": 250,
                     "value": 20,
-                    "stack": 109
+                    "description": "Restores 250 stamina points.",
+                    "stack": 99
                 },
                 {
                     "name": "Super Health Potion",
+                    "effect_stat": "health",
+                    "effect_value": 250,
                     "value": 20,
-                    "stack": 107
+                    "description": "Restores 250 health points.",
+                    "stack": 97
                 }
             ],
             "limit": 49,
@@ -420,6 +432,6 @@
             },
             "materium": 85
         },
-        "in_battle": false
+        "in_battle": true
     }
 }

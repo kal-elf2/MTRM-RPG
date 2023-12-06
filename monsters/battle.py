@@ -95,25 +95,105 @@ class LootOptions(discord.ui.View):
         save_player_data(self.guild_id, self.player_data)
         await interaction.message.edit(embed=final_embed, view=None)
 
+
+def use_potion_logic(player, potion_name):
+    """
+    Handles the logic of using a potion.
+    :param player: Exemplar object representing the player
+    :param potion_name: Name of the potion being used
+    """
+    potion = next((p for p in player.inventory.potions if p.name == potion_name), None)
+    if potion and potion.stack > 0:
+        # Apply the potion effect
+        if potion_name in ["Health Potion", "Super Health Potion"]:
+            player.stats.health = min(player.stats.health + potion.effect_value, player.stats.max_health)
+        elif potion_name in ["Stamina Potion", "Super Stamina Potion"]:
+            player.stats.stamina = min(player.stats.stamina + potion.effect_value, player.stats.max_stamina)
+
+        # Decrement the potion stack
+        potion.stack -= 1
+        return True
+    return False
+
+
 class BattleOptions(discord.ui.View):
-    def __init__(self, interaction):
+    def __init__(self, interaction, player, battle_context):
         super().__init__(timeout=None)
         self.interaction = interaction
-    @discord.ui.button(custom_id="stamina", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("Stamina Potion")}')
-    async def stamina_potion(self, button, interaction):
-        pass
+        self.player = player
+        self.battle_context = battle_context
 
-    @discord.ui.button(custom_id="super_stamina", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("Super Stamina Potion")}')
-    async def super_stamina_potion(self, button, interaction):
-        pass
+        # Initialize buttons with potion stack counts in the labels
+        self.stamina_button = self.create_potion_button("Stamina Potion", self.stamina_button_callback)
+        self.super_stamina_button = self.create_potion_button("Super Stamina Potion", self.super_stamina_button_callback)
+        self.health_button = self.create_potion_button("Health Potion", self.health_button_callback)
+        self.super_health_button = self.create_potion_button("Super Health Potion", self.super_health_button_callback)
 
-    @discord.ui.button(custom_id="health", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("Health Potion")}')
-    async def health(self, button, interaction):
-        pass
+        # Add buttons to the view
+        self.add_item(self.stamina_button)
+        self.add_item(self.super_stamina_button)
+        self.add_item(self.health_button)
+        self.add_item(self.super_health_button)
 
-    @discord.ui.button(custom_id="super_health", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("Super Health Potion")}')
-    async def super_health(self, button, interaction):
-        pass
+    def create_potion_button(self, potion_name, callback):
+        stack_count = self.player.get_potion_stack(potion_name)
+        emoji_str = get_emoji(potion_name)
+        emoji_id = int(emoji_str.split(':')[2].strip('>'))
+        emoji = discord.PartialEmoji(name=potion_name, id=emoji_id)
+        button_label = f" {stack_count}" if stack_count else ""
+        button = discord.ui.Button(
+            label=button_label,
+            custom_id=potion_name.lower().replace(" ", "_"),
+            style=discord.ButtonStyle.blurple,
+            emoji=emoji,
+            disabled=self.is_potion_disabled(potion_name)
+        )
+        button.callback = callback
+        return button
+
+    def update_potion_button_label(self, button, potion_name):
+        stack_count = self.player.get_potion_stack(potion_name)
+        button.label = f"{stack_count}" if stack_count else ""
+
+    async def stamina_button_callback(self, interaction):
+        await self.use_potion("Stamina Potion", interaction, self.stamina_button)
+
+    async def super_stamina_button_callback(self, interaction):
+        await self.use_potion("Super Stamina Potion", interaction, self.super_stamina_button)
+
+    async def health_button_callback(self, interaction):
+        await self.use_potion("Health Potion", interaction, self.health_button)
+
+    async def super_health_button_callback(self, interaction):
+        await self.use_potion("Super Health Potion", interaction, self.super_health_button)
+
+    def is_potion_disabled(self, potion_name):
+        potion = next((item for item in self.player.inventory.potions if item.name == potion_name), None)
+        if potion_name in ["Health Potion", "Super Health Potion"]:
+            return potion is None or self.player.stats.health >= self.player.stats.max_health
+        elif potion_name in ["Stamina Potion", "Super Stamina Potion"]:
+            return potion is None or self.player.stats.stamina >= self.player.stats.max_stamina
+        return True
+
+    async def use_potion(self, potion_name, interaction, button):
+        potion_used = use_potion_logic(self.player, potion_name)
+
+        if potion_used:
+            # Update the button label to show new stack count
+            self.update_potion_button_label(button, potion_name)
+
+            # Check if the potion is now disabled (e.g., stack is 0 or max stat reached)
+            button.disabled = self.is_potion_disabled(potion_name)
+
+            # Update battle embed with new footer text
+            updated_footer_text = footer_text_for_embed(self.interaction)
+            battle_embed = create_battle_embed(
+                self.interaction.user, self.player, self.battle_context.monster, updated_footer_text, messages=None
+            )
+            await self.battle_context.message.edit(embed=battle_embed)
+
+            # Update the Discord view
+            await interaction.response.edit_message(view=self)
 
 
 class SpecialAttackOptions(discord.ui.View):
@@ -294,11 +374,12 @@ def footer_text_for_embed(ctx):
     next_combat_level = current_combat_level + 1
     current_combat_experience = player_data[author_id]["stats"]["combat_experience"]
 
-    # Determine the footer text based on combat level
+    # Generate base footer text based on combat level
     if next_combat_level >= 100:
-        footer_text = f"⚔️ Combat Level:\u00A0\u00A0{current_combat_level}\u00A0\u00A0\u00A0\u00A0|\u00A0\u00A0\u00A0\u00A0📊 Max Level!\u00A0\u00A0{current_combat_experience} XP"
+        footer_text = f"⚔️ Combat Level: {current_combat_level} | 📊 Max Level! {current_combat_experience} XP"
     else:
         next_level_experience_needed = LEVEL_DATA.get(str(current_combat_level), {}).get("total_experience")
-        footer_text = f"⚔️ Combat Level:\u00A0\u00A0{current_combat_level}\u00A0\u00A0\u00A0\u00A0|\u00A0\u00A0\u00A0\u00A0📊 XP to Level {next_combat_level}:\u00A0\u00A0{next_level_experience_needed - current_combat_experience}"
+        footer_text = f"⚔️ Combat Level: {current_combat_level} | 📊 XP to Level {next_combat_level}: {next_level_experience_needed - current_combat_experience}"
 
     return footer_text
+

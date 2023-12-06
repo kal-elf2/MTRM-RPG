@@ -215,7 +215,7 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
     special_attack_options_view = await ctx.send(view=SpecialAttackOptions(battle_context))
 
     # Store the message object that is sent
-    battle_options_msg = await ctx.send(view=BattleOptions(ctx))
+    battle_options_msg = await ctx.send(view=BattleOptions(ctx, player, battle_context))
 
     # Start the monster attack task
     battle_outcome, loot_messages = await monster_battle(battle_context)

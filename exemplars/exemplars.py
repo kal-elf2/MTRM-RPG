@@ -1,5 +1,4 @@
 from resources.inventory import Inventory
-import threading
 import random
 import json
 import discord
@@ -281,21 +280,9 @@ class Exemplar:
         armor_bonus = self.equipped_armor.defense if self.equipped_armor else 0
         return base_defense + armor_bonus
 
-    def use_potion(self, potion):
-        if not self.inventory.remove_item(potion):
-            return
-
-        if potion.effect_stat == "health":
-            self.health = self.max_health()
-        else:
-            original_value = getattr(self, potion.effect_stat)
-            new_value = original_value + potion.effect_value
-            setattr(self, potion.effect_stat, new_value)
-
-            def revert_effect():
-                setattr(self, potion.effect_stat, original_value)
-
-            threading.Timer(potion.duration, revert_effect).start()
+    def get_potion_stack(self, potion_name):
+        potion = next((p for p in self.inventory.potions if p.name == potion_name), None)
+        return potion.stack if potion else 0
 
 class PlayerStats:
     def __init__(

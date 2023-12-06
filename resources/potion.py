@@ -11,14 +11,23 @@ class Potion(Item):
     def to_dict(self):
         return {
             "name": self.name,
+            "effect_stat": self.effect_stat,
+            "effect_value": self.effect_value,
             "value": self.value,
+            "description": self.description,
             "stack": self.stack,
         }
 
     @classmethod
     def from_dict(cls, data):
-        potion = POTION_NAME_TO_INSTANCE[data["name"]].copy()
-        potion.stack = data["stack"]
+        potion = cls(
+            name=data["name"],
+            effect_stat=data["effect_stat"],
+            effect_value=data["effect_value"],
+            value=data.get("value", 0),
+            description=data.get("description", "")
+        )
+        potion.stack = data.get("stack", 0)
         return potion
 
     def copy(self):
