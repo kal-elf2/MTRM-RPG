@@ -223,14 +223,18 @@ class SpecialAttackOptions(discord.ui.View):
         self.create_buttons()
 
     def create_buttons(self):
-        attack_emojis = ["left_click", "right_click", "q", "e"]  # Define the appropriate emoji names here
+        attack_emojis = ["left_click", "right_click", "q", "e"]
+        stamina_costs = {1: 0, 2: 10, 3: 20, 4: 30}
 
         for i in range(1, self.max_special_attack_level + 1):
             emoji = get_emoji(attack_emojis[i - 1])
             custom_id = f"attack_{i}"
 
-            # Create a button for the current special attack level
-            button = discord.ui.Button(style=discord.ButtonStyle.blurple, custom_id=custom_id, emoji=emoji, disabled=False)
+            # Disable the button if the player doesn't have enough stamina
+            disabled_state = self.player.stats.stamina < stamina_costs[i]
+
+            button = discord.ui.Button(style=discord.ButtonStyle.blurple, custom_id=custom_id, emoji=emoji,
+                                       disabled=disabled_state)
             button.callback = self.on_button_click  # Assigning the callback function
 
             # Add the button to the view
@@ -241,6 +245,13 @@ class SpecialAttackOptions(discord.ui.View):
             button = discord.ui.Button(style=discord.ButtonStyle.blurple, custom_id="unarmed", emoji="👊🏽", disabled=False)
             button.callback = self.on_button_click  # Assigning the callback function
             self.add_item(button)
+
+    def update_button_states(self):
+        stamina_costs = {1: 0, 2: 10, 3: 20, 4: 30}
+        for item in self.children:
+            if isinstance(item, discord.ui.Button) and item.custom_id.startswith("attack_"):
+                attack_level = int(item.custom_id.split("_")[-1])
+                item.disabled = self.player.stats.stamina < stamina_costs[attack_level]
 
     async def on_button_click(self, interaction: discord.Interaction):
 

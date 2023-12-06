@@ -124,14 +124,12 @@ class Exemplar:
         if updated_level > previous_level:
             setattr(self.stats, skill_level_key, updated_level)
 
-            # Reset player's health to max health upon leveling up if combat
+            # Reset player's health and stamina to max health upon leveling up if combat
             if experience_type == "combat":
                 self.health = self.max_health
+                self.stats.stamina = self.stats.max_stamina
 
-            if interaction is not None and experience_type != "combat":
-                level_up_message = await self.send_level_up_message(interaction, experience_type, updated_level)
-                return level_up_message
-            elif interaction is not None and experience_type == "combat":
+            if interaction:
                 await self.send_level_up_message(interaction, experience_type, updated_level)
 
         return None  # return None if there's no level-up
@@ -207,7 +205,6 @@ class Exemplar:
             # Update the stats
             self.stats.update_max_health(max_health_update)
             self.stats.update_strength(strength_update)
-            self.stats.update_stamina(stamina_update)
             self.stats.update_max_stamina(stamina_update)
             self.stats.update_attack(attack_update)
             self.stats.update_defense(defense_update)

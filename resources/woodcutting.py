@@ -305,6 +305,7 @@ class HarvestButton(discord.ui.View):
                 experience_gained = monster.experience_reward
                 loothaven_effect = battle_outcome[5]  # Get the Loothaven effect status
                 await self.player.gain_experience(experience_gained, 'combat', interaction)
+                self.player_data[self.author_id]["stats"]["stamina"] = self.player.stats.stamina
                 self.player_data[self.author_id]["stats"]["combat_level"] = self.player.stats.combat_level
                 self.player_data[self.author_id]["stats"]["combat_experience"] = self.player.stats.combat_experience
                 self.player.stats.damage_taken = 0

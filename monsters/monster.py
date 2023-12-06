@@ -120,7 +120,7 @@ def calculate_attack_speed_modifier(attack_value):
     return max(1, min(3, 2 - attack_value * 0.05))
 
 class BattleContext:
-    def __init__(self, ctx, user, player, monster, message, zone_level):
+    def __init__(self, ctx, user, player, monster, message, zone_level, update_callback=None):
         self.lock = asyncio.Lock()
         self.ctx = ctx
         self.user = user
@@ -129,6 +129,11 @@ class BattleContext:
         self.message = message
         self.battle_messages = []
         self.zone_level = zone_level
+        self.update_callback = update_callback
+
+    def update_special_attacks(self):
+        if self.update_callback:
+            self.update_callback(self)
 
     async def add_battle_message(self, new_message):
         async with self.lock:
@@ -141,18 +146,32 @@ class BattleContext:
         battle_embed = create_battle_embed(self.user, self.player, self.monster, footer_text_for_embed(self.ctx), self.battle_messages)
         await self.message.edit(embed=battle_embed)
 
-async def player_attack_task(battle_context, attack_modifier):
-    # Calculate attack speed modifier
-    attack_speed_modifier = calculate_attack_speed_modifier(battle_context.player.stats.attack * attack_modifier)
+async def player_attack_task(battle_context, attack_level):
+    # Define stamina costs for each attack level
+    stamina_costs = {1: 0, 2: 10, 3: 20, 4: 30}
 
-    hit_probability = calculate_hit_probability(battle_context.player.stats.attack * attack_modifier, battle_context.monster.defense)
+    # Check if the player has enough stamina for the selected attack
+    if battle_context.player.stats.stamina < stamina_costs[attack_level]:
+        # Add a message indicating not enough stamina
+        await battle_context.add_battle_message(f"{battle_context.user.mention} tried to attack but was too exhausted!")
+        return
+
+    # Deduct the appropriate amount of stamina
+    battle_context.player.stats.stamina -= stamina_costs[attack_level]
+    print(f'stamina is {battle_context.player.stats.stamina}')
+
+    # Calculate attack speed modifier
+    attack_speed_modifier = calculate_attack_speed_modifier(battle_context.player.stats.attack * attack_level)
+
+    hit_probability = calculate_hit_probability(battle_context.player.stats.attack * attack_level, battle_context.monster.defense)
 
     # Adjust critical hit chance if Mightstone is equipped
     crit_chance = CRITICAL_HIT_CHANCE * mightstone_multiplier if battle_context.player.inventory.equipped_charm and battle_context.player.inventory.equipped_charm.name == "Mightstone" else CRITICAL_HIT_CHANCE
     is_critical_hit = random.random() < crit_chance
 
     if random.random() < hit_probability:
-        damage_dealt = calculate_damage(battle_context.player, battle_context.player.stats.attack * attack_modifier, battle_context.monster.defense, is_critical_hit)
+        # Calculate the damage
+        damage_dealt = calculate_damage(battle_context.player, battle_context.player.stats.attack * attack_level, battle_context.monster.defense, is_critical_hit)
         battle_context.monster.health = max(battle_context.monster.health - damage_dealt, 0)
 
         if is_critical_hit:
@@ -162,18 +181,24 @@ async def player_attack_task(battle_context, attack_modifier):
                 update_message = f"{battle_context.user.mention} dealt {damage_dealt} damage to the {battle_context.monster.name}! ***Critical hit!***"
         else:
             update_message = f"{battle_context.user.mention} dealt {damage_dealt} damage to the {battle_context.monster.name}!"
-
     else:
         update_message = f"The {battle_context.monster.name} ***evaded*** the attack of {battle_context.user.mention}!"
 
     # Add the update message to the battle context
     await battle_context.add_battle_message(update_message)
 
+    # Update the battle embed
+    await battle_context.update_battle_embed()
+
+    # Update the special attack buttons' states using the callback
+    battle_context.update_special_attacks()
+
     # Check if monster is defeated and return control to the caller
     if battle_context.monster.is_defeated():
         return
 
     await asyncio.sleep(attack_speed_modifier)
+
 
 async def monster_attack_task(battle_context):
     attack_speed_modifier = calculate_attack_speed_modifier(battle_context.monster.attack)
@@ -217,6 +242,7 @@ async def monster_battle(battle_context):
 
     # Determine the battle outcome
     if battle_context.monster.is_defeated():
+        print(f"dead{battle_context.player.stats.stamina}")
         # Handle monster defeat
         loot, loot_messages, loothaven_effect = generate_zone_loot(battle_context.player, battle_context.zone_level, battle_context.monster.drop, battle_context.monster.name)
         return (True, battle_context.monster.max_health, battle_context.player.stats.damage_taken, loot, battle_context.monster.experience_reward, loothaven_effect), loot_messages

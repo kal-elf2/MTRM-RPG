@@ -6,7 +6,6 @@ from discord.commands import Option
 from utils import load_player_data, save_player_data, send_message
 from discord.ui import Select, View
 from discord.components import SelectOption
-from zones.zone import Zone
 from exemplars.exemplars import create_exemplar, Exemplar
 from monsters.monster import generate_monster_list, generate_monster_by_name, monster_battle, create_battle_embed, footer_text_for_embed
 from discord import Embed
@@ -171,6 +170,10 @@ class ConfirmExemplar(discord.ui.View):
         view.add_item(PickExemplars())
         await interaction.response.send_message("Please choose your exemplar from the list below.", view=view, ephemeral=False)
 
+def update_special_attack_options(battle_context):
+    # Assuming battle_context has a reference to the special_attack_options_view
+    if battle_context.special_attack_options_view:
+        battle_context.special_attack_options_view.update_button_states()
 
 @bot.slash_command(description="Battle a monster!")
 async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=generate_monster_list(), required=True)):
@@ -209,16 +212,23 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
     await ctx.respond(f"{ctx.author.mention} encounters a {monster.name}")
 
     # Create BattleContext instance
-    battle_context = BattleContext(ctx, ctx.author, player, monster, battle_embed, zone_level)
+    battle_context = BattleContext(ctx, ctx.author, player, monster, battle_embed, zone_level,
+                                   update_special_attack_options)
 
-    # Pass BattleContext to SpecialAttackOptions view
-    special_attack_options_view = await ctx.send(view=SpecialAttackOptions(battle_context))
+    # Pass BattleContext to SpecialAttackOptions view and send the message
+    special_attack_options_view = SpecialAttackOptions(battle_context)
+    special_attack_message = await ctx.send(view=special_attack_options_view)
+
+    # Store the message reference in BattleContext or in the view
+    battle_context.special_attack_options_view = special_attack_options_view
+    battle_context.special_attack_message = special_attack_message
 
     # Store the message object that is sent
     battle_options_msg = await ctx.send(view=BattleOptions(ctx, player, battle_context))
 
     # Start the monster attack task
     battle_outcome, loot_messages = await monster_battle(battle_context)
+    print(f"after battle {battle_context.player.stats.stamina}")
 
     # Process battle outcome
     if battle_outcome:
@@ -227,6 +237,8 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
             experience_gained = monster.experience_reward
             loothaven_effect = battle_outcome[5]  # Get the Loothaven effect status
             await player.gain_experience(experience_gained, 'combat', ctx)
+            print(f" here: {player.stats.stamina}, {battle_context.player.stats.stamina}")
+            player_data[author_id]["stats"]["stamina"] = player.stats.stamina
             player_data[author_id]["stats"]["combat_level"] = player.stats.combat_level
             player_data[author_id]["stats"]["combat_experience"] = player.stats.combat_experience
             player.stats.damage_taken = 0
@@ -239,7 +251,7 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
             save_player_data(guild_id, player_data)
 
             # Clear the previous views
-            await special_attack_options_view.delete()
+            await battle_context.special_attack_message.delete()
             await battle_options_msg.delete()
 
 
@@ -273,7 +285,7 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
             f"2. Resurrect with 2.5% penalty to all skills.")
 
             # Clear the previous BattleOptions view
-            await special_attack_options_view.delete()
+            await battle_context.special_attack_message.delete()
             await battle_options_msg.delete()
 
             # Add the "dead.png" image to the embed
@@ -334,9 +346,6 @@ async def menu(ctx):
     embed.add_field(name="!stats", value="📊 Check your character's stats", inline=False)
 
     await ctx.respond(embed=embed)
-
-zone_names = ['Forest of Shadows', 'Desert of Doom', 'Icy Tundra', 'Volcanic Wasteland', 'Tower of Eternity']
-zones = [Zone(name, level) for level, name in enumerate(zone_names, 1)]
 
 bot.run(os.environ["DISCORD_TOKEN"])
 

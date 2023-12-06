@@ -2,26 +2,26 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "health": 776,
+            "health": 816,
             "max_health": 915,
             "strength": 421,
-            "stamina": 423,
+            "stamina": 371,
             "max_stamina": 423,
             "attack": 170,
             "damage": 60,
             "defense": 171,
             "armor": 34,
             "combat_level": 83,
-            "combat_experience": 760886,
+            "combat_experience": 763915,
             "mining_level": 99,
-            "mining_experience": 607800,
+            "mining_experience": 607820,
             "woodcutting_level": 90,
-            "woodcutting_experience": 842696,
+            "woodcutting_experience": 842736,
             "zone_level": 4,
             "damage_taken": 0
         },
         "inventory": {
-            "coppers": 14611,
+            "coppers": 16819,
             "items": [
                 {
                     "name": "Charcoal",
@@ -45,7 +45,7 @@
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 499
+                    "stack": 578
                 },
                 {
                     "name": "Pole",
@@ -141,19 +141,19 @@
                     "name": "Deer Part",
                     "description": "Various parts of a deer. Some are useful for making tools and weapons.",
                     "value": 20,
-                    "stack": 14
+                    "stack": 20
                 },
                 {
                     "name": "Deer Skin",
                     "description": "Tough deer skin. Can be used for citadel sturdy armors.",
                     "value": 30,
-                    "stack": 349
+                    "stack": 358
                 },
                 {
                     "name": "Wolf Skin",
                     "description": "A skin of a wild wolf. Known for its durability and strength.",
                     "value": 50,
-                    "stack": 216
+                    "stack": 217
                 },
                 {
                     "name": "Glowing Essence",
@@ -165,7 +165,7 @@
                     "name": "Goblin Crown",
                     "description": "A powerful relic obtained from the Goblin Mother. Used to create powerful Charms.",
                     "value": 5000,
-                    "stack": 109
+                    "stack": 110
                 },
                 {
                     "name": "Leather",
@@ -189,7 +189,7 @@
             "trees": [
                 {
                     "name": "Pine",
-                    "stack": 1038
+                    "stack": 1040
                 },
                 {
                     "name": "Yew",
@@ -213,23 +213,23 @@
                 {
                     "name": "Spirit Weed",
                     "value": 25,
-                    "stack": 1014
+                    "stack": 1015
                 },
                 {
                     "name": "Snapdragon",
                     "value": 350,
-                    "stack": 1009
+                    "stack": 1011
                 },
                 {
                     "name": "Bloodweed",
                     "value": 350,
-                    "stack": 1000
+                    "stack": 1001
                 }
             ],
             "ore": [
                 {
                     "name": "Iron Ore",
-                    "stack": 992
+                    "stack": 993
                 },
                 {
                     "name": "Coal",
@@ -247,7 +247,7 @@
                     "effect_value": 50,
                     "value": 10,
                     "description": "Restores 50 stamina",
-                    "stack": 1
+                    "stack": 97
                 },
                 {
                     "name": "Health Potion",
@@ -255,7 +255,7 @@
                     "effect_value": 50,
                     "value": 10,
                     "description": "Restores 50 health",
-                    "stack": 0
+                    "stack": 93
                 },
                 {
                     "name": "Super Stamina Potion",
@@ -263,7 +263,7 @@
                     "effect_value": 250,
                     "value": 20,
                     "description": "Restores 250 stamina",
-                    "stack": 1
+                    "stack": 100
                 },
                 {
                     "name": "Super Health Potion",
@@ -271,7 +271,7 @@
                     "effect_value": 250,
                     "value": 20,
                     "description": "Restores 250 health",
-                    "stack": 0
+                    "stack": 103
                 }
             ],
             "limit": 49,
@@ -430,8 +430,8 @@
                 "value": 25000,
                 "stack": 1
             },
-            "materium": 87
+            "materium": 89
         },
-        "in_battle": true
+        "in_battle": false
     }
 }
