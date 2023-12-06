@@ -246,7 +246,7 @@
                     "effect_stat": "stamina",
                     "effect_value": 50,
                     "value": 10,
-                    "description": "Restores 50 stamina points.",
+                    "description": "Restores 50 stamina",
                     "stack": 1
                 },
                 {
@@ -254,7 +254,7 @@
                     "effect_stat": "health",
                     "effect_value": 50,
                     "value": 10,
-                    "description": "Restores 50 health points.",
+                    "description": "Restores 50 health",
                     "stack": 0
                 },
                 {
@@ -262,7 +262,7 @@
                     "effect_stat": "stamina",
                     "effect_value": 250,
                     "value": 20,
-                    "description": "Restores 250 stamina points.",
+                    "description": "Restores 250 stamina",
                     "stack": 1
                 },
                 {
@@ -270,7 +270,7 @@
                     "effect_stat": "health",
                     "effect_value": 250,
                     "value": 20,
-                    "description": "Restores 250 health points.",
+                    "description": "Restores 250 health",
                     "stack": 0
                 }
             ],
@@ -432,6 +432,6 @@
             },
             "materium": 87
         },
-        "in_battle": false
+        "in_battle": true
     }
 }

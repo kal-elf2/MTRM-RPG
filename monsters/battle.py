@@ -185,7 +185,7 @@ class BattleOptions(discord.ui.View):
             potion = next((p for p in self.player.inventory.potions if p.name == potion_name), None)
             if potion:
                 emoji_str = get_emoji(potion_name)
-                potion_message = f"{emoji_str} **{potion_name} used to restore {potion.effect_value} {potion.effect_stat}**"
+                potion_message = f"{emoji_str} **{potion_name} restores {potion.effect_value} {potion.effect_stat}**"
                 await self.battle_context.add_battle_message(potion_message)
 
             # Update battle embed with new footer text and messages
