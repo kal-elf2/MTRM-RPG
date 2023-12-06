@@ -2,7 +2,7 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "health": 499,
+            "health": 776,
             "max_health": 915,
             "strength": 421,
             "stamina": 423,
@@ -12,7 +12,7 @@
             "defense": 171,
             "armor": 34,
             "combat_level": 83,
-            "combat_experience": 760817,
+            "combat_experience": 760886,
             "mining_level": 99,
             "mining_experience": 607800,
             "woodcutting_level": 90,
@@ -21,7 +21,7 @@
             "damage_taken": 0
         },
         "inventory": {
-            "coppers": 14564,
+            "coppers": 14611,
             "items": [
                 {
                     "name": "Charcoal",
@@ -45,7 +45,7 @@
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 501
+                    "stack": 499
                 },
                 {
                     "name": "Pole",
@@ -123,7 +123,7 @@
                     "name": "Sinew",
                     "description": null,
                     "value": null,
-                    "stack": 855
+                    "stack": 849
                 },
                 {
                     "name": "Rabbit Body",
@@ -247,7 +247,7 @@
                     "effect_value": 50,
                     "value": 10,
                     "description": "Restores 50 stamina points.",
-                    "stack": 100
+                    "stack": 1
                 },
                 {
                     "name": "Health Potion",
@@ -255,7 +255,7 @@
                     "effect_value": 50,
                     "value": 10,
                     "description": "Restores 50 health points.",
-                    "stack": 92
+                    "stack": 0
                 },
                 {
                     "name": "Super Stamina Potion",
@@ -263,7 +263,7 @@
                     "effect_value": 250,
                     "value": 20,
                     "description": "Restores 250 stamina points.",
-                    "stack": 97
+                    "stack": 1
                 },
                 {
                     "name": "Super Health Potion",
@@ -271,7 +271,7 @@
                     "effect_value": 250,
                     "value": 20,
                     "description": "Restores 250 health points.",
-                    "stack": 98
+                    "stack": 0
                 }
             ],
             "limit": 49,
@@ -317,14 +317,24 @@
                     "zone_level": 1
                 },
                 {
+                    "name": "Champion Bow",
+                    "description": null,
+                    "value": 92,
+                    "stack": 1,
+                    "wtype": "Bow",
+                    "attack_modifier": 14,
+                    "special_attack": 3,
+                    "zone_level": 2
+                },
+                {
                     "name": "Voltaic Sword",
                     "description": null,
-                    "value": 190,
-                    "stack": 2,
+                    "value": 154,
+                    "stack": 1,
                     "wtype": "Sword",
-                    "attack_modifier": 60,
+                    "attack_modifier": 48,
                     "special_attack": 4,
-                    "zone_level": 5
+                    "zone_level": 4
                 },
                 {
                     "name": "Short Sword",
@@ -357,24 +367,14 @@
                     "zone_level": 5
                 },
                 {
-                    "name": "Champion Bow",
-                    "description": null,
-                    "value": 92,
-                    "stack": 1,
-                    "wtype": "Bow",
-                    "attack_modifier": 14,
-                    "special_attack": 3,
-                    "zone_level": 2
-                },
-                {
                     "name": "Voltaic Sword",
                     "description": null,
-                    "value": 154,
-                    "stack": 1,
+                    "value": 190,
+                    "stack": 2,
                     "wtype": "Sword",
-                    "attack_modifier": 48,
+                    "attack_modifier": 60,
                     "special_attack": 4,
-                    "zone_level": 4
+                    "zone_level": 5
                 }
             ],
             "equipped_weapon": {

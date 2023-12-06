@@ -647,13 +647,13 @@ def create_crafting_stations(interaction, station_name=None):
 
     # Potions
     stamina_potion = Potion("Stamina Potion", effect_stat="stamina", effect_value=10, value=10,
-                            description="A potion that restores 10 stamina points.")
+                            description="Restores 50 stamina")
     health_potion = Potion("Health Potion", effect_stat="health", effect_value=10, value=10,
-                           description="A basic potion that restores 10 health points.")
+                           description="Restores 50 health")
     super_stamina_potion = Potion("Super Stamina Potion", effect_stat="stamina", effect_value=20, value=20,
-                                  description="A potent potion that restores 20 stamina points.")
+                                  description="Restores 250 stamina")
     super_health_potion = Potion("Super Health Potion", effect_stat="health", effect_value=20, value=20,
-                                 description="A potent potion that restores 20 health points.")
+                                 description="Restores 250 health")
 
     # Forge Crafting Station and Recipes
     forge = CraftingStation("Forge")
