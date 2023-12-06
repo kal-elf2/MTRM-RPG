@@ -2,17 +2,17 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "health": 816,
+            "health": 755,
             "max_health": 915,
             "strength": 421,
-            "stamina": 371,
+            "stamina": 411,
             "max_stamina": 423,
             "attack": 170,
             "damage": 60,
             "defense": 171,
             "armor": 34,
             "combat_level": 83,
-            "combat_experience": 763915,
+            "combat_experience": 764053,
             "mining_level": 99,
             "mining_experience": 607820,
             "woodcutting_level": 90,
@@ -247,7 +247,7 @@
                     "effect_value": 50,
                     "value": 10,
                     "description": "Restores 50 stamina",
-                    "stack": 97
+                    "stack": 96
                 },
                 {
                     "name": "Health Potion",

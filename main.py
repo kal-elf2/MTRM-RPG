@@ -228,7 +228,6 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
 
     # Start the monster attack task
     battle_outcome, loot_messages = await monster_battle(battle_context)
-    print(f"after battle {battle_context.player.stats.stamina}")
 
     # Process battle outcome
     if battle_outcome:
@@ -237,7 +236,7 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
             experience_gained = monster.experience_reward
             loothaven_effect = battle_outcome[5]  # Get the Loothaven effect status
             await player.gain_experience(experience_gained, 'combat', ctx)
-            print(f" here: {player.stats.stamina}, {battle_context.player.stats.stamina}")
+
             player_data[author_id]["stats"]["stamina"] = player.stats.stamina
             player_data[author_id]["stats"]["combat_level"] = player.stats.combat_level
             player_data[author_id]["stats"]["combat_experience"] = player.stats.combat_experience

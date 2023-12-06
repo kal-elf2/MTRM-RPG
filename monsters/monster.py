@@ -158,7 +158,6 @@ async def player_attack_task(battle_context, attack_level):
 
     # Deduct the appropriate amount of stamina
     battle_context.player.stats.stamina -= stamina_costs[attack_level]
-    print(f'stamina is {battle_context.player.stats.stamina}')
 
     # Calculate attack speed modifier
     attack_speed_modifier = calculate_attack_speed_modifier(battle_context.player.stats.attack * attack_level)
@@ -242,7 +241,6 @@ async def monster_battle(battle_context):
 
     # Determine the battle outcome
     if battle_context.monster.is_defeated():
-        print(f"dead{battle_context.player.stats.stamina}")
         # Handle monster defeat
         loot, loot_messages, loothaven_effect = generate_zone_loot(battle_context.player, battle_context.zone_level, battle_context.monster.drop, battle_context.monster.name)
         return (True, battle_context.monster.max_health, battle_context.player.stats.damage_taken, loot, battle_context.monster.experience_reward, loothaven_effect), loot_messages
