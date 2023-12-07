@@ -128,7 +128,7 @@ class WheatRow(discord.ui.View):
             description="Harvest the wheat to add to your inventory.",
             color=discord.Color.green()
         )
-        wheat_url = generate_urls("Grains", "Wheat")
+        wheat_url = generate_urls("Citadel", "Wheat")
         embed.set_thumbnail(url=wheat_url)
 
         view = HarvestButton(ctx=self.ctx, crop="Wheat")
@@ -141,7 +141,7 @@ class WheatRow(discord.ui.View):
             description="Harvest the flax to add to your inventory.",
             color=discord.Color.green()
         )
-        flax_url = generate_urls("Grains", "Flax")
+        flax_url = generate_urls("Citadel", "Flax")
         embed.set_thumbnail(url=flax_url)
         view = HarvestButton(ctx=self.ctx,
                              crop="Flax")

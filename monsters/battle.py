@@ -1,6 +1,7 @@
 from discord import Embed
 import discord
 import json
+import asyncio
 from emojis import get_emoji
 from utils import save_player_data, load_player_data
 from images.urls import generate_urls
@@ -95,7 +96,6 @@ class LootOptions(discord.ui.View):
         save_player_data(self.guild_id, self.player_data)
         await interaction.message.edit(embed=final_embed, view=None)
 
-
 def use_potion_logic(player, potion_name):
     """
     Handles the logic of using a potion.
@@ -117,11 +117,12 @@ def use_potion_logic(player, potion_name):
 
 
 class BattleOptions(discord.ui.View):
-    def __init__(self, interaction, player, battle_context):
+    def __init__(self, interaction, player, battle_context, special_attack_options_view):
         super().__init__(timeout=None)
         self.interaction = interaction
         self.player = player
         self.battle_context = battle_context
+        self.special_attack_options_view = special_attack_options_view
 
         # Initialize buttons with potion stack counts in the labels
         self.stamina_button = self.create_potion_button("Stamina Potion", self.stamina_button_callback)
@@ -199,6 +200,12 @@ class BattleOptions(discord.ui.View):
             # Update the Discord view
             await interaction.response.edit_message(view=self)
 
+            # Update SpecialAttackOptions button states if available
+            if self.special_attack_options_view:
+                self.special_attack_options_view.update_button_states()
+                # Edit the message that contains the special attack options view
+                await self.battle_context.special_attack_message.edit(view=self.special_attack_options_view)
+
 
 class SpecialAttackOptions(discord.ui.View):
 
@@ -254,12 +261,17 @@ class SpecialAttackOptions(discord.ui.View):
                 item.disabled = self.player.stats.stamina < stamina_costs[attack_level]
 
     async def on_button_click(self, interaction: discord.Interaction):
-
         if interaction.user.id != self.author_id:
             return await interaction.response.send_message("This is not your battle!", ephemeral=True)
 
         # Acknowledge the interaction to prevent "interaction failed" message
         await interaction.response.defer()
+
+        # Temporarily disable all buttons to prevent spamming
+        self.disable_all_buttons()
+
+        # Update the Discord view to reflect the new button states
+        await interaction.edit_original_response(view=self)
 
         # Parse the custom_id to determine the attack level
         custom_id = interaction.data["custom_id"]
@@ -268,11 +280,28 @@ class SpecialAttackOptions(discord.ui.View):
         # Call handle_attack with the attack level
         await self.handle_attack(interaction, attack_level)
 
+        # Wait for 0.5 seconds before re-enabling buttons
+        await asyncio.sleep(0.01)
+
+        # Re-enable buttons based on current stamina
+        self.update_button_states()
+
+        # Update the Discord view again to reflect the re-enabled buttons
+        await interaction.edit_original_response(view=self)
+
+    def disable_all_buttons(self):
+        for item in self.children:
+            if isinstance(item, discord.ui.Button):
+                item.disabled = True
+
     async def handle_attack(self, interaction, attack_level):
         from monsters.monster import player_attack_task
 
-        # Use the existing battle_context
+        # Perform the attack
         await player_attack_task(self.battle_context, attack_level)
+
+        # Update button states based on the new stamina level
+        self.update_button_states()
 
 def create_health_bar(current, max_health):
     bar_length = 25  # Fixed bar length

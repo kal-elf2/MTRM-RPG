@@ -38,7 +38,7 @@ class HarvestButton(discord.ui.View):
             description=f"You harvested {self.crop.lower()}!",
             color=discord.Color.green()
         )
-        crop_url = generate_urls("Grains", self.crop)
+        crop_url = generate_urls("Citadel", self.crop)
         embed.set_thumbnail(url=crop_url)
         embed.set_footer(text=f"+1 {self.crop}\n{crop_count} in backpack")
 

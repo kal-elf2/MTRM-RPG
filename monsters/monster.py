@@ -192,6 +192,9 @@ async def player_attack_task(battle_context, attack_level):
     # Update the special attack buttons' states using the callback
     battle_context.update_special_attacks()
 
+    # Update the Discord UI to reflect the new button states
+    await battle_context.special_attack_message.edit(view=battle_context.special_attack_options_view)
+
     # Check if monster is defeated and return control to the caller
     if battle_context.monster.is_defeated():
         return

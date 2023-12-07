@@ -2,17 +2,17 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "health": 755,
-            "max_health": 915,
-            "strength": 421,
-            "stamina": 411,
-            "max_stamina": 423,
-            "attack": 170,
+            "health": 150,
+            "max_health": 925,
+            "strength": 426,
+            "stamina": 118,
+            "max_stamina": 428,
+            "attack": 172,
             "damage": 60,
-            "defense": 171,
+            "defense": 173,
             "armor": 34,
-            "combat_level": 83,
-            "combat_experience": 764053,
+            "combat_level": 84,
+            "combat_experience": 766988,
             "mining_level": 99,
             "mining_experience": 607820,
             "woodcutting_level": 90,
@@ -21,7 +21,7 @@
             "damage_taken": 0
         },
         "inventory": {
-            "coppers": 16819,
+            "coppers": 19096,
             "items": [
                 {
                     "name": "Charcoal",
@@ -45,7 +45,7 @@
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 578
+                    "stack": 644
                 },
                 {
                     "name": "Pole",
@@ -87,19 +87,19 @@
                     "name": "Flour",
                     "description": null,
                     "value": null,
-                    "stack": 296
+                    "stack": 288
                 },
                 {
                     "name": "Wheat",
                     "description": null,
                     "value": null,
-                    "stack": 994
+                    "stack": 999
                 },
                 {
                     "name": "Flax",
                     "description": null,
                     "value": null,
-                    "stack": 2006
+                    "stack": 2008
                 },
                 {
                     "name": "Linen",
@@ -141,13 +141,13 @@
                     "name": "Deer Part",
                     "description": "Various parts of a deer. Some are useful for making tools and weapons.",
                     "value": 20,
-                    "stack": 20
+                    "stack": 21
                 },
                 {
                     "name": "Deer Skin",
                     "description": "Tough deer skin. Can be used for citadel sturdy armors.",
                     "value": 30,
-                    "stack": 358
+                    "stack": 359
                 },
                 {
                     "name": "Wolf Skin",
@@ -159,13 +159,13 @@
                     "name": "Glowing Essence",
                     "description": "An ethereal essence that glows faintly. Used in powerful magical rituals and citadel.",
                     "value": 200,
-                    "stack": 987
+                    "stack": 989
                 },
                 {
                     "name": "Goblin Crown",
                     "description": "A powerful relic obtained from the Goblin Mother. Used to create powerful Charms.",
                     "value": 5000,
-                    "stack": 110
+                    "stack": 111
                 },
                 {
                     "name": "Leather",
@@ -213,12 +213,12 @@
                 {
                     "name": "Spirit Weed",
                     "value": 25,
-                    "stack": 1015
+                    "stack": 1016
                 },
                 {
                     "name": "Snapdragon",
                     "value": 350,
-                    "stack": 1011
+                    "stack": 1012
                 },
                 {
                     "name": "Bloodweed",
@@ -247,7 +247,7 @@
                     "effect_value": 50,
                     "value": 10,
                     "description": "Restores 50 stamina",
-                    "stack": 96
+                    "stack": 91
                 },
                 {
                     "name": "Health Potion",
@@ -255,7 +255,7 @@
                     "effect_value": 50,
                     "value": 10,
                     "description": "Restores 50 health",
-                    "stack": 93
+                    "stack": 95
                 },
                 {
                     "name": "Super Stamina Potion",
@@ -263,7 +263,7 @@
                     "effect_value": 250,
                     "value": 20,
                     "description": "Restores 250 stamina",
-                    "stack": 100
+                    "stack": 94
                 },
                 {
                     "name": "Super Health Potion",
@@ -271,7 +271,7 @@
                     "effect_value": 250,
                     "value": 20,
                     "description": "Restores 250 health",
-                    "stack": 103
+                    "stack": 98
                 }
             ],
             "limit": 49,

@@ -211,9 +211,12 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
 
     await ctx.respond(f"{ctx.author.mention} encounters a {monster.name}")
 
-    # Create BattleContext instance
+    def update_special_attack_buttons(context):
+        if context.special_attack_options_view:
+            context.special_attack_options_view.update_button_states()
+
     battle_context = BattleContext(ctx, ctx.author, player, monster, battle_embed, zone_level,
-                                   update_special_attack_options)
+                                   update_special_attack_buttons)
 
     # Pass BattleContext to SpecialAttackOptions view and send the message
     special_attack_options_view = SpecialAttackOptions(battle_context)
@@ -224,7 +227,7 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
     battle_context.special_attack_message = special_attack_message
 
     # Store the message object that is sent
-    battle_options_msg = await ctx.send(view=BattleOptions(ctx, player, battle_context))
+    battle_options_msg = await ctx.send(view=BattleOptions(ctx, player, battle_context, special_attack_options_view))
 
     # Start the monster attack task
     battle_outcome, loot_messages = await monster_battle(battle_context)
