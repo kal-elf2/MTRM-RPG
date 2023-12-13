@@ -2,17 +2,17 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "health": 150,
+            "health": 925,
             "max_health": 925,
             "strength": 426,
-            "stamina": 118,
+            "stamina": 318,
             "max_stamina": 428,
             "attack": 172,
             "damage": 60,
             "defense": 173,
             "armor": 34,
             "combat_level": 84,
-            "combat_experience": 766988,
+            "combat_experience": 767619,
             "mining_level": 99,
             "mining_experience": 607820,
             "woodcutting_level": 90,
@@ -21,7 +21,7 @@
             "damage_taken": 0
         },
         "inventory": {
-            "coppers": 19096,
+            "coppers": 19577,
             "items": [
                 {
                     "name": "Charcoal",
@@ -153,13 +153,13 @@
                     "name": "Wolf Skin",
                     "description": "A skin of a wild wolf. Known for its durability and strength.",
                     "value": 50,
-                    "stack": 217
+                    "stack": 218
                 },
                 {
                     "name": "Glowing Essence",
                     "description": "An ethereal essence that glows faintly. Used in powerful magical rituals and citadel.",
                     "value": 200,
-                    "stack": 989
+                    "stack": 991
                 },
                 {
                     "name": "Goblin Crown",
@@ -223,7 +223,7 @@
                 {
                     "name": "Bloodweed",
                     "value": 350,
-                    "stack": 1001
+                    "stack": 1002
                 }
             ],
             "ore": [
@@ -247,7 +247,7 @@
                     "effect_value": 50,
                     "value": 10,
                     "description": "Restores 50 stamina",
-                    "stack": 91
+                    "stack": 92
                 },
                 {
                     "name": "Health Potion",
@@ -255,7 +255,7 @@
                     "effect_value": 50,
                     "value": 10,
                     "description": "Restores 50 health",
-                    "stack": 95
+                    "stack": 93
                 },
                 {
                     "name": "Super Stamina Potion",
@@ -263,7 +263,7 @@
                     "effect_value": 250,
                     "value": 20,
                     "description": "Restores 250 stamina",
-                    "stack": 94
+                    "stack": 92
                 },
                 {
                     "name": "Super Health Potion",
@@ -271,7 +271,7 @@
                     "effect_value": 250,
                     "value": 20,
                     "description": "Restores 250 health",
-                    "stack": 98
+                    "stack": 93
                 }
             ],
             "limit": 49,
@@ -430,7 +430,7 @@
                 "value": 25000,
                 "stack": 1
             },
-            "materium": 89
+            "materium": 88
         },
         "in_battle": false
     }

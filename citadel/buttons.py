@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from citadel.crafting import CraftingSelect, create_crafting_stations
 from images.urls import generate_urls
-from resources.grains import HarvestButton
+from citadel.grains import HarvestButton
 
 class CitadelCog(commands.Cog):
     def __init__(self, bot):
@@ -149,7 +149,56 @@ class WheatRow(discord.ui.View):
 
     @discord.ui.button(label="⛺ Heal Tent", custom_id="citadel_heal_tent", style=discord.ButtonStyle.blurple)
     async def heal_tent(self, button, interaction):
-        await interaction.response.send_message("You're at the Heal Tent!")
+        from exemplars.exemplars import Exemplar
+        from utils import load_player_data
+        from emojis import get_emoji
+        from citadel.heal import HealTentButton
+        # Load player data
+        author_id = str(interaction.user.id)
+        guild_id = self.ctx.guild.id
+        player_data = load_player_data(guild_id)
+        player = Exemplar(
+            player_data[author_id]["exemplar"],
+            player_data[author_id]["stats"],
+            player_data[author_id]["inventory"]
+        )
+
+        # Generate health bar
+        def health_bar(current, max_health):
+            bar_length = 20
+            health_percentage = current / max_health
+            filled_length = round(bar_length * health_percentage)
+            filled_symbols = '◼' * filled_length
+            empty_symbols = '◻' * (bar_length - filled_length)
+            return filled_symbols + empty_symbols
+
+        # Generate health bar
+        current_health_bar = health_bar(player.stats.health, player.stats.max_health)
+        health_emoji = get_emoji('heart_emoji')
+
+        # Check if health is full
+        is_full_health = player.stats.health >= player.stats.max_health
+        full_health_message = "\n\n**You are already fully healed!**" if is_full_health else ""
+
+        # Create the initial embed with health info
+        embed = discord.Embed(
+            title="Heal Tent",
+            description=f"Recover your health.\n{health_emoji} Health: {current_health_bar} {player.stats.health}/{player.stats.max_health}{full_health_message}",
+            color=discord.Color.blue()
+        )
+        heal_tent_url = generate_urls('Citadel', 'Heal')
+        embed.set_image(url=heal_tent_url)
+
+        # Create the view
+        view = HealTentButton(ctx=self.ctx)
+
+        # Disable the Heal button if the player's health is full
+        if is_full_health:
+            for item in view.children:
+                if isinstance(item, discord.ui.Button) and item.custom_id == "heal":
+                    item.disabled = True
+
+        await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
 class TravelRow(discord.ui.View):
 

@@ -28,3 +28,5 @@ mightstone_multiplier = 2
 # Constants
 CRITICAL_HIT_CHANCE = 0.10  # 10% chance of a critical hit
 CRITICAL_HIT_MULTIPLIER = 1.5  # 1.5 times the damage for a critical hit
+
+tent_health = 25
