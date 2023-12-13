@@ -153,6 +153,7 @@ class WheatRow(discord.ui.View):
         from utils import load_player_data
         from emojis import get_emoji
         from citadel.heal import HealTentButton
+
         # Load player data
         author_id = str(interaction.user.id)
         guild_id = self.ctx.guild.id
@@ -176,21 +177,21 @@ class WheatRow(discord.ui.View):
         current_health_bar = health_bar(player.stats.health, player.stats.max_health)
         health_emoji = get_emoji('heart_emoji')
 
-        # Check if health is full
+        # Check if health is full and set the appropriate message
         is_full_health = player.stats.health >= player.stats.max_health
-        full_health_message = "\n\n**You are already fully healed!**" if is_full_health else ""
+        message = "**You are already fully healed!**" if is_full_health else "Recover your health."
 
         # Create the initial embed with health info
         embed = discord.Embed(
             title="Heal Tent",
-            description=f"Recover your health.\n{health_emoji} Health: {current_health_bar} {player.stats.health}/{player.stats.max_health}{full_health_message}",
+            description=f"{message}\n\n{health_emoji} Health: {current_health_bar} {player.stats.health}/{player.stats.max_health}",
             color=discord.Color.blue()
         )
         heal_tent_url = generate_urls('Citadel', 'Heal')
         embed.set_image(url=heal_tent_url)
 
-        # Create the view
-        view = HealTentButton(ctx=self.ctx)
+        # Create the view and pass the player, player_data, and author_id
+        view = HealTentButton(ctx=self.ctx, player=player, player_data=player_data, author_id=author_id, guild_id=guild_id)
 
         # Disable the Heal button if the player's health is full
         if is_full_health:
