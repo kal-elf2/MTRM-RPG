@@ -5,29 +5,29 @@
             "health": 925,
             "max_health": 925,
             "strength": 426,
-            "stamina": 318,
+            "stamina": 294,
             "max_stamina": 428,
             "attack": 172,
             "damage": 60,
             "defense": 173,
             "armor": 34,
             "combat_level": 84,
-            "combat_experience": 767619,
+            "combat_experience": 771672,
             "mining_level": 99,
-            "mining_experience": 607820,
+            "mining_experience": 607920,
             "woodcutting_level": 90,
-            "woodcutting_experience": 842736,
+            "woodcutting_experience": 842821,
             "zone_level": 4,
             "damage_taken": 0
         },
         "inventory": {
-            "coppers": 19577,
+            "coppers": 25364,
             "items": [
                 {
                     "name": "Charcoal",
                     "description": null,
                     "value": null,
-                    "stack": 1446
+                    "stack": 1441
                 },
                 {
                     "name": "Iron",
@@ -39,13 +39,13 @@
                     "name": "Steel",
                     "description": null,
                     "value": null,
-                    "stack": 2175
+                    "stack": 2165
                 },
                 {
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 644
+                    "stack": 820
                 },
                 {
                     "name": "Pole",
@@ -57,7 +57,7 @@
                     "name": "Thick Pole",
                     "description": null,
                     "value": null,
-                    "stack": 25600
+                    "stack": 25590
                 },
                 {
                     "name": "Pine Strip",
@@ -87,7 +87,7 @@
                     "name": "Flour",
                     "description": null,
                     "value": null,
-                    "stack": 288
+                    "stack": 285
                 },
                 {
                     "name": "Wheat",
@@ -129,7 +129,7 @@
                     "name": "Rabbit Body",
                     "description": "A furry rabbit body, warm to the touch. Can be used for citadel soft armors.",
                     "value": 10,
-                    "stack": 1107
+                    "stack": 1129
                 },
                 {
                     "name": "Rabbit Meat",
@@ -141,31 +141,31 @@
                     "name": "Deer Part",
                     "description": "Various parts of a deer. Some are useful for making tools and weapons.",
                     "value": 20,
-                    "stack": 21
+                    "stack": 25
                 },
                 {
                     "name": "Deer Skin",
                     "description": "Tough deer skin. Can be used for citadel sturdy armors.",
                     "value": 30,
-                    "stack": 359
+                    "stack": 365
                 },
                 {
                     "name": "Wolf Skin",
                     "description": "A skin of a wild wolf. Known for its durability and strength.",
                     "value": 50,
-                    "stack": 218
+                    "stack": 223
                 },
                 {
                     "name": "Glowing Essence",
                     "description": "An ethereal essence that glows faintly. Used in powerful magical rituals and citadel.",
                     "value": 200,
-                    "stack": 991
+                    "stack": 990
                 },
                 {
                     "name": "Goblin Crown",
                     "description": "A powerful relic obtained from the Goblin Mother. Used to create powerful Charms.",
                     "value": 5000,
-                    "stack": 111
+                    "stack": 113
                 },
                 {
                     "name": "Leather",
@@ -177,7 +177,7 @@
                     "name": "Leather Straps",
                     "description": null,
                     "value": null,
-                    "stack": 792
+                    "stack": 787
                 },
                 {
                     "name": "Tough Leather Straps",
@@ -189,11 +189,11 @@
             "trees": [
                 {
                     "name": "Pine",
-                    "stack": 1040
+                    "stack": 1043
                 },
                 {
                     "name": "Yew",
-                    "stack": 1011
+                    "stack": 1012
                 },
                 {
                     "name": "Ash",
@@ -208,28 +208,28 @@
                 {
                     "name": "Ranarr",
                     "value": 25,
-                    "stack": 1008
+                    "stack": 1012
                 },
                 {
                     "name": "Spirit Weed",
                     "value": 25,
-                    "stack": 1016
+                    "stack": 1024
                 },
                 {
                     "name": "Snapdragon",
                     "value": 350,
-                    "stack": 1012
+                    "stack": 1015
                 },
                 {
                     "name": "Bloodweed",
                     "value": 350,
-                    "stack": 1002
+                    "stack": 1009
                 }
             ],
             "ore": [
                 {
                     "name": "Iron Ore",
-                    "stack": 993
+                    "stack": 998
                 },
                 {
                     "name": "Coal",
@@ -255,7 +255,7 @@
                     "effect_value": 50,
                     "value": 10,
                     "description": "Restores 50 health",
-                    "stack": 93
+                    "stack": 94
                 },
                 {
                     "name": "Super Stamina Potion",
@@ -263,7 +263,7 @@
                     "effect_value": 250,
                     "value": 20,
                     "description": "Restores 250 stamina",
-                    "stack": 92
+                    "stack": 89
                 },
                 {
                     "name": "Super Health Potion",
@@ -271,7 +271,7 @@
                     "effect_value": 250,
                     "value": 20,
                     "description": "Restores 250 health",
-                    "stack": 93
+                    "stack": 78
                 }
             ],
             "limit": 49,
@@ -330,7 +330,7 @@
                     "name": "Voltaic Sword",
                     "description": null,
                     "value": 154,
-                    "stack": 1,
+                    "stack": 2,
                     "wtype": "Sword",
                     "attack_modifier": 48,
                     "special_attack": 4,
@@ -430,7 +430,7 @@
                 "value": 25000,
                 "stack": 1
             },
-            "materium": 88
+            "materium": 86
         },
         "in_battle": false
     }

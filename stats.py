@@ -140,6 +140,7 @@ class ResurrectOptions(discord.ui.View):
         if self.player_data[self.author_id]["inventory"].materium >= 1:
             self.player_data[self.author_id]["inventory"].materium -= 1
             self.player.stats.health = self.player.stats.max_health
+            self.player.stats.stamina = self.player.stats.max_stamina
             self.player_data[self.author_id]["stats"].update(self.player.stats.__dict__)  # Save the updated stats
 
             # Create a new embed with only the renewed message
@@ -147,8 +148,9 @@ class ResurrectOptions(discord.ui.View):
                                       color=discord.Color.green())
 
             # Add the full health bar to the embed
-            new_embed.add_field(name="Your Health has been Restored",
-                                value=f"{get_emoji('heart_emoji')}  {self.player.stats.health}/{self.player.stats.max_health}")
+            new_embed.add_field(name="Your Health & Stamina have been Restored",
+                                value=f"{get_emoji('heart_emoji')}  {self.player.stats.health}/{self.player.stats.max_health}\n"
+                                      f"{get_emoji('stamina_emoji')}  {self.player.stats.stamina}/{self.player.stats.max_stamina}")
 
             new_embed.add_field(name=f"{self.mtrm}  Remaining",
                                 value=f"{self.player_data[self.author_id]['inventory'].materium}")

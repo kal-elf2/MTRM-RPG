@@ -5,6 +5,7 @@ import asyncio
 from emojis import get_emoji
 from utils import save_player_data, load_player_data
 from images.urls import generate_urls
+import logging
 
 class LootOptions(discord.ui.View):
     def __init__(self, interaction, player, monster, battle_embed, player_data, author_id, battle_outcome,
@@ -25,6 +26,9 @@ class LootOptions(discord.ui.View):
 
     @discord.ui.button(custom_id="loot", label="Loot", style=discord.ButtonStyle.blurple)
     async def collect_loot(self, button, interaction):
+
+        # Defer the response
+        await interaction.response.defer()
 
         from exemplars.exemplars import Exemplar
 
@@ -94,7 +98,9 @@ class LootOptions(discord.ui.View):
         final_embed = create_battle_embed(self.ctx.user, self.player, self.monster, footer_text_for_embed(self.ctx), message_text)
 
         save_player_data(self.guild_id, self.player_data)
-        await interaction.message.edit(embed=final_embed, view=None)
+
+        # Update the original response with the final embed
+        await interaction.edit_original_response(embed=final_embed, view=None)
 
 def use_potion_logic(player, potion_name):
     """
@@ -173,13 +179,16 @@ class BattleOptions(discord.ui.View):
         return potion is None or potion.stack <= 0
 
     async def use_potion(self, potion_name, interaction, button):
+        # Defer the interaction first
+        await interaction.response.defer()
+
         potion_used = use_potion_logic(self.player, potion_name)
 
         if potion_used:
             # Update the button label to show new stack count
             self.update_potion_button_label(button, potion_name)
 
-            # Check if the potion is now disabled (e.g., stack is 0 or max stat reached)
+            # Check if the potion is now disabled
             button.disabled = self.is_potion_disabled(potion_name)
 
             # Generate and append the potion usage message
@@ -189,30 +198,38 @@ class BattleOptions(discord.ui.View):
                 potion_message = f"{emoji_str} **{potion_name} restores {potion.effect_value} {potion.effect_stat}**"
                 await self.battle_context.add_battle_message(potion_message)
 
-            # Update battle embed with new footer text and messages
-            updated_footer_text = footer_text_for_embed(self.interaction)
-            battle_embed = create_battle_embed(
-                self.interaction.user, self.player, self.battle_context.monster, updated_footer_text,
-                self.battle_context.battle_messages
-            )
-            await self.battle_context.message.edit(embed=battle_embed)
+            # Attempt to update battle embed
+            try:
+                updated_footer_text = footer_text_for_embed(self.interaction)
+                battle_embed = create_battle_embed(
+                    self.interaction.user, self.player, self.battle_context.monster, updated_footer_text,
+                    self.battle_context.battle_messages
+                )
+                await self.battle_context.message.edit(embed=battle_embed)
+            except discord.NotFound:
+                logging.error("Failed to edit battle embed: Message not found.")
 
-            # Update the Discord view
-            await interaction.response.edit_message(view=self)
+            # Since we deferred, attempt to use followup to edit the message
+            try:
+                await interaction.followup.edit_message(interaction.message.id, view=self)
+            except discord.NotFound:
+                logging.error("Failed to edit followup message: Message not found.")
 
             # Update SpecialAttackOptions button states if available
             if self.special_attack_options_view:
                 self.special_attack_options_view.update_button_states()
-                # Edit the message that contains the special attack options view
-                await self.battle_context.special_attack_message.edit(view=self.special_attack_options_view)
+                try:
+                    await self.battle_context.special_attack_message.edit(view=self.special_attack_options_view)
+                except discord.NotFound:
+                    logging.error("Failed to edit special attack options message: Message not found.")
 
 
 class SpecialAttackOptions(discord.ui.View):
+    stamina_costs = {1: 1, 2: 10, 3: 20, 4: 30}
 
     def __init__(self, battle_context):
         super().__init__(timeout=None)
         self.battle_context = battle_context
-        # Access attributes from battle_context
         self.ctx = battle_context.ctx
         self.player = battle_context.player
         self.monster = battle_context.monster
@@ -231,14 +248,13 @@ class SpecialAttackOptions(discord.ui.View):
 
     def create_buttons(self):
         attack_emojis = ["left_click", "right_click", "q", "e"]
-        stamina_costs = {1: 0, 2: 10, 3: 20, 4: 30}
 
         for i in range(1, self.max_special_attack_level + 1):
             emoji = get_emoji(attack_emojis[i - 1])
             custom_id = f"attack_{i}"
 
             # Disable the button if the player doesn't have enough stamina
-            disabled_state = self.player.stats.stamina < stamina_costs[i]
+            disabled_state = self.player.stats.stamina < self.stamina_costs[i]
 
             button = discord.ui.Button(style=discord.ButtonStyle.blurple, custom_id=custom_id, emoji=emoji,
                                        disabled=disabled_state)
@@ -254,40 +270,39 @@ class SpecialAttackOptions(discord.ui.View):
             self.add_item(button)
 
     def update_button_states(self):
-        stamina_costs = {1: 0, 2: 10, 3: 20, 4: 30}
         for item in self.children:
             if isinstance(item, discord.ui.Button) and item.custom_id.startswith("attack_"):
                 attack_level = int(item.custom_id.split("_")[-1])
-                item.disabled = self.player.stats.stamina < stamina_costs[attack_level]
+                item.disabled = self.player.stats.stamina < self.stamina_costs[attack_level]
 
     async def on_button_click(self, interaction: discord.Interaction):
         if interaction.user.id != self.author_id:
             return await interaction.response.send_message("This is not your battle!", ephemeral=True)
 
-        # Acknowledge the interaction to prevent "interaction failed" message
         await interaction.response.defer()
-
-        # Temporarily disable all buttons to prevent spamming
-        self.disable_all_buttons()
-
-        # Update the Discord view to reflect the new button states
-        await interaction.edit_original_response(view=self)
-
-        # Parse the custom_id to determine the attack level
         custom_id = interaction.data["custom_id"]
         attack_level = 1 if custom_id == "unarmed" else int(custom_id.split("_")[-1])
 
-        # Call handle_attack with the attack level
+        # Check if enough stamina is available
+        if self.player.stats.stamina < self.stamina_costs[attack_level]:
+            await interaction.response.send_message("Not enough stamina!", ephemeral=True)
+            return
+
+        self.disable_all_buttons()
+
+        if self.battle_context.monster.is_defeated():
+            if not interaction.response.is_done():
+                await interaction.response.send_message(f"The battle is over. The monster {self.battle_context.monster.name} is defeated.", ephemeral=True)
+            return
+
         await self.handle_attack(interaction, attack_level)
-
-        # Wait for 0.5 seconds before re-enabling buttons
         await asyncio.sleep(0.01)
-
-        # Re-enable buttons based on current stamina
         self.update_button_states()
 
-        # Update the Discord view again to reflect the re-enabled buttons
-        await interaction.edit_original_response(view=self)
+        try:
+            await interaction.edit_original_response(view=self)
+        except discord.NotFound:
+            logging.error("Failed to edit message: Unknown Message - The message might have been deleted.")
 
     def disable_all_buttons(self):
         for item in self.children:
@@ -297,11 +312,30 @@ class SpecialAttackOptions(discord.ui.View):
     async def handle_attack(self, interaction, attack_level):
         from monsters.monster import player_attack_task
 
+        # Deduct stamina before performing the attack, ensuring it doesn't fall below 0
+        self.player.stats.stamina = max(self.player.stats.stamina - self.stamina_costs[attack_level], 0)
+
         # Perform the attack
         await player_attack_task(self.battle_context, attack_level)
 
-        # Update button states based on the new stamina level
-        self.update_button_states()
+        # Check if the monster is already defeated
+        if self.battle_context.monster.is_defeated():
+            # Check if the interaction has not been responded to
+            if not interaction.response.is_done():
+                await interaction.response.send_message(
+                    f"The monster {self.battle_context.monster.name} is already dead!", ephemeral=True)
+            return
+
+        try:
+            # Update button states based on the new stamina level
+            self.update_button_states()
+
+            # Update the Discord view again to reflect the re-enabled buttons
+            await interaction.edit_original_response(view=self)
+        except discord.NotFound:
+            # Log the NotFound error
+            logging.error(f"Failed to edit message: Unknown Message - The message might have been deleted.")
+
 
 def create_health_bar(current, max_health):
     bar_length = 25  # Fixed bar length

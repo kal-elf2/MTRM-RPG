@@ -1,4 +1,5 @@
 # monster.py
+import discord
 import random
 from resources.loot import generate_zone_loot, loot_definitions
 from monsters.battle import create_battle_embed, footer_text_for_embed
@@ -147,18 +148,6 @@ class BattleContext:
         await self.message.edit(embed=battle_embed)
 
 async def player_attack_task(battle_context, attack_level):
-    # Define stamina costs for each attack level
-    stamina_costs = {1: 0, 2: 10, 3: 20, 4: 30}
-
-    # Check if the player has enough stamina for the selected attack
-    if battle_context.player.stats.stamina < stamina_costs[attack_level]:
-        # Add a message indicating not enough stamina
-        await battle_context.add_battle_message(f"{battle_context.user.mention} tried to attack but was too exhausted!")
-        return
-
-    # Deduct the appropriate amount of stamina
-    battle_context.player.stats.stamina -= stamina_costs[attack_level]
-
     # Calculate attack speed modifier
     attack_speed_modifier = calculate_attack_speed_modifier(battle_context.player.stats.attack * attack_level)
 
@@ -173,11 +162,11 @@ async def player_attack_task(battle_context, attack_level):
         damage_dealt = calculate_damage(battle_context.player, battle_context.player.stats.attack * attack_level, battle_context.monster.defense, is_critical_hit)
         battle_context.monster.health = max(battle_context.monster.health - damage_dealt, 0)
 
+        # Prepare the update message
         if is_critical_hit:
+            update_message = f"{battle_context.user.mention} dealt {damage_dealt} damage to the {battle_context.monster.name}! ***Critical hit!***"
             if battle_context.player.inventory.equipped_charm and battle_context.player.inventory.equipped_charm.name == "Mightstone":
-                update_message = f"Your {get_emoji('Mightstone')}**Mightstone Charm** glows! ***Critical hit!***\n{battle_context.user.mention} dealt {damage_dealt} damage to the {battle_context.monster.name}!"
-            else:
-                update_message = f"{battle_context.user.mention} dealt {damage_dealt} damage to the {battle_context.monster.name}! ***Critical hit!***"
+                update_message = f"Your {get_emoji('Mightstone')}**Mightstone Charm** glows! " + update_message
         else:
             update_message = f"{battle_context.user.mention} dealt {damage_dealt} damage to the {battle_context.monster.name}!"
     else:
@@ -186,14 +175,15 @@ async def player_attack_task(battle_context, attack_level):
     # Add the update message to the battle context
     await battle_context.add_battle_message(update_message)
 
-    # Update the battle embed
+    # Update the battle embed and special attack buttons
     await battle_context.update_battle_embed()
-
-    # Update the special attack buttons' states using the callback
     battle_context.update_special_attacks()
 
-    # Update the Discord UI to reflect the new button states
-    await battle_context.special_attack_message.edit(view=battle_context.special_attack_options_view)
+    # Attempt to edit the message with updated view
+    try:
+        await battle_context.special_attack_message.edit(view=battle_context.special_attack_options_view)
+    except discord.NotFound:
+        print("Failed to edit message: Message not found.")
 
     # Check if monster is defeated and return control to the caller
     if battle_context.monster.is_defeated():

@@ -282,14 +282,23 @@ class MineButton(discord.ui.View):
             from monsters.monster import BattleContext
             from monsters.battle import SpecialAttackOptions
 
-            # Create BattleContext instance
-            battle_context = BattleContext(self.ctx, self.ctx.author, self.player, monster, battle_embed, zone_level)
+            def update_special_attack_buttons(context):
+                if context.special_attack_options_view:
+                    context.special_attack_options_view.update_button_states()
 
-            # Pass BattleContext to SpecialAttackOptions view
-            special_attack_options_view = await self.ctx.send(view=SpecialAttackOptions(battle_context))
+            # Create BattleContext instance
+            battle_context = BattleContext(self.ctx, self.ctx.author, self.player, monster, battle_embed, zone_level, update_special_attack_buttons)
+
+            # Pass BattleContext to SpecialAttackOptions view and send the message
+            special_attack_options_view = SpecialAttackOptions(battle_context)
+            special_attack_message = await self.ctx.send(view=special_attack_options_view)
+
+            # Store the message reference in BattleContext or in the view
+            battle_context.special_attack_options_view = special_attack_options_view
+            battle_context.special_attack_message = special_attack_message
 
             # Store the message object that is sent
-            battle_options_msg = await self.ctx.send(view=BattleOptions(self.ctx, self.player, battle_context))
+            battle_options_msg = await self.ctx.send(view=BattleOptions(self.ctx, self.player, battle_context, special_attack_options_view))
 
             await interaction.followup.send(f"**❗ LOOK OUT {interaction.user.mention} ❗** \n You got **attacked by a {monster.name}** while mining {self.ore_type}.", ephemeral = True)
 
@@ -314,7 +323,7 @@ class MineButton(discord.ui.View):
                 save_player_data(self.guild_id, self.player_data)
 
                 # Clear the previous views
-                await special_attack_options_view.delete()
+                await battle_context.special_attack_message.delete()
                 await battle_options_msg.delete()
 
                 loot_view = LootOptions(interaction, self.player, monster, battle_embed, self.player_data, self.author_id, battle_outcome,
@@ -346,7 +355,7 @@ class MineButton(discord.ui.View):
                                                 f"2. Resurrect with 2.5% penalty to all skills.")
 
                 # Clear the previous views
-                await special_attack_options_view.delete()
+                await battle_context.special_attack_message.delete()
                 await battle_options_msg.delete()
 
                 # Add the "dead.png" image to the embed
