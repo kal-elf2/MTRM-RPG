@@ -8,8 +8,6 @@ from resources.item import Item
 import math
 from probabilities import CRITICAL_HIT_CHANCE, CRITICAL_HIT_MULTIPLIER, ironhide_percent, mightstone_multiplier
 from emojis import get_emoji
-import logging
-
 
 class Monster:
     def __init__(self, name, health, max_health, attack, stamina, experience_reward, weak_against, strong_against, attack_speed, drop):
@@ -26,7 +24,7 @@ class Monster:
 
     def is_defeated(self):
         if self.health <= 0:
-            self.health = 0  # Ensures health does not go below 0
+            self.health = 0
             return True
         return False
 
@@ -139,7 +137,6 @@ class BattleContext:
         self.is_battle_active = False
 
     def update_special_attacks(self):
-        logging.info("Updating special attack buttons in BattleContext.")
         if self.update_callback:
             self.update_callback(self)
 
@@ -155,7 +152,6 @@ class BattleContext:
         await self.message.edit(embed=battle_embed)
 
 async def player_attack_task(battle_context, attack_level):
-    logging.info("Player attack task started.")
     # Calculate attack speed modifier
     attack_speed_modifier = calculate_attack_speed_modifier(battle_context.player.stats.attack * attack_level)
 
@@ -200,7 +196,6 @@ async def player_attack_task(battle_context, attack_level):
     await asyncio.sleep(attack_speed_modifier)
 
 async def monster_attack_task(battle_context):
-    logging.info("Monster attack task started.")
     attack_speed_modifier = calculate_attack_speed_modifier(battle_context.monster.attack)
     while battle_context.is_battle_active and not battle_context.monster.is_defeated() and not battle_context.player.is_defeated():
         hit_probability = calculate_hit_probability(battle_context.monster.attack, battle_context.player.stats.defense, battle_context.player)

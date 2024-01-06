@@ -5,7 +5,6 @@ import random
 from emojis import get_emoji
 from utils import save_player_data, load_player_data
 from images.urls import generate_urls
-import logging
 import asyncio
 
 class LootOptions(discord.ui.View):
@@ -208,13 +207,13 @@ class BattleOptions(discord.ui.View):
                 )
                 await self.battle_context.message.edit(embed=battle_embed)
             except discord.NotFound:
-                logging.error("Failed to edit battle embed: Message not found.")
+                pass
 
             # Since we deferred, attempt to use followup to edit the message
             try:
                 await interaction.followup.edit_message(interaction.message.id, view=self)
             except discord.NotFound:
-                logging.error("Failed to edit followup message: Message not found.")
+                pass
 
             # Update SpecialAttackOptions button states if available
             if self.special_attack_options_view:
@@ -222,14 +221,14 @@ class BattleOptions(discord.ui.View):
                 try:
                     await self.battle_context.special_attack_message.edit(view=self.special_attack_options_view)
                 except discord.NotFound:
-                    logging.error("Failed to edit special attack options message: Message not found.")
+                    pass
 
 class SpecialAttackOptions(discord.ui.View):
     stamina_costs = {1: 1, 2: 10, 3: 20, 4: 30}
 
     def __init__(self, battle_context, battle_options_msg, special_attack_message):
         super().__init__(timeout=None)
-        logging.info("SpecialAttackOptions initialized.")
+
         self.battle_context = battle_context
         self.battle_options_msg = battle_options_msg
         self.special_attack_message = special_attack_message
@@ -290,19 +289,16 @@ class SpecialAttackOptions(discord.ui.View):
         self.add_item(run_button)
 
     async def reenable_run_button_after_delay(self, interaction):
-        logging.info("Starting cooldown delay for run button.")
         await asyncio.sleep(3.5)
         self.run_button_disabled = False
         self.run_button_cooldown = False
         self.update_button_states()
-        logging.info("Cooldown ended, run button should be enabled now.")
         try:
             await interaction.edit_original_response(view=self)
         except discord.NotFound:
-            logging.error("Failed to edit message: Unknown Message - The message might have been deleted.")
+            pass
 
     async def on_run_button_click(self, interaction: discord.Interaction):
-        logging.info("Run button clicked.")
         if interaction.user.id != self.author_id:
             return await interaction.response.send_message("You cannot run from another player's battle!",
                                                            ephemeral=True)
@@ -330,7 +326,6 @@ class SpecialAttackOptions(discord.ui.View):
 
 
         else:  # Failed escape
-            logging.info("Run attempt failed, disabling run button and starting cooldown.")
             self.disable_run_button()
             self.run_button_cooldown = True
             # Add failed escape attempt to battle messages
@@ -345,7 +340,6 @@ class SpecialAttackOptions(discord.ui.View):
                 item.disabled = True
 
     def update_button_states(self):
-        logging.info("Updating button states in SpecialAttackOptions.")
         for item in self.children:
             if isinstance(item, discord.ui.Button):
                 if item.custom_id.startswith("attack_"):
@@ -381,7 +375,7 @@ class SpecialAttackOptions(discord.ui.View):
         try:
             await interaction.edit_original_response(view=self)
         except discord.NotFound:
-            logging.error("Failed to edit message: Unknown Message - The message might have been deleted.")
+            pass
 
     def disable_unarmed_button(self):
         for item in self.children:
@@ -422,8 +416,7 @@ class SpecialAttackOptions(discord.ui.View):
             # Update the Discord view again to reflect the re-enabled buttons
             await interaction.edit_original_response(view=self)
         except discord.NotFound:
-            # Log the NotFound error
-            logging.error(f"Failed to edit message: Unknown Message - The message might have been deleted.")
+            pass
 
 def calculate_run_chance(player, monster_health, monster_max_health):
     base_chance = 0.25

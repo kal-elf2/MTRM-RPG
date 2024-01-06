@@ -2,26 +2,26 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "health": 151,
+            "health": 349,
             "max_health": 925,
             "strength": 426,
-            "stamina": 38,
+            "stamina": 228,
             "max_stamina": 428,
             "attack": 172,
             "damage": 60,
             "defense": 173,
             "armor": 34,
             "combat_level": 84,
-            "combat_experience": 772561,
+            "combat_experience": 772787,
             "mining_level": 99,
             "mining_experience": 608000,
             "woodcutting_level": 90,
             "woodcutting_experience": 843101,
             "zone_level": 4,
-            "damage_taken": 22
+            "damage_taken": 0
         },
         "inventory": {
-            "coppers": 26270,
+            "coppers": 26532,
             "items": [
                 {
                     "name": "Charcoal",
@@ -45,7 +45,7 @@
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 846
+                    "stack": 856
                 },
                 {
                     "name": "Pole",
@@ -255,7 +255,7 @@
                     "effect_value": 50,
                     "value": 10,
                     "description": "Restores 50 health",
-                    "stack": 98
+                    "stack": 99
                 },
                 {
                     "name": "Super Stamina Potion",
@@ -263,7 +263,7 @@
                     "effect_value": 250,
                     "value": 20,
                     "description": "Restores 250 stamina",
-                    "stack": 89
+                    "stack": 88
                 },
                 {
                     "name": "Super Health Potion",
@@ -271,7 +271,7 @@
                     "effect_value": 250,
                     "value": 20,
                     "description": "Restores 250 health",
-                    "stack": 81
+                    "stack": 79
                 }
             ],
             "limit": 49,
