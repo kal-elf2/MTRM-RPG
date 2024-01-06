@@ -124,7 +124,7 @@ class HarvestButton(discord.ui.View):
         self.author_id = author_id
         self.embed = embed
 
-    @discord.ui.button(label="Harvest", custom_id="harvest", style=discord.ButtonStyle.blurple)
+    @discord.ui.button(label="Chop", custom_id="harvest", style=discord.ButtonStyle.blurple)
     async def harvest(self, button, interaction):
         # Check if the player has space in the inventory or if the item is already in the inventory
         if self.player.inventory.total_items_count() >= self.player.inventory.limit and not self.player.inventory.has_item(
@@ -273,7 +273,7 @@ class HarvestButton(discord.ui.View):
             await interaction.message.edit(embed=self.embed, view=self)
 
         # Monster encounter set in probabilities.py
-        if np.random.rand() <= attack_percent and self.player_data[self.author_id]["in_battle"] == False:
+        if np.random.rand() <= attack_percent and not self.player_data[self.author_id]["in_battle"]:
             self.player_data[self.author_id]["in_battle"] = True
             save_player_data(self.guild_id, self.player_data)
 
@@ -281,7 +281,8 @@ class HarvestButton(discord.ui.View):
             monster = generate_monster_by_name(monster_name, self.player.stats.zone_level)
 
             battle_embed = await send_message(interaction.channel,
-                                              create_battle_embed(interaction.user, self.player, monster, footer_text_for_embed(self.ctx), messages=""))
+                                              create_battle_embed(interaction.user, self.player, monster,
+                                                                  footer_text_for_embed(self.ctx, monster)))
 
             from monsters.monster import BattleContext
             from monsters.battle import SpecialAttackOptions
@@ -290,82 +291,88 @@ class HarvestButton(discord.ui.View):
                 if context.special_attack_options_view:
                     context.special_attack_options_view.update_button_states()
 
-            # Create BattleContext instance
-            battle_context = BattleContext(self.ctx, self.ctx.author, self.player, monster, battle_embed, zone_level,
+            battle_context = BattleContext(self.ctx, interaction.user, self.player, monster, battle_embed,
+                                           self.player.stats.zone_level,
                                            update_special_attack_buttons)
 
-            # Pass BattleContext to SpecialAttackOptions view and send the message
-            special_attack_options_view = SpecialAttackOptions(battle_context)
-            special_attack_message = await self.ctx.send(view=special_attack_options_view)
-
-            # Store the message reference in BattleContext or in the view
+            special_attack_options_view = SpecialAttackOptions(battle_context, None, None)
             battle_context.special_attack_options_view = special_attack_options_view
+
+            special_attack_message = await self.ctx.send(view=special_attack_options_view)
             battle_context.special_attack_message = special_attack_message
 
-            # Store the message object that is sent
             battle_options_msg = await self.ctx.send(
                 view=BattleOptions(self.ctx, self.player, battle_context, special_attack_options_view))
+            battle_context.battle_options_msg = battle_options_msg
 
-            await interaction.followup.send(f"**❗ LOOK OUT {interaction.user.mention} ❗** \n You got **attacked by a {monster.name}** while harvesting {self.tree_type}.", ephemeral = True)
+            special_attack_options_view.battle_options_msg = battle_options_msg
+            special_attack_options_view.special_attack_message = special_attack_message
 
-            # Start the monster attack task
-            battle_outcome, loot_messages = await monster_battle(battle_context)
+            battle_result = await monster_battle(battle_context)
 
-            if battle_outcome[0]:
-
-                experience_gained = monster.experience_reward
-                loothaven_effect = battle_outcome[5]  # Get the Loothaven effect status
-                await self.player.gain_experience(experience_gained, 'combat', interaction)
-                self.player_data[self.author_id]["stats"]["stamina"] = self.player.stats.stamina
-                self.player_data[self.author_id]["stats"]["combat_level"] = self.player.stats.combat_level
-                self.player_data[self.author_id]["stats"]["combat_experience"] = self.player.stats.combat_experience
-                self.player.stats.damage_taken = 0
+            if battle_result is None:
+                # Save the player's current stats
                 self.player_data[self.author_id]["stats"].update(self.player.stats.__dict__)
-
-                if self.player.stats.health <= 0:
-                    self.player.stats.health = self.player.stats.max_health
-
-                # Save the player data after common actions
                 save_player_data(self.guild_id, self.player_data)
 
-                # Clear the previous views
-                await battle_context.special_attack_message.delete()
-                await battle_options_msg.delete()
-                loot_view = LootOptions(interaction, self.player, monster, battle_embed, self.player_data, self.author_id, battle_outcome,
-                                        loot_messages, self.guild_id, interaction, experience_gained, loothaven_effect)
-
-                await battle_embed.edit(
-                    embed=create_battle_embed(interaction.user, self.player, monster, footer_text_for_embed(self.ctx),
-                                              f"You have **DEFEATED** the {monster.name}!\n\n"
-                                              f"You dealt **{battle_outcome[1]} damage** to the monster and took **{battle_outcome[2]} damage**. "
-                                              f"You gained {experience_gained} combat XP.\n"
-                                              f"\n"),
-                    view=loot_view
-                )
-
             else:
-                # The player is defeated
-                self.player.stats.health = 0  # Set player's health to 0
-                self.player_data[self.author_id]["stats"]["health"] = 0
+                # Unpack the battle outcome and loot messages
+                battle_outcome, loot_messages = battle_result
+                if battle_outcome[0]:
 
-                # Create a new embed with the defeat message
-                new_embed = create_battle_embed(interaction.user, self.player, monster, footer_text= "", messages=
+                    experience_gained = monster.experience_reward
+                    loothaven_effect = battle_outcome[5]  # Get the Loothaven effect status
+                    await self.player.gain_experience(experience_gained, 'combat', interaction)
+                    self.player_data[self.author_id]["stats"]["stamina"] = self.player.stats.stamina
+                    self.player_data[self.author_id]["stats"]["combat_level"] = self.player.stats.combat_level
+                    self.player_data[self.author_id]["stats"]["combat_experience"] = self.player.stats.combat_experience
+                    self.player.stats.damage_taken = 0
+                    self.player_data[self.author_id]["stats"].update(self.player.stats.__dict__)
 
-                                                f"☠️ You have been **DEFEATED** by the **{monster.name}**!\n"
-                                                f"{get_emoji('rip_emoji')} *Your spirit lingers, seeking renewal.* {get_emoji('rip_emoji')}\n\n"
-                                                f"__**Options for Revival:**__\n"
-                                                f"1. Use {get_emoji('Materium')} to revive without penalty.\n"
-                                                f"2. Resurrect with 2.5% penalty to all skills.")
+                    if self.player.stats.health <= 0:
+                        self.player.stats.health = self.player.stats.max_health
 
-                # Clear the previous views
-                await battle_context.special_attack_message.delete()
-                await battle_options_msg.delete()
+                    # Save the player data after common actions
+                    save_player_data(self.guild_id, self.player_data)
 
-                # Add the "dead.png" image to the embed
-                new_embed.set_image(
-                    url=generate_urls("cemetery", "dead"))
-                # Update the message with the new embed and view
-                await battle_embed.edit(embed=new_embed, view=ResurrectOptions(interaction, self.player_data, self.author_id, new_embed))
+                    # Clear the previous views
+                    await battle_context.special_attack_message.delete()
+                    await battle_options_msg.delete()
+                    loot_view = LootOptions(interaction, self.player, monster, battle_embed, self.player_data, self.author_id, battle_outcome,
+                                            loot_messages, self.guild_id, interaction, experience_gained, loothaven_effect)
+
+                    await battle_embed.edit(
+                        embed=create_battle_embed(interaction.user, self.player, monster, footer_text_for_embed(self.ctx, monster),
+                                                  f"You have **DEFEATED** the {monster.name}!\n\n"
+                                                  f"You dealt **{battle_outcome[1]} damage** to the monster and took **{battle_outcome[2]} damage**. "
+                                                  f"You gained {experience_gained} combat XP.\n"
+                                                  f"\n"),
+                        view=loot_view
+                    )
+
+                else:
+                    # The player is defeated
+                    self.player.stats.health = 0  # Set player's health to 0
+                    self.player_data[self.author_id]["stats"]["health"] = 0
+
+                    # Create a new embed with the defeat message
+                    new_embed = create_battle_embed(interaction.user, self.player, monster, footer_text= "", messages=
+
+                                                    f"☠️ You have been **DEFEATED** by the **{monster.name}**!\n"
+                                                    f"{get_emoji('rip_emoji')} *Your spirit lingers, seeking renewal.* {get_emoji('rip_emoji')}\n\n"
+                                                    f"__**Options for Revival:**__\n"
+                                                    f"1. Use {get_emoji('Materium')} to revive without penalty.\n"
+                                                    f"2. Resurrect with 2.5% penalty to all skills.")
+
+                    # Clear the previous views
+                    await battle_context.special_attack_message.delete()
+                    await battle_options_msg.delete()
+
+                    # Add the "dead.png" image to the embed
+                    new_embed.set_image(
+                        url=generate_urls("cemetery", "dead"))
+                    # Update the message with the new embed and view
+                    await battle_embed.edit(embed=new_embed, view=ResurrectOptions(interaction, self.player_data, self.author_id, new_embed))
 
             # Clear the in_battle flag after the battle ends
             self.player_data[self.author_id]["in_battle"] = False
