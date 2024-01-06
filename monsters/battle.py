@@ -2,6 +2,7 @@ from discord import Embed
 import discord
 import json
 import asyncio
+import random
 from emojis import get_emoji
 from utils import save_player_data, load_player_data
 from images.urls import generate_urls
@@ -95,7 +96,7 @@ class LootOptions(discord.ui.View):
             f"{loot_message_string}"
         )
 
-        final_embed = create_battle_embed(self.ctx.user, self.player, self.monster, footer_text_for_embed(self.ctx), message_text)
+        final_embed = create_battle_embed(self.ctx.user, self.player, self.monster, footer_text_for_embed(self.ctx, self.monster), message_text)
 
         save_player_data(self.guild_id, self.player_data)
 
@@ -120,7 +121,6 @@ def use_potion_logic(player, potion_name):
         potion.stack -= 1
         return True
     return False
-
 
 class BattleOptions(discord.ui.View):
     def __init__(self, interaction, player, battle_context, special_attack_options_view):
@@ -200,7 +200,8 @@ class BattleOptions(discord.ui.View):
 
             # Attempt to update battle embed
             try:
-                updated_footer_text = footer_text_for_embed(self.interaction)
+                # Calculate the updated footer text including the run percentage
+                updated_footer_text = footer_text_for_embed(interaction, self.battle_context.monster)
                 battle_embed = create_battle_embed(
                     self.interaction.user, self.player, self.battle_context.monster, updated_footer_text,
                     self.battle_context.battle_messages
@@ -223,13 +224,15 @@ class BattleOptions(discord.ui.View):
                 except discord.NotFound:
                     logging.error("Failed to edit special attack options message: Message not found.")
 
-
 class SpecialAttackOptions(discord.ui.View):
     stamina_costs = {1: 1, 2: 10, 3: 20, 4: 30}
 
-    def __init__(self, battle_context):
+    def __init__(self, battle_context, battle_options_msg, special_attack_message):
         super().__init__(timeout=None)
+        logging.info("SpecialAttackOptions initialized.")
         self.battle_context = battle_context
+        self.battle_options_msg = battle_options_msg
+        self.special_attack_message = special_attack_message
         self.ctx = battle_context.ctx
         self.player = battle_context.player
         self.monster = battle_context.monster
@@ -245,6 +248,10 @@ class SpecialAttackOptions(discord.ui.View):
 
         # Create buttons based on the maximum special attack level
         self.create_buttons()
+
+        # Manage the run/cooldown states
+        self.run_button_disabled = False
+        self.run_button_cooldown = False
 
     def create_buttons(self):
         attack_emojis = ["left_click", "right_click", "q", "e"]
@@ -264,16 +271,94 @@ class SpecialAttackOptions(discord.ui.View):
             self.add_item(button)
 
         # Add the unarmed button if no weapon is equipped
+        unarmed_stamina_cost = 1  # Define the stamina cost for unarmed attack
+        unarmed_button_disabled = self.player.stats.stamina < unarmed_stamina_cost  # Disable if stamina is too low
+
         if not self.equip_weapon:
-            button = discord.ui.Button(style=discord.ButtonStyle.blurple, custom_id="unarmed", emoji="👊🏽", disabled=False)
+            button = discord.ui.Button(
+                style=discord.ButtonStyle.blurple,
+                custom_id="unarmed",
+                emoji="👊🏽",
+                disabled=unarmed_button_disabled  # Set disabled state based on current stamina
+            )
             button.callback = self.on_button_click  # Assigning the callback function
             self.add_item(button)
 
-    def update_button_states(self):
+        # Add the 'Run' button
+        run_button = discord.ui.Button(style=discord.ButtonStyle.red, label="Run", custom_id="run")
+        run_button.callback = self.on_run_button_click
+        self.add_item(run_button)
+
+    async def reenable_run_button_after_delay(self, interaction):
+        logging.info("Starting cooldown delay for run button.")
+        await asyncio.sleep(3.5)
+        self.run_button_disabled = False
+        self.run_button_cooldown = False
+        self.update_button_states()
+        logging.info("Cooldown ended, run button should be enabled now.")
+        try:
+            await interaction.edit_original_response(view=self)
+        except discord.NotFound:
+            logging.error("Failed to edit message: Unknown Message - The message might have been deleted.")
+
+    async def on_run_button_click(self, interaction: discord.Interaction):
+        logging.info("Run button clicked.")
+        if interaction.user.id != self.author_id:
+            return await interaction.response.send_message("You cannot run from another player's battle!",
+                                                           ephemeral=True)
+
+        await interaction.response.defer()
+
+        # Calculate the dynamic run chance
+        run_chance = calculate_run_chance(self.battle_context.monster.health, self.battle_context.monster.max_health)
+
+        # Successful escape
+        if random.random() < run_chance:
+            self.battle_context.end_battle()
+            self.disable_all_buttons()
+            await self.battle_options_msg.delete()
+            await self.special_attack_message.delete()
+
+            # Add successful escape message to battle messages
+            await self.battle_context.add_battle_message(
+                f"**{interaction.user.mention} has successfully fled the battle with the {self.battle_context.monster.name}!**")
+
+            # Clear the in_battle flag
+            player_data = load_player_data(self.battle_context.ctx.guild.id)
+            player_data[str(self.battle_context.user.id)]["in_battle"] = False
+            save_player_data(self.battle_context.ctx.guild.id, player_data)
+
+        else:  # Failed escape
+            logging.info("Run attempt failed, disabling run button and starting cooldown.")
+            self.disable_run_button()
+            self.run_button_cooldown = True
+            # Add failed escape attempt to battle messages
+            await self.battle_context.add_battle_message(f"**{interaction.user.mention} tried to flee but failed!**")
+            # Schedule re-enabling the run button
+            asyncio.create_task(self.reenable_run_button_after_delay(interaction))
+
+    def disable_run_button(self):
+        logging.info("Disabling run button.")
+        self.run_button_disabled = True
         for item in self.children:
-            if isinstance(item, discord.ui.Button) and item.custom_id.startswith("attack_"):
-                attack_level = int(item.custom_id.split("_")[-1])
-                item.disabled = self.player.stats.stamina < self.stamina_costs[attack_level]
+            if isinstance(item, discord.ui.Button) and item.custom_id == "run":
+                item.disabled = True
+
+    def update_button_states(self):
+        logging.info("Updating button states in SpecialAttackOptions.")
+        for item in self.children:
+            if isinstance(item, discord.ui.Button):
+                if item.custom_id.startswith("attack_"):
+                    # Disable attack buttons based on stamina
+                    attack_level = int(item.custom_id.split("_")[-1])
+                    item.disabled = self.player.stats.stamina < self.stamina_costs[attack_level]
+                elif item.custom_id == "run":
+                    # Enable the 'Run' button only if not in cooldown or disabled
+                    item.disabled = self.run_button_disabled or self.run_button_cooldown
+                elif item.custom_id == "unarmed":
+                    # Disable the unarmed button if the player's stamina is too low
+                    unarmed_stamina_cost = 1  # Define the stamina cost for unarmed attack
+                    item.disabled = self.player.stats.stamina < unarmed_stamina_cost
 
     async def on_button_click(self, interaction: discord.Interaction):
         if interaction.user.id != self.author_id:
@@ -283,11 +368,6 @@ class SpecialAttackOptions(discord.ui.View):
         custom_id = interaction.data["custom_id"]
         attack_level = 1 if custom_id == "unarmed" else int(custom_id.split("_")[-1])
 
-        # Check if enough stamina is available
-        if self.player.stats.stamina < self.stamina_costs[attack_level]:
-            await interaction.response.send_message("Not enough stamina!", ephemeral=True)
-            return
-
         self.disable_all_buttons()
 
         if self.battle_context.monster.is_defeated():
@@ -296,13 +376,18 @@ class SpecialAttackOptions(discord.ui.View):
             return
 
         await self.handle_attack(interaction, attack_level)
-        await asyncio.sleep(0.01)
         self.update_button_states()
 
         try:
             await interaction.edit_original_response(view=self)
         except discord.NotFound:
             logging.error("Failed to edit message: Unknown Message - The message might have been deleted.")
+
+
+    def disable_unarmed_button(self):
+        for item in self.children:
+            if isinstance(item, discord.ui.Button) and item.custom_id == "unarmed":
+                item.disabled = True
 
     def disable_all_buttons(self):
         for item in self.children:
@@ -317,6 +402,11 @@ class SpecialAttackOptions(discord.ui.View):
 
         # Perform the attack
         await player_attack_task(self.battle_context, attack_level)
+        # After monster's health changes, update the battle embed
+        new_footer_text = footer_text_for_embed(self.ctx, self.monster)
+        updated_embed = create_battle_embed(self.battle_context.user, self.player, self.monster, new_footer_text,
+                                            self.battle_messages)
+        await self.battle_embed_message.edit(embed=updated_embed)
 
         # Check if the monster is already defeated
         if self.battle_context.monster.is_defeated():
@@ -336,6 +426,12 @@ class SpecialAttackOptions(discord.ui.View):
             # Log the NotFound error
             logging.error(f"Failed to edit message: Unknown Message - The message might have been deleted.")
 
+def calculate_run_chance(monster_health, monster_max_health):
+    if monster_health > monster_max_health * 0.5:
+        return 0.25  # Base chance of 25% if monster health is above 50%
+    else:
+        # Linearly increase the run chance from 25% to 50% as monster health decreases from 50% to 0%
+        return 0.25 + (0.25 * ((monster_max_health * 0.5 - monster_health) / (monster_max_health * 0.5)))
 
 def create_health_bar(current, max_health):
     bar_length = 25  # Fixed bar length
@@ -440,7 +536,7 @@ def create_battle_embed(user, player, monster, footer_text, messages=None):
 
     return embed
 
-def footer_text_for_embed(ctx):
+def footer_text_for_embed(ctx, monster=None):
     with open("level_data.json", "r") as f:
         LEVEL_DATA = json.load(f)
 
@@ -457,7 +553,15 @@ def footer_text_for_embed(ctx):
         footer_text = f"⚔️ Combat Level: {current_combat_level} | 📊 Max Level! {current_combat_experience} XP"
     else:
         next_level_experience_needed = LEVEL_DATA.get(str(current_combat_level), {}).get("total_experience")
-        footer_text = f"⚔️ Combat Level: {current_combat_level} | 📊 XP to Level {next_combat_level}: {next_level_experience_needed - current_combat_experience}"
+        footer_text = f"⚔️ Combat: {current_combat_level} ~~ 📊 XP to {next_combat_level}: {next_level_experience_needed - current_combat_experience}"
+
+    # Calculate and append the run chance if the monster is not defeated
+    if not monster.is_defeated():
+        run_chance = calculate_run_chance(monster.health, monster.max_health)
+        run_chance_percent = round(run_chance * 100)  # Convert to percentage
+        footer_text += f" ~~ 💨 Run {run_chance_percent}%"
 
     return footer_text
+
+
 

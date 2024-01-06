@@ -2,17 +2,17 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "health": 925,
+            "health": 869,
             "max_health": 925,
             "strength": 426,
-            "stamina": 294,
+            "stamina": 248,
             "max_stamina": 428,
             "attack": 172,
-            "damage": 60,
+            "damage": 0,
             "defense": 173,
             "armor": 34,
             "combat_level": 84,
-            "combat_experience": 771672,
+            "combat_experience": 771828,
             "mining_level": 99,
             "mining_experience": 607920,
             "woodcutting_level": 90,
@@ -21,7 +21,7 @@
             "damage_taken": 0
         },
         "inventory": {
-            "coppers": 25364,
+            "coppers": 25472,
             "items": [
                 {
                     "name": "Charcoal",
@@ -45,7 +45,7 @@
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 820
+                    "stack": 825
                 },
                 {
                     "name": "Pole",
@@ -129,7 +129,7 @@
                     "name": "Rabbit Body",
                     "description": "A furry rabbit body, warm to the touch. Can be used for citadel soft armors.",
                     "value": 10,
-                    "stack": 1129
+                    "stack": 1130
                 },
                 {
                     "name": "Rabbit Meat",
@@ -213,7 +213,7 @@
                 {
                     "name": "Spirit Weed",
                     "value": 25,
-                    "stack": 1024
+                    "stack": 1025
                 },
                 {
                     "name": "Snapdragon",
@@ -263,7 +263,7 @@
                     "effect_value": 250,
                     "value": 20,
                     "description": "Restores 250 stamina",
-                    "stack": 89
+                    "stack": 87
                 },
                 {
                     "name": "Super Health Potion",
@@ -370,23 +370,14 @@
                     "name": "Voltaic Sword",
                     "description": null,
                     "value": 190,
-                    "stack": 2,
+                    "stack": 3,
                     "wtype": "Sword",
                     "attack_modifier": 60,
                     "special_attack": 4,
                     "zone_level": 5
                 }
             ],
-            "equipped_weapon": {
-                "name": "Voltaic Sword",
-                "description": null,
-                "value": 190,
-                "stack": 1,
-                "wtype": "Sword",
-                "attack_modifier": 60,
-                "special_attack": 4,
-                "zone_level": 5
-            },
+            "equipped_weapon": null,
             "shields": [
                 {
                     "name": "Small Shield",

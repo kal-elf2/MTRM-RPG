@@ -8,6 +8,8 @@ from resources.item import Item
 import math
 from probabilities import CRITICAL_HIT_CHANCE, CRITICAL_HIT_MULTIPLIER, ironhide_percent, mightstone_multiplier
 from emojis import get_emoji
+import logging
+
 
 class Monster:
     def __init__(self, name, health, max_health, attack, stamina, experience_reward, weak_against, strong_against, attack_speed, drop):
@@ -131,8 +133,13 @@ class BattleContext:
         self.battle_messages = []
         self.zone_level = zone_level
         self.update_callback = update_callback
+        self.is_battle_active = True
+
+    def end_battle(self):
+        self.is_battle_active = False
 
     def update_special_attacks(self):
+        logging.info("Updating special attack buttons in BattleContext.")
         if self.update_callback:
             self.update_callback(self)
 
@@ -144,10 +151,11 @@ class BattleContext:
             await self.update_battle_embed()
 
     async def update_battle_embed(self):
-        battle_embed = create_battle_embed(self.user, self.player, self.monster, footer_text_for_embed(self.ctx), self.battle_messages)
+        battle_embed = create_battle_embed(self.user, self.player, self.monster, footer_text_for_embed(self.ctx, self.monster), self.battle_messages)
         await self.message.edit(embed=battle_embed)
 
 async def player_attack_task(battle_context, attack_level):
+    logging.info("Player attack task started.")
     # Calculate attack speed modifier
     attack_speed_modifier = calculate_attack_speed_modifier(battle_context.player.stats.attack * attack_level)
 
@@ -191,10 +199,10 @@ async def player_attack_task(battle_context, attack_level):
 
     await asyncio.sleep(attack_speed_modifier)
 
-
 async def monster_attack_task(battle_context):
+    logging.info("Monster attack task started.")
     attack_speed_modifier = calculate_attack_speed_modifier(battle_context.monster.attack)
-    while not battle_context.monster.is_defeated() and not battle_context.player.is_defeated():
+    while battle_context.is_battle_active and not battle_context.monster.is_defeated() and not battle_context.player.is_defeated():
         hit_probability = calculate_hit_probability(battle_context.monster.attack, battle_context.player.stats.defense, battle_context.player)
 
         # Determine if it's a critical hit
@@ -232,6 +240,10 @@ async def monster_battle(battle_context):
     # Await the completion of the monster attack task
     await monster_attack
 
+    # Check if the battle ended prematurely
+    if not battle_context.is_battle_active:
+        return None  # Return None to indicate that the battle ended prematurely
+
     # Determine the battle outcome
     if battle_context.monster.is_defeated():
         # Handle monster defeat
@@ -240,8 +252,3 @@ async def monster_battle(battle_context):
     elif battle_context.player.is_defeated():
         # Handle player defeat
         return (False, battle_context.monster.max_health, battle_context.player.stats.damage_taken, None, None, False), None
-
-
-
-
-

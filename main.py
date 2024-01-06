@@ -14,6 +14,7 @@ from stats import ResurrectOptions
 from monsters.battle import BattleOptions, LootOptions, SpecialAttackOptions
 from emojis import get_emoji
 from images.urls import generate_urls
+import logging
 
 bot = commands.Bot(command_prefix="/", intents=discord.Intents.all())
 # Add the cog to your bot
@@ -159,9 +160,17 @@ class ConfirmExemplar(discord.ui.View):
 
     @discord.ui.button(label="Start", custom_id="confirm_yes", style=discord.ButtonStyle.blurple)
     async def confirm_yes(self, button, interaction):
+        # Disable both buttons
+        for item in self.children:
+            if isinstance(item, discord.ui.Button):
+                item.disabled = True
+
         # Save player data here
         save_player_data(self.guild_id, self.player_data)
-        await interaction.response.send_message(f"Your selection of {self.exemplar_instance.name} Exemplar has been saved!", ephemeral=False)
+
+        # Update the message with the disabled view
+        await interaction.response.edit_message(
+            content=f"Your selection of {self.exemplar_instance.name} Exemplar has been saved!", view=self)
 
     @discord.ui.button(label="Back", custom_id="confirm_no", style=discord.ButtonStyle.grey)
     async def confirm_no(self, button, interaction):
@@ -177,7 +186,7 @@ def update_special_attack_options(battle_context):
 
 @bot.slash_command(description="Battle a monster!")
 async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=generate_monster_list(), required=True)):
-
+    logging.info(f"Battle command invoked by {ctx.author.name}.")
     from monsters.monster import BattleContext
 
     with open("level_data.json", "r") as f:
@@ -207,7 +216,7 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
     monster = generate_monster_by_name(monster, zone_level)
 
     battle_embed = await send_message(ctx.channel,
-                                      create_battle_embed(ctx.author, player, monster, footer_text_for_embed(ctx), messages= ""))
+                                      create_battle_embed(ctx.author, player, monster, footer_text_for_embed(ctx, monster), messages= ""))
 
     await ctx.respond(f"{ctx.author.mention} encounters a {monster.name}")
 
@@ -218,22 +227,43 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
     battle_context = BattleContext(ctx, ctx.author, player, monster, battle_embed, zone_level,
                                    update_special_attack_buttons)
 
-    # Pass BattleContext to SpecialAttackOptions view and send the message
-    special_attack_options_view = SpecialAttackOptions(battle_context)
-    special_attack_message = await ctx.send(view=special_attack_options_view)
+    # Create the special attack options view without the messages first
+    special_attack_options_view = SpecialAttackOptions(battle_context, None, None)
 
-    # Store the message reference in BattleContext or in the view
+    # IMPORTANT: Set the special attack options view in the battle context immediately
     battle_context.special_attack_options_view = special_attack_options_view
+
+    # Send the special attack message and store the reference
+    special_attack_message = await ctx.send(view=special_attack_options_view)
     battle_context.special_attack_message = special_attack_message
 
-    # Store the message object that is sent
+    # Send the battle options message and store the reference
     battle_options_msg = await ctx.send(view=BattleOptions(ctx, player, battle_context, special_attack_options_view))
+    battle_context.battle_options_msg = battle_options_msg
 
-    # Start the monster attack task
-    battle_outcome, loot_messages = await monster_battle(battle_context)
+    # Now update the special attack options view with the message references
+    special_attack_options_view.battle_options_msg = battle_options_msg
+    special_attack_options_view.special_attack_message = special_attack_message
+
+    # Start the monster attack task and receive its outcome
+    battle_result = await monster_battle(battle_context)
+
+    if battle_result is None:
+        # Save the player's current stats
+        player_data[author_id]["stats"]["stamina"] = player.stats.stamina
+        player_data[author_id]["stats"]["combat_level"] = player.stats.combat_level
+        player_data[author_id]["stats"]["combat_experience"] = player.stats.combat_experience
+        player_data[author_id]["stats"]["health"] = player.stats.health
+        player_data[author_id]["stats"]["damage_taken"] = player.stats.damage_taken
+        player_data[author_id]["stats"].update(player.stats.__dict__)
+
+        save_player_data(guild_id, player_data)
 
     # Process battle outcome
-    if battle_outcome:
+    else:
+        # Unpack the battle outcome and loot messages
+        battle_outcome, loot_messages = battle_result
+
         if battle_outcome[0]:
 
             experience_gained = monster.experience_reward
@@ -256,11 +286,10 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
             await battle_context.special_attack_message.delete()
             await battle_options_msg.delete()
 
-
             loot_view = LootOptions(ctx, player, monster, battle_embed, player_data, author_id, battle_outcome, loot_messages, guild_id, ctx, experience_gained, loothaven_effect)
 
             # Construct the embed with the footer
-            battle_outcome_embed = create_battle_embed(ctx.user, player, monster, footer_text_for_embed(ctx),
+            battle_outcome_embed = create_battle_embed(ctx.user, player, monster, footer_text_for_embed(ctx, monster),
                                                        f"You have **DEFEATED** the {monster.name}!\n"
                                                        f"You dealt **{battle_outcome[1]} damage** to the monster and took **{battle_outcome[2]} damage**. "
                                                        f"You gained {experience_gained} combat XP.\n"
