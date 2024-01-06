@@ -2,32 +2,32 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "health": 554,
+            "health": 151,
             "max_health": 925,
             "strength": 426,
-            "stamina": 60,
+            "stamina": 38,
             "max_stamina": 428,
             "attack": 172,
             "damage": 60,
             "defense": 173,
             "armor": 34,
             "combat_level": 84,
-            "combat_experience": 772272,
+            "combat_experience": 772561,
             "mining_level": 99,
-            "mining_experience": 607960,
+            "mining_experience": 608000,
             "woodcutting_level": 90,
-            "woodcutting_experience": 843001,
+            "woodcutting_experience": 843101,
             "zone_level": 4,
-            "damage_taken": 0
+            "damage_taken": 22
         },
         "inventory": {
-            "coppers": 25871,
+            "coppers": 26270,
             "items": [
                 {
                     "name": "Charcoal",
                     "description": null,
                     "value": null,
-                    "stack": 1441
+                    "stack": 1437
                 },
                 {
                     "name": "Iron",
@@ -39,13 +39,13 @@
                     "name": "Steel",
                     "description": null,
                     "value": null,
-                    "stack": 2165
+                    "stack": 2160
                 },
                 {
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 840
+                    "stack": 846
                 },
                 {
                     "name": "Pole",
@@ -141,13 +141,13 @@
                     "name": "Deer Part",
                     "description": "Various parts of a deer. Some are useful for making tools and weapons.",
                     "value": 20,
-                    "stack": 25
+                    "stack": 27
                 },
                 {
                     "name": "Deer Skin",
                     "description": "Tough deer skin. Can be used for citadel sturdy armors.",
                     "value": 30,
-                    "stack": 365
+                    "stack": 368
                 },
                 {
                     "name": "Wolf Skin",
@@ -183,13 +183,13 @@
                     "name": "Tough Leather Straps",
                     "description": null,
                     "value": null,
-                    "stack": 832
+                    "stack": 829
                 }
             ],
             "trees": [
                 {
                     "name": "Pine",
-                    "stack": 1052
+                    "stack": 1057
                 },
                 {
                     "name": "Yew",
@@ -208,7 +208,7 @@
                 {
                     "name": "Ranarr",
                     "value": 25,
-                    "stack": 1013
+                    "stack": 1014
                 },
                 {
                     "name": "Spirit Weed",
@@ -218,18 +218,18 @@
                 {
                     "name": "Snapdragon",
                     "value": 350,
-                    "stack": 1017
+                    "stack": 1018
                 },
                 {
                     "name": "Bloodweed",
                     "value": 350,
-                    "stack": 1009
+                    "stack": 1010
                 }
             ],
             "ore": [
                 {
                     "name": "Iron Ore",
-                    "stack": 1000
+                    "stack": 1002
                 },
                 {
                     "name": "Coal",
@@ -418,19 +418,25 @@
                     "stack": 1
                 },
                 {
+                    "name": "Loothaven",
+                    "description": "Gives a 25% chance to **double** your monster loot *and* their drop rates while wearing",
+                    "value": 25000,
+                    "stack": 1
+                },
+                {
                     "name": "Ironhide",
-                    "description": "Increases your chance to **evade all attacks** by 15% while wearing",
+                    "description": "Increases your chance to **evade all attacks** by 15% and **run chance** by **2x** while wearing",
                     "value": 25000,
                     "stack": 1
                 }
             ],
             "equipped_charm": {
-                "name": "Loothaven",
-                "description": "Gives a 25% chance to **double** your monster loot *and* their drop rates while wearing",
+                "name": "Ironhide",
+                "description": "Increases your chance to **evade all attacks** by 15% while wearing",
                 "value": 25000,
                 "stack": 1
             },
-            "materium": 87
+            "materium": 83
         },
         "in_battle": false
     }

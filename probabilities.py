@@ -21,6 +21,8 @@ woodcleaver_percent = 0.15
 loothaven_percent = 0.15
 # Original value: 0.15 (15% chance)
 ironhide_percent = 0.15
+# Original value: 2 (double run multiplier)
+ironhide_multiplier = 2
 # Original value: 2 (double multiplier)
 mightstone_multiplier = 2
 

@@ -151,7 +151,7 @@ class BattleContext:
             await self.update_battle_embed()
 
     async def update_battle_embed(self):
-        battle_embed = create_battle_embed(self.user, self.player, self.monster, footer_text_for_embed(self.ctx, self.monster), self.battle_messages)
+        battle_embed = create_battle_embed(self.user, self.player, self.monster, footer_text_for_embed(self.ctx, self.monster, self.player), self.battle_messages)
         await self.message.edit(embed=battle_embed)
 
 async def player_attack_task(battle_context, attack_level):

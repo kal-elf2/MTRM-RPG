@@ -282,7 +282,7 @@ class HarvestButton(discord.ui.View):
 
             battle_embed = await send_message(interaction.channel,
                                               create_battle_embed(interaction.user, self.player, monster,
-                                                                  footer_text_for_embed(self.ctx, monster)))
+                                                                  footer_text_for_embed(self.ctx, monster, self.player)))
 
             from monsters.monster import BattleContext
             from monsters.battle import SpecialAttackOptions
@@ -342,7 +342,7 @@ class HarvestButton(discord.ui.View):
                                             loot_messages, self.guild_id, interaction, experience_gained, loothaven_effect)
 
                     await battle_embed.edit(
-                        embed=create_battle_embed(interaction.user, self.player, monster, footer_text_for_embed(self.ctx, monster),
+                        embed=create_battle_embed(interaction.user, self.player, monster, footer_text_for_embed(self.ctx, monster, self.player),
                                                   f"You have **DEFEATED** the {monster.name}!\n\n"
                                                   f"You dealt **{battle_outcome[1]} damage** to the monster and took **{battle_outcome[2]} damage**. "
                                                   f"You gained {experience_gained} combat XP.\n"

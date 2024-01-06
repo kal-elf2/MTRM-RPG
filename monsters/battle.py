@@ -1,12 +1,12 @@
 from discord import Embed
 import discord
 import json
-import asyncio
 import random
 from emojis import get_emoji
 from utils import save_player_data, load_player_data
 from images.urls import generate_urls
 import logging
+import asyncio
 
 class LootOptions(discord.ui.View):
     def __init__(self, interaction, player, monster, battle_embed, player_data, author_id, battle_outcome,
@@ -96,7 +96,7 @@ class LootOptions(discord.ui.View):
             f"{loot_message_string}"
         )
 
-        final_embed = create_battle_embed(self.ctx.user, self.player, self.monster, footer_text_for_embed(self.ctx, self.monster), message_text)
+        final_embed = create_battle_embed(self.ctx.user, self.player, self.monster, footer_text_for_embed(self.ctx, self.monster, self.player), message_text)
 
         save_player_data(self.guild_id, self.player_data)
 
@@ -201,7 +201,7 @@ class BattleOptions(discord.ui.View):
             # Attempt to update battle embed
             try:
                 # Calculate the updated footer text including the run percentage
-                updated_footer_text = footer_text_for_embed(interaction, self.battle_context.monster)
+                updated_footer_text = footer_text_for_embed(interaction, self.battle_context.monster, self.player)
                 battle_embed = create_battle_embed(
                     self.interaction.user, self.player, self.battle_context.monster, updated_footer_text,
                     self.battle_context.battle_messages
@@ -310,7 +310,7 @@ class SpecialAttackOptions(discord.ui.View):
         await interaction.response.defer()
 
         # Calculate the dynamic run chance
-        run_chance = calculate_run_chance(self.battle_context.monster.health, self.battle_context.monster.max_health)
+        run_chance = calculate_run_chance(self.player, self.battle_context.monster.health, self.battle_context.monster.max_health)
 
         # Successful escape
         if random.random() < run_chance:
@@ -328,6 +328,7 @@ class SpecialAttackOptions(discord.ui.View):
             player_data[str(self.battle_context.user.id)]["in_battle"] = False
             save_player_data(self.battle_context.ctx.guild.id, player_data)
 
+
         else:  # Failed escape
             logging.info("Run attempt failed, disabling run button and starting cooldown.")
             self.disable_run_button()
@@ -338,7 +339,6 @@ class SpecialAttackOptions(discord.ui.View):
             asyncio.create_task(self.reenable_run_button_after_delay(interaction))
 
     def disable_run_button(self):
-        logging.info("Disabling run button.")
         self.run_button_disabled = True
         for item in self.children:
             if isinstance(item, discord.ui.Button) and item.custom_id == "run":
@@ -383,7 +383,6 @@ class SpecialAttackOptions(discord.ui.View):
         except discord.NotFound:
             logging.error("Failed to edit message: Unknown Message - The message might have been deleted.")
 
-
     def disable_unarmed_button(self):
         for item in self.children:
             if isinstance(item, discord.ui.Button) and item.custom_id == "unarmed":
@@ -403,7 +402,7 @@ class SpecialAttackOptions(discord.ui.View):
         # Perform the attack
         await player_attack_task(self.battle_context, attack_level)
         # After monster's health changes, update the battle embed
-        new_footer_text = footer_text_for_embed(self.ctx, self.monster)
+        new_footer_text = footer_text_for_embed(self.ctx, self.monster, self.player)
         updated_embed = create_battle_embed(self.battle_context.user, self.player, self.monster, new_footer_text,
                                             self.battle_messages)
         await self.battle_embed_message.edit(embed=updated_embed)
@@ -426,12 +425,22 @@ class SpecialAttackOptions(discord.ui.View):
             # Log the NotFound error
             logging.error(f"Failed to edit message: Unknown Message - The message might have been deleted.")
 
-def calculate_run_chance(monster_health, monster_max_health):
+def calculate_run_chance(player, monster_health, monster_max_health):
+    base_chance = 0.25
+
+    # Calculate base run chance
     if monster_health > monster_max_health * 0.5:
-        return 0.25  # Base chance of 25% if monster health is above 50%
+        run_chance = base_chance  # Base chance of 25% if monster health is above 50%
     else:
         # Linearly increase the run chance from 25% to 50% as monster health decreases from 50% to 0%
-        return 0.25 + (0.25 * ((monster_max_health * 0.5 - monster_health) / (monster_max_health * 0.5)))
+        run_chance = base_chance + (0.25 * ((monster_max_health * 0.5 - monster_health) / (monster_max_health * 0.5)))
+
+    # Double the run chance if Ironhide charm is equipped
+    if player.inventory.equipped_charm and player.inventory.equipped_charm.name == "Ironhide":
+        run_chance *= 2
+
+    # Ensure run chance does not exceed 100%
+    return min(run_chance, 1.0)
 
 def create_health_bar(current, max_health):
     bar_length = 25  # Fixed bar length
@@ -536,7 +545,7 @@ def create_battle_embed(user, player, monster, footer_text, messages=None):
 
     return embed
 
-def footer_text_for_embed(ctx, monster=None):
+def footer_text_for_embed(ctx, monster=None, player=None):
     with open("level_data.json", "r") as f:
         LEVEL_DATA = json.load(f)
 
@@ -557,7 +566,7 @@ def footer_text_for_embed(ctx, monster=None):
 
     # Calculate and append the run chance if the monster is not defeated
     if not monster.is_defeated():
-        run_chance = calculate_run_chance(monster.health, monster.max_health)
+        run_chance = calculate_run_chance(player, monster.health, monster.max_health)
         run_chance_percent = round(run_chance * 100)  # Convert to percentage
         footer_text += f" ~~ 💨 Run {run_chance_percent}%"
 

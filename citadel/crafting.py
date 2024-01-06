@@ -7,7 +7,7 @@ from exemplars.exemplars import Exemplar
 from resources.ore import Ore
 from resources.potion import Potion
 from resources.materium import Materium
-from probabilities import stonebreaker_percent, woodcleaver_percent, loothaven_percent, mightstone_multiplier, ironhide_percent, CRITICAL_HIT_CHANCE, CRITICAL_HIT_MULTIPLIER
+from probabilities import stonebreaker_percent, woodcleaver_percent, loothaven_percent, mightstone_multiplier, ironhide_percent, ironhide_multiplier, CRITICAL_HIT_CHANCE, CRITICAL_HIT_MULTIPLIER
 
 
 class Weapon(Item):
@@ -642,7 +642,7 @@ def create_crafting_stations(interaction, station_name=None):
                            description=f"Doubles your critical hit chance *and* damage multiplier (**{int(round((mightstone_multiplier * CRITICAL_HIT_CHANCE) * 100))}%** and **{int(CRITICAL_HIT_MULTIPLIER * 2)}x**) while wearing",
                            value=25000)
     defenders_charm = Charm("Ironhide",
-                            description=f"Increases your chance to **evade all attacks** by {int(round(ironhide_percent * 100))}% while wearing",
+                            description=f"Increases your chance to **evade all attacks** by {int(round(ironhide_percent * 100))}% and **run chance** by **{int(ironhide_multiplier)}x** while wearing",
                             value=25000)
 
     # Potions
@@ -753,5 +753,3 @@ def create_crafting_stations(interaction, station_name=None):
     if station_name:
         return stations.get(station_name)
     return stations
-
-

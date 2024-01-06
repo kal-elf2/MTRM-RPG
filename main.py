@@ -216,7 +216,7 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
     monster = generate_monster_by_name(monster, zone_level)
 
     battle_embed = await send_message(ctx.channel,
-                                      create_battle_embed(ctx.author, player, monster, footer_text_for_embed(ctx, monster), messages= ""))
+                                      create_battle_embed(ctx.author, player, monster, footer_text_for_embed(ctx, monster, player=player), messages= ""))
 
     await ctx.respond(f"{ctx.author.mention} encounters a {monster.name}")
 
