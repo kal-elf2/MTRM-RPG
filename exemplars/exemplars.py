@@ -101,11 +101,11 @@ class Exemplar:
             if skill == "mining":
                 embed.add_field(name="⛏️ Mining Level", value=f"**{new_level}**   (+{increase_value})", inline=True)
                 embed.add_field(name=f"{get_emoji('strength_emoji')} Strength",
-                                value=f"**{self.stats.strength}**   (+{increase_value})",
+                                value=f"**{self.stats.strength + 1}**   (+{increase_value})",
                                 inline=True)
             elif skill == "woodcutting":
                 embed.add_field(name="🪓 Woodcutting Level", value=f"**{new_level}**   (+{increase_value})", inline=True)
-                embed.add_field(name="🗡️ Attack", value=f"**{self.stats.attack}**   (+{increase_value})", inline=True)
+                embed.add_field(name="🗡️ Attack", value=f"**{self.stats.attack + 1}**   (+{increase_value})", inline=True)
 
         return embed
 
@@ -130,7 +130,8 @@ class Exemplar:
                 self.stats.stamina = self.stats.max_stamina
 
             if interaction:
-                await self.send_level_up_message(interaction, experience_type, updated_level)
+                embed = await self.send_level_up_message(interaction, experience_type, updated_level)
+                return embed
 
         return None  # return None if there's no level-up
 

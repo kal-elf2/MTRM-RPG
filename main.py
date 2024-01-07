@@ -53,15 +53,15 @@ class PickExemplars(Select):
 
     def __init__(self):
         options = [
-            SelectOption(label='Human Exemplars', value='human',
+            SelectOption(label='Human Exemplar', value='human',
                          emoji=f'{get_emoji("human_exemplar_emoji")}'),
-            SelectOption(label='Dwarf Exemplars', value='dwarf',
+            SelectOption(label='Dwarf Exemplar', value='dwarf',
                          emoji=f'{get_emoji("dwarf_exemplar_emoji")}'),
-            SelectOption(label='Orc Exemplars', value='orc',
+            SelectOption(label='Orc Exemplar', value='orc',
                          emoji=f'{get_emoji("orc_exemplar_emoji")}'),
-            SelectOption(label='Halfling Exemplars', value='halfling',
+            SelectOption(label='Halfling Exemplar', value='halfling',
                          emoji=f'{get_emoji("halfling_exemplar_emoji")}'),
-            SelectOption(label='Elf Exemplars', value='elf',
+            SelectOption(label='Elf Exemplar', value='elf',
                          emoji=f'{get_emoji("elf_exemplar_emoji")}')
         ]
         super().__init__(placeholder='Exemplar', options=options)
@@ -336,11 +336,17 @@ async def newgame(ctx):
     player_data = load_player_data(guild_id)
 
     class NewGame(discord.ui.View):
-        def __init__(self):
+        def __init__(self, author_id):
             super().__init__(timeout=None)
+            self.author_id = author_id
 
         @discord.ui.button(label="New Game", custom_id="new_game", style=discord.ButtonStyle.blurple)
         async def button1(self, button, interaction):
+            # Check if the user who clicked is the same as the one who invoked the command
+            if str(interaction.user.id) != self.author_id:
+                await interaction.response.send_message("This button is not for you.", ephemeral=True)
+                return
+
             # Explicitly remove and re-initialize player data
             player_data[author_id] = {
                 "exemplar": None,
@@ -348,6 +354,14 @@ async def newgame(ctx):
                 "inventory": Inventory().to_dict(),
             }
             save_player_data(guild_id, player_data)
+
+            # Disable the button
+            button.disabled = True
+
+            # Update the message with the disabled button
+            await interaction.message.edit(view=self)
+
+            # Proceed with the rest of your logic
             view = View()
             view.add_item(PickExemplars())
             await interaction.response.send_message(
@@ -359,10 +373,11 @@ async def newgame(ctx):
         view.add_item(PickExemplars())
         await ctx.respond(f"{ctx.author.mention}, please choose your exemplar from the list below.", view=view)
     else:
-        view = NewGame()
+        view = NewGame(author_id)
         await ctx.respond(
             f"{ctx.author.mention}, you have a game in progress. Do you want to erase your progress and start a new game?",
             view=view)
+
 
 
 @bot.slash_command()

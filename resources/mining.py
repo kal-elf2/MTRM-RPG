@@ -128,7 +128,7 @@ class MineButton(discord.ui.View):
             await interaction.response.send_message(
                 f"Inventory is full. Please make some room before mining {self.ore_type}.",
                 ephemeral=True)
-            # Re-enable the button after 3 seconds
+            # Re-enable the button after 2.5 seconds
             await asyncio.sleep(2.5)
             button.disabled = False
             return
@@ -142,7 +142,7 @@ class MineButton(discord.ui.View):
 
         if stamina <= 0:
             await interaction.followup.send("You are too tired to mine any ore.", ephemeral=True)
-            # Re-enable the button after 3 seconds
+            # Re-enable the button after 2.5 seconds
             await asyncio.sleep(2.5)
             button.disabled = False
             return
@@ -229,7 +229,7 @@ class MineButton(discord.ui.View):
             updated_description = "\n".join(self.mine_messages)
             self.embed.description = updated_description
 
-            # Re-enable the button after 3 seconds
+            # Re-enable the button after 1.75 seconds
             await asyncio.sleep(1.75)
             button.disabled = False
 

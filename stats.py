@@ -17,7 +17,6 @@ def experience_needed_to_next_level(current_level, current_exp, level_data):
         return level_data[str(current_level)]['total_experience'] - current_exp
     return None
 
-
 def create_progress_bar(current_exp, current_level, level_data):
     bar_length = 16  # Fixed bar length
     current_level_str = str(current_level)
@@ -120,7 +119,6 @@ class StatsCog(commands.Cog):
                 embed.add_field(name=f"Progress: **N/A**", value="Max Level Reached", inline=True)
 
             await ctx.respond(content=f"{ctx.author.mention}'s **{display}**", embed=embed)
-
 
 class ResurrectOptions(discord.ui.View):
     def __init__(self, interaction, player_data, author_id, battle_embed):
@@ -265,7 +263,6 @@ class ResurrectOptions(discord.ui.View):
 
         # Send the new embed as a new message, without view buttons
         await interaction.message.edit(embed=new_embed, view=None)
-
 
 async def apply_penalty(player_data, author_id, interaction):
     stats = player_data[author_id]["stats"]

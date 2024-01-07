@@ -10,7 +10,7 @@
             "attack": 172,
             "damage": 60,
             "defense": 173,
-            "armor": 34,
+            "armor": 40,
             "combat_level": 84,
             "combat_experience": 772787,
             "mining_level": 99,
@@ -387,17 +387,15 @@
                 "special_attack": 4,
                 "zone_level": 5
             },
-            "shields": [
-                {
-                    "name": "Small Shield",
-                    "description": null,
-                    "value": 46,
-                    "stack": 1,
-                    "defense_modifier": 6,
-                    "zone_level": 2
-                }
-            ],
-            "equipped_shield": null,
+            "shields": [],
+            "equipped_shield": {
+                "name": "Small Shield",
+                "description": null,
+                "value": 46,
+                "stack": 1,
+                "defense_modifier": 6,
+                "zone_level": 2
+            },
             "charms": [
                 {
                     "name": "Woodcleaver",
@@ -412,14 +410,14 @@
                     "stack": 1
                 },
                 {
-                    "name": "Mightstone",
-                    "description": "Doubles your critical hit chance *and* damage multiplier (**30%** and **3x**) while wearing",
+                    "name": "Loothaven",
+                    "description": "Gives a 25% chance to **double** your monster loot *and* their drop rates while wearing",
                     "value": 25000,
                     "stack": 1
                 },
                 {
-                    "name": "Loothaven",
-                    "description": "Gives a 25% chance to **double** your monster loot *and* their drop rates while wearing",
+                    "name": "Mightstone",
+                    "description": "Doubles your critical hit chance *and* damage multiplier (**30%** and **3x**) while wearing",
                     "value": 25000,
                     "stack": 1
                 },

@@ -131,7 +131,7 @@ class HarvestButton(discord.ui.View):
                 self.tree_type):
             await interaction.response.send_message(f"Inventory is full. Please make some room before chopping {self.tree_type}.",
                                             ephemeral=True)
-            # Re-enable the button after 3 seconds
+            # Re-enable the button after 2.5 seconds
             await asyncio.sleep(2.5)
             button.disabled = False
             return
@@ -145,7 +145,7 @@ class HarvestButton(discord.ui.View):
 
         if stamina <= 0:
             await interaction.followup.send("You are too tired to chop any wood.", ephemeral=True)
-            # Re-enable the button after 3 seconds
+            # Re-enable the button after 2.5 seconds
             await asyncio.sleep(2.5)
             button.disabled = False
             return
@@ -233,7 +233,7 @@ class HarvestButton(discord.ui.View):
             updated_description = "\n".join(self.chop_messages)
             self.embed.description = updated_description
 
-            # Re-enable the button after 3 seconds
+            # Re-enable the button after 1.75 seconds
             await asyncio.sleep(1.75)
             button.disabled = False
 
