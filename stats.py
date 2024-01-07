@@ -163,14 +163,31 @@ class ResurrectOptions(discord.ui.View):
             save_player_data(interaction.guild.id, self.player_data)
 
 
-        # Else loop (user died and is being penalized)
+        # User died and is being penalized)
         else:
             # Apply the penalty since the user doesn't have enough MTRM
             levels_decreased = await apply_penalty(self.player_data, self.author_id, interaction)
 
+            # Update player data for death penalty
+            player_inventory = self.player_data[self.author_id]['inventory']
+
+            # Reset the inventory attributes
+            player_inventory.items = []
+            player_inventory.trees = []
+            player_inventory.herbs = []
+            player_inventory.ore = []
+            player_inventory.armors = []
+            player_inventory.weapons = []
+            player_inventory.shields = []
+
+            # Reset equipped items
+            player_inventory.equipped_armor = {"chest": None, "boots": None, "gloves": None}
+            player_inventory.equipped_weapon = None
+            player_inventory.equipped_shield = None
+            player_inventory.equipped_charm = None
+
             # Save the updated stats
             save_player_data(interaction.guild.id, self.player_data)
-
 
             # Update self.player based on updated player_data
             updated_stats = self.player_data[self.author_id]['stats']
@@ -219,6 +236,24 @@ class ResurrectOptions(discord.ui.View):
 
         # Apply the penalty since the user doesn't have enough MTRM
         levels_decreased = await apply_penalty(self.player_data, self.author_id, interaction)
+
+        # Update player data for death penalty
+        player_inventory = self.player_data[self.author_id]['inventory']
+
+        # Reset the inventory attributes
+        player_inventory.items = []
+        player_inventory.trees = []
+        player_inventory.herbs = []
+        player_inventory.ore = []
+        player_inventory.armors = []
+        player_inventory.weapons = []
+        player_inventory.shields = []
+
+        # Reset equipped items
+        player_inventory.equipped_armor = {"chest": None, "boots": None, "gloves": None}
+        player_inventory.equipped_weapon = None
+        player_inventory.equipped_shield = None
+        player_inventory.equipped_charm = None
 
         # Save the updated stats
         save_player_data(interaction.guild.id, self.player_data)

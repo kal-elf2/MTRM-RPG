@@ -432,8 +432,13 @@ def calculate_run_chance(player, monster_health, monster_max_health):
     if player.inventory.equipped_charm and player.inventory.equipped_charm.name == "Ironhide":
         run_chance *= 2
 
+    # Halve the run chance if player's stamina is 0
+    if player.stats.stamina == 0:
+        run_chance *= 0.5
+
     # Ensure run chance does not exceed 100%
     return min(run_chance, 1.0)
+
 
 def create_health_bar(current, max_health):
     bar_length = 25  # Fixed bar length

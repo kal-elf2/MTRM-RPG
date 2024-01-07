@@ -313,7 +313,8 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
             f"{get_emoji('rip_emoji')} *Your spirit lingers, seeking renewal.* {get_emoji('rip_emoji')}\n\n"
             f"__**Options for Revival:**__\n"
             f"1. Use {get_emoji('Materium')} to revive without penalty.\n"
-            f"2. Resurrect with 2.5% penalty to all skills.")
+            f"2. Resurrect with 2.5% penalty to all skills."
+            f"**Lose all items in inventory** (Keep coppers, MTRM, potions, and charms)"                                )
 
             # Clear the previous BattleOptions view
             await battle_context.special_attack_message.delete()
