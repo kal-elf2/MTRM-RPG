@@ -26,6 +26,8 @@ ironhide_multiplier = 2
 # Original value: 2 (double multiplier)
 mightstone_multiplier = 2
 
+# Buyback item base cost:
+buyback_cost = 5000
 
 # Constants
 CRITICAL_HIT_CHANCE = 0.10  # 10% chance of a critical hit
