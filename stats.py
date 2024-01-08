@@ -8,6 +8,7 @@ from exemplars.exemplars import Exemplar
 from emojis import get_emoji
 from images.urls import generate_urls
 import copy
+from probabilities import buyback_cost
 
 def load_level_data():
     with open('level_data.json', 'r') as f:
@@ -184,11 +185,6 @@ class ResurrectOptions(discord.ui.View):
             player_inventory.weapons = []
             player_inventory.shields = []
 
-            # Reset equipped items
-            player_inventory.equipped_armor = {"chest": None, "boots": None, "gloves": None}
-            player_inventory.equipped_weapon = None
-            player_inventory.equipped_shield = None
-
             # Save the updated stats
             save_player_data(interaction.guild.id, self.player_data)
 
@@ -236,12 +232,14 @@ class ResurrectOptions(discord.ui.View):
             from nero.cemetery_buyback import NeroView
             nero_view = NeroView(interaction, self.player_data, self.author_id, self.player, saved_inventory)
 
+            thumbnail_url = generate_urls("nero", "cemetery")
             nero_embed = discord.Embed(
-                title="A Pirate Captain Approaches...",
+                title="Captain Ner0",
                 description=f"Arr, there ye be, {interaction.user.mention}! I've scooped up all yer belongings after that nasty scuffle. "
-                            "Ye can have 'em back, but it'll cost ye some coppers, savvy? A fair price for a fair service, says I.",
+                            f"Ye can have 'em back, but it'll cost ye some coppers, savvy? Hows about **{buyback_cost * self.player.stats.zone_level}**{get_emoji('coppers_emoji')}? A fair price for a fair service, says I.",
                 color=discord.Color.dark_gold()
             )
+            nero_embed.set_thumbnail(url=thumbnail_url)
 
             # Send the message with the NeroView in the channel
             channel = interaction.channel
@@ -264,12 +262,6 @@ class ResurrectOptions(discord.ui.View):
         player_inventory.armors = []
         player_inventory.weapons = []
         player_inventory.shields = []
-
-        # Reset equipped items
-        player_inventory.equipped_armor = {"chest": None, "boots": None, "gloves": None}
-        player_inventory.equipped_weapon = None
-        player_inventory.equipped_shield = None
-        player_inventory.equipped_charm = None
 
         # Save the updated stats
         save_player_data(interaction.guild.id, self.player_data)
