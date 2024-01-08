@@ -2,32 +2,32 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "health": 349,
-            "max_health": 925,
-            "strength": 426,
-            "stamina": 228,
-            "max_stamina": 428,
-            "attack": 172,
+            "health": 15,
+            "max_health": 915,
+            "strength": 500,
+            "stamina": 423,
+            "max_stamina": 423,
+            "attack": 253,
             "damage": 60,
-            "defense": 173,
-            "armor": 40,
-            "combat_level": 84,
-            "combat_experience": 772787,
-            "mining_level": 99,
-            "mining_experience": 608000,
-            "woodcutting_level": 90,
-            "woodcutting_experience": 843101,
+            "defense": 171,
+            "armor": 34,
+            "combat_level": 83,
+            "combat_experience": 753467,
+            "mining_level": 80,
+            "mining_experience": 592800,
+            "woodcutting_level": 84,
+            "woodcutting_experience": 822023,
             "zone_level": 4,
             "damage_taken": 0
         },
         "inventory": {
-            "coppers": 26532,
+            "coppers": 9206532,
             "items": [
                 {
                     "name": "Charcoal",
                     "description": null,
                     "value": null,
-                    "stack": 1437
+                    "stack": 1425
                 },
                 {
                     "name": "Iron",
@@ -39,13 +39,13 @@
                     "name": "Steel",
                     "description": null,
                     "value": null,
-                    "stack": 2160
+                    "stack": 2150
                 },
                 {
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 856
+                    "stack": 835
                 },
                 {
                     "name": "Pole",
@@ -183,7 +183,7 @@
                     "name": "Tough Leather Straps",
                     "description": null,
                     "value": null,
-                    "stack": 829
+                    "stack": 823
                 }
             ],
             "trees": [
@@ -275,7 +275,35 @@
                 }
             ],
             "limit": 49,
-            "armors": [],
+            "armors": [
+                {
+                    "name": "Brigandine Armor",
+                    "description": null,
+                    "value": 160,
+                    "stack": 1,
+                    "defense_modifier": 56,
+                    "armor_type": "chest",
+                    "zone_level": 4
+                },
+                {
+                    "name": "Brigandine Boots",
+                    "description": null,
+                    "value": 98,
+                    "stack": 1,
+                    "defense_modifier": 20,
+                    "armor_type": "boots",
+                    "zone_level": 4
+                },
+                {
+                    "name": "Brigandine Gloves",
+                    "description": null,
+                    "value": 98,
+                    "stack": 1,
+                    "defense_modifier": 36,
+                    "armor_type": "gloves",
+                    "zone_level": 4
+                }
+            ],
             "equipped_armor": {
                 "chest": {
                     "name": "Brigandine Armor",
@@ -387,15 +415,17 @@
                 "special_attack": 4,
                 "zone_level": 5
             },
-            "shields": [],
-            "equipped_shield": {
-                "name": "Small Shield",
-                "description": null,
-                "value": 46,
-                "stack": 1,
-                "defense_modifier": 6,
-                "zone_level": 2
-            },
+            "shields": [
+                {
+                    "name": "Small Shield",
+                    "description": null,
+                    "value": 46,
+                    "stack": 1,
+                    "defense_modifier": 6,
+                    "zone_level": 2
+                }
+            ],
+            "equipped_shield": null,
             "charms": [
                 {
                     "name": "Woodcleaver",
@@ -434,7 +464,7 @@
                 "value": 25000,
                 "stack": 1
             },
-            "materium": 83
+            "materium": 0
         },
         "in_battle": false
     }
