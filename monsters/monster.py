@@ -224,7 +224,7 @@ async def monster_attack_task(battle_context):
 
 def generate_evasion_message(player, monster, user):
     if player.inventory.equipped_charm and player.inventory.equipped_charm.name == "Ironhide":
-        return f" Your {get_emoji('Ironhide')}**Ironhide Charm** glows!\n{user.mention} ***evaded*** the {monster.name}'s attack!"
+        return f"{get_emoji('Ironhide')} Your **Ironhide Charm** glows!\n{user.mention} ***evaded*** the {monster.name}'s attack!"
     else:
         return f"{user.mention} ***evaded*** the {monster.name}'s attack!"
 

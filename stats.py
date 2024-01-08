@@ -9,6 +9,7 @@ from emojis import get_emoji
 from images.urls import generate_urls
 import copy
 from probabilities import buyback_cost
+import asyncio
 
 def load_level_data():
     with open('level_data.json', 'r') as f:
@@ -165,7 +166,7 @@ class ResurrectOptions(discord.ui.View):
             save_player_data(interaction.guild.id, self.player_data)
 
 
-        # User died and is being penalized)
+        # User died and is being penalized
         else:
             # Apply the penalty since the user doesn't have enough MTRM
             levels_decreased = await apply_penalty(self.player_data, self.author_id, interaction)
@@ -243,6 +244,7 @@ class ResurrectOptions(discord.ui.View):
 
             # Send the message with the NeroView in the channel
             channel = interaction.channel
+            await asyncio.sleep(1)
             await channel.send(embed=nero_embed, view=nero_view)
 
     @discord.ui.button(custom_id="resurrect", label="Resurrect", style=discord.ButtonStyle.danger)
@@ -253,6 +255,9 @@ class ResurrectOptions(discord.ui.View):
 
         # Update player data for death penalty
         player_inventory = self.player_data[self.author_id]['inventory']
+
+        # Before resetting the inventory, deep copy the entire inventory
+        saved_inventory = copy.deepcopy(player_inventory)
 
         # Reset the inventory attributes
         player_inventory.items = []
@@ -306,6 +311,23 @@ class ResurrectOptions(discord.ui.View):
 
         # Send the new embed as a new message, without view buttons
         await interaction.message.edit(embed=new_embed, view=None)
+
+        from nero.cemetery_buyback import NeroView
+        nero_view = NeroView(interaction, self.player_data, self.author_id, self.player, saved_inventory)
+
+        thumbnail_url = generate_urls("nero", "cemetery")
+        nero_embed = discord.Embed(
+            title="Captain Ner0",
+            description=f"Arr, there ye be, {interaction.user.mention}! I've scooped up all yer belongings after that nasty scuffle. "
+                        f"Ye can have 'em back, but it'll cost ye some coppers, savvy? Hows about **{buyback_cost * self.player.stats.zone_level}**{get_emoji('coppers_emoji')}? A fair price for a fair service, says I.",
+            color=discord.Color.dark_gold()
+        )
+        nero_embed.set_thumbnail(url=thumbnail_url)
+
+        # Send the message with the NeroView in the channel
+        channel = interaction.channel
+        await asyncio.sleep(1)
+        await channel.send(embed=nero_embed, view=nero_view)
 
 async def apply_penalty(player_data, author_id, interaction):
     stats = player_data[author_id]["stats"]

@@ -2,32 +2,56 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "health": 15,
+            "health": 8,
             "max_health": 915,
-            "strength": 500,
-            "stamina": 423,
+            "strength": 421,
+            "stamina": 412,
             "max_stamina": 423,
-            "attack": 253,
+            "attack": 170,
             "damage": 60,
             "defense": 171,
             "armor": 34,
             "combat_level": 83,
-            "combat_experience": 753467,
+            "combat_experience": 734669,
             "mining_level": 80,
-            "mining_experience": 592800,
+            "mining_experience": 577980,
             "woodcutting_level": 84,
-            "woodcutting_experience": 822023,
+            "woodcutting_experience": 801492,
             "zone_level": 4,
             "damage_taken": 0
         },
         "inventory": {
-            "coppers": 9206532,
+            "coppers": 200038,
             "items": [
+                {
+                    "name": "Wolf Skin",
+                    "description": "A skin of a wild wolf. Known for its durability and strength.",
+                    "value": 50,
+                    "stack": 232
+                },
+                {
+                    "name": "Onyx",
+                    "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
+                    "value": 100,
+                    "stack": 836
+                },
+                {
+                    "name": "Deer Part",
+                    "description": "Various parts of a deer. Some are useful for making tools and weapons.",
+                    "value": 20,
+                    "stack": 29
+                },
+                {
+                    "name": "Deer Skin",
+                    "description": "Tough deer skin. Can be used for citadel sturdy armors.",
+                    "value": 30,
+                    "stack": 371
+                },
                 {
                     "name": "Charcoal",
                     "description": null,
                     "value": null,
-                    "stack": 1425
+                    "stack": 1422
                 },
                 {
                     "name": "Iron",
@@ -39,13 +63,7 @@
                     "name": "Steel",
                     "description": null,
                     "value": null,
-                    "stack": 2150
-                },
-                {
-                    "name": "Onyx",
-                    "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
-                    "value": 100,
-                    "stack": 835
+                    "stack": 2147
                 },
                 {
                     "name": "Pole",
@@ -138,24 +156,6 @@
                     "stack": 9960
                 },
                 {
-                    "name": "Deer Part",
-                    "description": "Various parts of a deer. Some are useful for making tools and weapons.",
-                    "value": 20,
-                    "stack": 27
-                },
-                {
-                    "name": "Deer Skin",
-                    "description": "Tough deer skin. Can be used for citadel sturdy armors.",
-                    "value": 30,
-                    "stack": 368
-                },
-                {
-                    "name": "Wolf Skin",
-                    "description": "A skin of a wild wolf. Known for its durability and strength.",
-                    "value": 50,
-                    "stack": 230
-                },
-                {
                     "name": "Glowing Essence",
                     "description": "An ethereal essence that glows faintly. Used in powerful magical rituals and citadel.",
                     "value": 200,
@@ -177,7 +177,7 @@
                     "name": "Leather Straps",
                     "description": null,
                     "value": null,
-                    "stack": 787
+                    "stack": 783
                 },
                 {
                     "name": "Tough Leather Straps",
@@ -188,20 +188,20 @@
             ],
             "trees": [
                 {
-                    "name": "Pine",
-                    "stack": 1057
-                },
-                {
                     "name": "Yew",
-                    "stack": 1012
+                    "stack": 1013
                 },
                 {
                     "name": "Ash",
-                    "stack": 957
+                    "stack": 958
                 },
                 {
                     "name": "Poplar",
                     "stack": 1004
+                },
+                {
+                    "name": "Pine",
+                    "stack": 1000
                 }
             ],
             "herbs": [
@@ -218,7 +218,7 @@
                 {
                     "name": "Snapdragon",
                     "value": 350,
-                    "stack": 1018
+                    "stack": 1019
                 },
                 {
                     "name": "Bloodweed",
@@ -229,11 +229,11 @@
             "ore": [
                 {
                     "name": "Iron Ore",
-                    "stack": 1002
+                    "stack": 1003
                 },
                 {
                     "name": "Coal",
-                    "stack": 975
+                    "stack": 976
                 },
                 {
                     "name": "Carbon",
