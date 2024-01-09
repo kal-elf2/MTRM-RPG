@@ -73,7 +73,7 @@ class ForgeRow(discord.ui.View, CommonResponses):
         # Check if the user who interacted is the same as the one who initiated the view
         # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
-            await self.unauthorized_user_response(interaction)
+            await self.nero_unauthorized_user_response(interaction)
             return
 
         station = create_crafting_stations(interaction, "forge")
@@ -85,7 +85,7 @@ class ForgeRow(discord.ui.View, CommonResponses):
         # Check if the user who interacted is the same as the one who initiated the view
         # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
-            await self.unauthorized_user_response(interaction)
+            await self.nero_unauthorized_user_response(interaction)
             return
 
         station = create_crafting_stations(interaction, "woodshop")
@@ -97,7 +97,7 @@ class ForgeRow(discord.ui.View, CommonResponses):
         # Check if the user who interacted is the same as the one who initiated the view
         # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
-            await self.unauthorized_user_response(interaction)
+            await self.nero_unauthorized_user_response(interaction)
             return
 
         station = create_crafting_stations(interaction, "archery_stand")
@@ -123,7 +123,7 @@ class TanneryRow(discord.ui.View, CommonResponses):
         # Check if the user who interacted is the same as the one who initiated the view
         # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
-            await self.unauthorized_user_response(interaction)
+            await self.nero_unauthorized_user_response(interaction)
             return
 
         station = create_crafting_stations(interaction, "tannery")
@@ -135,7 +135,7 @@ class TanneryRow(discord.ui.View, CommonResponses):
         # Check if the user who interacted is the same as the one who initiated the view
         # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
-            await self.unauthorized_user_response(interaction)
+            await self.nero_unauthorized_user_response(interaction)
             return
 
         station = create_crafting_stations(interaction, "clothiery")
@@ -147,7 +147,7 @@ class TanneryRow(discord.ui.View, CommonResponses):
         # Check if the user who interacted is the same as the one who initiated the view
         # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
-            await self.unauthorized_user_response(interaction)
+            await self.nero_unauthorized_user_response(interaction)
             return
 
         station = create_crafting_stations(interaction, "potion_shop")
@@ -173,7 +173,7 @@ class BreadRow(discord.ui.View, CommonResponses):
         # Check if the user who interacted is the same as the one who initiated the view
         # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
-            await self.unauthorized_user_response(interaction)
+            await self.nero_unauthorized_user_response(interaction)
             return
 
         station = create_crafting_stations(interaction, "bread_stand")
@@ -185,7 +185,7 @@ class BreadRow(discord.ui.View, CommonResponses):
         # Check if the user who interacted is the same as the one who initiated the view
         # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
-            await self.unauthorized_user_response(interaction)
+            await self.nero_unauthorized_user_response(interaction)
             return
 
         station = create_crafting_stations(interaction, "meat_stand")
@@ -198,7 +198,7 @@ class BreadRow(discord.ui.View, CommonResponses):
         # Check if the user who interacted is the same as the one who initiated the view
         # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
-            await self.unauthorized_user_response(interaction)
+            await self.nero_unauthorized_user_response(interaction)
             return
 
         station = create_crafting_stations(interaction, "tavern")
@@ -217,7 +217,7 @@ class WheatRow(discord.ui.View, CommonResponses):
         # Check if the user who interacted is the same as the one who initiated the view
         # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
-            await self.unauthorized_user_response(interaction)
+            await self.nero_unauthorized_user_response(interaction)
             return
 
         embed = discord.Embed(
@@ -236,7 +236,7 @@ class WheatRow(discord.ui.View, CommonResponses):
         # Check if the user who interacted is the same as the one who initiated the view
         # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
-            await self.unauthorized_user_response(interaction)
+            await self.nero_unauthorized_user_response(interaction)
             return
 
         embed = discord.Embed(
@@ -255,7 +255,7 @@ class WheatRow(discord.ui.View, CommonResponses):
         # Check if the user who interacted is the same as the one who initiated the view
         # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
-            await self.unauthorized_user_response(interaction)
+            await self.nero_unauthorized_user_response(interaction)
             return
 
         from exemplars.exemplars import Exemplar
@@ -322,7 +322,7 @@ class TravelRow(discord.ui.View, CommonResponses):
         # Check if the user who interacted is the same as the one who initiated the view
         # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
-            await self.unauthorized_user_response(interaction)
+            await self.nero_unauthorized_user_response(interaction)
             return
 
         await interaction.response.send_message("You're preparing to Travel!")
@@ -332,7 +332,7 @@ class TravelRow(discord.ui.View, CommonResponses):
         # Check if the user who interacted is the same as the one who initiated the view
         # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
-            await self.unauthorized_user_response(interaction)
+            await self.nero_unauthorized_user_response(interaction)
             return
 
         await interaction.response.send_message("You entered the Colosseum!")
@@ -341,7 +341,7 @@ class TravelRow(discord.ui.View, CommonResponses):
     async def exit(self, button, interaction):# Check if the user who interacted is the same as the one who initiated the view
         # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
-            await self.unauthorized_user_response(interaction)
+            await self.nero_unauthorized_user_response(interaction)
             return
 
         await interaction.response.send_message("You left the Citadel!")

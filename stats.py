@@ -161,7 +161,7 @@ class ResurrectOptions(discord.ui.View, CommonResponses):
         # Check if the user who interacted is the same as the one who initiated the view
         # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
-            await self.unauthorized_user_response(interaction)
+            await self.nero_unauthorized_user_response(interaction)
             return
 
         self.player_data = load_player_data(interaction.guild.id)
@@ -205,7 +205,7 @@ class ResurrectOptions(discord.ui.View, CommonResponses):
         # Check if the user who interacted is the same as the one who initiated the view
         # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
-            await self.unauthorized_user_response(interaction)
+            await self.nero_unauthorized_user_response(interaction)
             return
 
         self.player_data = load_player_data(interaction.guild.id)

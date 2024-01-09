@@ -125,7 +125,7 @@ class MineButton(discord.ui.View, CommonResponses):
         # Check if the user who interacted is the same as the one who initiated the view
         # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
-            await self.unauthorized_user_response(interaction)
+            await self.nero_unauthorized_user_response(interaction)
             return
 
         # Check if the player has space in the inventory or if the item is already in the inventory

@@ -34,7 +34,7 @@ class NeroView(discord.ui.View, CommonResponses):
         # Check if the user who interacted is the same as the one who initiated the view
         # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
-            await self.unauthorized_user_response(interaction)
+            await self.nero_unauthorized_user_response(interaction)
             return
 
         from exemplars.exemplars import Exemplar
@@ -90,14 +90,14 @@ class NeroView(discord.ui.View, CommonResponses):
         # Check if the user who interacted is the same as the one who initiated the view
         # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
-            await self.unauthorized_user_response(interaction)
+            await self.nero_unauthorized_user_response(interaction)
             return
 
         # Edit the original captain's message to show refusal and remove the buttons
         thumbnail_url = generate_urls("nero", "cemetery")
         nero_embed = discord.Embed(
             title="Captain Ner0",
-            description=f"So be it, {interaction.user.mention}! Keep to the seas without yer trinkets.",
+            description=f"Arr, {interaction.user.mention}! Fine, stay ashore, but without yer precious loot! May the goblins have their way with ye.",
             color=discord.Color.dark_gold()
         )
         nero_embed.set_thumbnail(url=thumbnail_url)

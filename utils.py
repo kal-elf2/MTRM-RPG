@@ -61,7 +61,7 @@ def update_and_save_player_data(interaction: discord.Interaction, inventory, pla
 
 class CommonResponses:
     @staticmethod
-    async def unauthorized_user_response(interaction):
+    async def nero_unauthorized_user_response(interaction):
         from images.urls import generate_urls
 
         nero_embed = discord.Embed(
@@ -72,6 +72,13 @@ class CommonResponses:
         nero_embed.set_thumbnail(url=generate_urls("nero", "gun"))
 
         await interaction.response.send_message(embed=nero_embed, ephemeral=True)
+
+    @staticmethod
+    async def unauthorized_user_response(interaction):
+        await interaction.response.send_message(
+            "Apologies, but this action isn't yours to make.",
+            ephemeral=True
+        )
 
 # User pressing wrong buttons
 def get_nero_warning(interaction):

@@ -3,7 +3,7 @@ import json
 import discord
 from discord.ext import commands
 from discord.commands import Option
-from utils import load_player_data, save_player_data, send_message
+from utils import load_player_data, save_player_data, send_message, CommonResponses
 from discord.ui import Select, View
 from discord.components import SelectOption
 from exemplars.exemplars import create_exemplar, Exemplar
@@ -48,9 +48,10 @@ async def setchannel(ctx):
 
 
 # Exemplars class
-class PickExemplars(Select):
+class PickExemplars(Select, CommonResponses):
 
-    def __init__(self):
+    def __init__(self, author_id):
+        self.author_id = author_id
         options = [
             SelectOption(label='Human Exemplar', value='human',
                          emoji=f'{get_emoji("human_exemplar_emoji")}'),
@@ -73,19 +74,24 @@ class PickExemplars(Select):
         }
 
     async def callback(self, interaction: discord.Interaction):
-        author_id = interaction.user.id
+
+        # Check if the user who interacted is the same as the one who initiated the view
+        if str(interaction.user.id) != self.author_id:
+            await self.unauthorized_user_response(interaction)
+            return
+
         guild_id = interaction.guild.id
         player_data = load_player_data(guild_id)
 
-        if str(author_id) not in player_data:
-            player_data[str(author_id)] = {}
+        if str(self.author_id) not in player_data:
+            player_data[str(self.author_id)] = {}
 
         # Update the exemplar in player_data
-        player_data[str(author_id)]["exemplar"] = self.values[0]
+        player_data[str(self.author_id)]["exemplar"] = self.values[0]
 
         # Initialize the character's stats
         exemplar_instance = create_exemplar(self.values[0])
-        player_data[str(author_id)]["stats"] = {
+        player_data[str(self.author_id)]["stats"] = {
             "zone_level": exemplar_instance.stats.zone_level,
             "health": exemplar_instance.stats.health,
             "max_health": exemplar_instance.stats.max_health,
@@ -104,15 +110,15 @@ class PickExemplars(Select):
             "woodcutting_experience": exemplar_instance.stats.woodcutting_experience,
         }
 
-        player_data[str(author_id)]["inventory"] = Inventory().to_dict()
+        player_data[str(self.author_id)]["inventory"] = Inventory().to_dict()
         # Set 'in_battle' field to False
-        player_data[str(author_id)]["in_battle"] = False
+        player_data[str(self.author_id)]["in_battle"] = False
 
         # Generate embed with exemplar stats
         embed = self.generate_stats_embed(exemplar_instance)
 
         # Create the confirmation view with two buttons
-        view = ConfirmExemplar(exemplar_instance, player_data, str(author_id), guild_id)
+        view = ConfirmExemplar(exemplar_instance, player_data, str(self.author_id), guild_id)
 
         await interaction.response.send_message(
             f'{interaction.user.mention}, verify your selection of {self.options_dict[self.values[0]]} Exemplar below!',
@@ -149,7 +155,7 @@ class PickExemplars(Select):
 
         return embed
 
-class ConfirmExemplar(discord.ui.View):
+class ConfirmExemplar(discord.ui.View, CommonResponses):
     def __init__(self, exemplar_instance, player_data, author_id, guild_id):
         super().__init__(timeout=None)
         self.exemplar_instance = exemplar_instance
@@ -157,8 +163,30 @@ class ConfirmExemplar(discord.ui.View):
         self.author_id = author_id
         self.guild_id = guild_id
 
-    @discord.ui.button(label="Start", custom_id="confirm_yes", style=discord.ButtonStyle.blurple)
-    async def confirm_yes(self, button, interaction):
+        # Create the confirm button with a dynamic label
+        self.confirm_button = discord.ui.Button(
+            label=f"Select {self.exemplar_instance.name}",
+            custom_id="confirm_yes",
+            style=discord.ButtonStyle.blurple
+        )
+        self.confirm_button.callback = self.confirm_yes
+        self.add_item(self.confirm_button)
+
+        # Create the back button
+        self.back_button = discord.ui.Button(
+            label="Back",
+            custom_id="confirm_no",
+            style=discord.ButtonStyle.grey
+        )
+        self.back_button.callback = self.confirm_no
+        self.add_item(self.back_button)
+
+    async def confirm_yes(self, interaction):
+        # Check if the user who interacted is the same as the one who initiated the view
+        if str(interaction.user.id) != self.author_id:
+            await self.unauthorized_user_response(interaction)
+            return
+
         # Disable both buttons
         for item in self.children:
             if isinstance(item, discord.ui.Button):
@@ -171,11 +199,14 @@ class ConfirmExemplar(discord.ui.View):
         await interaction.response.edit_message(
             content=f"Your selection of {self.exemplar_instance.name} Exemplar has been saved!", view=self)
 
-    @discord.ui.button(label="Back", custom_id="confirm_no", style=discord.ButtonStyle.grey)
-    async def confirm_no(self, button, interaction):
+    async def confirm_no(self, interaction):
+        # Check if the user who interacted is the same as the one who initiated the view
+        if str(interaction.user.id) != self.author_id:
+            await self.unauthorized_user_response(interaction)
+            return
+
         # Re-send the PickExemplars view
-        view = discord.ui.View()
-        view.add_item(PickExemplars())
+        view = PickExemplars(self.author_id)
         await interaction.response.send_message("Please choose your exemplar from the list below.", view=view, ephemeral=False)
 
 def update_special_attack_options(battle_context):
@@ -186,9 +217,6 @@ def update_special_attack_options(battle_context):
 @bot.slash_command(description="Battle a monster!")
 async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=generate_monster_list(), required=True)):
     from monsters.monster import BattleContext
-
-    with open("level_data.json", "r") as f:
-        LEVEL_DATA = json.load(f)
 
     guild_id = ctx.guild.id
     author_id = str(ctx.author.id)
@@ -343,19 +371,20 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
 @bot.slash_command(description="Start a new game.")
 async def newgame(ctx):
     guild_id = ctx.guild.id
-    author_id = str(ctx.author.id)  # Keep the types consistent
+    author_id = str(ctx.author.id)
     player_data = load_player_data(guild_id)
 
-    class NewGame(discord.ui.View):
-        def __init__(self, author_id):
+    class NewGame(discord.ui.View, CommonResponses):
+        def __init__(self, author_id=None):
             super().__init__(timeout=None)
             self.author_id = author_id
 
         @discord.ui.button(label="New Game", custom_id="new_game", style=discord.ButtonStyle.blurple)
         async def button1(self, button, interaction):
-            # Check if the user who clicked is the same as the one who invoked the command
+            # Check if the user who interacted is the same as the one who initiated the view
+            # Inherited from CommonResponses class from utils
             if str(interaction.user.id) != self.author_id:
-                await interaction.response.send_message("This button is not for you.", ephemeral=True)
+                await self.unauthorized_user_response(interaction)
                 return
 
             # Explicitly remove and re-initialize player data
@@ -374,14 +403,14 @@ async def newgame(ctx):
 
             # Proceed with the rest of your logic
             view = View()
-            view.add_item(PickExemplars())
+            view.add_item(PickExemplars(author_id))
             await interaction.response.send_message(
                 f"{ctx.author.mention}, your progress has been erased. Please choose your exemplar from the list below.",
                 view=view)
 
     if author_id not in player_data:
         view = View()
-        view.add_item(PickExemplars())
+        view.add_item(PickExemplars(author_id))
         await ctx.respond(f"{ctx.author.mention}, please choose your exemplar from the list below.", view=view)
     else:
         view = NewGame(author_id)
@@ -424,6 +453,10 @@ async def cemetery(ctx):
         cemetery_embed.set_image(url=generate_urls("cemetery", "dead"))
         resurrect_view = ResurrectOptions(ctx, player_data, author_id)
         view = resurrect_view
+
+        # Send the message with the appropriate embed and view
+        await ctx.respond(embed=cemetery_embed, view=view)
+
     else:
         # Player is alive, just visiting the cemetery
         cemetery_embed.title = "Cemetery"
