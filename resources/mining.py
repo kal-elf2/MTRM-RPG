@@ -11,7 +11,7 @@ from resources.herb import HERB_TYPES
 from resources.materium import Materium
 from stats import ResurrectOptions
 from exemplars.exemplars import Exemplar
-from utils import load_player_data, save_player_data, send_message
+from utils import load_player_data, save_player_data, send_message, CommonResponses
 from monsters.monster import create_battle_embed, monster_battle, generate_monster_by_name, footer_text_for_embed
 from monsters.battle import BattleOptions, LootOptions
 from images.urls import generate_urls
@@ -107,7 +107,7 @@ def footer_text_for_mining_embed(ctx, player, player_level, zone_level, ore_type
 
 
 # View class for Harvest button
-class MineButton(discord.ui.View):
+class MineButton(discord.ui.View, CommonResponses):
     def __init__(self, ctx, player, ore_type, player_data, guild_id, author_id, embed):
         super().__init__(timeout=None)
         self.ctx = ctx
@@ -121,6 +121,12 @@ class MineButton(discord.ui.View):
 
     @discord.ui.button(label="Mine", custom_id="mine", style=discord.ButtonStyle.blurple)
     async def mine(self, button, interaction):
+
+        # Check if the user who interacted is the same as the one who initiated the view
+        # Inherited from CommonResponses class from utils
+        if str(interaction.user.id) != self.author_id:
+            await self.unauthorized_user_response(interaction)
+            return
 
         # Check if the player has space in the inventory or if the item is already in the inventory
         if self.player.inventory.total_items_count() >= self.player.inventory.limit and not self.player.inventory.has_item(

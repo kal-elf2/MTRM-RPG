@@ -12,7 +12,7 @@ from resources.materium import Materium
 from stats import ResurrectOptions
 from exemplars.exemplars import Exemplar
 from emojis import get_emoji
-from utils import load_player_data, save_player_data, send_message
+from utils import load_player_data, save_player_data, send_message, CommonResponses
 from monsters.monster import create_battle_embed, monster_battle, generate_monster_by_name
 from monsters.battle import BattleOptions, LootOptions, footer_text_for_embed
 from images.urls import generate_urls
@@ -112,7 +112,7 @@ def footer_text_for_woodcutting_embed(ctx, player, player_level, zone_level, tre
 
 
 # View class for Harvest button
-class HarvestButton(discord.ui.View):
+class HarvestButton(discord.ui.View, CommonResponses):
     def __init__(self, ctx, player, tree_type, player_data, guild_id, author_id, embed):
         super().__init__(timeout=None)
         self.ctx = ctx
@@ -126,6 +126,12 @@ class HarvestButton(discord.ui.View):
 
     @discord.ui.button(label="Chop", custom_id="harvest", style=discord.ButtonStyle.blurple)
     async def harvest(self, button, interaction):
+        # Check if the user who interacted is the same as the one who initiated the view
+        # Inherited from CommonResponses class from utils
+        if str(interaction.user.id) != self.author_id:
+            await self.unauthorized_user_response(interaction)
+            return
+
         # Check if the player has space in the inventory or if the item is already in the inventory
         if self.player.inventory.total_items_count() >= self.player.inventory.limit and not self.player.inventory.has_item(
                 self.tree_type):

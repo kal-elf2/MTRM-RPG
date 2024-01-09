@@ -1,10 +1,10 @@
 import discord
 from probabilities import buyback_cost
-from utils import save_player_data, load_player_data
+from utils import save_player_data, load_player_data, CommonResponses
 from images.urls import generate_urls
 from emojis import get_emoji
 
-class NeroView(discord.ui.View):
+class NeroView(discord.ui.View, CommonResponses):
     def __init__(self, interaction, player_data, author_id, player, saved_inventory):
         super().__init__(timeout=None)
         self.interaction = interaction
@@ -30,9 +30,11 @@ class NeroView(discord.ui.View):
 
     @discord.ui.button(label="Yes", style=discord.ButtonStyle.primary)
     async def yes_button(self, button, interaction):
-        # Ensure the user who clicked is the same as the one who invoked the command
+
+        # Check if the user who interacted is the same as the one who initiated the view
+        # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
-            await interaction.response.send_message("This button is not for you.", ephemeral=True)
+            await self.unauthorized_user_response(interaction)
             return
 
         from exemplars.exemplars import Exemplar
@@ -84,9 +86,11 @@ class NeroView(discord.ui.View):
 
     @discord.ui.button(label="No", style=discord.ButtonStyle.secondary)
     async def no_button(self, button, interaction):
-        # Check if the user who clicked is the same as the one who invoked the command
+
+        # Check if the user who interacted is the same as the one who initiated the view
+        # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
-            await interaction.response.send_message("This button is not for you.", ephemeral=True)
+            await self.unauthorized_user_response(interaction)
             return
 
         # Edit the original captain's message to show refusal and remove the buttons
@@ -137,3 +141,4 @@ class NeroView(discord.ui.View):
                     continue
                 return item
         return None
+

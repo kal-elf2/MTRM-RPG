@@ -8,6 +8,7 @@ from resources.item import Item
 from resources.ore import Gem, Ore
 from resources.tree import Tree
 from discord.ext import commands
+import random
 
 
 class ExemplarJSONEncoder(json.JSONEncoder):
@@ -57,3 +58,34 @@ def update_and_save_player_data(interaction: discord.Interaction, inventory, pla
         player_data[player_id]["stats"] = player.stats
 
     save_player_data(interaction.guild.id, player_data)
+
+class CommonResponses:
+    @staticmethod
+    async def unauthorized_user_response(interaction):
+        from images.urls import generate_urls
+
+        nero_embed = discord.Embed(
+            title="Captain Nero",
+            description=get_nero_warning(interaction),
+            color=discord.Color.dark_gold()
+        )
+        nero_embed.set_thumbnail(url=generate_urls("nero", "gun"))
+
+        await interaction.response.send_message(embed=nero_embed, ephemeral=True)
+
+# User pressing wrong buttons
+def get_nero_warning(interaction):
+    warnings = [
+        f"Arr, who be ye, {interaction.user.mention}, meddlin' with buttons that ain't yers? Keep yer hands off, or ye'll be walkin' the plank!",
+        f"Ahoy, {interaction.user.mention}! These buttons ain't for landlubbers. Touch 'em again, and I'll make ye swab the deck!",
+        f"Ye best be careful where ye be clickin', {interaction.user.mention}. These buttons be cursed, says I!",
+        f"Avast ye, {interaction.user.mention}! Only the brave or the foolish tamper with what isn't theirs. Choose wisely!",
+        f"Hoist the Jolly Roger, {interaction.user.mention}! Ye're trespassin' on dangerous waters, matey. Steer clear of what ye don't own!",
+        f"Shiver me timbers, {interaction.user.mention}! You're clickin' where ye shouldn't. Keep yer mitts to yerself, or I'll feed ye to the sharks!",
+        f"Blimey, {interaction.user.mention}! Ye've got the nerve of a bilge rat. Touch those buttons again, and ye'll be tastin' the cat o' nine tails!",
+        f"Yo-ho-ho! Look at this sneaky sea dog, {interaction.user.mention}, tryin' to press me buttons. Do that again, and it's Davy Jones' Locker for ye!",
+        f"By Blackbeard's beard, {interaction.user.mention}! Ye've got the gall of a sea serpent. Do that again, and I'll maroon ye on a deserted isle!",
+        f"Arr, are ye tryin' to hornswaggle me, {interaction.user.mention}? Keep yer grubby hooks off me buttons, or I'll turn ye into chum for the fishes!"
+    ]
+
+    return random.choice(warnings)

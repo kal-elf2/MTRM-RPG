@@ -3,7 +3,7 @@ import math
 import discord
 from discord.ext import commands
 from discord.commands import Option
-from utils import load_player_data, save_player_data
+from utils import load_player_data, save_player_data, CommonResponses
 from exemplars.exemplars import Exemplar
 from emojis import get_emoji
 from images.urls import generate_urls
@@ -123,7 +123,7 @@ class StatsCog(commands.Cog):
 
             await ctx.respond(content=f"{ctx.author.mention}'s **{display}**", embed=embed)
 
-class ResurrectOptions(discord.ui.View):
+class ResurrectOptions(discord.ui.View, CommonResponses):
     def __init__(self, interaction, player_data, author_id, include_nero=True):
         super().__init__(timeout=None)
         self.interaction = interaction
@@ -157,6 +157,12 @@ class ResurrectOptions(discord.ui.View):
 
     mtrm = get_emoji('Materium')
     async def use_mtrm_callback(self, interaction):
+
+        # Check if the user who interacted is the same as the one who initiated the view
+        # Inherited from CommonResponses class from utils
+        if str(interaction.user.id) != self.author_id:
+            await self.unauthorized_user_response(interaction)
+            return
 
         self.player_data = load_player_data(interaction.guild.id)
         self.player = Exemplar(self.player_data[self.author_id]["exemplar"],
@@ -195,6 +201,12 @@ class ResurrectOptions(discord.ui.View):
             save_player_data(interaction.guild.id, self.player_data)
 
     async def resurrect_callback(self, interaction):
+
+        # Check if the user who interacted is the same as the one who initiated the view
+        # Inherited from CommonResponses class from utils
+        if str(interaction.user.id) != self.author_id:
+            await self.unauthorized_user_response(interaction)
+            return
 
         self.player_data = load_player_data(interaction.guild.id)
         self.player = Exemplar(self.player_data[self.author_id]["exemplar"],
