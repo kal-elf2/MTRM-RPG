@@ -93,7 +93,7 @@ class NeroView(discord.ui.View):
         thumbnail_url = generate_urls("nero", "cemetery")
         nero_embed = discord.Embed(
             title="Captain Ner0",
-            description="So be it, ye scurvy dog! Keep to the seas without yer trinkets.",
+            description=f"So be it, {interaction.user.mention}! Keep to the seas without yer trinkets.",
             color=discord.Color.dark_gold()
         )
         nero_embed.set_thumbnail(url=thumbnail_url)

@@ -272,13 +272,15 @@ class ResurrectOptions(discord.ui.View):
             nero_view = NeroView(interaction, self.player_data, self.author_id, self.player, saved_inventory)
 
             cost = buyback_cost * self.player.stats.zone_level
-            formatted_cost = f"{cost:,}"  # This will format the number with commas
+            formatted_cost = f"{cost:,}"  # Format the number with commas
+            formatted_coppers = f"{self.player.inventory.coppers:,}"  # Format player's coppers with commas
 
             thumbnail_url = generate_urls("nero", "cemetery")
             nero_embed = discord.Embed(
                 title="Captain Ner0",
                 description=f"Arr, there ye be, {interaction.user.mention}! I've scooped up all yer belongings after that nasty scuffle. "
-                            f"Ye can have 'em back, but it'll cost ye some coppers, savvy? Hows about **{formatted_cost}**{get_emoji('coppers_emoji')}? A fair price for a fair service, says I.",
+                            f"Ye can have 'em back, but it'll cost ye some coppers, savvy? Hows about **{formatted_cost}**{get_emoji('coppers_emoji')}? A fair price for a fair service, says I.\n\n"
+                            f"**Backpack**: {formatted_coppers}{get_emoji('coppers_emoji')}",
                 color=discord.Color.dark_gold()
             )
             nero_embed.set_thumbnail(url=thumbnail_url)
@@ -293,7 +295,7 @@ class ResurrectOptions(discord.ui.View):
         # Static method to handle the response when the player is not dead
         nero_embed = discord.Embed(
             title="Captain Ner0",
-            description="Errr... You're not dead anymore, matey. What are ye doin' here playin' with these buttons?",
+            description="Errr... Yer not dead, matey. What are ye doin' here playin' with these buttons?",
             color=discord.Color.dark_gold()
         )
         nero_embed.set_thumbnail(url=generate_urls("nero", "confused"))
