@@ -65,7 +65,7 @@ class ForgeRow(discord.ui.View, CommonResponses):
     def update_or_add_crafting_select(self, recipes, interaction):
         if self.crafting_select:
             self.remove_item(self.crafting_select)
-        self.crafting_select = CraftingSelect(recipes, interaction)
+        self.crafting_select = CraftingSelect(recipes, interaction, self.author_id)
         self.add_item(self.crafting_select)
 
     @discord.ui.button(label="🔨 Forge", custom_id="citadel_forge", style=discord.ButtonStyle.blurple)
@@ -115,7 +115,7 @@ class TanneryRow(discord.ui.View, CommonResponses):
     def update_or_add_crafting_select(self, recipes, interaction):
         if self.crafting_select:
             self.remove_item(self.crafting_select)
-        self.crafting_select = CraftingSelect(recipes, interaction)
+        self.crafting_select = CraftingSelect(recipes, interaction, self.author_id)
         self.add_item(self.crafting_select)
 
     @discord.ui.button(label="🐄 Tannery", custom_id="citadel_tannery", style=discord.ButtonStyle.blurple)
@@ -165,7 +165,7 @@ class BreadRow(discord.ui.View, CommonResponses):
     def update_or_add_crafting_select(self, recipes, interaction):
         if self.crafting_select:
             self.remove_item(self.crafting_select)
-        self.crafting_select = CraftingSelect(recipes, interaction)
+        self.crafting_select = CraftingSelect(recipes, interaction, self.author_id)
         self.add_item(self.crafting_select)
 
     @discord.ui.button(label="🥖 Bread Stand", custom_id="citadel_bread_stand", style=discord.ButtonStyle.blurple)
@@ -330,14 +330,20 @@ class TravelRow(discord.ui.View, CommonResponses):
     @discord.ui.button(label="🏟️ Colosseum", custom_id="citadel_colosseum", style=discord.ButtonStyle.blurple)
     async def colosseum(self, button, interaction):
         # Check if the user who interacted is the same as the one who initiated the view
-        # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        await interaction.response.send_message("You entered the Colosseum!")
+        # Send a message about the Colosseum
+        nero_embed = discord.Embed(
+            title="Captain Nero",
+            description="Arr, I've heard tales of the Colosseum! A place for hearty brawls and clashin' swords. But it seems it's not yet ready for ye, matey. PvP is a hot topic on the high seas, best to keep yer powder dry till it opens!",
+            color=discord.Color.dark_gold()
+        )
+        nero_embed.set_thumbnail(url=generate_urls("nero", "confused"))
+        await interaction.response.send_message(embed=nero_embed, ephemeral=True)
 
-    @discord.ui.button(label="🚪 Leave Citadel", custom_id="citadel_exit", style=discord.ButtonStyle.blurple)
+    @discord.ui.button(label="🚪 Exit", custom_id="citadel_exit", style=discord.ButtonStyle.blurple)
     async def exit(self, button, interaction):# Check if the user who interacted is the same as the one who initiated the view
         # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:

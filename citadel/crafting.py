@@ -8,7 +8,7 @@ from resources.ore import Ore
 from resources.potion import Potion
 from resources.materium import Materium
 from probabilities import stonebreaker_percent, woodcleaver_percent, loothaven_percent, mightstone_multiplier, ironhide_percent, ironhide_multiplier, CRITICAL_HIT_CHANCE, CRITICAL_HIT_MULTIPLIER
-
+from utils import CommonResponses
 
 class Weapon(Item):
     def __init__(self, name, wtype, attack_modifier, special_attack, value, zone_level, description=None, stack=1):
@@ -194,6 +194,7 @@ class CraftButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         from utils import save_player_data
+
         # Use the CraftingStation's craft method
         crafted_item = self.station.craft(self.selected_recipe.result.name, self.player, self.player_data,
                                           self.guild_id)
@@ -328,10 +329,11 @@ class CraftButton(discord.ui.Button):
             await interaction.response.edit_message(embed=embed, view=self.view)
 
 
-class CraftingSelect(discord.ui.Select):
-    def __init__(self, crafting_station, interaction):
+class CraftingSelect(discord.ui.Select, CommonResponses):
+    def __init__(self, crafting_station, interaction, author_id):
         self.crafting_station = crafting_station
         self.interaction = interaction
+        self.author_id = author_id
 
         # Load the player data here
         from utils import load_player_data
@@ -389,6 +391,11 @@ class CraftingSelect(discord.ui.Select):
         return label
 
     async def callback(self, interaction: discord.Interaction):
+
+        # Check authorization
+        if str(interaction.user.id) != self.author_id:
+            await self.nero_unauthorized_user_response(interaction)
+            return
 
         # Get zone level from player stats
         zone_level = self.player.stats.zone_level
