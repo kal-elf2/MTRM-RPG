@@ -56,14 +56,32 @@ class NeroView(discord.ui.View, CommonResponses):
         if required_space > available_space:
             additional_slots_needed = required_space - available_space
             slots_message = "slot" if additional_slots_needed == 1 else "slots"
-            await interaction.response.send_message(
-                f"Err...sorry, matey. Yer inventory's too full. Ye need {additional_slots_needed} more open {slots_message} to take back all yer belongings!",
-                ephemeral=True)
+
+            # Create the embed
+            thumbnail_url = generate_urls("nero", "confused")
+            nero_embed = discord.Embed(
+                title="Captain Ner0",
+                description=f"Err...sorry, matey. Not enough room in yer inventory. Ye need {additional_slots_needed} more open {slots_message} to take back all yer belongings!",
+                color=discord.Color.dark_gold()
+            )
+            nero_embed.set_thumbnail(url=thumbnail_url)
+
+            # Send the embed as an ephemeral message
+            await interaction.response.send_message(embed=nero_embed, ephemeral=True)
             return
 
         if player_inventory.coppers < self.cost:
-            await interaction.response.send_message("Arr, ye be short on coppers! Can't make a deal without the coin.",
-                                                    ephemeral=True)
+            # Create the embed
+            thumbnail_url = generate_urls("nero", "confused")
+            nero_embed = discord.Embed(
+                title="Captain Ner0",
+                description="Arr, ye be short on coppers! Can't make a deal without the coin. If ye happen to find some, return here and try again.",
+                color=discord.Color.dark_gold()
+            )
+            nero_embed.set_thumbnail(url=thumbnail_url)
+
+            # Send the embed as an ephemeral message
+            await interaction.response.send_message(embed=nero_embed, ephemeral=True)
             return
 
         # Reinitialize the player object with the current state from player_data
