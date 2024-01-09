@@ -3,11 +3,11 @@ import discord
 import json
 import random
 from emojis import get_emoji
-from utils import save_player_data, load_player_data
+from utils import save_player_data, load_player_data, CommonResponses
 from images.urls import generate_urls
 import asyncio
 
-class LootOptions(discord.ui.View):
+class LootOptions(discord.ui.View, CommonResponses):
     def __init__(self, interaction, player, monster, battle_embed, player_data, author_id, battle_outcome,
                  loot_messages, guild_id, ctx, experience_gained, loothaven_effect):
         super().__init__(timeout=None)
@@ -26,6 +26,12 @@ class LootOptions(discord.ui.View):
 
     @discord.ui.button(custom_id="loot", label="Loot", style=discord.ButtonStyle.blurple)
     async def collect_loot(self, button, interaction):
+
+        # Check if the user who interacted is the same as the one who initiated the view
+        # Inherited from CommonResponses class from utils
+        if str(interaction.user.id) != self.author_id:
+            await self.nero_unauthorized_user_response(interaction)
+            return
 
         # Defer the response
         await interaction.response.defer()
@@ -121,13 +127,14 @@ def use_potion_logic(player, potion_name):
         return True
     return False
 
-class BattleOptions(discord.ui.View):
+class BattleOptions(discord.ui.View, CommonResponses):
     def __init__(self, interaction, player, battle_context, special_attack_options_view):
         super().__init__(timeout=None)
         self.interaction = interaction
         self.player = player
         self.battle_context = battle_context
         self.special_attack_options_view = special_attack_options_view
+        self.author_id = str(interaction.user.id)
 
         # Initialize buttons with potion stack counts in the labels
         self.stamina_button = self.create_potion_button("Stamina Potion", self.stamina_button_callback)
@@ -162,15 +169,31 @@ class BattleOptions(discord.ui.View):
         button.label = f"{stack_count}" if stack_count else ""
 
     async def stamina_button_callback(self, interaction):
+        # Check authorization
+        if str(interaction.user.id) != self.author_id:
+            await self.nero_unauthorized_user_response(interaction)
+            return
         await self.use_potion("Stamina Potion", interaction, self.stamina_button)
 
     async def super_stamina_button_callback(self, interaction):
+        # Check authorization
+        if str(interaction.user.id) != self.author_id:
+            await self.nero_unauthorized_user_response(interaction)
+            return
         await self.use_potion("Super Stamina Potion", interaction, self.super_stamina_button)
 
     async def health_button_callback(self, interaction):
+        # Check authorization
+        if str(interaction.user.id) != self.author_id:
+            await self.nero_unauthorized_user_response(interaction)
+            return
         await self.use_potion("Health Potion", interaction, self.health_button)
 
     async def super_health_button_callback(self, interaction):
+        # Check authorization
+        if str(interaction.user.id) != self.author_id:
+            await self.nero_unauthorized_user_response(interaction)
+            return
         await self.use_potion("Super Health Potion", interaction, self.super_health_button)
 
     def is_potion_disabled(self, potion_name):
@@ -223,7 +246,7 @@ class BattleOptions(discord.ui.View):
                 except discord.NotFound:
                     pass
 
-class SpecialAttackOptions(discord.ui.View):
+class SpecialAttackOptions(discord.ui.View, CommonResponses):
     stamina_costs = {1: 1, 2: 10, 3: 20, 4: 30}
 
     def __init__(self, battle_context, battle_options_msg, special_attack_message):
@@ -299,9 +322,10 @@ class SpecialAttackOptions(discord.ui.View):
             pass
 
     async def on_run_button_click(self, interaction: discord.Interaction):
+        # Authorization check
         if interaction.user.id != self.author_id:
-            return await interaction.response.send_message("You cannot run from another player's battle!",
-                                                           ephemeral=True)
+            await self.nero_unauthorized_user_response(interaction)
+            return
 
         await interaction.response.defer()
 
@@ -355,8 +379,10 @@ class SpecialAttackOptions(discord.ui.View):
                     item.disabled = self.player.stats.stamina < unarmed_stamina_cost
 
     async def on_button_click(self, interaction: discord.Interaction):
+        # Authorization check
         if interaction.user.id != self.author_id:
-            return await interaction.response.send_message("This is not your battle!", ephemeral=True)
+            await self.nero_unauthorized_user_response(interaction)
+            return
 
         await interaction.response.defer()
         custom_id = interaction.data["custom_id"]

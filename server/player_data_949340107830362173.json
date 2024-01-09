@@ -2,17 +2,17 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "health": 8,
+            "health": 796,
             "max_health": 915,
             "strength": 421,
-            "stamina": 412,
+            "stamina": 405,
             "max_stamina": 423,
             "attack": 170,
             "damage": 60,
             "defense": 171,
             "armor": 34,
             "combat_level": 83,
-            "combat_experience": 734669,
+            "combat_experience": 734693,
             "mining_level": 80,
             "mining_experience": 577980,
             "woodcutting_level": 84,
@@ -21,7 +21,7 @@
             "damage_taken": 0
         },
         "inventory": {
-            "coppers": 10038,
+            "coppers": 10058,
             "items": [
                 {
                     "name": "Wolf Skin",
@@ -147,7 +147,7 @@
                     "name": "Rabbit Body",
                     "description": "A furry rabbit body, warm to the touch. Can be used for citadel soft armors.",
                     "value": 10,
-                    "stack": 1129
+                    "stack": 1132
                 },
                 {
                     "name": "Rabbit Meat",
@@ -218,7 +218,7 @@
                 {
                     "name": "Snapdragon",
                     "value": 350,
-                    "stack": 1019
+                    "stack": 1020
                 },
                 {
                     "name": "Bloodweed",
@@ -247,7 +247,7 @@
                     "effect_value": 50,
                     "value": 10,
                     "description": "Restores 50 stamina",
-                    "stack": 92
+                    "stack": 93
                 },
                 {
                     "name": "Health Potion",
