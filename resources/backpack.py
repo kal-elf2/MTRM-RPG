@@ -2,7 +2,7 @@ from discord.ext import commands
 import discord
 import copy
 from exemplars.exemplars import Exemplar
-from utils import load_player_data, update_and_save_player_data, save_player_data
+from utils import load_player_data, update_and_save_player_data, save_player_data, CommonResponses
 from images.urls import generate_urls
 from citadel.crafting import Armor
 import io
@@ -35,7 +35,7 @@ class BackpackCog(commands.Cog):
         await ctx.respond(f"Here's your backpack, {ctx.author.mention}:", view=view)
 
 
-class BackpackView(discord.ui.View):
+class BackpackView(discord.ui.View, CommonResponses):
     def __init__(self, ctx):
         super().__init__(timeout=None)
         self.ctx = ctx
@@ -65,7 +65,7 @@ class BackpackView(discord.ui.View):
         if self.item_type_select:
             self.remove_item(self.item_type_select)
 
-        self.item_type_select = UnequipTypeSelect(action_type, options)
+        self.item_type_select = UnequipTypeSelect(action_type, options, self.author_id)
         self.add_item(self.item_type_select)
 
     def equip_add_item_type_select(self, action_type):
@@ -80,7 +80,7 @@ class BackpackView(discord.ui.View):
         if self.item_type_select:
             self.remove_item(self.item_type_select)
 
-        self.item_type_select = EquipTypeSelect(action_type, options)
+        self.item_type_select = EquipTypeSelect(action_type, options, self.author_id)
         self.add_item(self.item_type_select)
 
     def update_item_select_options(self):
@@ -109,12 +109,24 @@ class BackpackView(discord.ui.View):
 
     @discord.ui.button(label="Equip", custom_id="backpack_equip", style=discord.ButtonStyle.primary, emoji="⚔️")
     async def equip(self, button, interaction):
+        # Check if the user who interacted is the same as the one who initiated the view
+        # Inherited from CommonResponses class from utils
+        if str(interaction.user.id) != self.author_id:
+            await self.nero_unauthorized_user_response(interaction)
+            return
+
         # Open the select menu for item types for the Equip action
         self.equip_add_item_type_select("equip")
         await interaction.response.edit_message(content="Choose an item type to equip:", view=self)
 
     @discord.ui.button(label="Unequip", custom_id="backpack_unequip", style=discord.ButtonStyle.blurple, emoji="⛔")
     async def unequip(self, button, interaction):
+        # Check if the user who interacted is the same as the one who initiated the view
+        # Inherited from CommonResponses class from utils
+        if str(interaction.user.id) != self.author_id:
+            await self.nero_unauthorized_user_response(interaction)
+            return
+
         # Open the select menu for item types for the Unequip action
         self.unequip_add_item_type_select("unequip")
         await interaction.response.edit_message(content="Choose an item type to unequip:", view=self)
@@ -122,6 +134,12 @@ class BackpackView(discord.ui.View):
 
     @discord.ui.button(label="Sort", custom_id="backpack_sort", style=discord.ButtonStyle.blurple, emoji="🔄")
     async def sort(self, button, interaction):
+        # Check if the user who interacted is the same as the one who initiated the view
+        # Inherited from CommonResponses class from utils
+        if str(interaction.user.id) != self.author_id:
+            await self.nero_unauthorized_user_response(interaction)
+            return
+
         from exemplars.exemplars import Exemplar
 
         self.clear_items()
@@ -174,6 +192,12 @@ class BackpackView(discord.ui.View):
 
     @discord.ui.button(label="View", custom_id="backpack_inspect", style=discord.ButtonStyle.blurple, emoji="🔍")
     async def view(self, button, interaction):
+        # Check if the user who interacted is the same as the one who initiated the view
+        # Inherited from CommonResponses class from utils
+        if str(interaction.user.id) != self.author_id:
+            await self.nero_unauthorized_user_response(interaction)
+            return
+
         # Defer the response to prevent the interaction from timing out
         await interaction.response.defer()
 
@@ -194,13 +218,19 @@ class BackpackView(discord.ui.View):
                                             file=discord.File(fp=image_binary, filename='backpack_with_items.png'),
                                             ephemeral=True)
 
-class UnequipTypeSelect(discord.ui.Select):
+class UnequipTypeSelect(discord.ui.Select, CommonResponses):
 
-    def __init__(self, action_type, options):
+    def __init__(self, action_type, options, author_id):
         self.action_type = action_type
+        self.author_id = author_id
         super().__init__(placeholder=f"Choose an item type to {action_type}", options=options, min_values=1, max_values=1)
 
     async def callback(self, interaction: discord.Interaction):
+        # Check if the user who interacted is the same as the one who initiated the view
+        if str(interaction.user.id) != self.author_id:
+            await self.nero_unauthorized_user_response(interaction)
+            return
+
         from citadel.crafting import Charm
 
         def get_existing_item_in_inventory(item_to_check):
@@ -350,11 +380,12 @@ class UnequipTypeSelect(discord.ui.Select):
         # Update the UI and send the embed with a single response
         await interaction.response.edit_message(content="Choose an item type to unequip:", embed=embed, view=self.view)
 
-class EquipTypeSelect(discord.ui.Select):
+class EquipTypeSelect(discord.ui.Select, CommonResponses):
 
-    def __init__(self, action_type, options):
+    def __init__(self, action_type, options, author_id):
         self._values = []
         self.action_type = action_type
+        self.author_id = author_id
         super().__init__(placeholder=f"Choose an item type to {action_type}", options=options, min_values=1,
                          max_values=1)
     @property
@@ -366,6 +397,10 @@ class EquipTypeSelect(discord.ui.Select):
         self._values = new_values
 
     async def callback(self, interaction: discord.Interaction):
+        # Check if the user who interacted is the same as the one who initiated the view
+        if str(interaction.user.id) != self.author_id:
+            await self.nero_unauthorized_user_response(interaction)
+            return
         view: BackpackView = self.view
         inventory = view.inventory
         selected_value = interaction.data['values'][0]
