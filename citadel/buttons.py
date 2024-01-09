@@ -3,6 +3,7 @@ from discord.ext import commands
 from citadel.crafting import CraftingSelect, create_crafting_stations
 from images.urls import generate_urls
 from citadel.grains import HarvestButton
+from discord import Embed
 
 class CitadelCog(commands.Cog):
     def __init__(self, bot):
@@ -10,6 +11,35 @@ class CitadelCog(commands.Cog):
 
     @commands.slash_command(description="Visit the Citadel!")
     async def citadel(self, ctx):
+
+        from utils import load_player_data
+        from exemplars.exemplars import Exemplar
+
+        guild_id = ctx.guild.id
+        author_id = str(ctx.author.id)
+        player_data = load_player_data(guild_id)
+
+        # Check if player data exists for the user
+        if author_id not in player_data:
+            embed = Embed(title="Captain Ner0",
+                          description="Arr! What be this? No record of yer adventures? Start a new game with `/newgame` before I make ye walk the plank.",
+                          color=discord.Color.dark_gold())
+            embed.set_thumbnail(url=generate_urls("nero", "confused"))
+            await ctx.respond(embed=embed, ephemeral=True)
+            return
+
+        player = Exemplar(player_data[author_id]["exemplar"],
+                          player_data[author_id]["stats"],
+                          player_data[author_id]["inventory"])
+
+        # Check the player's health before starting a battle
+        if player.stats.health <= 0:
+            embed = Embed(title="Captain Ner0",
+                          description="Ahoy! Ye can't do that ye bloody ghost! Ye must travel to the 🪦 `/cemetery` to reenter the realm of the living.",
+                          color=discord.Color.dark_gold())
+            embed.set_thumbnail(url=generate_urls("nero", "confused"))
+            await ctx.respond(embed=embed, ephemeral=True)
+            return
 
         row1 = ForgeRow(ctx)
         row2 = TanneryRow(ctx)

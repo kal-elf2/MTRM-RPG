@@ -283,7 +283,7 @@
                     "stack": 1,
                     "defense_modifier": 56,
                     "armor_type": "chest",
-                    "zone_level": 4
+                    "zone_level": 3
                 },
                 {
                     "name": "Brigandine Boots",
@@ -464,7 +464,7 @@
                 "value": 25000,
                 "stack": 1
             },
-            "materium": 0
+            "materium": 1
         },
         "in_battle": false
     }

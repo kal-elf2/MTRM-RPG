@@ -14,7 +14,6 @@ from stats import ResurrectOptions
 from monsters.battle import BattleOptions, LootOptions, SpecialAttackOptions
 from emojis import get_emoji
 from images.urls import generate_urls
-import logging
 
 bot = commands.Bot(command_prefix="/", intents=discord.Intents.all())
 # Add the cog to your bot
@@ -186,7 +185,6 @@ def update_special_attack_options(battle_context):
 
 @bot.slash_command(description="Battle a monster!")
 async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=generate_monster_list(), required=True)):
-    logging.info(f"Battle command invoked by {ctx.author.name}.")
     from monsters.monster import BattleContext
 
     with open("level_data.json", "r") as f:
@@ -197,14 +195,26 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
 
     player_data = load_player_data(guild_id)
 
+    # Check if player data exists for the user
+    if author_id not in player_data:
+        embed = Embed(title="Captain Ner0",
+                      description="Arr! What be this? No record of yer adventures? Start a new game with `/newgame` before I make ye walk the plank.",
+                      color=discord.Color.dark_gold())
+        embed.set_thumbnail(url=generate_urls("nero", "confused"))
+        await ctx.respond(embed=embed, ephemeral=True)
+        return
+
     player = Exemplar(player_data[author_id]["exemplar"],
                       player_data[author_id]["stats"],
                       player_data[author_id]["inventory"])
 
     # Check the player's health before starting a battle
     if player.stats.health <= 0:
-        # Direct them to resurrection options instead of starting a new battle
-        await ctx.respond("⚰️ You must first ***/travel***  to the nearest 🪦 cemetery to reenter the realm of the living. ⚰️")
+        embed = Embed(title="Captain Ner0",
+                      description="Ahoy! Ye can't do that ye bloody ghost! Ye must travel to the 🪦 `/cemetery` to reenter the realm of the living.",
+                      color=discord.Color.dark_gold())
+        embed.set_thumbnail(url=generate_urls("nero", "confused"))
+        await ctx.respond(embed=embed, ephemeral=True)
         return
 
     # Initialize in_battle flag before starting the battle
@@ -324,7 +334,7 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
             new_embed.set_image(url=generate_urls("cemetery", "dead"))
 
             # Update the message with the new embed and view
-            await battle_embed.edit(embed=new_embed, view=ResurrectOptions(ctx, player_data, author_id, new_embed))
+            await battle_embed.edit(embed=new_embed, view=ResurrectOptions(ctx, player_data, author_id))
 
     # Clear the in_battle flag after the battle ends
     player_data[author_id]["in_battle"] = False
@@ -379,6 +389,51 @@ async def newgame(ctx):
             f"{ctx.author.mention}, you have a game in progress. Do you want to erase your progress and start a new game?",
             view=view)
 
+@bot.slash_command(description="Visit the cemetery.")
+async def cemetery(ctx):
+    guild_id = ctx.guild.id
+    author_id = str(ctx.author.id)
+
+    player_data = load_player_data(guild_id)
+
+    # Check if player data exists for the user
+    if author_id not in player_data:
+        embed = Embed(title="Captain Ner0",
+                      description="Arr! What be this? No record of yer adventures? Start a new game with `/newgame` before I make ye walk the plank.",
+                      color=discord.Color.dark_gold())
+        embed.set_thumbnail(url=generate_urls("nero", "confused"))
+        await ctx.respond(embed=embed, ephemeral=True)
+        return
+
+    player = Exemplar(player_data[author_id]["exemplar"],
+                      player_data[author_id]["stats"],
+                      player_data[author_id]["inventory"])
+
+    cemetery_embed = discord.Embed()
+
+    if player.stats.health <= 0:
+        # Player is defeated, present resurrection options
+        cemetery_embed.title = "You have been DEFEATED!"
+        cemetery_embed.description = (
+            f"☠️ Your spirit lingers, seeking renewal. ☠️\n\n"
+            f"__**Options for Revival:**__\n"
+            f"1. Use {get_emoji('Materium')} to revive without penalty.\n"
+            f"2. Resurrect with 2.5% penalty to all skills. "
+            f"**Lose all items in inventory** (Keep coppers, MTRM, potions, and charms)"
+        )
+        cemetery_embed.set_image(url=generate_urls("cemetery", "dead"))
+        resurrect_view = ResurrectOptions(ctx, player_data, author_id)
+        view = resurrect_view
+    else:
+        # Player is alive, just visiting the cemetery
+        cemetery_embed.title = "Cemetery"
+        cemetery_embed.description = f"Are you here to count how many pointy-eared 'splars are buried here too, {ctx.author.mention}?\n\nFeel free to pay yer respects, but as ye're still among the livin', there's not much else here for ye, savvy?"
+        cemetery_embed.set_image(url=generate_urls("cemetery", "dead"))
+        cemetery_embed.set_thumbnail(url=generate_urls("nero", "confused"))
+        view = None  # No view necessary for living players
+
+        # Send the message with the appropriate embed and view
+        await ctx.respond(embed=cemetery_embed, view=view)
 
 
 @bot.slash_command()

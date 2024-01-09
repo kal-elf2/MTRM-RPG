@@ -124,20 +124,49 @@ class StatsCog(commands.Cog):
             await ctx.respond(content=f"{ctx.author.mention}'s **{display}**", embed=embed)
 
 class ResurrectOptions(discord.ui.View):
-    def __init__(self, interaction, player_data, author_id, battle_embed):
+    def __init__(self, interaction, player_data, author_id, include_nero=True):
         super().__init__(timeout=None)
         self.interaction = interaction
         self.player_data = player_data
         self.author_id = author_id
-        self.battle_embed = battle_embed
+        self.include_nero = include_nero
 
         self.player = Exemplar(player_data[author_id]["exemplar"],
                                player_data[author_id]["stats"],
                                player_data[author_id]["inventory"])
 
+        # Create the MTRM button, disabled if Materium is 0
+        mtrm_button = discord.ui.Button(
+            custom_id="use_mtrm",
+            label="MTRM",
+            style=discord.ButtonStyle.primary,
+            emoji=get_emoji('Materium'),
+            disabled=self.player.inventory.materium == 0
+        )
+        mtrm_button.callback = self.use_mtrm_callback  # Link callback function
+        self.add_item(mtrm_button)
+
+        # Create the Resurrect button
+        resurrect_button = discord.ui.Button(
+            custom_id="resurrect",
+            label="Resurrect",
+            style=discord.ButtonStyle.danger
+        )
+        resurrect_button.callback = self.resurrect_callback  # Link callback function
+        self.add_item(resurrect_button)
+
     mtrm = get_emoji('Materium')
-    @discord.ui.button(custom_id="use_mtrm", label="MTRM", style=discord.ButtonStyle.primary, emoji=mtrm)
-    async def use_mtrm(self, button, interaction):
+    async def use_mtrm_callback(self, interaction):
+
+        self.player_data = load_player_data(interaction.guild.id)
+        self.player = Exemplar(self.player_data[self.author_id]["exemplar"],
+                               self.player_data[self.author_id]["stats"],
+                               self.player_data[self.author_id]["inventory"])
+
+        if self.player.stats.health > 0:
+            # Player is not dead
+            return await self.not_dead_response(interaction)
+
         if self.player_data[self.author_id]["inventory"].materium >= 1:
             self.player_data[self.author_id]["inventory"].materium -= 1
             self.player.stats.health = self.player.stats.max_health
@@ -165,90 +194,16 @@ class ResurrectOptions(discord.ui.View):
             )
             save_player_data(interaction.guild.id, self.player_data)
 
+    async def resurrect_callback(self, interaction):
 
-        # User died and is being penalized
-        else:
-            # Apply the penalty since the user doesn't have enough MTRM
-            levels_decreased = await apply_penalty(self.player_data, self.author_id, interaction)
+        self.player_data = load_player_data(interaction.guild.id)
+        self.player = Exemplar(self.player_data[self.author_id]["exemplar"],
+                               self.player_data[self.author_id]["stats"],
+                               self.player_data[self.author_id]["inventory"])
 
-            # Update player data for death penalty
-            player_inventory = self.player_data[self.author_id]['inventory']
-
-            # Before resetting the inventory, deep copy the entire inventory
-            saved_inventory = copy.deepcopy(player_inventory)
-
-            # Reset the inventory attributes
-            player_inventory.items = []
-            player_inventory.trees = []
-            player_inventory.herbs = []
-            player_inventory.ore = []
-            player_inventory.armors = []
-            player_inventory.weapons = []
-            player_inventory.shields = []
-
-            # Save the updated stats
-            save_player_data(interaction.guild.id, self.player_data)
-
-            # Update self.player based on updated player_data
-            updated_stats = self.player_data[self.author_id]['stats']
-            self.player.stats.health = updated_stats['health']
-            self.player.stats.max_health = updated_stats['max_health']
-
-
-            # Define emojis for skills
-            skill_emojis = {
-                "combat": "⚔️",
-                "woodcutting": "🪓",
-                "mining": "⛏️"
-            }
-
-            # Create a new embed
-            new_embed = discord.Embed(title=f"You don't have enough {self.mtrm}  MTRM. \n\nYou've been resurrected but at a cost.",
-                                      color=0xff0000)  # Red color
-
-            # If levels were decreased, show that information
-            if levels_decreased:
-                level_decreased_message = '\n'.join(
-                    [f"{skill_emojis.get(skill, '')}  **{skill.capitalize()}**: {new_level}  ({diff})"
-                     for skill, (new_level, diff) in levels_decreased.items()]
-                )
-                # Add the full health bar to the embed
-                new_embed.add_field(name="Your Health has been Restored",
-                                    value=f"{get_emoji('heart_emoji')}  {self.player.stats.health}/{self.player.stats.max_health}")
-
-                new_embed.add_field(name="Skills Affected", value=level_decreased_message)
-            else:
-                # Add the full health bar to the embed
-                new_embed.add_field(name="Your Health has been Restored",
-                                    value=f"{get_emoji('heart_emoji')}  {self.player.stats.health}/{self.player.stats.max_health}")
-
-                new_embed.add_field(name="Skills Affected", value="No skills were affected.")
-
-            # Add the "dead.png" image to the embed
-            new_embed.set_image(url=generate_urls("cemetery", "Revive"))
-
-            # Send the new embed as a new message, without view buttons
-            await interaction.message.edit(embed=new_embed, view=None)
-
-            from nero.cemetery_buyback import NeroView
-            nero_view = NeroView(interaction, self.player_data, self.author_id, self.player, saved_inventory)
-
-            thumbnail_url = generate_urls("nero", "cemetery")
-            nero_embed = discord.Embed(
-                title="Captain Ner0",
-                description=f"Arr, there ye be, {interaction.user.mention}! I've scooped up all yer belongings after that nasty scuffle. "
-                            f"Ye can have 'em back, but it'll cost ye some coppers, savvy? Hows about **{buyback_cost * self.player.stats.zone_level}**{get_emoji('coppers_emoji')}? A fair price for a fair service, says I.",
-                color=discord.Color.dark_gold()
-            )
-            nero_embed.set_thumbnail(url=thumbnail_url)
-
-            # Send the message with the NeroView in the channel
-            channel = interaction.channel
-            await asyncio.sleep(1)
-            await channel.send(embed=nero_embed, view=nero_view)
-
-    @discord.ui.button(custom_id="resurrect", label="Resurrect", style=discord.ButtonStyle.danger)
-    async def resurrect(self, button, interaction):
+        if self.player.stats.health > 0:
+            # Player is not dead
+            return await self.not_dead_response(interaction)
 
         # Apply the penalty since the user doesn't have enough MTRM
         levels_decreased = await apply_penalty(self.player_data, self.author_id, interaction)
@@ -312,22 +267,37 @@ class ResurrectOptions(discord.ui.View):
         # Send the new embed as a new message, without view buttons
         await interaction.message.edit(embed=new_embed, view=None)
 
-        from nero.cemetery_buyback import NeroView
-        nero_view = NeroView(interaction, self.player_data, self.author_id, self.player, saved_inventory)
+        if self.include_nero:
+            from nero.cemetery_buyback import NeroView
+            nero_view = NeroView(interaction, self.player_data, self.author_id, self.player, saved_inventory)
 
-        thumbnail_url = generate_urls("nero", "cemetery")
+            cost = buyback_cost * self.player.stats.zone_level
+            formatted_cost = f"{cost:,}"  # This will format the number with commas
+
+            thumbnail_url = generate_urls("nero", "cemetery")
+            nero_embed = discord.Embed(
+                title="Captain Ner0",
+                description=f"Arr, there ye be, {interaction.user.mention}! I've scooped up all yer belongings after that nasty scuffle. "
+                            f"Ye can have 'em back, but it'll cost ye some coppers, savvy? Hows about **{formatted_cost}**{get_emoji('coppers_emoji')}? A fair price for a fair service, says I.",
+                color=discord.Color.dark_gold()
+            )
+            nero_embed.set_thumbnail(url=thumbnail_url)
+
+            # Send the message with the NeroView in the channel
+            channel = interaction.channel
+            await asyncio.sleep(1)
+            await channel.send(embed=nero_embed, view=nero_view)
+
+    @staticmethod
+    async def not_dead_response(interaction):
+        # Static method to handle the response when the player is not dead
         nero_embed = discord.Embed(
             title="Captain Ner0",
-            description=f"Arr, there ye be, {interaction.user.mention}! I've scooped up all yer belongings after that nasty scuffle. "
-                        f"Ye can have 'em back, but it'll cost ye some coppers, savvy? Hows about **{buyback_cost * self.player.stats.zone_level}**{get_emoji('coppers_emoji')}? A fair price for a fair service, says I.",
+            description="Errr... You're not dead anymore, matey. What are ye doin' here playin' with these buttons?",
             color=discord.Color.dark_gold()
         )
-        nero_embed.set_thumbnail(url=thumbnail_url)
-
-        # Send the message with the NeroView in the channel
-        channel = interaction.channel
-        await asyncio.sleep(1)
-        await channel.send(embed=nero_embed, view=nero_view)
+        nero_embed.set_thumbnail(url=generate_urls("nero", "confused"))
+        await interaction.response.send_message(embed=nero_embed, ephemeral=True)
 
 async def apply_penalty(player_data, author_id, interaction):
     stats = player_data[author_id]["stats"]

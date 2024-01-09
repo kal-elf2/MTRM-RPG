@@ -23,7 +23,10 @@ class NeroView(discord.ui.View):
         self.player_data[self.author_id]['inventory'] = player_inventory
         save_player_data(self.interaction.guild.id, self.player_data)
 
-        return f"Avast! Thanks for the {buyback_cost * self.player.stats.zone_level}{get_emoji('coppers_emoji')}, matey.\n\nYour items have been restored. Check yer pockets!"
+        cost = buyback_cost * self.player.stats.zone_level
+        formatted_cost = f"{cost:,}"  # Format the number with commas
+
+        return f"Avast! Thanks for the **{formatted_cost}**{get_emoji('coppers_emoji')}, matey.\n\nYour items have been restored. Check yer pockets!"
 
     @discord.ui.button(label="Yes", style=discord.ButtonStyle.primary)
     async def yes_button(self, button, interaction):
