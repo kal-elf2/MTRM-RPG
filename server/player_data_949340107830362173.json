@@ -2,30 +2,244 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "health": 915,
+            "health": 8,
             "max_health": 915,
-            "strength": 500,
-            "stamina": 423,
+            "strength": 421,
+            "stamina": 405,
             "max_stamina": 423,
-            "attack": 253,
+            "attack": 170,
             "damage": 60,
             "defense": 171,
             "armor": 34,
             "combat_level": 83,
-            "combat_experience": 716325,
+            "combat_experience": 734693,
             "mining_level": 80,
-            "mining_experience": 563530,
+            "mining_experience": 577980,
             "woodcutting_level": 84,
-            "woodcutting_experience": 781454,
+            "woodcutting_experience": 801492,
             "zone_level": 4,
             "damage_taken": 0
         },
         "inventory": {
-            "coppers": 10058,
-            "items": [],
-            "trees": [],
-            "herbs": [],
-            "ore": [],
+            "coppers": 60058,
+            "items": [
+                {
+                    "name": "Wolf Skin",
+                    "description": "A skin of a wild wolf. Known for its durability and strength.",
+                    "value": 50,
+                    "stack": 232
+                },
+                {
+                    "name": "Onyx",
+                    "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
+                    "value": 100,
+                    "stack": 836
+                },
+                {
+                    "name": "Deer Part",
+                    "description": "Various parts of a deer. Some are useful for making tools and weapons.",
+                    "value": 20,
+                    "stack": 29
+                },
+                {
+                    "name": "Deer Skin",
+                    "description": "Tough deer skin. Can be used for citadel sturdy armors.",
+                    "value": 30,
+                    "stack": 371
+                },
+                {
+                    "name": "Charcoal",
+                    "description": null,
+                    "value": null,
+                    "stack": 1422
+                },
+                {
+                    "name": "Iron",
+                    "description": null,
+                    "value": null,
+                    "stack": 929
+                },
+                {
+                    "name": "Steel",
+                    "description": null,
+                    "value": null,
+                    "stack": 2147
+                },
+                {
+                    "name": "Pole",
+                    "description": null,
+                    "value": null,
+                    "stack": 387
+                },
+                {
+                    "name": "Thick Pole",
+                    "description": null,
+                    "value": null,
+                    "stack": 25590
+                },
+                {
+                    "name": "Pine Strip",
+                    "description": null,
+                    "value": null,
+                    "stack": 1000
+                },
+                {
+                    "name": "Yew Strip",
+                    "description": null,
+                    "value": null,
+                    "stack": 8361
+                },
+                {
+                    "name": "Ash Strip",
+                    "description": null,
+                    "value": null,
+                    "stack": 967
+                },
+                {
+                    "name": "Poplar Strip",
+                    "description": null,
+                    "value": null,
+                    "stack": 90
+                },
+                {
+                    "name": "Flour",
+                    "description": null,
+                    "value": null,
+                    "stack": 285
+                },
+                {
+                    "name": "Wheat",
+                    "description": null,
+                    "value": null,
+                    "stack": 999
+                },
+                {
+                    "name": "Flax",
+                    "description": null,
+                    "value": null,
+                    "stack": 2008
+                },
+                {
+                    "name": "Linen",
+                    "description": null,
+                    "value": null,
+                    "stack": 952
+                },
+                {
+                    "name": "Linen Thread",
+                    "description": null,
+                    "value": null,
+                    "stack": 952
+                },
+                {
+                    "name": "Venison",
+                    "description": null,
+                    "value": null,
+                    "stack": 969
+                },
+                {
+                    "name": "Sinew",
+                    "description": null,
+                    "value": null,
+                    "stack": 849
+                },
+                {
+                    "name": "Rabbit Body",
+                    "description": "A furry rabbit body, warm to the touch. Can be used for citadel soft armors.",
+                    "value": 10,
+                    "stack": 1132
+                },
+                {
+                    "name": "Rabbit Meat",
+                    "description": null,
+                    "value": null,
+                    "stack": 9960
+                },
+                {
+                    "name": "Glowing Essence",
+                    "description": "An ethereal essence that glows faintly. Used in powerful magical rituals and citadel.",
+                    "value": 200,
+                    "stack": 990
+                },
+                {
+                    "name": "Goblin Crown",
+                    "description": "A powerful relic obtained from the Goblin Mother. Used to create powerful Charms.",
+                    "value": 5000,
+                    "stack": 114
+                },
+                {
+                    "name": "Leather",
+                    "description": null,
+                    "value": null,
+                    "stack": 987
+                },
+                {
+                    "name": "Leather Straps",
+                    "description": null,
+                    "value": null,
+                    "stack": 783
+                },
+                {
+                    "name": "Tough Leather Straps",
+                    "description": null,
+                    "value": null,
+                    "stack": 823
+                }
+            ],
+            "trees": [
+                {
+                    "name": "Yew",
+                    "stack": 1013
+                },
+                {
+                    "name": "Ash",
+                    "stack": 958
+                },
+                {
+                    "name": "Poplar",
+                    "stack": 1004
+                },
+                {
+                    "name": "Pine",
+                    "stack": 1000
+                }
+            ],
+            "herbs": [
+                {
+                    "name": "Ranarr",
+                    "value": 25,
+                    "stack": 1014
+                },
+                {
+                    "name": "Spirit Weed",
+                    "value": 25,
+                    "stack": 1026
+                },
+                {
+                    "name": "Snapdragon",
+                    "value": 350,
+                    "stack": 1020
+                },
+                {
+                    "name": "Bloodweed",
+                    "value": 350,
+                    "stack": 1010
+                }
+            ],
+            "ore": [
+                {
+                    "name": "Iron Ore",
+                    "stack": 1003
+                },
+                {
+                    "name": "Coal",
+                    "stack": 976
+                },
+                {
+                    "name": "Carbon",
+                    "stack": 839
+                }
+            ],
             "potions": [
                 {
                     "name": "Stamina Potion",
@@ -61,7 +275,35 @@
                 }
             ],
             "limit": 49,
-            "armors": [],
+            "armors": [
+                {
+                    "name": "Brigandine Armor",
+                    "description": null,
+                    "value": 160,
+                    "stack": 1,
+                    "defense_modifier": 56,
+                    "armor_type": "chest",
+                    "zone_level": 3
+                },
+                {
+                    "name": "Brigandine Boots",
+                    "description": null,
+                    "value": 98,
+                    "stack": 1,
+                    "defense_modifier": 20,
+                    "armor_type": "boots",
+                    "zone_level": 4
+                },
+                {
+                    "name": "Brigandine Gloves",
+                    "description": null,
+                    "value": 98,
+                    "stack": 1,
+                    "defense_modifier": 36,
+                    "armor_type": "gloves",
+                    "zone_level": 4
+                }
+            ],
             "equipped_armor": {
                 "chest": {
                     "name": "Brigandine Armor",
@@ -91,7 +333,78 @@
                     "zone_level": 4
                 }
             },
-            "weapons": [],
+            "weapons": [
+                {
+                    "name": "Champion Sword",
+                    "description": null,
+                    "value": 73,
+                    "stack": 1,
+                    "wtype": "Sword",
+                    "attack_modifier": 7,
+                    "special_attack": 3,
+                    "zone_level": 1
+                },
+                {
+                    "name": "Champion Bow",
+                    "description": null,
+                    "value": 92,
+                    "stack": 1,
+                    "wtype": "Bow",
+                    "attack_modifier": 14,
+                    "special_attack": 3,
+                    "zone_level": 2
+                },
+                {
+                    "name": "Voltaic Sword",
+                    "description": null,
+                    "value": 154,
+                    "stack": 2,
+                    "wtype": "Sword",
+                    "attack_modifier": 48,
+                    "special_attack": 4,
+                    "zone_level": 4
+                },
+                {
+                    "name": "Short Sword",
+                    "description": null,
+                    "value": 55,
+                    "stack": 1,
+                    "wtype": "Sword",
+                    "attack_modifier": 15,
+                    "special_attack": 1,
+                    "zone_level": 5
+                },
+                {
+                    "name": "Long Sword",
+                    "description": null,
+                    "value": 100,
+                    "stack": 1,
+                    "wtype": "Sword",
+                    "attack_modifier": 25,
+                    "special_attack": 2,
+                    "zone_level": 5
+                },
+                {
+                    "name": "Champion Sword",
+                    "description": null,
+                    "value": 145,
+                    "stack": 1,
+                    "wtype": "Sword",
+                    "attack_modifier": 35,
+                    "special_attack": 3,
+                    "zone_level": 5
+                },
+                {
+                    "name": "Voltaic Sword",
+                    "description": null,
+                    "value": 190,
+                    "stack": 2,
+                    "wtype": "Sword",
+                    "attack_modifier": 60,
+                    "special_attack": 4,
+                    "zone_level": 5
+                }
+            ],
             "equipped_weapon": {
                 "name": "Voltaic Sword",
                 "description": null,
@@ -102,7 +415,16 @@
                 "special_attack": 4,
                 "zone_level": 5
             },
-            "shields": [],
+            "shields": [
+                {
+                    "name": "Small Shield",
+                    "description": null,
+                    "value": 46,
+                    "stack": 1,
+                    "defense_modifier": 6,
+                    "zone_level": 2
+                }
+            ],
             "equipped_shield": null,
             "charms": [
                 {

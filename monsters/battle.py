@@ -23,6 +23,49 @@ class LootOptions(discord.ui.View, CommonResponses):
         self.ctx = ctx
         self.experience_gained = experience_gained
         self.loothaven_effect = loothaven_effect
+        self.add_repeat_battle_button()
+
+    def add_repeat_battle_button(self):
+        # Add the "Repeat Battle" button
+        repeat_button = discord.ui.Button(
+            custom_id="repeat_battle",
+            style=discord.ButtonStyle.grey,
+            emoji="🔁"
+        )
+        repeat_button.callback = self.repeat_battle
+        self.add_item(repeat_button)
+
+    async def repeat_battle(self, interaction):
+        # Check if the user who interacted is the same as the one who initiated the view
+        if str(interaction.user.id) != self.author_id:
+            await self.nero_unauthorized_user_response(interaction)
+            return
+
+        try:
+            # Acknowledge the interaction
+            await interaction.response.defer()
+
+            # Clear all buttons from the view
+            self.clear_items()
+
+            # Update the interaction message to reflect the view changes
+            await interaction.edit_original_response(view=self)
+
+            # Start a new battle with the same monster
+            await start_battle(self.ctx, self.monster, self.player_data, self.player, self.author_id, self.guild_id,
+                               self.battle_embed)
+
+        except (discord.InteractionResponded, discord.NotFound):
+            # Construct a custom embed to inform the user about the expired session
+            expired_embed = discord.Embed(
+                title="Captain Ner0",
+                description="Arr! The battle session has expired, matey. Start a new battle if ye dare!",
+                color=discord.Color.dark_gold()
+            )
+            expired_embed.set_thumbnail(url=generate_urls("nero", "pirate_hat"))
+
+            # Send the embed as a response to the interaction
+            await interaction.followup.send(embed=expired_embed, ephemeral=True)
 
     @discord.ui.button(custom_id="loot", label="Loot", style=discord.ButtonStyle.blurple)
     async def collect_loot(self, button, interaction):
@@ -105,8 +148,164 @@ class LootOptions(discord.ui.View, CommonResponses):
 
         save_player_data(self.guild_id, self.player_data)
 
+        self.clear_items()
+
         # Update the original response with the final embed
         await interaction.edit_original_response(embed=final_embed, view=None)
+
+        # After processing the loot, add the "Repeat Battle" button
+        self.add_repeat_battle_button()
+
+        # Update the view with the new button
+        await interaction.edit_original_response(view=self)
+
+async def start_battle(ctx, monster, player_data, player, author_id, guild_id, battle_embed):
+    from monsters.monster import BattleContext
+    from monsters.monster import monster_battle
+    from stats import ResurrectOptions
+
+    # Check if player data exists for the user
+    if author_id not in player_data:
+        embed = Embed(title="Captain Ner0",
+                      description="Arr! What be this? No record of yer adventures? Start a new game with `/newgame` before I make ye walk the plank.",
+                      color=discord.Color.dark_gold())
+        embed.set_thumbnail(url=generate_urls("nero", "confused"))
+        await ctx.respond(embed=embed, ephemeral=True)
+        return
+
+    # Check the player's health before starting a battle
+    if player.stats.health <= 0:
+        embed = Embed(title="Captain Ner0",
+                      description="Ahoy! Ye can't do that ye bloody ghost! Ye must travel to the 🪦 `/cemetery` to reenter the realm of the living.",
+                      color=discord.Color.dark_gold())
+        embed.set_thumbnail(url=generate_urls("nero", "confused"))
+        await ctx.respond(embed=embed, ephemeral=True)
+        return
+
+    # Initialize in_battle flag before starting the battle
+    player_data[author_id].setdefault("in_battle", False)
+    player_data[author_id]["in_battle"] = True
+    save_player_data(guild_id, player_data)
+
+    zone_level = player.stats.zone_level
+
+    # Reset the monster's health to its maximum at the start of the battle
+    monster.health = monster.max_health
+
+    await ctx.respond(f"{ctx.author.mention} encounters a {monster.name}", ephemeral=True)
+
+    def update_special_attack_buttons(context):
+        if context.special_attack_options_view:
+            context.special_attack_options_view.update_button_states()
+
+    battle_context = BattleContext(ctx, ctx.author, player, monster, battle_embed, zone_level,
+                                   update_special_attack_buttons)
+
+    # Create the special attack options view without the messages first
+    special_attack_options_view = SpecialAttackOptions(battle_context, None, None)
+
+    # IMPORTANT: Set the special attack options view in the battle context immediately
+    battle_context.special_attack_options_view = special_attack_options_view
+
+    # Send the special attack message and store the reference
+    special_attack_message = await ctx.send(view=special_attack_options_view)
+    battle_context.special_attack_message = special_attack_message
+
+    # Send the battle options message and store the reference
+    battle_options_msg = await ctx.send(
+        view=BattleOptions(ctx, player, battle_context, special_attack_options_view))
+    battle_context.battle_options_msg = battle_options_msg
+
+    # Now update the special attack options view with the message references
+    special_attack_options_view.battle_options_msg = battle_options_msg
+    special_attack_options_view.special_attack_message = special_attack_message
+
+    # Start the monster attack task and receive its outcome
+    battle_result = await monster_battle(battle_context)
+
+    if battle_result is None:
+        # Save the player's current stats
+        player_data[author_id]["stats"]["stamina"] = player.stats.stamina
+        player_data[author_id]["stats"]["combat_level"] = player.stats.combat_level
+        player_data[author_id]["stats"]["combat_experience"] = player.stats.combat_experience
+        player_data[author_id]["stats"]["health"] = player.stats.health
+        player_data[author_id]["stats"]["damage_taken"] = player.stats.damage_taken
+        player_data[author_id]["stats"].update(player.stats.__dict__)
+
+        save_player_data(guild_id, player_data)
+
+    # Process battle outcome
+    else:
+        # Unpack the battle outcome and loot messages
+        battle_outcome, loot_messages = battle_result
+
+        if battle_outcome[0]:
+
+            experience_gained = monster.experience_reward
+            loothaven_effect = battle_outcome[5]  # Get the Loothaven effect status
+            await player.gain_experience(experience_gained, 'combat', ctx)
+
+            player_data[author_id]["stats"]["stamina"] = player.stats.stamina
+            player_data[author_id]["stats"]["combat_level"] = player.stats.combat_level
+            player_data[author_id]["stats"]["combat_experience"] = player.stats.combat_experience
+            player.stats.damage_taken = 0
+            player_data[author_id]["stats"].update(player.stats.__dict__)
+
+            if player.stats.health <= 0:
+                player.stats.health = player.stats.max_health
+
+            # Save the player data after common actions
+            save_player_data(guild_id, player_data)
+
+            # Clear the previous views
+            await battle_context.special_attack_message.delete()
+            await battle_options_msg.delete()
+
+            loot_view = LootOptions(ctx, player, monster, battle_embed, player_data, author_id, battle_outcome,
+                                    loot_messages, guild_id, ctx, experience_gained, loothaven_effect)
+
+            # Construct the embed with the footer
+            battle_outcome_embed = create_battle_embed(ctx.user, player, monster,
+                                                       footer_text_for_embed(ctx, monster),
+                                                       f"You have **DEFEATED** the {monster.name}!\n"
+                                                       f"You dealt **{battle_outcome[1]} damage** to the monster and took **{battle_outcome[2]} damage**. "
+                                                       f"You gained {experience_gained} combat XP.\n"
+                                                       f"\n\u00A0\u00A0")
+
+            await battle_embed.edit(
+                embed=battle_outcome_embed,
+                view=loot_view
+            )
+
+        else:
+
+            # The player is defeated
+            player.stats.health = 0  # Set player's health to 0
+            player_data[author_id]["stats"]["health"] = 0
+
+            # Create a new embed with the defeat message
+            new_embed = create_battle_embed(ctx.user, player, monster, footer_text="", messages=
+
+            f"☠️ You have been **DEFEATED** by the **{monster.name}**!\n"
+            f"{get_emoji('rip_emoji')} *Your spirit lingers, seeking renewal.* {get_emoji('rip_emoji')}\n\n"
+            f"__**Options for Revival:**__\n"
+            f"1. Use {get_emoji('Materium')} to revive without penalty.\n"
+            f"2. Resurrect with 2.5% penalty to all skills."
+            f"**Lose all items in inventory** (Keep coppers, MTRM, potions, and charms)")
+
+            # Clear the previous BattleOptions view
+            await battle_context.special_attack_message.delete()
+            await battle_options_msg.delete()
+
+            # Add the "dead.png" image to the embed
+            new_embed.set_image(url=generate_urls("cemetery", "dead"))
+
+            # Update the message with the new embed and view
+            await battle_embed.edit(embed=new_embed, view=ResurrectOptions(ctx, player_data, author_id))
+
+    # Clear the in_battle flag after the battle ends
+    player_data[author_id]["in_battle"] = False
+    save_player_data(guild_id, player_data)
 
 def use_potion_logic(player, potion_name):
     """
