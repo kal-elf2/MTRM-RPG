@@ -357,7 +357,7 @@ class CraftingSelect(discord.ui.Select, CommonResponses):
         # Conditional placeholder message
         placeholder_message = "Choose an item to craft"
         if context == "tavern":
-            placeholder_message = "What would you like to do?"
+            placeholder_message = f"What brings you in today?"
 
         # Initialize the Select element with the generated options
         super().__init__(placeholder=placeholder_message, options=options, min_values=1, max_values=1)
