@@ -330,7 +330,7 @@ class CraftButton(discord.ui.Button):
 
 
 class CraftingSelect(discord.ui.Select, CommonResponses):
-    def __init__(self, crafting_station, interaction, author_id):
+    def __init__(self, crafting_station, interaction, author_id, context=None):
         self.crafting_station = crafting_station
         self.interaction = interaction
         self.author_id = author_id
@@ -354,8 +354,13 @@ class CraftingSelect(discord.ui.Select, CommonResponses):
             for recipe in self.crafting_station.recipes
         ]
 
+        # Conditional placeholder message
+        placeholder_message = "Choose an item to craft"
+        if context == "tavern":
+            placeholder_message = "What would you like to do?"
+
         # Initialize the Select element with the generated options
-        super().__init__(placeholder="Choose an item to craft", options=options, min_values=1, max_values=1)
+        super().__init__(placeholder=placeholder_message, options=options, min_values=1, max_values=1)
 
     def _get_item_label(self, item):
         """Return the appropriate label for the item, including defense or attack modifier if applicable."""
@@ -397,121 +402,128 @@ class CraftingSelect(discord.ui.Select, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        # Get zone level from player stats
-        zone_level = self.player.stats.zone_level
+        from nero.TES import handle_three_eyed_snake_selection
 
-        # Emojis for each zone
-        zone_emoji_mapping = {
-            1: 'common_emoji',
-            2: 'uncommon_emoji',
-            3: 'rare_emoji',
-            4: 'epic_emoji',
-            5: 'legendary_emoji'
-        }
-
-        zone_rarity = {
-            1: '(Common)',
-            2: '(Uncommon)',
-            3: '(Rare)',
-            4: '(Epic)',
-            5: '(Legendary)',
-        }
-
-        # Colors for each zone
-        color_mapping = {
-            1: 0x969696,
-            2: 0x15ce00,
-            3: 0x0096f1,
-            4: 0x9900ff,
-            5: 0xfebd0d
-        }
-
-        # Get the appropriate emoji and color for the current zone
-        zone_emoji = get_emoji(zone_emoji_mapping.get(zone_level))
-        embed_color = color_mapping.get(zone_level)
-
-        # Retrieve the recipe for the selected item.
-        selected_recipe = next((r for r in self.crafting_station.recipes if r.result.name == self.values[0]), None)
-
-        # Check player's inventory for quantity of the crafted item with zone_level rarity
-        if isinstance(selected_recipe.result, (Weapon, Armor, Shield)):
-            crafted_item_count = self.player.inventory.get_item_quantity(selected_recipe.result.name, zone_level)
-        # Check player's inventory for quantity of other items without zone_level rarity
+        # Check for the 3ES selection
+        if self.values[0] == 'three_eyed_snake':
+            await handle_three_eyed_snake_selection(interaction)
         else:
-            crafted_item_count = self.player.inventory.get_item_quantity(selected_recipe.result.name)
 
-        embed_title = f"{selected_recipe.result.name} {zone_emoji}"
-        if selected_recipe.result.name == "Bread":
-            embed_title = "Bread: Auto Consume"
-        elif selected_recipe.result.name == "Trencher":
-            embed_title = "Trencher: Auto Consume"
+            # Get zone level from player stats
+            zone_level = self.player.stats.zone_level
 
-        # Check player's inventory for required ingredients.
-        ingredients_list = []
-        can_craft = True
-        for ingredient, required_quantity in selected_recipe.ingredients:
-            available_quantity = self.player.inventory.get_item_quantity(ingredient.name)
-            if available_quantity < required_quantity:
-                can_craft = False
-                ingredients_list.append(f"❌ {ingredient.name} {available_quantity}/{required_quantity}")
+            # Emojis for each zone
+            zone_emoji_mapping = {
+                1: 'common_emoji',
+                2: 'uncommon_emoji',
+                3: 'rare_emoji',
+                4: 'epic_emoji',
+                5: 'legendary_emoji'
+            }
+
+            zone_rarity = {
+                1: '(Common)',
+                2: '(Uncommon)',
+                3: '(Rare)',
+                4: '(Epic)',
+                5: '(Legendary)',
+            }
+
+            # Colors for each zone
+            color_mapping = {
+                1: 0x969696,
+                2: 0x15ce00,
+                3: 0x0096f1,
+                4: 0x9900ff,
+                5: 0xfebd0d
+            }
+
+            # Get the appropriate emoji and color for the current zone
+            zone_emoji = get_emoji(zone_emoji_mapping.get(zone_level))
+            embed_color = color_mapping.get(zone_level)
+
+            # Retrieve the recipe for the selected item.
+            selected_recipe = next((r for r in self.crafting_station.recipes if r.result.name == self.values[0]), None)
+
+            # Check player's inventory for quantity of the crafted item with zone_level rarity
+            if isinstance(selected_recipe.result, (Weapon, Armor, Shield)):
+                crafted_item_count = self.player.inventory.get_item_quantity(selected_recipe.result.name, zone_level)
+            # Check player's inventory for quantity of other items without zone_level rarity
             else:
-                ingredients_list.append(f"✅ {ingredient.name} {available_quantity}/{required_quantity}")
+                crafted_item_count = self.player.inventory.get_item_quantity(selected_recipe.result.name)
 
-        # Construct the embed message.
-        message_content = "\n".join(ingredients_list)
+            embed_title = f"{selected_recipe.result.name} {zone_emoji}"
+            if selected_recipe.result.name == "Bread":
+                embed_title = "Bread: Auto Consume"
+            elif selected_recipe.result.name == "Trencher":
+                embed_title = "Trencher: Auto Consume"
 
-        # Add an extra newline to separate the ingredients from the attributes
-        message_content += "\n"
+            # Check player's inventory for required ingredients.
+            ingredients_list = []
+            can_craft = True
+            for ingredient, required_quantity in selected_recipe.ingredients:
+                available_quantity = self.player.inventory.get_item_quantity(ingredient.name)
+                if available_quantity < required_quantity:
+                    can_craft = False
+                    ingredients_list.append(f"❌ {ingredient.name} {available_quantity}/{required_quantity}")
+                else:
+                    ingredients_list.append(f"✅ {ingredient.name} {available_quantity}/{required_quantity}")
 
-        # Check and include damage if attack_modifier exists
-        if hasattr(selected_recipe.result, "attack_modifier") and selected_recipe.result.attack_modifier is not None:
-            message_content += f"\n**Damage:** {selected_recipe.result.attack_modifier}"
+            # Construct the embed message.
+            message_content = "\n".join(ingredients_list)
 
-        # Check and include armor if defense_modifier exists
-        if hasattr(selected_recipe.result, "defense_modifier") and selected_recipe.result.defense_modifier is not None:
-            message_content += f"\n**Armor:** {selected_recipe.result.defense_modifier}"
+            # Add an extra newline to separate the ingredients from the attributes
+            message_content += "\n"
 
-        # Check and include special attacks if special_attack exists
-        if hasattr(selected_recipe.result, "special_attack") and selected_recipe.result.special_attack is not None:
-            message_content += f"\n**Special Attack:** {selected_recipe.result.special_attack}"
+            # Check and include damage if attack_modifier exists
+            if hasattr(selected_recipe.result, "attack_modifier") and selected_recipe.result.attack_modifier is not None:
+                message_content += f"\n**Damage:** {selected_recipe.result.attack_modifier}"
 
-        # Check and include the description of the selected item, if it exists
-        if hasattr(selected_recipe.result, "description") and selected_recipe.result.description:
-            message_content += f"\n**Description:** {selected_recipe.result.description}"
+            # Check and include armor if defense_modifier exists
+            if hasattr(selected_recipe.result, "defense_modifier") and selected_recipe.result.defense_modifier is not None:
+                message_content += f"\n**Armor:** {selected_recipe.result.defense_modifier}"
 
-        crafted_item_url = generate_urls('Icons', selected_recipe.result.name.replace(" ", "%20"))
-        embed = Embed(title=embed_title, description=message_content, color=embed_color)
-        embed.set_thumbnail(url=crafted_item_url)
+            # Check and include special attacks if special_attack exists
+            if hasattr(selected_recipe.result, "special_attack") and selected_recipe.result.special_attack is not None:
+                message_content += f"\n**Special Attack:** {selected_recipe.result.special_attack}"
 
-        # Setting the footer with crafted item count in backpack, except for Bread and Trencher
-        if selected_recipe.result.name not in ["Bread", "Trencher"]:
-            footer_text = f"{crafted_item_count} in backpack"
+            # Check and include the description of the selected item, if it exists
+            if hasattr(selected_recipe.result, "description") and selected_recipe.result.description:
+                message_content += f"\n**Description:** {selected_recipe.result.description}"
 
-            # Check if the item class is Armor, Weapon, or Shield and adjust the footer text
-            if isinstance(selected_recipe.result, (Armor, Weapon, Shield)):
-                rarity_label = zone_rarity.get(zone_level)
-                footer_text += f" {rarity_label}"
+            crafted_item_url = generate_urls('Icons', selected_recipe.result.name.replace(" ", "%20"))
+            embed = Embed(title=embed_title, description=message_content, color=embed_color)
+            embed.set_thumbnail(url=crafted_item_url)
 
-            embed.set_footer(text=footer_text)
+            # Setting the footer with crafted item count in backpack, except for Bread and Trencher
+            if selected_recipe.result.name not in ["Bread", "Trencher"]:
+                footer_text = f"{crafted_item_count} in backpack"
 
-        # Check if it's "Bread" or "Trencher" and add stamina bar to description
-        if selected_recipe.result.name in ["Bread", "Trencher"]:
-            stamina_progress = stamina_bar(self.player.stats.stamina, self.player.stats.max_stamina)
-            stamina_emoji = get_emoji('stamina_emoji')
+                # Check if the item class is Armor, Weapon, or Shield and adjust the footer text
+                if isinstance(selected_recipe.result, (Armor, Weapon, Shield)):
+                    rarity_label = zone_rarity.get(zone_level)
+                    footer_text += f" {rarity_label}"
 
-            # Check if stamina is full and modify the message accordingly
-            if self.player.stats.stamina >= self.player.stats.max_stamina:
-                stamina_message = f"\n\n{stamina_emoji} Stamina: {stamina_progress} {self.player.stats.stamina}/{self.player.stats.max_stamina} **FULL!**"
-                can_craft = False  # Disable the Craft button if stamina is full
-            else:
-                stamina_message = f"\n\n{stamina_emoji} Stamina: {stamina_progress} {self.player.stats.stamina}/{self.player.stats.max_stamina}"
+                embed.set_footer(text=footer_text)
 
-            embed.description += stamina_message
+            # Check if it's "Bread" or "Trencher" and add stamina bar to description
+            if selected_recipe.result.name in ["Bread", "Trencher"]:
+                stamina_progress = stamina_bar(self.player.stats.stamina, self.player.stats.max_stamina)
+                stamina_emoji = get_emoji('stamina_emoji')
 
-        view = CraftButtonView(self.player, self.player_data, self.crafting_station, selected_recipe, self.guild_id, self.author_id,
-                               disabled=not can_craft)
-        message = await interaction.response.send_message(embed=embed, ephemeral=True, view=view)
-        view.message = message
+                # Check if stamina is full and modify the message accordingly
+                if self.player.stats.stamina >= self.player.stats.max_stamina:
+                    stamina_message = f"\n\n{stamina_emoji} Stamina: {stamina_progress} {self.player.stats.stamina}/{self.player.stats.max_stamina} **FULL!**"
+                    can_craft = False  # Disable the Craft button if stamina is full
+                else:
+                    stamina_message = f"\n\n{stamina_emoji} Stamina: {stamina_progress} {self.player.stats.stamina}/{self.player.stats.max_stamina}"
+
+                embed.description += stamina_message
+
+            view = CraftButtonView(self.player, self.player_data, self.crafting_station, selected_recipe, self.guild_id, self.author_id,
+                                   disabled=not can_craft)
+            message = await interaction.response.send_message(embed=embed, ephemeral=True, view=view)
+            view.message = message
 
 
 def create_crafting_stations(interaction, station_name=None):

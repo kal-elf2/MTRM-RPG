@@ -162,10 +162,23 @@ class BreadRow(discord.ui.View, CommonResponses):
         self.author_id = author_id
         self.crafting_select = None
 
-    def update_or_add_crafting_select(self, recipes, interaction):
+    def update_or_add_crafting_select(self, recipes, interaction, is_tavern=False):
+        from citadel.crafting import Recipe
+        from nero.TES import TavernSpecialItem
         if self.crafting_select:
             self.remove_item(self.crafting_select)
-        self.crafting_select = CraftingSelect(recipes, interaction, self.author_id)
+
+        # Pass 'tavern' as context if is_tavern is True
+        context = 'tavern' if is_tavern else None
+        self.crafting_select = CraftingSelect(recipes, interaction, self.author_id, context=context)
+        if is_tavern:
+            # Append the 'Three Eyed Snake' option only for the tavern
+            three_eyed_snake_recipe = Recipe(TavernSpecialItem(), None)  # Create a special recipe for Three Eyed Snake
+            self.crafting_select.options.append(discord.SelectOption(
+                label=three_eyed_snake_recipe.result.name,
+                value='three_eyed_snake',  # Set a suitable value
+                emoji='🎲'  # Dice emoji
+            ))
         self.add_item(self.crafting_select)
 
     @discord.ui.button(label="🥖 Bread Stand", custom_id="citadel_bread_stand", style=discord.ButtonStyle.blurple)
@@ -203,6 +216,7 @@ class BreadRow(discord.ui.View, CommonResponses):
 
         station = create_crafting_stations(interaction, "tavern")
         self.update_or_add_crafting_select(station, interaction)
+        self.update_or_add_crafting_select(station, interaction, is_tavern=True)
         await interaction.response.edit_message(content="Choose an item from the Tavern:", view=self)
 
 class WheatRow(discord.ui.View, CommonResponses):
