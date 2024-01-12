@@ -76,10 +76,11 @@ class RulesButton(discord.ui.Button):
         await interaction.response.send_message(embed=rules_embed, ephemeral=True)
 
 class BetModal(discord.ui.Modal):
-    def __init__(self, author_id, player, *args, **kwargs):
+    def __init__(self, author_id, player, game_view, *args, **kwargs):
         super().__init__(title="Place Your Bet", *args, **kwargs)
         self.author_id = author_id
         self.player = player
+        self.game_view = game_view
         self.bet = discord.ui.InputText(label="How many Coppers would you like to wager?", style=discord.InputTextStyle.short)
         self.add_item(self.bet)
 
@@ -94,8 +95,13 @@ class BetModal(discord.ui.Modal):
             game_embed = discord.Embed(title="Your Game", color=discord.Color.blue())
             game_embed.set_image(url="attachment://table.png")
 
-            # Edit the original message with the new embed
-            await interaction.edit_original_response(embed=game_embed, files=[discord_file])
+            # Enable the "Roll" button in the GameView
+            for item in self.game_view.children:
+                if isinstance(item, RollButton):
+                    item.disabled = False
+
+            # Edit the original message with the new embed and enabled "Roll" button
+            await interaction.edit_original_response(embed=game_embed, view=self.game_view, files=[discord_file])
         else:
             # Send a nero embed if not enough coppers
             thumbnail_url = generate_urls("nero", "confused")
@@ -106,6 +112,7 @@ class BetModal(discord.ui.Modal):
             )
             nero_embed.set_thumbnail(url=thumbnail_url)
             await interaction.followup.send(embed=nero_embed, ephemeral=True)
+
 
 async def generate_game_image(player_exemplar, bet_amount=None, round1=False):
     if round1:
@@ -163,52 +170,52 @@ class GameView(discord.ui.View, CommonResponses):
         super().__init__(*args, **kwargs)
         self.author_id = author_id
         self.player = player
+        self.current_round = 0
+        self.round_number = 0
 
-        # Add the 'Bet' button
-        self.add_item(BetButton(label="Bet", style=discord.ButtonStyle.blurple, custom_id="bet_3es", player=self.player))
+        # Create the 'Bet' button and pass the game_view instance
+        self.bet_button = BetButton(label="Bet", style=discord.ButtonStyle.blurple, custom_id="bet_3es", player=self.player, game_view=self)
 
-        # Add dice buttons with unique custom_ids
+        # Add the 'Bet' button to the view
+        self.add_item(self.bet_button)
+
+        # Add dice buttons with unique custom_ids (pre-disabled)
         dice_emoji = "\U0001F3B2"  # Unicode for dice emoji
         for i in range(3):
             dice_id = f"dice_3es_{i}"  # unique custom_id for each dice button
-            self.add_item(DiceButton(label=dice_emoji, custom_id=dice_id))
+            dice_button = DiceButton(label=dice_emoji, custom_id=dice_id)
+            dice_button.disabled = True  # Set the button as disabled
+            self.add_item(dice_button)
 
-        # Add 'Roll' button
-        self.add_item(RollButton(label="Roll", style=discord.ButtonStyle.green, custom_id="roll_3es"))
-
-class NeroGameView(discord.ui.View, CommonResponses):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        # Add disabled 'Bet' button
-        bet_button = BetButton(label="Bet", custom_id="nero_bet_3es", player=None)
-        bet_button.disabled = True
-        self.add_item(bet_button)
-
-        # Add disabled 'Roll' button
-        roll_button = RollButton(label="Roll", custom_id="nero_roll_3es")
-        roll_button.disabled = True
+        # Add 'Roll' button (pre-disabled)
+        roll_button = RollButton(label="Roll", style=discord.ButtonStyle.green, custom_id="roll_3es")
+        roll_button.disabled = True  # Set the button as disabled initially for round 0
         self.add_item(roll_button)
 
-        # Add NeroDiceButtons
-        dice_emoji = "\U0001F3B2"  # Unicode for dice emoji
-        for i in range(3):
-            dice_id = f"nero_dice_3es_{i}"  # unique custom_id for each Nero dice button
-            self.add_item(NeroDiceButton(label=dice_emoji, custom_id=dice_id))
-
-class NeroDiceButton(discord.ui.Button):
-    def __init__(self, label, custom_id, style=discord.ButtonStyle.grey):
-        super().__init__(label=label, custom_id=custom_id, style=style, disabled=True)
-
-    async def callback(self, interaction: discord.Interaction):
-        # This button will always be disabled, so no callback logic is needed
-        pass
-
+    def update_buttons_for_round(self):
+        # This function will be used to update button states based on the current round
+        for item in self.children:
+            if isinstance(item, RollButton):
+                item.disabled = False if self.current_round > 0 else True  # Enable "Roll" button for rounds 1 and 2
+            elif isinstance(item, BetButton):
+                item.disabled = False if self.current_round == 0 or self.current_round == 2 else True  # Enable "Bet" button for round 0 and round 2
+            elif isinstance(item, DiceButton):
+                item.disabled = False if self.current_round == 1 else True  # Enable dice buttons for round 1
+    def toggle_round(self):
+        # This function will toggle between rounds (0, 1, 2)
+        if self.current_round == 0:
+            self.current_round = 1
+        elif self.current_round == 1:
+            self.current_round = 2
+        else:
+            self.current_round = 1  # Re-enter round 1 after round 2
+        print(f"Current Round: {self.current_round}")  # Print current round for troubleshooting
 
 class BetButton(discord.ui.Button, CommonResponses):
-    def __init__(self, label, custom_id, player, *args, **kwargs):
+    def __init__(self, label, custom_id, player, game_view, *args, **kwargs):
         super().__init__(label=label, custom_id=custom_id, *args, **kwargs)
         self.player = player
+        self.game_view = game_view
 
     async def callback(self, interaction: discord.Interaction):
         # Authorization check
@@ -217,7 +224,8 @@ class BetButton(discord.ui.Button, CommonResponses):
             return
 
         # Create and send the bet modal
-        bet_modal = BetModal(author_id=self.view.author_id, player=self.player)
+        bet_modal = BetModal(author_id=self.view.author_id, player=self.player, game_view=self.game_view)
+
         await interaction.response.send_modal(bet_modal)
 
 class DiceButton(discord.ui.Button, CommonResponses):
@@ -231,6 +239,7 @@ class DiceButton(discord.ui.Button, CommonResponses):
             return
         # Logic for dice button
 
+
 class RollButton(discord.ui.Button, CommonResponses):
     def __init__(self, label, custom_id, style=discord.ButtonStyle.green):
         super().__init__(label=label, custom_id=custom_id, style=style)
@@ -240,7 +249,18 @@ class RollButton(discord.ui.Button, CommonResponses):
         if str(interaction.user.id) != self.view.author_id:
             await self.view.nero_unauthorized_user_response(interaction)
             return
-        # Logic for roll button
+
+        # Toggle rounds
+        self.view.toggle_round()
+
+        # Update button states based on the current round
+        self.view.update_buttons_for_round()
+
+        # Logic for roll button (you can implement your logic here)
+
+        # Update the message with the modified view
+        await interaction.response.edit_message(view=self.view)
+
 
 
 
