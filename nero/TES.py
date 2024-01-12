@@ -5,6 +5,7 @@ from exemplars.exemplars import Exemplar
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 import requests
+import random
 
 
 class TavernSpecialItem:
@@ -87,9 +88,23 @@ class BetModal(discord.ui.Modal):
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=False)
 
-        bet_amount = int(self.bet.value)
-        if self.player.inventory.coppers >= bet_amount * 10:
+        try:
+            bet_amount = int(self.bet.value)
+        except ValueError:
+            # Send an ephemeral message if the bet is not an integer
+            return await interaction.response.send_message(
+                embed=discord.Embed(
+                    title="Captain Ner0",
+                    description="Arr, be precise with yer numbers! Enter a whole number of coppers, savvy?",
+                    color=discord.Color.dark_gold()
+                ),
+                ephemeral=True
+            )
+        if self.player.inventory.coppers >= bet_amount * 30:
             discord_file = await generate_game_image(self.player.name, bet_amount=bet_amount, round1=True)
+
+            # Update the game view with the bet amount
+            self.game_view.bet_amount = bet_amount
 
             # Create a new embed with the updated image
             game_embed = discord.Embed(title="Your Game", color=discord.Color.blue())
@@ -107,12 +122,11 @@ class BetModal(discord.ui.Modal):
             thumbnail_url = generate_urls("nero", "confused")
             nero_embed = discord.Embed(
                 title="Captain Ner0",
-                description="Arr, ye be short on coppers! Can't make a deal without the coin. If ye happen to find some, return here and try again.",
+                description="Arr, ye be short on coppers! This be a high stakes table. Ye need 20x the wager to play. If ye happen to find some, return here and try again.",
                 color=discord.Color.dark_gold()
             )
             nero_embed.set_thumbnail(url=thumbnail_url)
             await interaction.followup.send(embed=nero_embed, ephemeral=True)
-
 
 async def generate_game_image(player_exemplar, bet_amount=None, round1=False):
     if round1:
@@ -166,12 +180,21 @@ async def generate_game_image(player_exemplar, bet_amount=None, round1=False):
     return discord_file
 
 class GameView(discord.ui.View, CommonResponses):
-    def __init__(self, author_id, player, *args, **kwargs):
+    def __init__(self, author_id, player, bet_amount=0, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.author_id = author_id
         self.player = player
+        self.bet_amount = bet_amount
         self.current_round = 0
         self.round_number = 0
+        self.player_dice = [0, 0, 0]
+        self.nero_dice = [0, 0, 0]
+
+        # Create a list to keep track of the selected state of dice buttons
+        self.selected_dice = [False, False, False]
+
+        # Initialize in_round_2 as False
+        self.in_round_2 = False
 
         # Create the 'Bet' button and pass the game_view instance
         self.bet_button = BetButton(label="Bet", style=discord.ButtonStyle.blurple, custom_id="bet_3es", player=self.player, game_view=self)
@@ -183,7 +206,7 @@ class GameView(discord.ui.View, CommonResponses):
         dice_emoji = "\U0001F3B2"  # Unicode for dice emoji
         for i in range(3):
             dice_id = f"dice_3es_{i}"  # unique custom_id for each dice button
-            dice_button = DiceButton(label=dice_emoji, custom_id=dice_id)
+            dice_button = DiceButton(label=dice_emoji, custom_id=dice_id, index=i)
             dice_button.disabled = True  # Set the button as disabled
             self.add_item(dice_button)
 
@@ -200,16 +223,81 @@ class GameView(discord.ui.View, CommonResponses):
             elif isinstance(item, BetButton):
                 item.disabled = False if self.current_round == 0 or self.current_round == 2 else True  # Enable "Bet" button for round 0 and round 2
             elif isinstance(item, DiceButton):
-                item.disabled = False if self.current_round == 1 else True  # Enable dice buttons for round 1
+                # Enable dice buttons for round 1 and toggle their state based on the selected_dice list
+                item.disabled = False if self.current_round == 1 else True
+                item.selected = self.selected_dice[item.index]
+
+    def reset_and_reroll(self):
+        # Reset selected dice buttons to grey
+        for item in self.children:
+            if isinstance(item, DiceButton):
+                item.style = discord.ButtonStyle.grey
+
+        # Reroll selected dice and update their numbers
+        for i, selected in enumerate(self.selected_dice):
+            if selected:  # Change this to reroll only if the dice is selected
+                self.player_dice[i] = random.randint(1, 6)
+
+        # Print the updated player's dice numbers
+        print(f"Player's dice: {self.player_dice}")
+
+    # Modify the toggle_round method
     def toggle_round(self):
-        # This function will toggle between rounds (0, 1, 2)
         if self.current_round == 0:
             self.current_round = 1
         elif self.current_round == 1:
             self.current_round = 2
+            self.in_round_2 = True
+            self.reset_and_reroll()
         else:
-            self.current_round = 1  # Re-enter round 1 after round 2
-        print(f"Current Round: {self.current_round}")  # Print current round for troubleshooting
+            # Resetting the game to start a new round
+            self.current_round = 1
+            self.in_round_2 = False
+            self.reset_dice_states()
+
+        print(f"Current Round: {self.current_round}")
+
+    def reset_dice_states(self):
+        # Reset the selected_dice array and update button styles
+        self.selected_dice = [False, False, False]
+        for item in self.children:
+            if isinstance(item, DiceButton):
+                item.style = discord.ButtonStyle.grey
+                item.selected = False
+
+    def classify_roll(self, dice):
+        counts = {x: dice.count(x) for x in set(dice)}
+        if 3 in counts.values():
+            number = next(x for x, count in counts.items() if count == 3)
+            return f"{number}{number}{number}"
+        straights = ["123", "234", "345", "456"]
+        sorted_dice = ''.join(map(str, sorted(dice)))
+        if sorted_dice in straights:
+            return sorted_dice
+        if counts.get(6, 0) == 2:
+            return "66X"
+        if counts.get(6, 0) == 1:
+            return "6XX"
+        return "Other"
+
+    def compare_results(self, player_result, nero_result):
+        # Priority order based on game rules
+        order = ["111", "666", "555", "444", "333", "222", "66X", "456", "345", "234", "123", "6XX", "Other"]
+
+        # Check for a tie
+        if player_result == nero_result:
+            return "tie"
+
+        # Check for a win
+        return "win" if order.index(player_result) < order.index(nero_result) else "lose"
+
+    def calculate_winnings(self, result, bet_amount):
+        multipliers = {
+            "111": 20, "666": 10, "555": 5, "444": 5, "333": 5,
+            "222": 5, "66X": 3, "456": 2, "345": 2, "234": 2,
+            "123": 2, "6XX": 1
+        }
+        return bet_amount * multipliers.get(result, 0)
 
 class BetButton(discord.ui.Button, CommonResponses):
     def __init__(self, label, custom_id, player, game_view, *args, **kwargs):
@@ -228,17 +316,34 @@ class BetButton(discord.ui.Button, CommonResponses):
 
         await interaction.response.send_modal(bet_modal)
 
+
+# Modify the DiceButton class as follows:
 class DiceButton(discord.ui.Button, CommonResponses):
-    def __init__(self, label, custom_id, style=discord.ButtonStyle.grey):
+    def __init__(self, label, custom_id, style=discord.ButtonStyle.grey, index=None):
         super().__init__(label=label, custom_id=custom_id, style=style)
+        self.index = index  # Store the index of the button
 
     async def callback(self, interaction: discord.Interaction):
         # Authorization check
         if str(interaction.user.id) != self.view.author_id:
             await self.view.nero_unauthorized_user_response(interaction)
             return
-        # Logic for dice button
 
+        # Toggle dice selection state within the GameView
+        self.view.selected_dice[self.index] = not self.view.selected_dice[self.index]
+
+        # Update button style based on selection state
+        self.style = discord.ButtonStyle.red if self.view.selected_dice[self.index] else discord.ButtonStyle.grey
+
+        # Get the corresponding number (or "X") for the button
+        number = self.view.player_dice[self.index] if self.view.current_round == 1 else "X"
+
+        # Print whether the dice is selected or deselected, including the corresponding number
+        action = "selected" if self.view.selected_dice[self.index] else "deselected"
+        print(f"Button {self.index + 1} ({number}) {action}")
+
+        # Update the message with the modified view
+        await interaction.response.edit_message(view=self.view)
 
 class RollButton(discord.ui.Button, CommonResponses):
     def __init__(self, label, custom_id, style=discord.ButtonStyle.green):
@@ -256,11 +361,38 @@ class RollButton(discord.ui.Button, CommonResponses):
         # Update button states based on the current round
         self.view.update_buttons_for_round()
 
-        # Logic for roll button (you can implement your logic here)
+        # Perform dice rolls for round 1 or round 2 (first entry)
+        if self.view.current_round == 1:
+            self.view.player_dice = [random.randint(1, 6) for _ in range(3)]
+            self.view.nero_dice = [random.randint(1, 6) for _ in range(3)]
 
-        # Update the message with the modified view
+        # Reroll unselected dice and update their numbers for round 2
+        elif self.view.current_round == 2 and not self.view.in_round_2:
+            for i in range(3):
+                if not self.view.selected_dice[i]:
+                    self.view.player_dice[i] = random.randint(1, 6)
+
+        # Print the updated dice rolls for troubleshooting
+        print(f"Your dice: {self.view.player_dice}")
+        print(f"Nero's dice: {self.view.nero_dice}")
+
+        # If it's the end of round 2, determine the game result
+        if self.view.current_round == 2:
+            player_result = self.view.classify_roll(self.view.player_dice)
+            nero_result = self.view.classify_roll(self.view.nero_dice)
+            game_outcome = self.view.compare_results(player_result, nero_result)
+
+            # Print the result to the console for testing
+            if game_outcome == "tie":
+                print("It's a tie! No coppers exchanged.")
+            elif game_outcome == "win" and player_result != "Other":
+                winnings = self.view.calculate_winnings(player_result, self.view.bet_amount)
+                self.view.player.inventory.coppers += winnings
+                print(f"You win! Your roll: {player_result}. You win {winnings} coppers.")
+            else:
+                print(f"You lose! Your roll: {player_result}. Nero's roll: {nero_result}.")
+
+            # Commenting out the UI update code for testing
+            # await interaction.edit_original_response(embed=result_embed)
+
         await interaction.response.edit_message(view=self.view)
-
-
-
-
