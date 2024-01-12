@@ -1,57 +1,33 @@
 {
     "807063811852206090": {
-        "exemplar": "elf",
+        "exemplar": "orc",
         "stats": {
-            "health": 8,
+            "health": 915,
             "max_health": 915,
             "strength": 421,
-            "stamina": 405,
+            "stamina": 423,
             "max_stamina": 423,
             "attack": 170,
-            "damage": 60,
+            "damage": 25,
             "defense": 171,
             "armor": 34,
             "combat_level": 83,
-            "combat_experience": 734693,
+            "combat_experience": 716481,
             "mining_level": 80,
-            "mining_experience": 577980,
+            "mining_experience": 563550,
             "woodcutting_level": 84,
-            "woodcutting_experience": 801492,
+            "woodcutting_experience": 781474,
             "zone_level": 4,
             "damage_taken": 0
         },
         "inventory": {
-            "coppers": 60058,
+            "coppers": 40147,
             "items": [
-                {
-                    "name": "Wolf Skin",
-                    "description": "A skin of a wild wolf. Known for its durability and strength.",
-                    "value": 50,
-                    "stack": 232
-                },
-                {
-                    "name": "Onyx",
-                    "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
-                    "value": 100,
-                    "stack": 836
-                },
-                {
-                    "name": "Deer Part",
-                    "description": "Various parts of a deer. Some are useful for making tools and weapons.",
-                    "value": 20,
-                    "stack": 29
-                },
-                {
-                    "name": "Deer Skin",
-                    "description": "Tough deer skin. Can be used for citadel sturdy armors.",
-                    "value": 30,
-                    "stack": 371
-                },
                 {
                     "name": "Charcoal",
                     "description": null,
                     "value": null,
-                    "stack": 1422
+                    "stack": 1416
                 },
                 {
                     "name": "Iron",
@@ -63,7 +39,13 @@
                     "name": "Steel",
                     "description": null,
                     "value": null,
-                    "stack": 2147
+                    "stack": 2141
+                },
+                {
+                    "name": "Onyx",
+                    "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
+                    "value": 100,
+                    "stack": 837
                 },
                 {
                     "name": "Pole",
@@ -105,13 +87,13 @@
                     "name": "Flour",
                     "description": null,
                     "value": null,
-                    "stack": 285
+                    "stack": 280
                 },
                 {
                     "name": "Wheat",
                     "description": null,
                     "value": null,
-                    "stack": 999
+                    "stack": 998
                 },
                 {
                     "name": "Flax",
@@ -135,25 +117,43 @@
                     "name": "Venison",
                     "description": null,
                     "value": null,
-                    "stack": 969
+                    "stack": 964
                 },
                 {
                     "name": "Sinew",
                     "description": null,
                     "value": null,
-                    "stack": 849
+                    "stack": 847
                 },
                 {
                     "name": "Rabbit Body",
                     "description": "A furry rabbit body, warm to the touch. Can be used for citadel soft armors.",
                     "value": 10,
-                    "stack": 1132
+                    "stack": 1134
                 },
                 {
                     "name": "Rabbit Meat",
                     "description": null,
                     "value": null,
-                    "stack": 9960
+                    "stack": 9955
+                },
+                {
+                    "name": "Deer Part",
+                    "description": "Various parts of a deer. Some are useful for making tools and weapons.",
+                    "value": 20,
+                    "stack": 29
+                },
+                {
+                    "name": "Deer Skin",
+                    "description": "Tough deer skin. Can be used for citadel sturdy armors.",
+                    "value": 30,
+                    "stack": 371
+                },
+                {
+                    "name": "Wolf Skin",
+                    "description": "A skin of a wild wolf. Known for its durability and strength.",
+                    "value": 50,
+                    "stack": 233
                 },
                 {
                     "name": "Glowing Essence",
@@ -177,7 +177,7 @@
                     "name": "Leather Straps",
                     "description": null,
                     "value": null,
-                    "stack": 783
+                    "stack": 775
                 },
                 {
                     "name": "Tough Leather Straps",
@@ -187,6 +187,10 @@
                 }
             ],
             "trees": [
+                {
+                    "name": "Pine",
+                    "stack": 1001
+                },
                 {
                     "name": "Yew",
                     "stack": 1013
@@ -198,17 +202,13 @@
                 {
                     "name": "Poplar",
                     "stack": 1004
-                },
-                {
-                    "name": "Pine",
-                    "stack": 1000
                 }
             ],
             "herbs": [
                 {
                     "name": "Ranarr",
                     "value": 25,
-                    "stack": 1014
+                    "stack": 1013
                 },
                 {
                     "name": "Spirit Weed",
@@ -218,7 +218,7 @@
                 {
                     "name": "Snapdragon",
                     "value": 350,
-                    "stack": 1020
+                    "stack": 1021
                 },
                 {
                     "name": "Bloodweed",
@@ -229,7 +229,7 @@
             "ore": [
                 {
                     "name": "Iron Ore",
-                    "stack": 1003
+                    "stack": 1004
                 },
                 {
                     "name": "Coal",
@@ -247,7 +247,7 @@
                     "effect_value": 50,
                     "value": 10,
                     "description": "Restores 50 stamina",
-                    "stack": 93
+                    "stack": 94
                 },
                 {
                     "name": "Health Potion",
@@ -255,7 +255,7 @@
                     "effect_value": 50,
                     "value": 10,
                     "description": "Restores 50 health",
-                    "stack": 99
+                    "stack": 98
                 },
                 {
                     "name": "Super Stamina Potion",
@@ -271,7 +271,7 @@
                     "effect_value": 250,
                     "value": 20,
                     "description": "Restores 250 health",
-                    "stack": 79
+                    "stack": 78
                 }
             ],
             "limit": 49,
@@ -375,16 +375,6 @@
                     "zone_level": 5
                 },
                 {
-                    "name": "Long Sword",
-                    "description": null,
-                    "value": 100,
-                    "stack": 1,
-                    "wtype": "Sword",
-                    "attack_modifier": 25,
-                    "special_attack": 2,
-                    "zone_level": 5
-                },
-                {
                     "name": "Champion Sword",
                     "description": null,
                     "value": 145,
@@ -398,21 +388,31 @@
                     "name": "Voltaic Sword",
                     "description": null,
                     "value": 190,
-                    "stack": 2,
+                    "stack": 3,
                     "wtype": "Sword",
                     "attack_modifier": 60,
                     "special_attack": 4,
                     "zone_level": 5
+                },
+                {
+                    "name": "Long Sword",
+                    "description": null,
+                    "value": 82,
+                    "stack": 2,
+                    "wtype": "Sword",
+                    "attack_modifier": 20,
+                    "special_attack": 2,
+                    "zone_level": 4
                 }
             ],
             "equipped_weapon": {
-                "name": "Voltaic Sword",
+                "name": "Long Sword",
                 "description": null,
-                "value": 190,
+                "value": 100,
                 "stack": 1,
                 "wtype": "Sword",
-                "attack_modifier": 60,
-                "special_attack": 4,
+                "attack_modifier": 25,
+                "special_attack": 2,
                 "zone_level": 5
             },
             "shields": [
