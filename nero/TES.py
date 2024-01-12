@@ -118,7 +118,7 @@ async def generate_game_image(player_exemplar, bet_amount=None, round1=False):
         table_image = Image.open(BytesIO(table_image_response.content))
 
     draw = ImageDraw.Draw(table_image)
-    font_size = 24
+    font_size = 70
     font = ImageFont.truetype("arial.ttf", font_size)
 
     # Load player's exemplar image
@@ -135,7 +135,7 @@ async def generate_game_image(player_exemplar, bet_amount=None, round1=False):
     table_image.paste(exemplar_image, (exemplar_x, exemplar_y), exemplar_image)
 
     if bet_amount:
-        text = f"BASE WAGER "
+        text = f"WAGER "
         text_width, _ = draw.textsize(text, font=font)
         coppers_url = generate_urls("Icons", "Coppers")
         coppers_response = requests.get(coppers_url)
@@ -175,6 +175,35 @@ class GameView(discord.ui.View, CommonResponses):
 
         # Add 'Roll' button
         self.add_item(RollButton(label="Roll", style=discord.ButtonStyle.green, custom_id="roll_3es"))
+
+class NeroGameView(discord.ui.View, CommonResponses):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Add disabled 'Bet' button
+        bet_button = BetButton(label="Bet", custom_id="nero_bet_3es", player=None)
+        bet_button.disabled = True
+        self.add_item(bet_button)
+
+        # Add disabled 'Roll' button
+        roll_button = RollButton(label="Roll", custom_id="nero_roll_3es")
+        roll_button.disabled = True
+        self.add_item(roll_button)
+
+        # Add NeroDiceButtons
+        dice_emoji = "\U0001F3B2"  # Unicode for dice emoji
+        for i in range(3):
+            dice_id = f"nero_dice_3es_{i}"  # unique custom_id for each Nero dice button
+            self.add_item(NeroDiceButton(label=dice_emoji, custom_id=dice_id))
+
+class NeroDiceButton(discord.ui.Button):
+    def __init__(self, label, custom_id, style=discord.ButtonStyle.grey):
+        super().__init__(label=label, custom_id=custom_id, style=style, disabled=True)
+
+    async def callback(self, interaction: discord.Interaction):
+        # This button will always be disabled, so no callback logic is needed
+        pass
+
 
 class BetButton(discord.ui.Button, CommonResponses):
     def __init__(self, label, custom_id, player, *args, **kwargs):
