@@ -88,18 +88,19 @@ class BetModal(discord.ui.Modal):
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=False)
 
-        try:
-            bet_amount = int(self.bet.value)
-        except ValueError:
-            # Send an ephemeral message if the bet is not an integer
+        bet_value = self.bet.value.strip()
+        if not bet_value.isdigit() or int(bet_value) <= 0:
+            # Send an ephemeral message if the bet is not a positive whole number
             return await interaction.response.send_message(
                 embed=discord.Embed(
                     title="Captain Ner0",
-                    description="Arr, be precise with yer numbers! Enter a whole number of coppers, savvy?",
+                    description="Arr! Enter a positive whole number of coppers for yer wager, savvy?",
                     color=discord.Color.dark_gold()
                 ),
                 ephemeral=True
             )
+
+        bet_amount = int(bet_value)
         if self.player.inventory.coppers >= bet_amount * 30:
             discord_file = await generate_game_image(interaction, self.player, bet_amount=bet_amount, round1=True)
 
@@ -269,15 +270,21 @@ class GameView(discord.ui.View, CommonResponses):
                 item.selected = self.selected_dice[item.index]
 
     def reset_and_reroll(self):
-        # Reset selected dice buttons to grey
-        for item in self.children:
-            if isinstance(item, DiceButton):
-                item.style = discord.ButtonStyle.grey
+        # Check if no dice are selected
+        if not any(self.selected_dice):
+            # Reroll all dice
+            self.player_dice = [random.randint(1, 6) for _ in range(3)]
+        else:
+            # Reroll only selected dice
+            for i, selected in enumerate(self.selected_dice):
+                if selected:
+                    self.player_dice[i] = random.randint(1, 6)
 
-        # Reroll selected dice and update their numbers
-        for i, selected in enumerate(self.selected_dice):
-            if selected:  # Change this to reroll only if the dice is selected
-                self.player_dice[i] = random.randint(1, 6)
+        # Reset all selected dice states to False and button styles to grey
+        for i in range(len(self.selected_dice)):
+            self.selected_dice[i] = False
+            dice_button = self.children[i + 1]  # Adjust index based on your view's structure
+            dice_button.style = discord.ButtonStyle.grey
 
         # Print the updated player's dice numbers
         print(f"Player's dice: {self.player_dice}")
@@ -386,6 +393,7 @@ class DiceButton(discord.ui.Button, CommonResponses):
         # Update the message with the modified view
         await interaction.response.edit_message(view=self.view)
 
+
 class RollButton(discord.ui.Button, CommonResponses):
     def __init__(self, label, custom_id, player_data, style=discord.ButtonStyle.green):
         super().__init__(label=label, custom_id=custom_id, style=style)
@@ -414,6 +422,15 @@ class RollButton(discord.ui.Button, CommonResponses):
             for i in range(3):
                 if not self.view.selected_dice[i]:
                     self.view.player_dice[i] = random.randint(1, 6)
+
+            # Generate and send new game image for round 2
+            round2_discord_file = await generate_game_image(interaction, self.view.player, round2=True)
+            round2_game_embed = discord.Embed(title="Your Game: Round 2", color=discord.Color.blue())
+            round2_game_embed.set_image(url="attachment://table.png")
+
+            # Edit the original message with the new embed and updated "Roll" button
+            await interaction.edit_original_response(embed=round2_game_embed, files=[round2_discord_file],
+                                                     view=self.view)
 
         # Print the updated dice rolls for troubleshooting
         print(f"Your dice: {self.view.player_dice}")
