@@ -442,20 +442,13 @@ class RollButton(discord.ui.Button, CommonResponses):
             print(f"Round 2 - Player's dice: {self.game_view.player_dice}")
             print(f"Round 2 - Nero's dice: {self.game_view.nero_dice}")
 
-        # Generate and send new game image for the current round
-        self.game_view.discord_file = await generate_game_image(interaction, self.game_view.player, current_round=self.game_view.current_round)
-        self.game_view.embed.title = f"Your Game: Round {self.game_view.current_round}"
-
-        # Edit the original message with the updated embed and file
-        await self.game_view.original_interaction.edit_original_response(embed=self.game_view.embed, file=self.game_view.discord_file, view=self.game_view)
-
         # Determine the game result if it's the end of round 2
         if self.game_view.current_round == 2:
             player_result = self.game_view.classify_roll(self.game_view.player_dice)
             nero_result = self.game_view.classify_roll(self.game_view.nero_dice)
             game_outcome = self.game_view.compare_results(player_result, nero_result)
 
-            # Handle game outcome
+            # Update coppers based on game outcome and regenerate game image
             if game_outcome == "tie":
                 print("It's a tie! No coppers exchanged.")
             elif game_outcome == "win":
@@ -467,7 +460,18 @@ class RollButton(discord.ui.Button, CommonResponses):
                 self.game_view.player.inventory.coppers -= loss
                 print(f"You lose! Your roll: {player_result}. Nero's roll: {nero_result}.")
 
-            save_player_data(interaction.guild.id, self.player_data)
+        # Save the updated player data
+        save_player_data(interaction.guild.id, self.player_data)
+
+        # Generate and send new game image for the current round
+        self.game_view.discord_file = await generate_game_image(interaction, self.game_view.player,
+                                                                current_round=self.game_view.current_round)
+        self.game_view.embed.title = f"Your Game: Round {self.game_view.current_round}"
+
+        # Edit the original message with the updated embed and file
+        await self.game_view.original_interaction.edit_original_response(embed=self.game_view.embed,
+                                                                         file=self.game_view.discord_file,
+                                                                         view=self.game_view)
 
         # Update the message with the modified view
         await interaction.response.edit_message(view=self.game_view)
