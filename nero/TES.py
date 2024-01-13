@@ -44,9 +44,9 @@ class PlayButton(discord.ui.Button):
                           player_data[str(interaction.user.id)]["stats"],
                           player_data[str(interaction.user.id)]["inventory"])
 
-        discord_file = await generate_game_image(player.name)
+        discord_file = await generate_game_image(interaction, player)
         # Pass the player object to GameView
-        game_view = GameView(author_id=str(interaction.user.id), player=player)
+        game_view = GameView(author_id=str(interaction.user.id), player=player, player_data=player_data)
 
         game_embed = discord.Embed(title="Your Game", color=discord.Color.blue())
         game_embed.set_image(url="attachment://table.png")
@@ -101,7 +101,7 @@ class BetModal(discord.ui.Modal):
                 ephemeral=True
             )
         if self.player.inventory.coppers >= bet_amount * 30:
-            discord_file = await generate_game_image(self.player.name, bet_amount=bet_amount, round1=True)
+            discord_file = await generate_game_image(interaction, self.player, bet_amount=bet_amount, round1=True)
 
             # Update the game view with the bet amount
             self.game_view.bet_amount = bet_amount
@@ -128,22 +128,30 @@ class BetModal(discord.ui.Modal):
             nero_embed.set_thumbnail(url=thumbnail_url)
             await interaction.followup.send(embed=nero_embed, ephemeral=True)
 
-async def generate_game_image(player_exemplar, bet_amount=None, round1=False):
+async def generate_game_image(interaction, player, bet_amount=None, round1=False, round2=False):
+    # Select the appropriate base image
     if round1:
-        round1_image_url = generate_urls("3ES", "round1")
-        round1_image_response = requests.get(round1_image_url)
-        table_image = Image.open(BytesIO(round1_image_response.content))
+        base_image_url = generate_urls("3ES", "round1")
+    elif round2:
+        base_image_url = generate_urls("3ES", "round2")
     else:
-        table_image_url = generate_urls("3ES", "table")
-        table_image_response = requests.get(table_image_url)
-        table_image = Image.open(BytesIO(table_image_response.content))
+        base_image_url = generate_urls("3ES", "table")
+
+    base_image_response = requests.get(base_image_url)
+    table_image = Image.open(BytesIO(base_image_response.content))
 
     draw = ImageDraw.Draw(table_image)
-    font_size = 70
-    font = ImageFont.truetype("arial.ttf", font_size)
+
+    # Font for Captain Ner0 and player name
+    font_size_small = 45
+    font_small = ImageFont.truetype("arial.ttf", font_size_small)
+
+    # Font for WAGER text
+    font_size_large = 60
+    font_large = ImageFont.truetype("arial.ttf", font_size_large)
 
     # Load player's exemplar image
-    exemplar_image_url = generate_urls("3ES", player_exemplar)
+    exemplar_image_url = generate_urls("3ES", player.name)
     exemplar_image_response = requests.get(exemplar_image_url)
     exemplar_image = Image.open(BytesIO(exemplar_image_response.content))
 
@@ -155,22 +163,54 @@ async def generate_game_image(player_exemplar, bet_amount=None, round1=False):
     exemplar_y = table_image.height - exemplar_image.height + y_offset
     table_image.paste(exemplar_image, (exemplar_x, exemplar_y), exemplar_image)
 
+    # Positioning and adding "Captain Ner0" at the top
+    captain_text = "Captain Ner0"
+    captain_text_width, _ = draw.textsize(captain_text, font=font_small)
+    captain_text_x = table_image.width // 2 - captain_text_width // 2
+    captain_text_y = 258  # Adjust as needed for top positioning
+    draw.text((captain_text_x, captain_text_y), captain_text, fill="white", font=font_small)
+
+    # Positioning and adding interaction.user at the bottom
+    player_text = interaction.user.display_name
+    player_text_width, _ = draw.textsize(player_text, font=font_small)
+    player_text_x = table_image.width // 2 - player_text_width // 2
+    player_text_y = table_image.height - 87  # Adjust as needed for bottom positioning
+    draw.text((player_text_x, player_text_y), player_text, fill="white", font=font_small)
+
+    # Formatting coppers amount with commas
+    coppers_text = "{:,}".format(player.inventory.coppers)
+    coppers_text_width, _ = draw.textsize(coppers_text, font=font_small)
+    coppers_text_x = player_text_x + player_text_width + 175  # 175 pixels to the right of player's name
+    coppers_text_y = player_text_y  # Vertically align with player's name
+
+    # Load and resize the coppers icon
+    coppers_icon_url = generate_urls("Icons", "Coppers")
+    coppers_icon_response = requests.get(coppers_icon_url)
+    coppers_icon_image = Image.open(BytesIO(coppers_icon_response.content))
+    coppers_icon_image = coppers_icon_image.resize((75, 75))
+
+    # Paste the coppers icon and add the text
+    icon_x_position = coppers_text_x - 75  # Adjust the icon position to be to the left of the text
+    icon_y_position = coppers_text_y - 15  # Move the icon up by 15 pixels
+    table_image.paste(coppers_icon_image, (icon_x_position, icon_y_position), coppers_icon_image)
+    draw.text((coppers_text_x, coppers_text_y), coppers_text, fill="white", font=font_small)
+
     if bet_amount:
         text = f"WAGER "
-        text_width, _ = draw.textsize(text, font=font)
+        text_width, _ = draw.textsize(text, font=font_large)
         coppers_url = generate_urls("Icons", "Coppers")
         coppers_response = requests.get(coppers_url)
 
         coppers_image = Image.open(BytesIO(coppers_response.content))
         coppers_image = coppers_image.resize((75, 75))  # Resize as needed
         bet_text = f" {bet_amount}"
-        bet_text_width, _ = draw.textsize(bet_text, font=font)
+        bet_text_width, _ = draw.textsize(bet_text, font=font_large)
 
         x_text = table_image.width - text_width - bet_text_width - 85  # 85 accounts for coppers image width and padding
         y = 10
-        draw.text((x_text, y), text, fill="white", font=font)
+        draw.text((x_text, y), text, fill="white", font=font_large)
         table_image.paste(coppers_image, (x_text + text_width + 5, y), coppers_image)
-        draw.text((x_text + text_width + 80, y), bet_text, fill="white", font=font)
+        draw.text((x_text + text_width + 80, y), bet_text, fill="white", font=font_large)
 
     # Convert PIL image to Discord file and send it
     with BytesIO() as image_binary:
@@ -180,7 +220,7 @@ async def generate_game_image(player_exemplar, bet_amount=None, round1=False):
     return discord_file
 
 class GameView(discord.ui.View, CommonResponses):
-    def __init__(self, author_id, player, bet_amount=0, *args, **kwargs):
+    def __init__(self, author_id, player, player_data, bet_amount=0, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.author_id = author_id
         self.player = player
@@ -189,6 +229,7 @@ class GameView(discord.ui.View, CommonResponses):
         self.round_number = 0
         self.player_dice = [0, 0, 0]
         self.nero_dice = [0, 0, 0]
+        self.player_data = player_data
 
         # Create a list to keep track of the selected state of dice buttons
         self.selected_dice = [False, False, False]
@@ -211,7 +252,7 @@ class GameView(discord.ui.View, CommonResponses):
             self.add_item(dice_button)
 
         # Add 'Roll' button (pre-disabled)
-        roll_button = RollButton(label="Roll", style=discord.ButtonStyle.green, custom_id="roll_3es")
+        roll_button = RollButton(label="Roll", style=discord.ButtonStyle.green, custom_id="roll_3es", player_data=self.player_data)
         roll_button.disabled = True  # Set the button as disabled initially for round 0
         self.add_item(roll_button)
 
@@ -346,10 +387,12 @@ class DiceButton(discord.ui.Button, CommonResponses):
         await interaction.response.edit_message(view=self.view)
 
 class RollButton(discord.ui.Button, CommonResponses):
-    def __init__(self, label, custom_id, style=discord.ButtonStyle.green):
+    def __init__(self, label, custom_id, player_data, style=discord.ButtonStyle.green):
         super().__init__(label=label, custom_id=custom_id, style=style)
+        self.player_data = player_data
 
     async def callback(self, interaction: discord.Interaction):
+        from utils import save_player_data
         # Authorization check
         if str(interaction.user.id) != self.view.author_id:
             await self.view.nero_unauthorized_user_response(interaction)
@@ -387,10 +430,15 @@ class RollButton(discord.ui.Button, CommonResponses):
                 print("It's a tie! No coppers exchanged.")
             elif game_outcome == "win" and player_result != "Other":
                 winnings = self.view.calculate_winnings(player_result, self.view.bet_amount)
-                self.view.player.inventory.coppers += winnings
+                self.view.player.inventory.coppers += winnings  # Add winnings to player's coppers
                 print(f"You win! Your roll: {player_result}. You win {winnings} coppers.")
             else:
+                loss = self.view.bet_amount
+                self.view.player.inventory.coppers -= loss  # Subtract bet amount from player's coppers
                 print(f"You lose! Your roll: {player_result}. Nero's roll: {nero_result}.")
+
+
+            save_player_data(interaction.guild.id, self.player_data)
 
             # Commenting out the UI update code for testing
             # await interaction.edit_original_response(embed=result_embed)
