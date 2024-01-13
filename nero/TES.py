@@ -90,19 +90,26 @@ class BetModal(discord.ui.Modal):
 
         bet_value = self.bet.value.strip()
         if not bet_value.isdigit() or int(bet_value) <= 0:
+            # Create the embed
+            embed = discord.Embed(
+                title="Captain Ner0",
+                description="Arr! Enter a positive whole number of coppers for yer wager, savvy?",
+                color=discord.Color.dark_gold()
+            )
+
+            # Set the thumbnail
+            thumbnail_url = generate_urls("nero", "confused")
+            embed.set_thumbnail(url=thumbnail_url)
+
             # Send an ephemeral message if the bet is not a positive whole number
-            return await interaction.response.send_message(
-                embed=discord.Embed(
-                    title="Captain Ner0",
-                    description="Arr! Enter a positive whole number of coppers for yer wager, savvy?",
-                    color=discord.Color.dark_gold()
-                ),
+            return await interaction.followup.send(
+                embed=embed,
                 ephemeral=True
             )
 
         bet_amount = int(bet_value)
         if self.player.inventory.coppers >= bet_amount * 30:
-            discord_file = await generate_game_image(interaction, self.player, bet_amount=bet_amount, round1=True)
+            discord_file = await generate_game_image(interaction, self.player, bet_amount=bet_amount, current_round=1)
 
             # Update the game view with the bet amount
             self.game_view.bet_amount = bet_amount
@@ -129,18 +136,10 @@ class BetModal(discord.ui.Modal):
             nero_embed.set_thumbnail(url=thumbnail_url)
             await interaction.followup.send(embed=nero_embed, ephemeral=True)
 
-async def generate_game_image(interaction, player, bet_amount=None, round1=False, round2=False):
-    # Select the appropriate base image
-    if round1:
-        base_image_url = generate_urls("3ES", "round1")
-    elif round2:
-        base_image_url = generate_urls("3ES", "round2")
-    else:
-        base_image_url = generate_urls("3ES", "table")
-
+async def generate_game_image(interaction, player, bet_amount=None, current_round=0):
+    base_image_url = generate_urls("3ES", "table")
     base_image_response = requests.get(base_image_url)
     table_image = Image.open(BytesIO(base_image_response.content))
-
     draw = ImageDraw.Draw(table_image)
 
     # Font for Captain Ner0 and player name
@@ -196,8 +195,17 @@ async def generate_game_image(interaction, player, bet_amount=None, round1=False
     table_image.paste(coppers_icon_image, (icon_x_position, icon_y_position), coppers_icon_image)
     draw.text((coppers_text_x, coppers_text_y), coppers_text, fill="white", font=font_small)
 
+    # Font for the round text
+    font_size_round = 60
+    font_round = ImageFont.truetype("arial.ttf", font_size_round)
+
+    round_text = f"Round {current_round}" if current_round in [1, 2] else ""
+    if round_text:
+        round_text_x, round_text_y = 20, 20  # Top-left corner
+        draw.text((round_text_x, round_text_y), round_text, fill="white", font=font_round)
+
     if bet_amount:
-        text = f"WAGER "
+        text = f"Wager "
         text_width, _ = draw.textsize(text, font=font_large)
         coppers_url = generate_urls("Icons", "Coppers")
         coppers_response = requests.get(coppers_url)
@@ -424,7 +432,7 @@ class RollButton(discord.ui.Button, CommonResponses):
                     self.view.player_dice[i] = random.randint(1, 6)
 
             # Generate and send new game image for round 2
-            round2_discord_file = await generate_game_image(interaction, self.view.player, round2=True)
+            round2_discord_file = await generate_game_image(interaction, self.view.player, current_round=2)
             round2_game_embed = discord.Embed(title="Your Game: Round 2", color=discord.Color.blue())
             round2_game_embed.set_image(url="attachment://table.png")
 
