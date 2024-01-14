@@ -371,31 +371,45 @@ class GameView(discord.ui.View, CommonResponses):
         return bet_amount * multipliers.get(result, 0)
 
     def nero_decision_logic(self, nero_dice, player_dice, order):
-        # Classify both Nero's and the player's rolls
         nero_result = self.classify_roll(nero_dice)
         player_result = self.classify_roll(player_dice)
-
-        # If Nero cannot possibly win, try to tie or aim for the highest possible reroll
-        if order.index(player_result) < order.index("6XX") and player_result != "111":
-            return [True, True, True]
-
-        # Keep high-value dice (like 6) unless there's a chance for a straight or three of a kind
-        reroll_decisions = [nero_dice[i] != 6 for i in range(3)]
         counts = {x: nero_dice.count(x) for x in set(nero_dice)}
 
-        for i, dice_value in enumerate(nero_dice):
-            # Consider rerolling for a straight or three of a kind if it's a feasible option
-            if counts[dice_value] == 1 and (
-                    sorted(nero_dice) in [["1", "2", "3"], ["2", "3", "4"], ["3", "4", "5"], ["4", "5", "6"]]):
-                reroll_decisions[i] = True
+        # If Nero cannot win or tie, and player's roll is strong, reroll all except 6
+        if order.index(player_result) < order.index("6XX") and player_result not in ["123", "234", "345", "456", "111"]:
+            return [dice != 6 for dice in nero_dice]
 
-        # Specific strategy: if Nero has two of the same and one different, reroll the different one
-        if len(set(nero_dice)) == 2 and (order.index(nero_result) > order.index(player_result)):
-            for num in counts:
-                if counts[num] == 1:
-                    reroll_decisions[nero_dice.index(num)] = True
+        reroll_decisions = [False, False, False]
+
+        for i, dice_value in enumerate(nero_dice):
+            # Avoid going for 111 unless already having two 1s
+            if dice_value == 1 and counts[1] < 2 and player_dice.count(6) > 0:
+                reroll_decisions[i] = True
+                continue
+
+            # Keep 6s unless there's a good reason to reroll
+            if dice_value == 6:
+                continue
+
+            # Consider rerolling for a straight or three of a kind
+            if counts[dice_value] == 1 and not self.is_potential_straight(nero_dice, i):
+                reroll_decisions[i] = True
+                continue
+
+            # Reroll the different one if Nero has two of the same and one different
+            if len(set(nero_dice)) == 2:
+                if counts[dice_value] == 1 and order.index(nero_result) >= order.index(player_result):
+                    reroll_decisions[i] = True
 
         return reroll_decisions
+
+    def is_potential_straight(self, dice, index_to_ignore):
+        sorted_dice = sorted(dice)
+        for i, die in enumerate(sorted_dice):
+            if i != index_to_ignore:
+                if not (die - 1 in sorted_dice or die + 1 in sorted_dice):
+                    return False
+        return True
 
     def nero_reroll(self):
         # Reroll Nero's dice based on decisions made in Round 1
