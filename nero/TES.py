@@ -251,6 +251,8 @@ class GameView(discord.ui.View, CommonResponses):
         self.player_dice = [0, 0, 0]
         self.nero_dice = [0, 0, 0]
         self.player_data = player_data
+        self.nero_reroll_decisions = [False, False, False]
+        self.order = ["111", "666", "555", "444", "333", "222", "66X", "456", "345", "234", "123", "6XX", "Other"]
 
         # Create a list to keep track of the selected state of dice buttons
         self.selected_dice = [False, False, False]
@@ -292,8 +294,8 @@ class GameView(discord.ui.View, CommonResponses):
     def reset_and_reroll(self):
         # Check if no dice are selected
         if not any(self.selected_dice):
-            # Reroll all dice
-            self.player_dice = [random.randint(1, 6) for _ in range(3)]
+            # Do not reroll any dice
+            pass  # You can simply pass here as you're keeping all dice
         else:
             # Reroll only selected dice
             for i, selected in enumerate(self.selected_dice):
@@ -303,7 +305,7 @@ class GameView(discord.ui.View, CommonResponses):
         # Reset all selected dice states to False and button styles to grey
         for i in range(len(self.selected_dice)):
             self.selected_dice[i] = False
-            dice_button = self.children[i + 1]  # Adjust index based on your view's structure
+            dice_button = self.children[i + 1]
             dice_button.style = discord.ButtonStyle.grey
 
     # Modify the toggle_round method
@@ -331,8 +333,8 @@ class GameView(discord.ui.View, CommonResponses):
             if isinstance(item, DiceButton):
                 item.style = discord.ButtonStyle.grey
                 item.selected = False
-
-    def classify_roll(self, dice):
+    @staticmethod
+    def classify_roll(dice):
         counts = {x: dice.count(x) for x in set(dice)}
         if 3 in counts.values():
             number = next(x for x, count in counts.items() if count == 3)
@@ -347,7 +349,8 @@ class GameView(discord.ui.View, CommonResponses):
             return "6XX"
         return "Other"
 
-    def compare_results(self, player_result, nero_result):
+    @staticmethod
+    def compare_results(player_result, nero_result):
         # Priority order based on game rules
         order = ["111", "666", "555", "444", "333", "222", "66X", "456", "345", "234", "123", "6XX", "Other"]
 
@@ -358,13 +361,47 @@ class GameView(discord.ui.View, CommonResponses):
         # Check for a win
         return "win" if order.index(player_result) < order.index(nero_result) else "lose"
 
-    def calculate_winnings(self, result, bet_amount):
+    @staticmethod
+    def calculate_winnings(result, bet_amount):
         multipliers = {
             "111": 20, "666": 10, "555": 5, "444": 5, "333": 5,
             "222": 5, "66X": 3, "456": 2, "345": 2, "234": 2,
             "123": 2, "6XX": 1
         }
         return bet_amount * multipliers.get(result, 0)
+
+    def nero_decision_logic(self, nero_dice, player_dice, order):
+        # Classify both Nero's and the player's rolls
+        nero_result = self.classify_roll(nero_dice)
+        player_result = self.classify_roll(player_dice)
+
+        # If Nero cannot possibly win, try to tie or aim for the highest possible reroll
+        if order.index(player_result) < order.index("6XX") and player_result != "111":
+            return [True, True, True]
+
+        # Keep high-value dice (like 6) unless there's a chance for a straight or three of a kind
+        reroll_decisions = [nero_dice[i] != 6 for i in range(3)]
+        counts = {x: nero_dice.count(x) for x in set(nero_dice)}
+
+        for i, dice_value in enumerate(nero_dice):
+            # Consider rerolling for a straight or three of a kind if it's a feasible option
+            if counts[dice_value] == 1 and (
+                    sorted(nero_dice) in [["1", "2", "3"], ["2", "3", "4"], ["3", "4", "5"], ["4", "5", "6"]]):
+                reroll_decisions[i] = True
+
+        # Specific strategy: if Nero has two of the same and one different, reroll the different one
+        if len(set(nero_dice)) == 2 and (order.index(nero_result) > order.index(player_result)):
+            for num in counts:
+                if counts[num] == 1:
+                    reroll_decisions[nero_dice.index(num)] = True
+
+        return reroll_decisions
+
+    def nero_reroll(self):
+        # Reroll Nero's dice based on decisions made in Round 1
+        for i, reroll in enumerate(self.nero_reroll_decisions):
+            if reroll:
+                self.nero_dice[i] = random.randint(1, 6)
 
 class BetButton(discord.ui.Button, CommonResponses):
     def __init__(self, label, custom_id, player, game_view, *args, **kwargs):
@@ -426,19 +463,28 @@ class RollButton(discord.ui.Button, CommonResponses):
             await self.view.nero_unauthorized_user_response(interaction)
             return
 
-        # Toggle rounds and update button states
         self.game_view.toggle_round()
         self.game_view.update_buttons_for_round()
 
-        # Roll dice and print results based on the round
         if self.game_view.current_round == 1:
-            # Round 1: Roll all dice for both players
+            # Roll all dice for both players in Round 1
             self.game_view.player_dice = [random.randint(1, 6) for _ in range(3)]
             self.game_view.nero_dice = [random.randint(1, 6) for _ in range(3)]
+
+            # Make Nero's reroll decisions based on initial roll
+            self.game_view.nero_reroll_decisions = self.game_view.nero_decision_logic(self.game_view.nero_dice,
+                                                                                      self.game_view.player_dice,
+                                                                                      self.game_view.order)
+
             print(f"Round 1 - Player's dice: {self.game_view.player_dice}")
-            print(f"Round 1 - Nero's dice: {self.game_view.nero_dice}")
+            print(f"Round 1 - Initial Nero's dice: {self.game_view.nero_dice}")
+            print(f"Round 1 - Nero's reroll decisions: {self.game_view.nero_reroll_decisions}")
+
         elif self.game_view.current_round == 2:
-            # Round 2: Reroll happens in toggle_round
+            # Execute rerolls in Round 2
+            self.game_view.reset_and_reroll()
+            self.game_view.nero_reroll()
+
             print(f"Round 2 - Player's dice: {self.game_view.player_dice}")
             print(f"Round 2 - Nero's dice: {self.game_view.nero_dice}")
 
