@@ -118,9 +118,6 @@ class BetModal(discord.ui.Modal):
             game_embed = discord.Embed(title="Your Game", color=discord.Color.blue())
             game_embed.set_image(url="attachment://table.png")
 
-            print(self.game_view)
-            print(game_embed)
-
             # Initialize GameView with embed and discord_file
             self.game_view.embed = game_embed
             self.game_view.discord_file = discord_file

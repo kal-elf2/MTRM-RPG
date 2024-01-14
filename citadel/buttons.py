@@ -331,7 +331,7 @@ class TravelRow(discord.ui.View, CommonResponses):
         self.author_id = author_id
         self.crafting_select = None
 
-    @discord.ui.button(label="🏴‍☠️ Jolly Roger (Travel)", custom_id="citadel_travel", style=discord.ButtonStyle.blurple)
+    @discord.ui.button(label="🏴‍☠️ Jolly Roger", custom_id="citadel_travel", style=discord.ButtonStyle.blurple)
     async def travel(self, button, interaction):
         # Check if the user who interacted is the same as the one who initiated the view
         # Inherited from CommonResponses class from utils
@@ -357,14 +357,14 @@ class TravelRow(discord.ui.View, CommonResponses):
         nero_embed.set_thumbnail(url=generate_urls("nero", "confused"))
         await interaction.response.send_message(embed=nero_embed, ephemeral=True)
 
-    @discord.ui.button(label="🚪 Exit", custom_id="citadel_exit", style=discord.ButtonStyle.blurple)
-    async def exit(self, button, interaction):# Check if the user who interacted is the same as the one who initiated the view
-        # Inherited from CommonResponses class from utils
-        if str(interaction.user.id) != self.author_id:
-            await self.nero_unauthorized_user_response(interaction)
-            return
-
-        await interaction.response.send_message("You left the Citadel!")
+    # @discord.ui.button(label="🚪 Exit", custom_id="citadel_exit", style=discord.ButtonStyle.blurple)
+    # async def exit(self, button, interaction):# Check if the user who interacted is the same as the one who initiated the view
+    #     # Inherited from CommonResponses class from utils
+    #     if str(interaction.user.id) != self.author_id:
+    #         await self.nero_unauthorized_user_response(interaction)
+    #         return
+    #
+    #     await interaction.response.send_message("You left the Citadel!")
 
 def setup(bot):
     bot.add_cog(CitadelCog(bot))
