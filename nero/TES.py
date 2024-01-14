@@ -6,6 +6,7 @@ from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 import requests
 import random
+from emojis import get_emoji
 
 
 class TavernSpecialItem:
@@ -24,7 +25,6 @@ async def handle_three_eyed_snake_selection(interaction: discord.Interaction):
     view.add_item(PlayButton(label="Play", custom_id="play_3es"))
     view.add_item(RulesButton(label="Rules", custom_id="rules_3es"))
     await interaction.response.send_message(embed=nero_embed, view=view, ephemeral=True)
-
 
 class PlayButton(discord.ui.Button):
     def __init__(self, label, custom_id):
@@ -48,7 +48,10 @@ class PlayButton(discord.ui.Button):
         # Pass the player object to GameView
         game_view = GameView(author_id=str(interaction.user.id), player=player, player_data=player_data)
 
-        game_embed = discord.Embed(title="Your Game", color=discord.Color.blue())
+        # Create the game embed with additional description for betting
+        game_embed = discord.Embed(title="Three Eyed Snake", color=discord.Color.blue())
+        coppers_emoji = get_emoji('coppers_emoji')
+        game_embed.description = f"Select how many {coppers_emoji}coppers you want to bet."
         game_embed.set_image(url="attachment://table.png")
 
         # Send the game embed in a new message
@@ -56,7 +59,6 @@ class PlayButton(discord.ui.Button):
 
         # Update the original message with the new view
         await interaction.edit_original_response(view=new_view)
-
 
 class RulesButton(discord.ui.Button):
     def __init__(self, label, custom_id):
@@ -82,7 +84,12 @@ class BetModal(discord.ui.Modal):
         self.author_id = author_id
         self.player = player
         self.game_view = game_view
-        self.bet = discord.ui.InputText(label="How many Coppers would you like to wager?", style=discord.InputTextStyle.short)
+
+        # Calculate max bet, rounded down to the nearest multiple of 20
+        max_bet = (self.player.inventory.coppers // 20)
+        bet_label = f"20x required to cover your wager (Max: {max_bet})"
+        bet_placeholder = f"How many Coppers would you like to wager?)"
+        self.bet = discord.ui.InputText(label=bet_label, placeholder=bet_placeholder, style=discord.InputTextStyle.short)
         self.add_item(self.bet)
 
     async def callback(self, interaction: discord.Interaction):
@@ -115,7 +122,7 @@ class BetModal(discord.ui.Modal):
             self.game_view.bet_amount = bet_amount
 
             # Create a new embed with the updated image
-            game_embed = discord.Embed(title="Your Game", color=discord.Color.blue())
+            game_embed = discord.Embed(title="Three Eyed Snake", color=discord.Color.blue())
             game_embed.set_image(url="attachment://table.png")
 
             # Initialize GameView with embed and discord_file
@@ -142,7 +149,7 @@ class BetModal(discord.ui.Modal):
             nero_embed.set_thumbnail(url=thumbnail_url)
             await interaction.followup.send(embed=nero_embed, ephemeral=True)
 
-def get_dice_image_dimensions(dice_rolls, is_nero=False, scale_factor=1.5):
+def get_dice_image_dimensions(dice_rolls, is_nero=False, scale_factor=1.25):
     dimensions = []
     for roll in dice_rolls:
         identifier = f"nero{roll}" if is_nero else str(roll)
@@ -174,7 +181,7 @@ def get_random_dice_positions(box_coords, dice_dimensions):
         current_x += scaled_spacings_x[i]
 
         # Calculate the maximum possible vertical space, allowing dice to extend 60 pixels below the box
-        max_vertical_space = box_height - height + 60
+        max_vertical_space = box_height - height
         # Randomize the top spacing within the available vertical space
         top_spacing = random.randint(0, max_vertical_space)
 
@@ -184,7 +191,8 @@ def get_random_dice_positions(box_coords, dice_dimensions):
         current_x += width
 
     return positions
-async def generate_game_image(interaction, player, player_dice=None, nero_dice=None, bet_amount=None, current_round=0):
+
+async def generate_game_image(interaction, player, player_dice=None, nero_dice=None, bet_amount=None, current_round=0, dice_positions_round1=None, selected_dice=None):
     base_image_url = generate_urls("3ES", "table")
     base_image_response = requests.get(base_image_url)
     table_image = Image.open(BytesIO(base_image_response.content))
@@ -197,6 +205,10 @@ async def generate_game_image(interaction, player, player_dice=None, nero_dice=N
     # Font for WAGER text
     font_size_large = 60
     font_large = ImageFont.truetype("arial.ttf", font_size_large)
+
+    # Font for player coppers amount
+    font_size_xlarge = 75
+    font_xlarge = ImageFont.truetype("arial.ttf", font_size_xlarge)
 
     # Load player's exemplar image
     exemplar_image_url = generate_urls("3ES", player.name)
@@ -227,24 +239,24 @@ async def generate_game_image(interaction, player, player_dice=None, nero_dice=N
 
     # Formatting coppers amount with commas
     coppers_text = "{:,}".format(player.inventory.coppers)
-    coppers_text_width, _ = draw.textsize(coppers_text, font=font_small)
-    coppers_text_x = player_text_x + player_text_width + 175  # 175 pixels to the right of player's name
-    coppers_text_y = player_text_y  # Vertically align with player's name
+    coppers_text_width, _ = draw.textsize(coppers_text, font=font_xlarge)
+    coppers_text_x = player_text_x + player_text_width + 180  # Pixels to the right of player's name
+    coppers_text_y = player_text_y  - 45 # Vertically align with player's name
 
     # Load and resize the coppers icon
     coppers_icon_url = generate_urls("Icons", "Coppers")
     coppers_icon_response = requests.get(coppers_icon_url)
     coppers_icon_image = Image.open(BytesIO(coppers_icon_response.content))
-    coppers_icon_image = coppers_icon_image.resize((75, 75))
+    coppers_icon_image = coppers_icon_image.resize((100, 100))
 
     # Paste the coppers icon and add the text
-    icon_x_position = coppers_text_x - 75  # Adjust the icon position to be to the left of the text
+    icon_x_position = coppers_text_x - 90  # Adjust the icon position to be to the left of the text
     icon_y_position = coppers_text_y - 15  # Move the icon up by 15 pixels
     table_image.paste(coppers_icon_image, (icon_x_position, icon_y_position), coppers_icon_image)
-    draw.text((coppers_text_x, coppers_text_y), coppers_text, fill="white", font=font_small)
+    draw.text((coppers_text_x, coppers_text_y), coppers_text, fill="white", font=font_xlarge)
 
     # Font for the round text
-    font_size_round = 60
+    font_size_round = 75
     font_round = ImageFont.truetype("arial.ttf", font_size_round)
 
     round_text = f"Round {current_round}" if current_round in [1, 2] else ""
@@ -254,25 +266,25 @@ async def generate_game_image(interaction, player, player_dice=None, nero_dice=N
 
     if bet_amount:
         text = f"Wager "
-        text_width, _ = draw.textsize(text, font=font_large)
+        text_width, _ = draw.textsize(text, font=font_xlarge)
         coppers_url = generate_urls("Icons", "Coppers")
         coppers_response = requests.get(coppers_url)
 
         coppers_image = Image.open(BytesIO(coppers_response.content))
-        coppers_image = coppers_image.resize((75, 75))  # Resize as needed
+        coppers_image = coppers_image.resize((100, 100))  # Resize as needed
         bet_text = f" {bet_amount}"
-        bet_text_width, _ = draw.textsize(bet_text, font=font_large)
+        bet_text_width, _ = draw.textsize(bet_text, font=font_xlarge)
 
-        x_text = table_image.width - text_width - bet_text_width - 85  # 85 accounts for coppers image width and padding
+        x_text = table_image.width - text_width - bet_text_width - 175
         y = 10
-        draw.text((x_text, y), text, fill="white", font=font_large)
+        draw.text((x_text, y), text, fill="white", font=font_xlarge)
         table_image.paste(coppers_image, (x_text + text_width + 5, y), coppers_image)
-        draw.text((x_text + text_width + 80, y), bet_text, fill="white", font=font_large)
+        draw.text((x_text + text_width + 80, y), bet_text, fill="white", font=font_xlarge)
 
     # Define the dimensions and positions for the bounding boxes
-    box_width = 800  # Adjust the width
-    box_height = 300  # Adjust the height
-    top_box_y = 400  # Adjust top box Y position
+    box_width = 850  # Adjust the width
+    box_height = 350  # Adjust the height
+    top_box_y = 375  # Adjust top box Y position
     bottom_box_y = table_image.height - 325 - box_height  # Adjust bottom box Y position
 
     # Coordinates for top and bottom boxes
@@ -295,11 +307,28 @@ async def generate_game_image(interaction, player, player_dice=None, nero_dice=N
         nero_dice_positions = get_random_dice_positions(top_box_coords, nero_dice_dimensions)
         player_dice_positions = get_random_dice_positions(bottom_box_coords, player_dice_dimensions)
 
+        # Use the passed positions for Round 2
+        if current_round == 2 and dice_positions_round1 is not None:
+            player_dice_positions = dice_positions_round1
+            # Update positions for re-rolled dice
+            for i, selected in enumerate(selected_dice):
+                if selected:  # If dice is re-rolled, generate new position
+                    player_dice_positions[i] = \
+                    get_random_dice_positions(bottom_box_coords, [player_dice_dimensions[i]])[0]
+        else:
+            # Generate positions as usual for Round 1
+            player_dice_positions = get_random_dice_positions(bottom_box_coords, player_dice_dimensions)
+
         # Place Nero's dice
         for i, nero_roll in enumerate(nero_dice):
             dice_image_url = generate_urls("3ES", f"nero{nero_roll}")
             dice_image_response = requests.get(dice_image_url)
             dice_image = Image.open(BytesIO(dice_image_response.content))
+
+            # Resize the dice image based on the scaled dimensions
+            dice_image = dice_image.resize(nero_dice_dimensions[i])
+
+            # Paste the resized dice image
             table_image.paste(dice_image, nero_dice_positions[i], dice_image)
 
         # Place player's dice
@@ -307,6 +336,11 @@ async def generate_game_image(interaction, player, player_dice=None, nero_dice=N
             dice_image_url = generate_urls("3ES", str(player_roll))
             dice_image_response = requests.get(dice_image_url)
             dice_image = Image.open(BytesIO(dice_image_response.content))
+
+            # Resize the dice image based on the scaled dimensions
+            dice_image = dice_image.resize(player_dice_dimensions[i])
+
+            # Paste the resized dice image
             table_image.paste(dice_image, player_dice_positions[i], dice_image)
 
     # Convert PIL image to Discord file and send it
@@ -332,6 +366,7 @@ class GameView(discord.ui.View, CommonResponses):
         self.player_data = player_data
         self.nero_reroll_decisions = [False, False, False]
         self.order = ["111", "666", "555", "444", "333", "222", "66X", "456", "345", "234", "123", "6XX", "Other"]
+        self.dice_positions_round1 = None
 
         # Create a list to keep track of the selected state of dice buttons
         self.selected_dice = [False, False, False]
@@ -357,6 +392,9 @@ class GameView(discord.ui.View, CommonResponses):
         roll_button = RollButton(label="Roll", style=discord.ButtonStyle.green, custom_id="roll_3es", player_data=self.player_data, game_view= self)
         roll_button.disabled = True  # Set the button as disabled initially for round 0
         self.add_item(roll_button)
+
+    def store_dice_positions(self, positions):
+        self.dice_positions_round1 = positions
 
     def update_buttons_for_round(self):
         # This function will be used to update button states based on the current round
@@ -532,8 +570,6 @@ class BetButton(discord.ui.Button, CommonResponses):
 
         await interaction.response.send_modal(bet_modal)
 
-
-# Modify the DiceButton class as follows:
 class DiceButton(discord.ui.Button, CommonResponses):
     def __init__(self, label, custom_id, style=discord.ButtonStyle.grey, index=None):
         super().__init__(label=label, custom_id=custom_id, style=style)
@@ -561,7 +597,6 @@ class DiceButton(discord.ui.Button, CommonResponses):
         # Update the message with the modified view
         await interaction.response.edit_message(view=self.view)
 
-
 class RollButton(discord.ui.Button, CommonResponses):
     def __init__(self, label, custom_id, player_data, game_view, style=discord.ButtonStyle.green):
         super().__init__(label=label, custom_id=custom_id, style=style)
@@ -570,6 +605,10 @@ class RollButton(discord.ui.Button, CommonResponses):
 
     async def callback(self, interaction: discord.Interaction):
         from utils import save_player_data
+
+        # Defer the response as generating the game image might take time
+        await interaction.response.defer()
+
         # Authorization check
         if str(interaction.user.id) != self.game_view.author_id:
             await self.view.nero_unauthorized_user_response(interaction)
@@ -611,17 +650,25 @@ class RollButton(discord.ui.Button, CommonResponses):
             nero_result = self.game_view.classify_roll(self.game_view.nero_dice)
             game_outcome = self.game_view.compare_results(player_result, nero_result)
 
-            # Update coppers based on game outcome
+            # Determine the amount for winning or losing
+            potential_winnings = self.game_view.calculate_winnings(player_result, self.game_view.bet_amount)
+
+            outcome_message = ""
+            # Inside the RollButton callback
             if game_outcome == "tie":
-                print("It's a tie! No coppers exchanged.")
+                outcome_message = "It's a tie! No coppers exchanged."
             elif game_outcome == "win":
-                winnings = self.game_view.calculate_winnings(player_result, self.game_view.bet_amount)
-                self.game_view.player.inventory.coppers += winnings
-                print(f"You win! Your roll: {player_result}. You win {winnings} coppers.")
-            else:
-                loss = self.game_view.bet_amount
+                self.game_view.player.inventory.coppers += potential_winnings
+                outcome_message = f"You win! Your roll: {player_result}. You win {potential_winnings} coppers."
+            else:  # Nero wins
+                loss = self.game_view.calculate_winnings(nero_result,
+                                                         self.game_view.bet_amount)  # Calculate loss based on Nero's roll
                 self.game_view.player.inventory.coppers -= loss
-                print(f"You lose! Your roll: {player_result}. Nero's roll: {nero_result}.")
+                outcome_message = f"You lose! Your roll: {player_result}. Nero's roll: {nero_result}. You lose {loss} coppers."
+
+            # Update the embed with the game outcome
+            self.game_view.embed.clear_fields()  # Clear previous fields if any
+            self.game_view.embed.add_field(name="Game Outcome", value=outcome_message, inline=False)
 
         # Save the updated player data
         save_player_data(interaction.guild.id, self.player_data)
@@ -633,7 +680,9 @@ class RollButton(discord.ui.Button, CommonResponses):
             player_dice=self.game_view.player_dice if self.game_view.current_round in [1, 2] else None,
             nero_dice=self.game_view.nero_dice if self.game_view.current_round in [1, 2] else None,
             bet_amount=self.game_view.bet_amount,
-            current_round=self.game_view.current_round
+            current_round=self.game_view.current_round,
+            dice_positions_round1=self.game_view.dice_positions_round1 if self.game_view.current_round == 2 else None,
+            selected_dice=self.game_view.selected_dice
         )
 
         self.game_view.embed.title = f"Your Game: Round {self.game_view.current_round}"
@@ -642,9 +691,8 @@ class RollButton(discord.ui.Button, CommonResponses):
         await self.game_view.original_interaction.edit_original_response(embed=self.game_view.embed,
                                                                          file=self.game_view.discord_file,
                                                                          view=self.game_view)
-
-        # Update the message with the modified view
-        await interaction.response.edit_message(view=self.game_view)
+        # # Update the message with the modified view
+        # await interaction.response.edit_message(view=self.game_view)
 
 
 
