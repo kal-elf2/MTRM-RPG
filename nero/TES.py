@@ -142,7 +142,49 @@ class BetModal(discord.ui.Modal):
             nero_embed.set_thumbnail(url=thumbnail_url)
             await interaction.followup.send(embed=nero_embed, ephemeral=True)
 
-async def generate_game_image(interaction, player, bet_amount=None, current_round=0):
+def get_dice_image_dimensions(dice_rolls, is_nero=False, scale_factor=1.5):
+    dimensions = []
+    for roll in dice_rolls:
+        identifier = f"nero{roll}" if is_nero else str(roll)
+        dice_image_url = generate_urls("3ES", identifier)
+        dice_image_response = requests.get(dice_image_url)
+        dice_image = Image.open(BytesIO(dice_image_response.content))
+        width, height = dice_image.size
+        scaled_dimensions = (int(width * scale_factor), int(height * scale_factor))
+        dimensions.append(scaled_dimensions)  # Scaled (width, height)
+    return dimensions
+
+def get_random_dice_positions(box_coords, dice_dimensions):
+    x_start, y_start = box_coords[0]
+    x_end, y_end = box_coords[1]
+    box_width = x_end - x_start
+    box_height = y_end - y_start
+
+    total_dice_width = sum(width for width, _ in dice_dimensions)
+    total_space_available_x = box_width - total_dice_width
+
+    spacings_x = [random.uniform(0, total_space_available_x / 2) for _ in range(len(dice_dimensions) + 1)]
+    total_spacings_x = sum(spacings_x)
+    scale_factor_x = total_space_available_x / total_spacings_x
+    scaled_spacings_x = [s * scale_factor_x for s in spacings_x]
+
+    positions = []
+    current_x = x_start
+    for i, (width, height) in enumerate(dice_dimensions):
+        current_x += scaled_spacings_x[i]
+
+        # Calculate the maximum possible vertical space, allowing dice to extend 60 pixels below the box
+        max_vertical_space = box_height - height + 60
+        # Randomize the top spacing within the available vertical space
+        top_spacing = random.randint(0, max_vertical_space)
+
+        y_position = y_start + top_spacing
+
+        positions.append((int(current_x), int(y_position)))
+        current_x += width
+
+    return positions
+async def generate_game_image(interaction, player, player_dice=None, nero_dice=None, bet_amount=None, current_round=0):
     base_image_url = generate_urls("3ES", "table")
     base_image_response = requests.get(base_image_url)
     table_image = Image.open(BytesIO(base_image_response.content))
@@ -226,6 +268,46 @@ async def generate_game_image(interaction, player, bet_amount=None, current_roun
         draw.text((x_text, y), text, fill="white", font=font_large)
         table_image.paste(coppers_image, (x_text + text_width + 5, y), coppers_image)
         draw.text((x_text + text_width + 80, y), bet_text, fill="white", font=font_large)
+
+    # Define the dimensions and positions for the bounding boxes
+    box_width = 800  # Adjust the width
+    box_height = 300  # Adjust the height
+    top_box_y = 400  # Adjust top box Y position
+    bottom_box_y = table_image.height - 325 - box_height  # Adjust bottom box Y position
+
+    # Coordinates for top and bottom boxes
+    top_box_coords = ((table_image.width // 2 - box_width // 2, top_box_y),
+                      (table_image.width // 2 + box_width // 2, top_box_y + box_height))
+    bottom_box_coords = ((table_image.width // 2 - box_width // 2, bottom_box_y),
+                         (table_image.width // 2 + box_width // 2, bottom_box_y + box_height))
+
+    # Draw bounding boxes only for rounds 1 and 2
+    if current_round in [1, 2]:
+        # Bounding box to test
+        # draw.rectangle(top_box_coords, outline="black", width=3)
+        # draw.rectangle(bottom_box_coords, outline="black", width=3)
+
+        # Retrieve dimensions of Nero's and player's dice
+        nero_dice_dimensions = get_dice_image_dimensions(nero_dice, is_nero=True)
+        player_dice_dimensions = get_dice_image_dimensions(player_dice, is_nero=False)
+
+        # Generate random positions for Nero's and player's dice within the bounding boxes
+        nero_dice_positions = get_random_dice_positions(top_box_coords, nero_dice_dimensions)
+        player_dice_positions = get_random_dice_positions(bottom_box_coords, player_dice_dimensions)
+
+        # Place Nero's dice
+        for i, nero_roll in enumerate(nero_dice):
+            dice_image_url = generate_urls("3ES", f"nero{nero_roll}")
+            dice_image_response = requests.get(dice_image_url)
+            dice_image = Image.open(BytesIO(dice_image_response.content))
+            table_image.paste(dice_image, nero_dice_positions[i], dice_image)
+
+        # Place player's dice
+        for i, player_roll in enumerate(player_dice):
+            dice_image_url = generate_urls("3ES", str(player_roll))
+            dice_image_response = requests.get(dice_image_url)
+            dice_image = Image.open(BytesIO(dice_image_response.content))
+            table_image.paste(dice_image, player_dice_positions[i], dice_image)
 
     # Convert PIL image to Discord file and send it
     with BytesIO() as image_binary:
@@ -493,6 +575,7 @@ class RollButton(discord.ui.Button, CommonResponses):
             await self.view.nero_unauthorized_user_response(interaction)
             return
 
+        # Toggle the game round and update button states
         self.game_view.toggle_round()
         self.game_view.update_buttons_for_round()
 
@@ -502,10 +585,13 @@ class RollButton(discord.ui.Button, CommonResponses):
             self.game_view.nero_dice = [random.randint(1, 6) for _ in range(3)]
 
             # Make Nero's reroll decisions based on initial roll
-            self.game_view.nero_reroll_decisions = self.game_view.nero_decision_logic(self.game_view.nero_dice,
-                                                                                      self.game_view.player_dice,
-                                                                                      self.game_view.order)
+            self.game_view.nero_reroll_decisions = self.game_view.nero_decision_logic(
+                self.game_view.nero_dice,
+                self.game_view.player_dice,
+                self.game_view.order
+            )
 
+            # Logging for debugging
             print(f"Round 1 - Player's dice: {self.game_view.player_dice}")
             print(f"Round 1 - Initial Nero's dice: {self.game_view.nero_dice}")
             print(f"Round 1 - Nero's reroll decisions: {self.game_view.nero_reroll_decisions}")
@@ -515,6 +601,7 @@ class RollButton(discord.ui.Button, CommonResponses):
             self.game_view.reset_and_reroll()
             self.game_view.nero_reroll()
 
+            # Logging for debugging
             print(f"Round 2 - Player's dice: {self.game_view.player_dice}")
             print(f"Round 2 - Nero's dice: {self.game_view.nero_dice}")
 
@@ -524,7 +611,7 @@ class RollButton(discord.ui.Button, CommonResponses):
             nero_result = self.game_view.classify_roll(self.game_view.nero_dice)
             game_outcome = self.game_view.compare_results(player_result, nero_result)
 
-            # Update coppers based on game outcome and regenerate game image
+            # Update coppers based on game outcome
             if game_outcome == "tie":
                 print("It's a tie! No coppers exchanged.")
             elif game_outcome == "win":
@@ -540,8 +627,15 @@ class RollButton(discord.ui.Button, CommonResponses):
         save_player_data(interaction.guild.id, self.player_data)
 
         # Generate and send new game image for the current round
-        self.game_view.discord_file = await generate_game_image(interaction, self.game_view.player,
-                                                                current_round=self.game_view.current_round)
+        self.game_view.discord_file = await generate_game_image(
+            interaction,
+            self.game_view.player,
+            player_dice=self.game_view.player_dice if self.game_view.current_round in [1, 2] else None,
+            nero_dice=self.game_view.nero_dice if self.game_view.current_round in [1, 2] else None,
+            bet_amount=self.game_view.bet_amount,
+            current_round=self.game_view.current_round
+        )
+
         self.game_view.embed.title = f"Your Game: Round {self.game_view.current_round}"
 
         # Edit the original message with the updated embed and file
