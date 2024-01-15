@@ -192,7 +192,7 @@ def get_random_dice_positions(box_coords, dice_dimensions):
 
     return positions
 
-async def generate_game_image(interaction, player, player_dice=None, nero_dice=None, bet_amount=None, current_round=0, dice_positions_round1=None, selected_dice=None):
+async def generate_game_image(interaction, player, player_dice=None, nero_dice=None, bet_amount=None, current_round=0, dice_positions_round1=None, selected_dice=None, nero_reroll_decisions=None):
     base_image_url = generate_urls("3ES", "table")
     base_image_response = requests.get(base_image_url)
     table_image = Image.open(BytesIO(base_image_response.content))
@@ -240,8 +240,12 @@ async def generate_game_image(interaction, player, player_dice=None, nero_dice=N
     # Formatting coppers amount with commas
     coppers_text = "{:,}".format(player.inventory.coppers)
     coppers_text_width, _ = draw.textsize(coppers_text, font=font_xlarge)
-    coppers_text_x = player_text_x + player_text_width + 180  # Pixels to the right of player's name
-    coppers_text_y = player_text_y  - 45 # Vertically align with player's name
+
+    # Increase the offset here to move the coppers amount further to the right
+    coppers_text_x_offset = 210  # Adjust this value as needed
+    coppers_text_x = player_text_x + player_text_width + coppers_text_x_offset
+
+    coppers_text_y = player_text_y - 45  # Vertically align with player's name
 
     # Load and resize the coppers icon
     coppers_icon_url = generate_urls("Icons", "Coppers")
@@ -249,9 +253,11 @@ async def generate_game_image(interaction, player, player_dice=None, nero_dice=N
     coppers_icon_image = Image.open(BytesIO(coppers_icon_response.content))
     coppers_icon_image = coppers_icon_image.resize((100, 100))
 
+    # Adjust the icon_x_position to align with the updated coppers text position
+    icon_x_position = coppers_text_x - 110  # Adjust this value as needed to align the icon with the text
+    icon_y_position = coppers_text_y - 10  # Move the icon up slightly
+
     # Paste the coppers icon and add the text
-    icon_x_position = coppers_text_x - 90  # Adjust the icon position to be to the left of the text
-    icon_y_position = coppers_text_y - 15  # Move the icon up by 15 pixels
     table_image.paste(coppers_icon_image, (icon_x_position, icon_y_position), coppers_icon_image)
     draw.text((coppers_text_x, coppers_text_y), coppers_text, fill="white", font=font_xlarge)
 
@@ -322,14 +328,15 @@ async def generate_game_image(interaction, player, player_dice=None, nero_dice=N
 
         # Place Nero's dice
         for i, nero_roll in enumerate(nero_dice):
-            dice_image_url = generate_urls("3ES", f"nero{nero_roll}")
+            # Check if it's the first round and if Nero decided to reroll this dice
+            if current_round == 1 and nero_reroll_decisions[i]:
+                dice_image_url = generate_urls("3ES", f"nero{nero_roll}glow")
+            else:
+                dice_image_url = generate_urls("3ES", f"nero{nero_roll}")
+
             dice_image_response = requests.get(dice_image_url)
             dice_image = Image.open(BytesIO(dice_image_response.content))
-
-            # Resize the dice image based on the scaled dimensions
             dice_image = dice_image.resize(nero_dice_dimensions[i])
-
-            # Paste the resized dice image
             table_image.paste(dice_image, nero_dice_positions[i], dice_image)
 
         # Place player's dice
@@ -711,14 +718,14 @@ class RollButton(discord.ui.Button, CommonResponses):
 
             # Customize the outcome message
             if game_outcome == "tie":
-                outcome_message = "It's a tie! No coppers exchanged."
+                outcome_message = "It's a draw. No coppers exchanged."
             elif game_outcome == "win":
                 win_reaction = GameView.get_result_reaction(player_result, True)
                 potential_winnings = "{:,}".format(
                     self.game_view.calculate_winnings(player_result, self.game_view.bet_amount))
                 self.game_view.player.inventory.coppers += int(potential_winnings.replace(',', ''))
                 if nero_roll_name == "Nothing":
-                    outcome_message = f"{win_reaction} Your {player_roll_name} wins. You win {coppers_emoji} {potential_winnings}."
+                    outcome_message = f"{win_reaction} Your {player_roll_name} wins. You win {coppers_emoji}{potential_winnings}."
                 else:
                     outcome_message = f"{win_reaction} Your {player_roll_name} beats Captain Nero's {nero_roll_name}. You win {coppers_emoji}{potential_winnings}."
             else:  # Nero wins
@@ -726,7 +733,7 @@ class RollButton(discord.ui.Button, CommonResponses):
                 loss = "{:,}".format(self.game_view.calculate_winnings(nero_result, self.game_view.bet_amount))
                 self.game_view.player.inventory.coppers -= int(loss.replace(',', ''))
                 if player_roll_name == "Nothing":
-                    outcome_message = f"{loss_reaction} Captain Nero's {nero_roll_name} wins. You lose {coppers_emoji} {loss}."
+                    outcome_message = f"{loss_reaction} Captain Nero's {nero_roll_name} wins. You lose {coppers_emoji}{loss}."
                 else:
                     outcome_message = f"{loss_reaction} Captain Nero's {nero_roll_name} beats your {player_roll_name}. You lose {coppers_emoji}{loss}."
 
@@ -743,7 +750,7 @@ class RollButton(discord.ui.Button, CommonResponses):
             bet_amount=self.game_view.bet_amount,
             current_round=self.game_view.current_round,
             dice_positions_round1=self.game_view.dice_positions_round1 if self.game_view.current_round == 2 else None,
-            selected_dice=self.game_view.selected_dice
+            selected_dice=self.game_view.selected_dice, nero_reroll_decisions=self.game_view.nero_reroll_decisions
         )
 
         self.game_view.embed.title = f"Your Game: Round {self.game_view.current_round}"
@@ -773,8 +780,3 @@ class RollButton(discord.ui.Button, CommonResponses):
             pirate_thumbnail_url = generate_urls("nero", "confused")
             pirate_embed.set_thumbnail(url=pirate_thumbnail_url)
             await interaction.followup.send(embed=pirate_embed, ephemeral=True)
-        # # Update the message with the modified view
-        # await interaction.response.edit_message(view=self.game_view)
-
-
-
