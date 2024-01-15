@@ -87,7 +87,7 @@ class BetModal(discord.ui.Modal):
 
         # Calculate max bet, rounded down to the nearest multiple of 20
         max_bet = (self.player.inventory.coppers // 20)
-        bet_label = f"20x required to cover your wager (Max: {max_bet})"
+        bet_label = f"20x Coppers required (Max: {max_bet})"
         bet_placeholder = f"How many Coppers would you like to wager?)"
         self.bet = discord.ui.InputText(label=bet_label, placeholder=bet_placeholder, style=discord.InputTextStyle.short)
         self.add_item(self.bet)
@@ -115,7 +115,7 @@ class BetModal(discord.ui.Modal):
             )
 
         bet_amount = int(bet_value)
-        if self.player.inventory.coppers >= bet_amount * 30:
+        if self.player.inventory.coppers >= bet_amount * 20:
             discord_file = await generate_game_image(interaction, self.player, bet_amount=bet_amount, current_round=0)
 
             # Update the game view with the bet amount
@@ -265,14 +265,15 @@ async def generate_game_image(interaction, player, player_dice=None, nero_dice=N
         draw.text((round_text_x, round_text_y), round_text, fill="white", font=font_round)
 
     if bet_amount:
-        text = f"Wager "
+        formatted_bet_amount = "{:,}".format(bet_amount)  # Formatting the bet amount with commas
+        text = "Wager "
         text_width, _ = draw.textsize(text, font=font_xlarge)
         coppers_url = generate_urls("Icons", "Coppers")
         coppers_response = requests.get(coppers_url)
 
         coppers_image = Image.open(BytesIO(coppers_response.content))
         coppers_image = coppers_image.resize((100, 100))  # Resize as needed
-        bet_text = f" {bet_amount}"
+        bet_text = f" {formatted_bet_amount}"
         bet_text_width, _ = draw.textsize(bet_text, font=font_xlarge)
 
         x_text = table_image.width - text_width - bet_text_width - 175
@@ -406,7 +407,7 @@ class GameView(discord.ui.View, CommonResponses):
             elif isinstance(item, DiceButton):
                 # Enable dice buttons for round 1 and toggle their state based on the selected_dice list
                 item.disabled = False if self.current_round == 1 else True
-                item.selected = self.selected_dice[item.index]
+                item.selected = self.selected_dice[item.index ]
 
     def reset_and_reroll(self):
         # Check if no dice are selected
@@ -427,7 +428,6 @@ class GameView(discord.ui.View, CommonResponses):
 
     # Modify the toggle_round method
     def toggle_round(self):
-
         if self.current_round == 0:
             self.current_round = 1
         elif self.current_round == 1:
@@ -439,9 +439,11 @@ class GameView(discord.ui.View, CommonResponses):
             self.current_round = 1
             self.in_round_2 = False
             self.reset_dice_states()
+            # Clear all fields in the embed except for the title
+            self.embed.clear_fields()
+            self.embed.description = ''
 
         print(f"Current Round: {self.current_round}")
-
 
     def reset_dice_states(self):
         # Reset the selected_dice array and update button styles
@@ -465,6 +467,44 @@ class GameView(discord.ui.View, CommonResponses):
         if counts.get(6, 0) == 1:
             return "6XX"
         return "Other"
+
+    @staticmethod
+    def get_descriptive_roll_name(roll):
+        if roll == "111":
+            return "**Three Eyed Snake**"
+        elif roll in ["222", "333", "444", "555", "666"]:
+            return f"**3 of a Kind**"
+        elif roll in ["123", "234", "345", "456"]:
+            return f"**Straight**"
+        elif roll == "66X":
+            return "**Double 6**"
+        elif roll == "6XX":
+            return "**Single 6**"
+        elif roll == "Other":
+            return "Nothing"
+        return roll
+
+    @staticmethod
+    def get_result_reaction(result, is_win):
+        """ Get a custom reaction message based on the result and whether it's a win or a loss. """
+        if is_win:
+            if result == "111":  # Three Eyed Snake
+                return "**Big Crits!**"
+            elif result == "666":  # 666
+                return "**Amazing win!**"
+            elif result in ["555", "444", "333", "222"]:  # 3 of a kind
+                return "**Well done!**"
+            else:
+                return "**Nice!**"
+        else:  # In case of a loss
+            if result == "111":  # Three Eyed Snake
+                return "**Bad beat.**"
+            elif result == "666":  # 666
+                return "**Yikes.**"
+            elif result in ["555", "444", "333", "222"]:  # 3 of a kind
+                return "**Ouch.**"
+            else:
+                return ""  # No specific reaction for other cases
 
     @staticmethod
     def compare_results(player_result, nero_result):
@@ -533,7 +573,8 @@ class GameView(discord.ui.View, CommonResponses):
 
         return reroll_decisions
 
-    def is_potential_high_value_hand(self, dice, dice_value, counts):
+    @staticmethod
+    def is_potential_high_value_hand(dice, dice_value, counts):
         """
         Check if the current dice contributes to a potential high-value hand.
         """
@@ -650,21 +691,30 @@ class RollButton(discord.ui.Button, CommonResponses):
             nero_result = self.game_view.classify_roll(self.game_view.nero_dice)
             game_outcome = self.game_view.compare_results(player_result, nero_result)
 
-            # Determine the amount for winning or losing
-            potential_winnings = self.game_view.calculate_winnings(player_result, self.game_view.bet_amount)
+            player_roll_name = self.game_view.get_descriptive_roll_name(player_result)
+            nero_roll_name = self.game_view.get_descriptive_roll_name(nero_result)
+            coppers_emoji = get_emoji('coppers_emoji')  # Fetch the emoji
 
-            outcome_message = ""
-            # Inside the RollButton callback
+            # Customize the outcome message
             if game_outcome == "tie":
                 outcome_message = "It's a tie! No coppers exchanged."
             elif game_outcome == "win":
-                self.game_view.player.inventory.coppers += potential_winnings
-                outcome_message = f"You win! Your roll: {player_result}. You win {potential_winnings} coppers."
+                win_reaction = GameView.get_result_reaction(player_result, True)
+                potential_winnings = "{:,}".format(
+                    self.game_view.calculate_winnings(player_result, self.game_view.bet_amount))
+                self.game_view.player.inventory.coppers += int(potential_winnings.replace(',', ''))
+                if nero_roll_name == "Nothing":
+                    outcome_message = f"{win_reaction} Your {player_roll_name} wins. You win {coppers_emoji} {potential_winnings}."
+                else:
+                    outcome_message = f"{win_reaction} Your {player_roll_name} beats Captain Nero's {nero_roll_name}. You win {coppers_emoji}{potential_winnings}."
             else:  # Nero wins
-                loss = self.game_view.calculate_winnings(nero_result,
-                                                         self.game_view.bet_amount)  # Calculate loss based on Nero's roll
-                self.game_view.player.inventory.coppers -= loss
-                outcome_message = f"You lose! Your roll: {player_result}. Nero's roll: {nero_result}. You lose {loss} coppers."
+                loss_reaction = GameView.get_result_reaction(nero_result, False)
+                loss = "{:,}".format(self.game_view.calculate_winnings(nero_result, self.game_view.bet_amount))
+                self.game_view.player.inventory.coppers -= int(loss.replace(',', ''))
+                if player_roll_name == "Nothing":
+                    outcome_message = f"{loss_reaction} Captain Nero's {nero_roll_name} wins. You lose {coppers_emoji} {loss}."
+                else:
+                    outcome_message = f"{loss_reaction} Captain Nero's {nero_roll_name} beats your {player_roll_name}. You lose {coppers_emoji}{loss}."
 
             # Update the embed with the game outcome
             self.game_view.embed.clear_fields()  # Clear previous fields if any
