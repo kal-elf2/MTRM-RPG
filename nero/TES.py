@@ -606,10 +606,24 @@ class BetButton(discord.ui.Button, CommonResponses):
             await self.view.nero_unauthorized_user_response(interaction)
             return
 
-        # Create and send the bet modal
-        bet_modal = BetModal(author_id=self.game_view.author_id, player=self.player, game_view=self.game_view)
+        # Check if the player has at least 20 coppers
+        if self.player.inventory.coppers < 20:
+            # Create the pirate-themed embed
+            pirate_embed = discord.Embed(
+                title="Captain Ner0's Notice",
+                description="Arr matey! Ye need at least 20 coppers to place a wager. Off ye go to gather more booty!",
+                color=discord.Color.dark_red()
+            )
+            # Set the thumbnail to a pirate-themed image
+            pirate_thumbnail_url = generate_urls("nero", "confused")
+            pirate_embed.set_thumbnail(url=pirate_thumbnail_url)
 
-        await interaction.response.send_modal(bet_modal)
+            # Send the ephemeral message
+            await interaction.response.send_message(embed=pirate_embed, ephemeral=True)
+        else:
+            # Create and send the bet modal
+            bet_modal = BetModal(author_id=self.game_view.author_id, player=self.player, game_view=self.game_view)
+            await interaction.response.send_modal(bet_modal)
 
 class DiceButton(discord.ui.Button, CommonResponses):
     def __init__(self, label, custom_id, style=discord.ButtonStyle.grey, index=None):
@@ -720,9 +734,6 @@ class RollButton(discord.ui.Button, CommonResponses):
             self.game_view.embed.clear_fields()  # Clear previous fields if any
             self.game_view.embed.add_field(name="Game Outcome", value=outcome_message, inline=False)
 
-        # Save the updated player data
-        save_player_data(interaction.guild.id, self.player_data)
-
         # Generate and send new game image for the current round
         self.game_view.discord_file = await generate_game_image(
             interaction,
@@ -737,10 +748,31 @@ class RollButton(discord.ui.Button, CommonResponses):
 
         self.game_view.embed.title = f"Your Game: Round {self.game_view.current_round}"
 
+        # Check and handle insufficient coppers
+        insufficient_coppers = False
+        if self.game_view.player.inventory.coppers < (self.game_view.bet_amount * 20):
+            insufficient_coppers = True
+            self.disabled = True  # Disable the Roll button
+
         # Edit the original message with the updated embed and file
         await self.game_view.original_interaction.edit_original_response(embed=self.game_view.embed,
                                                                          file=self.game_view.discord_file,
                                                                          view=self.game_view)
+
+        # Save the updated player data
+        save_player_data(interaction.guild.id, self.player_data)
+
+        # If player has insufficient coppers, send an ephemeral message
+        if insufficient_coppers:
+            # Send a nero embed if not enough coppers
+            pirate_embed = discord.Embed(
+                title="Captain Ner0's Warning",
+                description="Arr, ye be runnin' low on coppers! Either lower yer wager or find yerself some more coppers before ye challenge me again!",
+                color=discord.Color.red()
+            )
+            pirate_thumbnail_url = generate_urls("nero", "confused")
+            pirate_embed.set_thumbnail(url=pirate_thumbnail_url)
+            await interaction.followup.send(embed=pirate_embed, ephemeral=True)
         # # Update the message with the modified view
         # await interaction.response.edit_message(view=self.game_view)
 
