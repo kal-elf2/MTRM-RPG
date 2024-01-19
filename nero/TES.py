@@ -755,7 +755,7 @@ class RollButton(discord.ui.Button, CommonResponses):
             selected_dice=self.game_view.selected_dice, nero_reroll_decisions=self.game_view.nero_reroll_decisions
         )
 
-        self.game_view.embed.title = f"Your Game: Round {self.game_view.current_round}"
+        self.game_view.embed.title = f"Round {self.game_view.current_round}"
 
         # Check and handle insufficient coppers
         insufficient_coppers = False
