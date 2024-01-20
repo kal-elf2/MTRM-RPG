@@ -146,17 +146,19 @@ class CraftingStation:
 
         recipe = next((r for r in self.recipes if r.result.name == recipe_name), None)
 
-        # Check if the result of the crafting operation is a Charm or Potion.
-        # If it is, we skip the inventory check and allow crafting regardless of inventory space.
-        if not isinstance(recipe.result, (Charm, Potion)):
+        # Check if the result of the crafting operation is a Charm or Potion, or an auto-consume item like 'Bread' or 'Trencher'.
+        # If it is, skip the inventory check and allow crafting regardless of inventory space.
+        if not isinstance(recipe.result, (Charm, Potion)) and recipe.result.name not in ["Bread", "Trencher"]:
             item_already_exists = player.inventory.has_item(recipe.result.name,
                                                             getattr(recipe.result, 'zone_level', None))
             if not item_already_exists and player.inventory.total_items_count() >= player.inventory.limit:
                 return "Inventory is full. Please make some room before crafting."
 
+        # Remove ingredients from inventory
         for ingredient, quantity in recipe.ingredients:
             player.inventory.remove_item(ingredient.name, quantity)
 
+        # Handle auto-consume items separately
         if recipe.result.name == "Bread":
             added_stamina = 10
             player.stats.stamina = min(player.stats.stamina + added_stamina, player.stats.max_stamina)
@@ -165,6 +167,7 @@ class CraftingStation:
             player.stats.stamina = player.stats.max_stamina
             return recipe.result  # Return the Trencher item even though it's consumed
 
+        # Add item to inventory for other items
         player.inventory.add_item_to_inventory(recipe.result)
 
         save_player_data(guild_id, player_data)
@@ -327,7 +330,6 @@ class CraftButton(discord.ui.Button):
                 embed.description += stamina_message
 
             await interaction.response.edit_message(embed=embed, view=self.view)
-
 
 class CraftingSelect(discord.ui.Select, CommonResponses):
     def __init__(self, crafting_station, interaction, author_id, context=None):
