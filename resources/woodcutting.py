@@ -345,7 +345,7 @@ class HarvestButton(discord.ui.View, CommonResponses):
                     await battle_context.special_attack_message.delete()
                     await battle_options_msg.delete()
                     loot_view = LootOptions(interaction, self.player, monster, battle_embed, self.player_data, self.author_id, battle_outcome,
-                                            loot_messages, self.guild_id, interaction, experience_gained, loothaven_effect)
+                                            loot_messages, self.guild_id, interaction, experience_gained, loothaven_effect, add_repeat_button=False)
 
                     await battle_embed.edit(
                         embed=create_battle_embed(interaction.user, self.player, monster, footer_text_for_embed(self.ctx, monster, self.player),

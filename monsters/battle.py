@@ -9,7 +9,7 @@ import asyncio
 
 class LootOptions(discord.ui.View, CommonResponses):
     def __init__(self, interaction, player, monster, battle_embed, player_data, author_id, battle_outcome,
-                 loot_messages, guild_id, ctx, experience_gained, loothaven_effect):
+                 loot_messages, guild_id, ctx, experience_gained, loothaven_effect, add_repeat_button=True):
         super().__init__(timeout=None)
         self.interaction = interaction
         self.player = player
@@ -23,7 +23,12 @@ class LootOptions(discord.ui.View, CommonResponses):
         self.ctx = ctx
         self.experience_gained = experience_gained
         self.loothaven_effect = loothaven_effect
-        self.add_repeat_battle_button()
+
+        # Store the state for adding the repeat button
+        self.should_add_repeat_button = add_repeat_button
+
+        if self.should_add_repeat_button:
+            self.add_repeat_battle_button()
 
     def add_repeat_battle_button(self):
         # Add the "Repeat Battle" button
@@ -36,6 +41,7 @@ class LootOptions(discord.ui.View, CommonResponses):
         self.add_item(repeat_button)
 
     async def repeat_battle(self, interaction):
+        print('yep')
         # Check if the user who interacted is the same as the one who initiated the view
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
@@ -153,11 +159,12 @@ class LootOptions(discord.ui.View, CommonResponses):
         # Update the original response with the final embed
         await interaction.edit_original_response(embed=final_embed, view=None)
 
-        # After processing the loot, add the "Repeat Battle" button
-        self.add_repeat_battle_button()
+        # Conditionally add the "Repeat Battle" button based on the stored state
+        if self.should_add_repeat_button:
+            self.add_repeat_battle_button()
 
-        # Update the view with the new button
-        await interaction.edit_original_response(view=self)
+            # Update the view with the new button
+            await interaction.edit_original_response(view=self)
 
 async def start_battle(ctx, monster, player_data, player, author_id, guild_id, battle_embed):
     from monsters.monster import BattleContext
