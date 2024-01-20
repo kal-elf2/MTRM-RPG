@@ -78,6 +78,7 @@ class RulesButton(discord.ui.Button):
         # Send the embed as an ephemeral message
         await interaction.response.send_message(embed=rules_embed, ephemeral=True)
 
+
 class BetModal(discord.ui.Modal):
     def __init__(self, author_id, player, game_view, *args, **kwargs):
         super().__init__(title="Place Your Bet", *args, **kwargs)
@@ -87,9 +88,14 @@ class BetModal(discord.ui.Modal):
 
         # Calculate max bet, rounded down to the nearest multiple of 20
         max_bet = (self.player.inventory.coppers // 20)
-        bet_label = f"20x Coppers required (Max: {max_bet})"
-        bet_placeholder = f"How many Coppers would you like to wager?)"
-        self.bet = discord.ui.InputText(label=bet_label, placeholder=bet_placeholder, style=discord.InputTextStyle.short)
+
+        # Format max bet with commas
+        formatted_max_bet = "{:,}".format(max_bet)
+
+        bet_label = f"20x Coppers required (Max: {formatted_max_bet})"
+        bet_placeholder = "How many Coppers would you like to wager?"
+        self.bet = discord.ui.InputText(label=bet_label, placeholder=bet_placeholder,
+                                        style=discord.InputTextStyle.short)
         self.add_item(self.bet)
 
     async def callback(self, interaction: discord.Interaction):
@@ -265,10 +271,10 @@ async def generate_game_image(interaction, player, player_dice=None, nero_dice=N
     font_size_round = 75
     font_round = ImageFont.truetype("arial.ttf", font_size_round)
 
-    round_text = f"Round {current_round}" if current_round in [1, 2] else ""
-    if round_text:
-        round_text_x, round_text_y = 20, 20  # Top-left corner
-        draw.text((round_text_x, round_text_y), round_text, fill="white", font=font_round)
+    # round_text = f"Round {current_round}" if current_round in [1, 2] else ""
+    # if round_text:
+    #     round_text_x, round_text_y = 20, 20  # Top-left corner
+    #     draw.text((round_text_x, round_text_y), round_text, fill="white", font=font_round)
 
     if bet_amount:
         formatted_bet_amount = "{:,}".format(bet_amount)  # Formatting the bet amount with commas
