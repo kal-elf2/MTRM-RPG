@@ -486,7 +486,7 @@ class GameView(discord.ui.View, CommonResponses):
         if roll == "111":
             return "**Three Eyed Snake**"
         elif roll == "666":
-            return f"**Triple 6***"
+            return f"**Triple 6**"
         elif roll in ["222", "333", "444", "555"]:
             return f"**3 of a Kind**"
         elif roll in ["123", "234", "345", "456"]:
