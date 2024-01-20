@@ -456,7 +456,7 @@ class GameView(discord.ui.View, CommonResponses):
             self.embed.clear_fields()
             self.embed.description = ''
 
-        print(f"Current Round: {self.current_round}")
+        # print(f"Current Round: {self.current_round}")
 
     def reset_dice_states(self):
         # Reset the selected_dice array and update button styles
@@ -657,12 +657,12 @@ class DiceButton(discord.ui.Button, CommonResponses):
         # Update button style based on selection state
         self.style = discord.ButtonStyle.red if self.view.selected_dice[self.index] else discord.ButtonStyle.grey
 
-        # Get the corresponding number (or "X") for the button
-        number = self.view.player_dice[self.index] if self.view.current_round == 1 else "X"
-
-        # Print whether the dice is selected or deselected, including the corresponding number
-        action = "selected" if self.view.selected_dice[self.index] else "deselected"
-        print(f"Button {self.index + 1} ({number}) {action}")
+        # # Get the corresponding number (or "X") for the button
+        # number = self.view.player_dice[self.index] if self.view.current_round == 1 else "X"
+        #
+        # # Print whether the dice is selected or deselected, including the corresponding number
+        # action = "selected" if self.view.selected_dice[self.index] else "deselected"
+        # print(f"Button {self.index + 1} ({number}) {action}")
 
         # Update the message with the modified view
         await interaction.response.edit_message(view=self.view)
@@ -700,19 +700,19 @@ class RollButton(discord.ui.Button, CommonResponses):
                 self.game_view.order
             )
 
-            # Logging for debugging
-            print(f"Round 1 - Player's dice: {self.game_view.player_dice}")
-            print(f"Round 1 - Initial Nero's dice: {self.game_view.nero_dice}")
-            print(f"Round 1 - Nero's reroll decisions: {self.game_view.nero_reroll_decisions}")
+            # # Logging for debugging
+            # print(f"Round 1 - Player's dice: {self.game_view.player_dice}")
+            # print(f"Round 1 - Initial Nero's dice: {self.game_view.nero_dice}")
+            # print(f"Round 1 - Nero's reroll decisions: {self.game_view.nero_reroll_decisions}")
 
         elif self.game_view.current_round == 2:
             # Execute rerolls in Round 2
             self.game_view.reset_and_reroll()
             self.game_view.nero_reroll()
 
-            # Logging for debugging
-            print(f"Round 2 - Player's dice: {self.game_view.player_dice}")
-            print(f"Round 2 - Nero's dice: {self.game_view.nero_dice}")
+            # # Logging for debugging
+            # print(f"Round 2 - Player's dice: {self.game_view.player_dice}")
+            # print(f"Round 2 - Nero's dice: {self.game_view.nero_dice}")
 
         # Determine the game result if it's the end of round 2
         if self.game_view.current_round == 2:
