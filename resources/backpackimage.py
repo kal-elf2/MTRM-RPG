@@ -372,7 +372,7 @@ def generate_backpack_image(interaction):
         coppers_x = int(center_x - (
                 coppers_icon_width + draw.textsize(str(player.inventory.coppers), font=stats_font)[0] + 20))
         stats_offset_y = int(stats_offset_y)
-        mtrm_x = center_x + 10  # 10 pixels space between center and MTRM image
+        mtrm_x = center_x + 20  # 20 pixels space between center and MTRM image
 
         coppers_box = (int(coppers_x), int(stats_offset_y), int(coppers_x + coppers_icon_width),
                        int(stats_offset_y + coppers_icon_height))
@@ -382,9 +382,12 @@ def generate_backpack_image(interaction):
         base_img.paste(coppers_image, coppers_box, mask=coppers_image)
         base_img.paste(mtrm_image, mtrm_box, mask=mtrm_image)
 
-        # Draw values next to the images
-        draw.text((coppers_x + coppers_icon_width + 10, stats_offset_y), f"{player.inventory.coppers}",
-                  fill="white", font=stats_font)
+        # Draw values next to the images with formatted coppers
+        formatted_coppers = "{:,}".format(player.inventory.coppers)  # Format coppers with commas
+        draw.text((coppers_x + coppers_icon_width + 10, stats_offset_y), formatted_coppers, fill="white",
+                  font=stats_font)
+
+        # Draw materium value
         draw.text((mtrm_x + mtrm_icon_width + 10, stats_offset_y), f"{player.inventory.materium}", fill="white",
                   font=stats_font)
 
