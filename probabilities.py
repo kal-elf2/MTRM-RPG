@@ -26,7 +26,7 @@ ironhide_multiplier = 2
 # Original value: 2 (double multiplier)
 mightstone_multiplier = 2
 
-# Buyback item base cost:
+# Nero's death buyback item base cost:
 buyback_cost = 5000
 
 # Constants
@@ -34,3 +34,5 @@ CRITICAL_HIT_CHANCE = 0.10  # 10% chance of a critical hit
 CRITICAL_HIT_MULTIPLIER = 1.5  # 1.5 times the damage for a critical hit
 
 tent_health = 25
+# Unarmed damage_reduction (95%)
+unarmed_damaged_reduction = 0.05

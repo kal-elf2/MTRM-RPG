@@ -6,7 +6,7 @@ from monsters.battle import create_battle_embed, footer_text_for_embed
 import asyncio
 from resources.item import Item
 import math
-from probabilities import CRITICAL_HIT_CHANCE, CRITICAL_HIT_MULTIPLIER, ironhide_percent, mightstone_multiplier
+from probabilities import CRITICAL_HIT_CHANCE, CRITICAL_HIT_MULTIPLIER, ironhide_percent, mightstone_multiplier, unarmed_damaged_reduction
 from emojis import get_emoji
 
 class Monster:
@@ -151,19 +151,29 @@ class BattleContext:
         battle_embed = create_battle_embed(self.user, self.player, self.monster, footer_text_for_embed(self.ctx, self.monster, self.player), self.battle_messages)
         await self.message.edit(embed=battle_embed)
 
-async def player_attack_task(battle_context, attack_level):
-    # Calculate attack speed modifier
-    attack_speed_modifier = calculate_attack_speed_modifier(battle_context.player.stats.attack * attack_level)
+async def player_attack_task(battle_context, attack_level, is_unarmed=False):
 
     hit_probability = calculate_hit_probability(battle_context.player.stats.attack * attack_level, battle_context.monster.defense)
+
+    # Total attack == player's attack + weapon damage
+    total_player_attack = battle_context.player.stats.attack + battle_context.player.stats.damage
 
     # Adjust critical hit chance if Mightstone is equipped
     crit_chance = CRITICAL_HIT_CHANCE * mightstone_multiplier if battle_context.player.inventory.equipped_charm and battle_context.player.inventory.equipped_charm.name == "Mightstone" else CRITICAL_HIT_CHANCE
     is_critical_hit = random.random() < crit_chance
 
     if random.random() < hit_probability:
+        # Check if the player is unarmed and apply damage nerf
+        if is_unarmed:
+            damage_reduction_multiplier = unarmed_damaged_reduction
+        else:
+            damage_reduction_multiplier = 1  # No reduction
+
         # Calculate the damage
-        damage_dealt = calculate_damage(battle_context.player, battle_context.player.stats.attack * attack_level, battle_context.monster.defense, is_critical_hit)
+        damage_dealt = calculate_damage(battle_context.player, total_player_attack * attack_level, battle_context.monster.defense, is_critical_hit)
+        # Apply damage reduction if unarmed
+        damage_dealt = round(damage_dealt * damage_reduction_multiplier)
+
         battle_context.monster.health = max(battle_context.monster.health - damage_dealt, 0)
 
         # Prepare the update message
@@ -193,10 +203,12 @@ async def player_attack_task(battle_context, attack_level):
     if battle_context.monster.is_defeated():
         return
 
-    await asyncio.sleep(attack_speed_modifier)
-
 async def monster_attack_task(battle_context):
     attack_speed_modifier = calculate_attack_speed_modifier(battle_context.monster.attack)
+
+    # Total defense == player's defense + armor
+    total_player_defense = battle_context.player.stats.defense + battle_context.player.stats.armor
+
     while battle_context.is_battle_active and not battle_context.monster.is_defeated() and not battle_context.player.is_defeated():
         hit_probability = calculate_hit_probability(battle_context.monster.attack, battle_context.player.stats.defense, battle_context.player)
 
@@ -205,7 +217,7 @@ async def monster_attack_task(battle_context):
 
         # Check if the attack hits
         if random.random() < hit_probability:
-            damage_dealt = calculate_damage(battle_context.monster, battle_context.monster.attack, battle_context.player.stats.defense, is_critical_hit)
+            damage_dealt = calculate_damage(battle_context.monster, battle_context.monster.attack, total_player_defense, is_critical_hit)
             battle_context.player.stats.damage_taken += damage_dealt
             battle_context.player.stats.health = max(battle_context.player.stats.health - damage_dealt, 0)
             update_message = f"The {battle_context.monster.name} dealt {damage_dealt} damage to {battle_context.user.mention}!"

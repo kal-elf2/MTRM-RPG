@@ -625,8 +625,12 @@ class SpecialAttackOptions(discord.ui.View, CommonResponses):
         # Deduct stamina before performing the attack, ensuring it doesn't fall below 0
         self.player.stats.stamina = max(self.player.stats.stamina - self.stamina_costs[attack_level], 0)
 
-        # Perform the attack
-        await player_attack_task(self.battle_context, attack_level)
+        # Check if the player is unarmed
+        is_unarmed = attack_level == 1 and self.battle_context.player.inventory.equipped_weapon is None
+
+        # Perform the attack with the unarmed check
+        await player_attack_task(self.battle_context, attack_level, is_unarmed=is_unarmed)
+
         # After monster's health changes, update the battle embed
         new_footer_text = footer_text_for_embed(self.ctx, self.monster, self.player)
         updated_embed = create_battle_embed(self.battle_context.user, self.player, self.monster, new_footer_text,
