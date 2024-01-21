@@ -171,8 +171,8 @@ async def player_attack_task(battle_context, attack_level, is_unarmed=False):
 
         # Calculate the damage
         damage_dealt = calculate_damage(battle_context.player, total_player_attack * attack_level, battle_context.monster.defense, is_critical_hit)
-        # Apply damage reduction if unarmed
-        damage_dealt = round(damage_dealt * damage_reduction_multiplier)
+        # Apply damage reduction and ensure it's at least 1 by rounding up
+        damage_dealt = math.ceil(damage_dealt * damage_reduction_multiplier)
 
         battle_context.monster.health = max(battle_context.monster.health - damage_dealt, 0)
 
