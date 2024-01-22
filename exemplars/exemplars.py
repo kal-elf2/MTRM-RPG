@@ -72,13 +72,30 @@ class Exemplar:
         self.stats.armor = total_defense
 
     def update_total_damage(self):
+        from probabilities import weapon_specialty_bonus
         """
         Updates the 'damage' attribute of the player's stats based
-        on the attack_modifier of the equipped weapon.
+        on the attack_modifier of the equipped weapon. Applies a specialty bonus
+        if the equipped weapon matches the player's exemplar.
         """
-        # Check if a weapon is equipped and update the damage value based on its attack_modifier
+        weapon_specialty = {
+            "human": "Sword",
+            "elf": "Bow",
+            "orc": "Spear",
+            "dwarf": "Hammer",
+            "halfling": "Sword"
+        }
+
+        # Check if a weapon is equipped
         if self.inventory.equipped_weapon:
-            self.stats.damage = self.inventory.equipped_weapon.attack_modifier
+            specialty_bonus = 0
+
+            # Check if equipped weapon matches player's exemplar specialty
+            if weapon_specialty.get(self.name) == self.inventory.equipped_weapon.wtype:
+                specialty_bonus = int(self.inventory.equipped_weapon.attack_modifier * weapon_specialty_bonus)
+
+            # Update damage with the potential specialty bonus
+            self.stats.damage = self.inventory.equipped_weapon.attack_modifier + specialty_bonus
         else:
             # If no weapon is equipped, reset the damage to its base value
             self.stats.damage = 0

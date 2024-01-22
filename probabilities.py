@@ -29,6 +29,9 @@ mightstone_multiplier = 2
 # Nero's death buyback item base cost:
 buyback_cost = 5000
 
+# Weapon specialty bonus to damage: (5%)
+weapon_specialty_bonus = 0.05
+
 # Constants
 CRITICAL_HIT_CHANCE = 0.10  # 10% chance of a critical hit
 CRITICAL_HIT_MULTIPLIER = 1.5  # 1.5 times the damage for a critical hit

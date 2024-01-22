@@ -1,6 +1,6 @@
 {
     "807063811852206090": {
-        "exemplar": "orc",
+        "exemplar": "human",
         "stats": {
             "health": 633,
             "max_health": 930,
@@ -8,7 +8,7 @@
             "stamina": 391,
             "max_stamina": 413,
             "attack": 170,
-            "damage": 0,
+            "damage": 26,
             "defense": 166,
             "armor": 146,
             "combat_level": 82,
@@ -343,19 +343,18 @@
                     "attack_modifier": 60,
                     "special_attack": 4,
                     "zone_level": 5
-                },
-                {
-                    "name": "Long Sword",
-                    "description": null,
-                    "value": 100,
-                    "stack": 1,
-                    "wtype": "Sword",
-                    "attack_modifier": 25,
-                    "special_attack": 2,
-                    "zone_level": 5
                 }
             ],
-            "equipped_weapon": null,
+            "equipped_weapon": {
+                "name": "Long Sword",
+                "description": null,
+                "value": 100,
+                "stack": 1,
+                "wtype": "Sword",
+                "attack_modifier": 25,
+                "special_attack": 2,
+                "zone_level": 5
+            },
             "shields": [],
             "equipped_shield": {
                 "name": "Small Shield",
@@ -379,12 +378,6 @@
                     "stack": 1
                 },
                 {
-                    "name": "Loothaven",
-                    "description": "Gives a 25% chance to **double** your monster loot *and* their drop rates while wearing",
-                    "value": 25000,
-                    "stack": 1
-                },
-                {
                     "name": "Mightstone",
                     "description": "Doubles your critical hit chance *and* damage multiplier (**30%** and **3x**) while wearing",
                     "value": 25000,
@@ -394,12 +387,12 @@
                     "name": "Ironhide",
                     "description": "Increases your chance to **evade all attacks** by 15% and **run chance** by **2x** while wearing",
                     "value": 25000,
-                    "stack": 1
+                    "stack": 2
                 }
             ],
             "equipped_charm": {
-                "name": "Ironhide",
-                "description": "Increases your chance to **evade all attacks** by 15% while wearing",
+                "name": "Loothaven",
+                "description": "Gives a 25% chance to **double** your monster loot *and* their drop rates while wearing",
                 "value": 25000,
                 "stack": 1
             },

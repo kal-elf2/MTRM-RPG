@@ -101,8 +101,6 @@ class BackpackView(discord.ui.View, CommonResponses):
         player_id = str(self.ctx.author.id)
         self.inventory = self.player_data[player_id]["inventory"]
 
-        print(f"[DEBUG] Loaded Player Data for {player_id}: {self.player_data[player_id]}")  # Debug statement
-
         if self.original_selection:
             # This will set the dropdown back to the originally selected type
             self.equip_add_item_type_select(f"{action_type}")
@@ -491,12 +489,23 @@ class EquipTypeSelect(discord.ui.Select, CommonResponses):
         return getattr(item, 'name', None)
 
     async def handle_item_equipping(self, interaction, inventory, item_name):
+        from citadel.crafting import Weapon
+        from probabilities import weapon_specialty_bonus
         selected_item = self.find_item_by_name(inventory, item_name)
 
         if not selected_item:
             return
 
         message, _ = await self.equip_item(interaction, inventory, selected_item)  # Unpack the tuple here
+
+        # Define the weapon specialty mapping
+        weapon_specialty = {
+            "human": "Sword",
+            "elf": "Bow",
+            "orc": "Spear",
+            "dwarf": "Hammer",
+            "halfling": "Sword"
+        }
 
         # Determine the content or embed you want to send
         if message:
@@ -505,6 +514,14 @@ class EquipTypeSelect(discord.ui.Select, CommonResponses):
         else:
             content_to_send = None
             embed_to_send = create_item_embed(self.action_type, selected_item, self.view.player.stats.zone_level)
+
+            # Check for specialty bonus and append the message
+            if isinstance(selected_item, Weapon) and selected_item.wtype == weapon_specialty.get(self.view.player.name):
+                # Convert the bonus to an integer percentage value
+                bonus_percentage = int(weapon_specialty_bonus * 100)
+                # Format the message with the integer percentage
+                specialty_bonus_message = f"\n\n**{self.view.player.name.capitalize()} weapon bonus activated!** Your {selected_item.name} grants you an extra *{bonus_percentage}% damage bonus*."
+                embed_to_send.description += specialty_bonus_message
 
         update_and_save_player_data(interaction, inventory, self.view.player_data)
 
@@ -734,7 +751,7 @@ def create_item_embed(action, item, player_zone_level):
         title = f"{action.capitalize()} {item}"
         description = f"You don't have any {item} to {action}."
         thumbnail_url = generate_urls("Icons", "default")  # Set a default image for non-existent items
-        embed_color = color_mapping.get(player_zone_level, 0x3498db)  # Default color based on zone level
+        embed_color = color_mapping.get(player_zone_level, 0x3498db)
     else:  # Item exists, so it has a `name` attribute
         title = f"{action.capitalize()}ped {item.name}"
         description = f"You have {action}ped the {item.name}."
