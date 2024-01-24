@@ -35,6 +35,8 @@ class Exemplar:
             damage_taken=0
 
         )
+        self.dice_stats = DiceStats()
+        self.monster_kills = MonsterKills()
         self.inventory = inventory if inventory else Inventory()
         self.equipped_weapon = None
         self.equipped_armor = None
@@ -112,7 +114,7 @@ class Exemplar:
                             inline=True)
             embed.add_field(name="🗡️ Attack", value=f"**{self.stats.attack}**   (+2)", inline=True)
             embed.add_field(name="🛡️ Defense", value=f"**{self.stats.defense}**   (+2)", inline=True)
-            await interaction.followup.send(embed=embed)
+            await interaction.followup.send(embed=embed, ephemeral=True)
         else:
             increase_value = 1  # Always +1 for these skills
             if skill == "mining":
@@ -298,6 +300,52 @@ class Exemplar:
     def get_potion_stack(self, potion_name):
         potion = next((p for p in self.inventory.potions if p.name == potion_name), None)
         return potion.stack if potion else 0
+
+class DiceStats:
+    def __init__(self, total_games=0, games_won=0, coppers_won=0):
+        self.total_games = total_games
+        self.games_won = games_won
+        self.coppers_won = coppers_won
+
+    def to_dict(self):
+        return {
+            "total_games": self.total_games,
+            "games_won": self.games_won,
+            "coppers_won": self.coppers_won
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(
+            total_games=data.get("total_games", 0),
+            games_won=data.get("games_won", 0),
+            coppers_won=data.get("coppers_won", 0)
+        )
+
+class MonsterKills:
+    def __init__(self):
+        self.monster_kills = {name: 0 for name in [
+            'Rabbit',
+            'Deer',
+            'Buck',
+            'Wolf',
+            'Goblin',
+            'Goblin Hunter',
+            'Mega Brute',
+            'Wisp',
+            'Mother'
+        ]}
+
+    def to_dict(self):
+        return self.monster_kills
+
+    @classmethod
+    def from_dict(cls, data):
+        monster_kills = cls()
+        for name in monster_kills.monster_kills:
+            monster_kills.monster_kills[name] = data.get(name, 0)
+        return monster_kills
+
 
 class PlayerStats:
     def __init__(

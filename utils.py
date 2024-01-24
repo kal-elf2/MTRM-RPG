@@ -41,14 +41,12 @@ def load_player_data(guild_id):
 
     return player_data
 
-
 def save_player_data(guild_id, player_data):
     with open(f'server/player_data_{guild_id}.json', "w") as c:
         json.dump(player_data, c, indent=4, cls=ExemplarJSONEncoder)
 
 async def send_message(ctx: commands.Context, embed):
     return await ctx.send(embed=embed)
-
 
 def update_and_save_player_data(interaction: discord.Interaction, inventory, player_data, player=None):
     player_id = str(interaction.user.id)

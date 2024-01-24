@@ -261,6 +261,9 @@ async def start_battle(ctx, monster, player_data, player, author_id, guild_id, b
             if player.stats.health <= 0:
                 player.stats.health = player.stats.max_health
 
+            # Increment the count of the defeated monster
+            player_data[author_id]["monster_kills"][monster.name] += 1
+
             # Save the player data after common actions
             save_player_data(guild_id, player_data)
 

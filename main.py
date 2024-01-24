@@ -74,6 +74,7 @@ class PickExemplars(Select, CommonResponses):
         }
 
     async def callback(self, interaction: discord.Interaction):
+        from exemplars.exemplars import DiceStats, MonsterKills
 
         # Check if the user who interacted is the same as the one who initiated the view
         if str(interaction.user.id) != self.author_id:
@@ -91,6 +92,7 @@ class PickExemplars(Select, CommonResponses):
 
         # Initialize the character's stats
         exemplar_instance = create_exemplar(self.values[0])
+
         player_data[str(self.author_id)]["stats"] = {
             "zone_level": exemplar_instance.stats.zone_level,
             "health": exemplar_instance.stats.health,
@@ -109,9 +111,9 @@ class PickExemplars(Select, CommonResponses):
             "woodcutting_level": exemplar_instance.stats.woodcutting_level,
             "woodcutting_experience": exemplar_instance.stats.woodcutting_experience,
         }
-
+        player_data[str(self.author_id)]["dice_stats"] = DiceStats().to_dict()
+        player_data[str(self.author_id)]["monster_kills"] = MonsterKills().to_dict()
         player_data[str(self.author_id)]["inventory"] = Inventory().to_dict()
-        # Set 'in_battle' field to False
         player_data[str(self.author_id)]["in_battle"] = False
 
         # Generate embed with exemplar stats
@@ -316,6 +318,9 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
 
             if player.stats.health <= 0:
                 player.stats.health = player.stats.max_health
+
+            # Increment the count of the defeated monster
+            player_data[author_id]["monster_kills"][monster.name] += 1
 
             # Save the player data after common actions
             save_player_data(guild_id, player_data)

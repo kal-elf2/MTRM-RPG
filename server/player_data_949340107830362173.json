@@ -2,26 +2,26 @@
     "807063811852206090": {
         "exemplar": "human",
         "stats": {
-            "health": 633,
-            "max_health": 930,
-            "strength": 421,
-            "stamina": 391,
-            "max_stamina": 413,
-            "attack": 170,
+            "health": 605,
+            "max_health": 910,
+            "strength": 417,
+            "stamina": 386,
+            "max_stamina": 417,
+            "attack": 168,
             "damage": 26,
-            "defense": 166,
+            "defense": 168,
             "armor": 146,
             "combat_level": 82,
-            "combat_experience": 700035,
-            "mining_level": 79,
-            "mining_experience": 549480,
+            "combat_experience": 700097,
+            "mining_level": 82,
+            "mining_experience": 700035,
             "woodcutting_level": 83,
             "woodcutting_experience": 761995,
             "zone_level": 5,
             "damage_taken": 0
         },
         "inventory": {
-            "coppers": 1146066,
+            "coppers": 1146067,
             "items": [
                 {
                     "name": "Charcoal",
@@ -129,7 +129,7 @@
                     "name": "Rabbit Body",
                     "description": "A furry rabbit body, warm to the touch. Can be used for citadel soft armors.",
                     "value": 10,
-                    "stack": 1137
+                    "stack": 1138
                 },
                 {
                     "name": "Rabbit Meat",
@@ -397,6 +397,22 @@
                 "stack": 1
             },
             "materium": 1
+        },
+        "dice_stats": {
+            "total_games": 0,
+            "games_won": 0,
+            "coppers_won": 0
+        },
+        "monster_kills": {
+            "Rabbit": 3,
+            "Deer": 0,
+            "Buck": 1,
+            "Wolf": 1,
+            "Goblin": 0,
+            "Goblin Hunter": 0,
+            "Mega Brute": 0,
+            "Wisp": 0,
+            "Mother": 0
         },
         "in_battle": false
     }

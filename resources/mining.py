@@ -246,7 +246,7 @@ class MineButton(discord.ui.View, CommonResponses):
                         self.player.stats.mining_level - 1)
                 save_player_data(self.guild_id, self.player_data)
 
-                await interaction.followup.send(embed=level_up_message)
+                await interaction.followup.send(embed=level_up_message, ephemeral=True)
 
         else:
             message = f"You failed to mine {self.ore_type} ore."
@@ -333,6 +333,9 @@ class MineButton(discord.ui.View, CommonResponses):
 
                     if self.player.stats.health <= 0:
                         self.player.stats.health = self.player.stats.max_health
+
+                    # Increment the count of the defeated monster
+                    self.player_data[self.author_id]["monster_kills"][monster.name] += 1
 
                     # Save the player data after common actions
                     save_player_data(self.guild_id, self.player_data)
