@@ -302,15 +302,17 @@ class Exemplar:
         return potion.stack if potion else 0
 
 class DiceStats:
-    def __init__(self, total_games=0, games_won=0, coppers_won=0):
+    def __init__(self, total_games=0, games_won=0, games_lost = 0, coppers_won=0):
         self.total_games = total_games
         self.games_won = games_won
+        self.games_lost = games_lost
         self.coppers_won = coppers_won
 
     def to_dict(self):
         return {
             "total_games": self.total_games,
             "games_won": self.games_won,
+            "games_lost": self.games_lost,
             "coppers_won": self.coppers_won
         }
 
@@ -319,6 +321,7 @@ class DiceStats:
         return cls(
             total_games=data.get("total_games", 0),
             games_won=data.get("games_won", 0),
+            games_lost=data.get("games_lost", 0),
             coppers_won=data.get("coppers_won", 0)
         )
 

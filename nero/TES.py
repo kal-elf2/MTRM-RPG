@@ -657,13 +657,6 @@ class DiceButton(discord.ui.Button, CommonResponses):
         # Update button style based on selection state
         self.style = discord.ButtonStyle.red if self.view.selected_dice[self.index] else discord.ButtonStyle.grey
 
-        # # Get the corresponding number (or "X") for the button
-        # number = self.view.player_dice[self.index] if self.view.current_round == 1 else "X"
-        #
-        # # Print whether the dice is selected or deselected, including the corresponding number
-        # action = "selected" if self.view.selected_dice[self.index] else "deselected"
-        # print(f"Button {self.index + 1} ({number}) {action}")
-
         # Update the message with the modified view
         await interaction.response.edit_message(view=self.view)
 
@@ -700,7 +693,7 @@ class RollButton(discord.ui.Button, CommonResponses):
                 self.game_view.order
             )
 
-            # # Logging for debugging
+            # # Logging for debugging/Dice View
             # print(f"Round 1 - Player's dice: {self.game_view.player_dice}")
             # print(f"Round 1 - Initial Nero's dice: {self.game_view.nero_dice}")
             # print(f"Round 1 - Nero's reroll decisions: {self.game_view.nero_reroll_decisions}")
@@ -710,12 +703,13 @@ class RollButton(discord.ui.Button, CommonResponses):
             self.game_view.reset_and_reroll()
             self.game_view.nero_reroll()
 
-            # # Logging for debugging
+            # # Logging for debugging/Dice View
             # print(f"Round 2 - Player's dice: {self.game_view.player_dice}")
             # print(f"Round 2 - Nero's dice: {self.game_view.nero_dice}")
 
         # Determine the game result if it's the end of round 2
         if self.game_view.current_round == 2:
+            from exemplars.exemplars import DiceStats
             player_result = self.game_view.classify_roll(self.game_view.player_dice)
             nero_result = self.game_view.classify_roll(self.game_view.nero_dice)
             game_outcome = self.game_view.compare_results(player_result, nero_result)
@@ -724,26 +718,54 @@ class RollButton(discord.ui.Button, CommonResponses):
             nero_roll_name = self.game_view.get_descriptive_roll_name(nero_result)
             coppers_emoji = get_emoji('coppers_emoji')  # Fetch the emoji
 
+            # Determine the game result and update dice stats
+            dice_stats = DiceStats.from_dict(self.player_data[str(interaction.user.id)]["dice_stats"])
+
+            # Always increment total_games as a game was played
+            dice_stats.total_games += 1
+
             # Customize the outcome message
             if game_outcome == "tie":
                 outcome_message = "It's a draw. No coppers exchanged."
             elif game_outcome == "win":
+                # Player wins
                 win_reaction = GameView.get_result_reaction(player_result, True)
                 potential_winnings = "{:,}".format(
                     self.game_view.calculate_winnings(player_result, self.game_view.bet_amount))
                 self.game_view.player.inventory.coppers += int(potential_winnings.replace(',', ''))
+
+                # Increment games_won and update coppers_won
+                dice_stats.games_won += 1
+                winnings = int(potential_winnings.replace(',', ''))
+                dice_stats.coppers_won += winnings
+
+                # Outcome message for player win
                 if nero_roll_name == "Nothing":
                     outcome_message = f"{win_reaction} Your {player_roll_name} wins. You win {coppers_emoji}{potential_winnings}."
                 else:
                     outcome_message = f"{win_reaction} Your {player_roll_name} beats Captain Nero's {nero_roll_name}. You win {coppers_emoji}{potential_winnings}."
-            else:  # Nero wins
+            else:
+                # Nero wins
                 loss_reaction = GameView.get_result_reaction(nero_result, False)
                 loss = "{:,}".format(self.game_view.calculate_winnings(nero_result, self.game_view.bet_amount))
                 self.game_view.player.inventory.coppers -= int(loss.replace(',', ''))
+
+                # Increment games_lost and update coppers_won for losses
+                dice_stats.games_lost += 1
+                loss_amount = int(loss.replace(',', ''))
+                dice_stats.coppers_won -= loss_amount
+
+                # Outcome message for Nero win
                 if player_roll_name == "Nothing":
                     outcome_message = f"{loss_reaction} Captain Nero's {nero_roll_name} wins. You lose {coppers_emoji}{loss}."
                 else:
                     outcome_message = f"{loss_reaction} Captain Nero's {nero_roll_name} beats your {player_roll_name}. You lose {coppers_emoji}{loss}."
+
+            # Update the player_data with the new dice stats
+            self.player_data[str(interaction.user.id)]["dice_stats"] = dice_stats.to_dict()
+
+            # Save the updated player data
+            save_player_data(interaction.guild.id, self.player_data)
 
             # Update the embed with the game outcome
             self.game_view.embed.clear_fields()  # Clear previous fields if any
@@ -774,8 +796,8 @@ class RollButton(discord.ui.Button, CommonResponses):
                                                                          file=self.game_view.discord_file,
                                                                          view=self.game_view)
 
-        # Save the updated player data
-        save_player_data(interaction.guild.id, self.player_data)
+        # # Save the updated player data
+        # save_player_data(interaction.guild.id, self.player_data)
 
         # If player has insufficient coppers, send an ephemeral message
         if insufficient_coppers:

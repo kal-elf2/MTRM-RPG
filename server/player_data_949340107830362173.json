@@ -2,26 +2,26 @@
     "807063811852206090": {
         "exemplar": "human",
         "stats": {
-            "health": 605,
+            "health": 686,
             "max_health": 910,
             "strength": 417,
-            "stamina": 386,
+            "stamina": 234,
             "max_stamina": 417,
             "attack": 168,
-            "damage": 26,
+            "damage": 63,
             "defense": 168,
             "armor": 146,
             "combat_level": 82,
-            "combat_experience": 700097,
+            "combat_experience": 700512,
             "mining_level": 82,
             "mining_experience": 700035,
             "woodcutting_level": 83,
             "woodcutting_experience": 761995,
             "zone_level": 5,
-            "damage_taken": 0
+            "damage_taken": 71
         },
         "inventory": {
-            "coppers": 1146067,
+            "coppers": 428036,
             "items": [
                 {
                     "name": "Charcoal",
@@ -45,7 +45,7 @@
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 856
+                    "stack": 876
                 },
                 {
                     "name": "Pole",
@@ -129,7 +129,7 @@
                     "name": "Rabbit Body",
                     "description": "A furry rabbit body, warm to the touch. Can be used for citadel soft armors.",
                     "value": 10,
-                    "stack": 1138
+                    "stack": 1140
                 },
                 {
                     "name": "Rabbit Meat",
@@ -165,7 +165,7 @@
                     "name": "Goblin Crown",
                     "description": "A powerful relic obtained from the Goblin Mother. Used to create powerful Charms.",
                     "value": 5000,
-                    "stack": 116
+                    "stack": 117
                 },
                 {
                     "name": "Leather",
@@ -263,7 +263,7 @@
                     "effect_value": 250,
                     "value": 20,
                     "description": "Restores 250 stamina",
-                    "stack": 88
+                    "stack": 90
                 },
                 {
                     "name": "Super Health Potion",
@@ -271,7 +271,7 @@
                     "effect_value": 250,
                     "value": 20,
                     "description": "Restores 250 health",
-                    "stack": 77
+                    "stack": 75
                 }
             ],
             "limit": 49,
@@ -338,21 +338,31 @@
                     "name": "Voltaic Sword",
                     "description": null,
                     "value": 190,
-                    "stack": 3,
+                    "stack": 2,
                     "wtype": "Sword",
                     "attack_modifier": 60,
                     "special_attack": 4,
                     "zone_level": 5
+                },
+                {
+                    "name": "Long Sword",
+                    "description": null,
+                    "value": 100,
+                    "stack": 1,
+                    "wtype": "Sword",
+                    "attack_modifier": 25,
+                    "special_attack": 2,
+                    "zone_level": 5
                 }
             ],
             "equipped_weapon": {
-                "name": "Long Sword",
+                "name": "Voltaic Sword",
                 "description": null,
-                "value": 100,
+                "value": 190,
                 "stack": 1,
                 "wtype": "Sword",
-                "attack_modifier": 25,
-                "special_attack": 2,
+                "attack_modifier": 60,
+                "special_attack": 4,
                 "zone_level": 5
             },
             "shields": [],
@@ -399,12 +409,13 @@
             "materium": 1
         },
         "dice_stats": {
-            "total_games": 0,
-            "games_won": 0,
-            "coppers_won": 0
+            "total_games": 123,
+            "games_won": 48,
+            "games_lost": 2,
+            "coppers_won": -718799
         },
         "monster_kills": {
-            "Rabbit": 3,
+            "Rabbit": 4,
             "Deer": 0,
             "Buck": 1,
             "Wolf": 1,
@@ -412,7 +423,7 @@
             "Goblin Hunter": 0,
             "Mega Brute": 0,
             "Wisp": 0,
-            "Mother": 0
+            "Mother": 1
         },
         "in_battle": false
     }
