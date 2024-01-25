@@ -120,15 +120,15 @@ class Exemplar:
             if skill == "mining":
                 embed.add_field(name="⛏️ Mining Level", value=f"**{new_level}**   (+{increase_value})", inline=True)
                 embed.add_field(name=f"{get_emoji('strength_emoji')} Strength",
-                                value=f"**{self.stats.strength + 1}**   (+{increase_value})",
+                                value=f"**{self.stats.strength}**   (+{increase_value})",
                                 inline=True)
             elif skill == "woodcutting":
                 embed.add_field(name="🪓 Woodcutting Level", value=f"**{new_level}**   (+{increase_value})", inline=True)
-                embed.add_field(name="🗡️ Attack", value=f"**{self.stats.attack + 1}**   (+{increase_value})", inline=True)
+                embed.add_field(name="🗡️ Attack", value=f"**{self.stats.attack}**   (+{increase_value})", inline=True)
 
         return embed
 
-    async def gain_experience(self, experience_points, experience_type, interaction=None):
+    async def gain_experience(self, experience_points, experience_type, interaction=None, player=None):
         skill_exp_key = f"{experience_type}_experience"
         skill_level_key = f"{experience_type}_level"
         current_exp = getattr(self.stats, skill_exp_key)
@@ -137,7 +137,7 @@ class Exemplar:
 
         # Call the set_level method after gaining experience
         previous_level = getattr(self.stats, skill_level_key)
-        updated_level, max_level = self.set_level(experience_type, updated_exp)
+        updated_level, max_level = self.set_level(experience_type, updated_exp, player_object=player)
 
         # Send a level up message if needed
         if updated_level > previous_level:
@@ -154,7 +154,7 @@ class Exemplar:
 
         return None  # return None if there's no level-up
 
-    def set_level(self, skill, updated_exp, player=None):
+    def set_level(self, skill, updated_exp, player=None, player_object=None):
         new_level = 1  # Initialize to the lowest level
         for level, level_data in sorted(LEVEL_DATA.items(), key=lambda x: int(x[0])):
             if updated_exp >= level_data["total_experience"]:
@@ -170,7 +170,15 @@ class Exemplar:
 
         if skill == "combat":
             self.stats.combat_level = new_level
-            self.set_combat_stats(new_level, player)
+            self.set_combat_stats(new_combat_level=new_level, player=player, woodcutting_level=player_object.stats.woodcutting_level, mining_level=player_object.stats.mining_level)
+
+        elif skill == "woodcutting":
+            self.stats.woodcutting_level = new_level
+            self.set_combat_stats(new_combat_level=self.stats.combat_level, woodcutting_level=new_level)
+
+        elif skill == "mining":
+            self.stats.mining_level = new_level
+            self.set_combat_stats(new_combat_level=self.stats.combat_level, mining_level=new_level)
 
         return new_level, max_level  # Also return if it's a max level or not
 
@@ -178,7 +186,7 @@ class Exemplar:
     def max_health(self):
         return self.stats.max_health
 
-    def set_combat_stats(self, new_combat_level, player=None, woodcutting_level=None, mining_level=None):
+    def set_combat_stats(self, new_combat_level=None, player=None, woodcutting_level=None, mining_level=None):
 
         if player is None:
             player_name = self.name
@@ -221,6 +229,14 @@ class Exemplar:
             attack_update = 6 + (2 * (new_combat_level - 1))
             defense_update = 7 + (2 * (new_combat_level - 1))
 
+        if woodcutting_level:
+            # Update attack based on woodcutting level
+            attack_update += (woodcutting_level - 1)
+
+        if mining_level:
+            # Update strength based on mining level
+            strength_update += (mining_level - 1)
+
         if player is None:
             # Update the stats
             self.stats.update_max_health(max_health_update)
@@ -238,13 +254,6 @@ class Exemplar:
             player.stats.update_attack(attack_update)
             player.stats.update_defense(defense_update)
 
-        if woodcutting_level:
-            # Update attack based on woodcutting level
-            attack_update += (woodcutting_level[0] - 1)
-
-        if mining_level:
-            # Update strength based on mining level
-            strength_update += (mining_level[0] - 1)
 
     def can_equip_item(self, item):
         level_requirement = item.stats['level_requirement']

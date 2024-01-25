@@ -198,6 +198,7 @@ class HarvestButton(discord.ui.View, CommonResponses):
                 "woodcutting_experience"] = self.player.stats.woodcutting_experience
             self.player_data[self.author_id]["stats"]["woodcutting_level"] = self.player.stats.woodcutting_level
             self.player_data[self.author_id]["stats"]["stamina"] = self.player.stats.stamina
+            self.player_data[self.author_id]["stats"]["attack"] = self.player.stats.attack
             save_player_data(self.guild_id, self.player_data)
 
             # Clear previous fields and add new ones
@@ -246,10 +247,6 @@ class HarvestButton(discord.ui.View, CommonResponses):
             await interaction.message.edit(embed=self.embed, view=self)
 
             if level_up_message:
-                self.player_data[self.author_id]["stats"]["attack"] = self.player.stats.attack + (
-                        self.player.stats.woodcutting_level - 1)
-                save_player_data(self.guild_id, self.player_data)
-
                 await interaction.followup.send(embed=level_up_message, ephemeral=True)
 
         else:

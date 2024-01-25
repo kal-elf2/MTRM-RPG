@@ -308,7 +308,7 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
 
             experience_gained = monster.experience_reward
             loothaven_effect = battle_outcome[5]  # Get the Loothaven effect status
-            await player.gain_experience(experience_gained, 'combat', ctx)
+            await player.gain_experience(experience_gained, 'combat', ctx, player)
 
             player_data[author_id]["stats"]["stamina"] = player.stats.stamina
             player_data[author_id]["stats"]["combat_level"] = player.stats.combat_level

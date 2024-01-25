@@ -194,6 +194,7 @@ class MineButton(discord.ui.View, CommonResponses):
                 "mining_experience"] = self.player.stats.mining_experience
             self.player_data[self.author_id]["stats"]["mining_level"] = self.player.stats.mining_level
             self.player_data[self.author_id]["stats"]["stamina"] = self.player.stats.stamina
+            self.player_data[self.author_id]["stats"]["strength"] = self.player.stats.strength
             save_player_data(self.guild_id, self.player_data)
 
             # Clear previous fields and add new ones
@@ -221,7 +222,7 @@ class MineButton(discord.ui.View, CommonResponses):
                 self.embed.add_field(name=f"XP to Level {next_level}",
                                      value=f"📊  {current_experience} / {next_level_experience_needed}", inline=True)
 
-            # Set footer to show Woodcutting level and Probability
+            # Set footer to show Mining level and Probability
             footer = footer_text_for_mining_embed(interaction, self.player, current_mining_level, zone_level,
                                                        self.ore_type)
             self.embed.set_footer(text=footer)
@@ -242,16 +243,12 @@ class MineButton(discord.ui.View, CommonResponses):
             await interaction.message.edit(embed=self.embed, view=self)
 
             if level_up_message:
-                self.player_data[self.author_id]["stats"]["strength"] = self.player.stats.strength + (
-                        self.player.stats.mining_level - 1)
-                save_player_data(self.guild_id, self.player_data)
-
                 await interaction.followup.send(embed=level_up_message, ephemeral=True)
 
         else:
             message = f"You failed to mine {self.ore_type} ore."
 
-            # Calculate current woodcutting level and experience for the next level
+            # Calculate current mining level and experience for the next level
             current_mining_level = self.player.stats.mining_level
 
             # Update the mine messages list
@@ -267,7 +264,7 @@ class MineButton(discord.ui.View, CommonResponses):
             updated_description = "\n".join(self.mine_messages)
             self.embed.description = updated_description
 
-            # Set footer to show Woodcutting level and Probability
+            # Set footer to show Mining level and Probability
             footer = footer_text_for_mining_embed(interaction, self.player, current_mining_level, zone_level,
                                                   self.ore_type)
             self.embed.set_footer(text=footer)
@@ -500,7 +497,7 @@ class MiningCog(commands.Cog):
         # Add the initial stamina and ore inventory here
         stamina_str = f"{get_emoji('stamina_emoji')}  {player.stats.stamina}/{player.stats.max_stamina}"
 
-        # Use the get_ore_count method to get the wood count
+        # Use the get_ore_count method to get the ore count
         ore_count = player.inventory.get_item_quantity(ore_type)
         ore_str = str(ore_count)
 
@@ -521,7 +518,7 @@ class MiningCog(commands.Cog):
             embed.add_field(name=f"XP to Level {next_level}",
                             value=f"📊  {current_experience} / {next_level_experience_needed}", inline=True)
 
-        # Set footer to show Woodcutting level and Probability
+        # Set footer to show Mining level and Probability
         footer = footer_text_for_mining_embed(ctx, player, current_mining_level, player.stats.zone_level, ore_type)
         embed.set_footer(text=footer)
 

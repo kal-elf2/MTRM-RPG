@@ -341,8 +341,12 @@ async def apply_penalty(player_data, author_id, interaction):
 
         stats[f"{original_skill_name}_level"] = new_level  # Update the level in the player's stats
 
+        # Extract only the level (first element of the tuple) for woodcutting and mining
+        woodcutting_level = levels_decreased.get('woodcutting', (None,))[0]
+        mining_level = levels_decreased.get('mining', (None,))[0]
+
     # Call the function to update combat stats once, after all skills have been processed
-    player.set_combat_stats(new_combat_level, player, levels_decreased.get('woodcutting'), levels_decreased.get('mining'))
+    player.set_combat_stats(new_combat_level, player, woodcutting_level, mining_level)
 
     player_data[author_id]["stats"]["health"] = player.stats.health
     player_data[author_id]["stats"]["max_health"] = player.stats.max_health
@@ -351,19 +355,6 @@ async def apply_penalty(player_data, author_id, interaction):
     player_data[author_id]["stats"]["max_stamina"] = player.stats.max_stamina
     player_data[author_id]["stats"]["attack"] = player.stats.attack
     player_data[author_id]["stats"]["defense"] = player.stats.defense
-
-    # Update attack based on woodcutting level
-    new_woodcutting_level = player_data[author_id]["stats"]["woodcutting_level"]
-    player.stats.attack += (
-                new_woodcutting_level - 1)  # Add 1 attack point for each woodcutting level, starting from level 2
-    # Update strength based on mining level
-    new_mining_level = player_data[author_id]["stats"]["mining_level"]
-    player.stats.strength += (
-            new_mining_level - 1)  # Add 1 strength point for each mining level, starting from level 2
-
-    # Save updated attack/strength/defense skills
-    player_data[author_id]["stats"]["attack"] = player.stats.attack
-    player_data[author_id]["stats"]["strength"] = player.stats.strength
 
     return levels_decreased
 
