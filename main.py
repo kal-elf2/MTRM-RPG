@@ -473,7 +473,6 @@ async def cemetery(ctx):
         # Send the message with the appropriate embed and view
         await ctx.respond(embed=cemetery_embed, view=view)
 
-
 @bot.slash_command()
 async def menu(ctx):
     embed = Embed(title="Main Menu", description="Here are the available commands:", color=0x00ff00)

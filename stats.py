@@ -2,7 +2,6 @@ import json
 import math
 import discord
 from discord.ext import commands
-from discord.commands import Option
 from utils import load_player_data, save_player_data, CommonResponses
 from exemplars.exemplars import Exemplar
 from emojis import get_emoji
@@ -45,83 +44,167 @@ def create_progress_bar(current_exp, current_level, level_data):
     progress_percentage = round(progress * 100)
     return filled_symbols + empty_symbols, progress_percentage
 
+class StatsView(discord.ui.View):
+    def __init__(self, author_id, zone_level):
+        super().__init__()
+        self.add_item(StatsDropdown(author_id, zone_level))
+
+# Colors for each zone
+color_mapping = {
+    1: 0x969696,
+    2: 0x15ce00,
+    3: 0x0096f1,
+    4: 0x9900ff,
+    5: 0xfebd0d
+}
+
+class StatsDropdown(discord.ui.Select, CommonResponses):
+    def __init__(self, author_id, zone_level):
+        self.author_id = author_id
+        self.zone_level = zone_level
+        options = [
+            discord.SelectOption(label="Level Progress"),
+            discord.SelectOption(label="Three Eyed Snake"),
+            discord.SelectOption(label="Monster Kills")
+        ]
+        super().__init__(placeholder="Choose a category...", min_values=1, max_values=1, options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        from exemplars.exemplars import DiceStats, MonsterKills
+
+        # Authorization check
+        if str(interaction.user.id) != self.author_id:
+            await self.nero_unauthorized_user_response(interaction)
+            return
+
+        author_id = str(interaction.user.id)
+        player_data = load_player_data(interaction.guild.id)
+
+        if self.values[0] == "Level Progress":
+            # Send combined level progress information
+            embed = self.create_level_progress_embed(player_data[author_id]["stats"], self.zone_level)
+            await interaction.response.send_message(embed=embed, ephemeral=False)
+
+        elif self.values[0] == "Three Eyed Snake":
+            # Send Three Eyed Snake stats
+            dice_stats = DiceStats.from_dict(player_data[author_id]["dice_stats"])
+            embed = self.create_three_eyed_snake_embed(dice_stats, self.zone_level)
+            await interaction.response.send_message(embed=embed, ephemeral=False)
+
+        elif self.values[0] == "Monster Kills":
+            # Send Monster Kills stats
+            monster_kills = MonsterKills.from_dict(player_data[author_id]["monster_kills"])
+            embed = self.create_monster_kills_embed(monster_kills, self.zone_level)
+            await interaction.response.send_message(embed=embed, ephemeral=False)
+
+    @staticmethod
+    def create_level_progress_embed(stats, zone_level):
+        level_data = load_level_data()
+        embed_color = color_mapping.get(zone_level, 0x969696)  # Default color if zone level is not found
+        embed = discord.Embed(title="📈 Level Progress 📈", color=embed_color)
+
+        # Define emojis for each skill
+        skill_emojis = {
+            "combat": "⚔️",
+            "mining": "⛏️",
+            "woodcutting": "🪓"
+        }
+
+        # Loop through each skill and add its progress to the embed
+        for skill in ['combat', 'mining', 'woodcutting']:
+            emoji = skill_emojis.get(skill, "")
+            skill_capitalized = skill.capitalize()
+            level = stats[f'{skill}_level']
+            current_exp = stats[f'{skill}_experience']
+
+            next_level = int(level) + 1
+            exp_needed = experience_needed_to_next_level(level, current_exp, level_data)
+            progress_bar, progress_percentage = create_progress_bar(current_exp, level, level_data)
+
+            embed.add_field(name=f"{emoji} {skill_capitalized} Level ", value=str(level), inline=True)
+            embed.add_field(name=f"XP to Level {next_level}", value=str(exp_needed), inline=True)
+            embed.add_field(name=f"Progress: **{progress_percentage}%**\n{progress_bar}", value="\u200B", inline=False)
+
+
+        return embed
+
+    @staticmethod
+    def create_three_eyed_snake_embed(dice_stats, zone_level):
+        stats_info = (f"#️⃣ Total Games: {dice_stats.total_games}\n"
+                      f"🏆 Games Won: {dice_stats.games_won}\n"
+                      f"💸 Games Lost: {dice_stats.games_lost}\n"
+                      f"{get_emoji('coppers_emoji')} Coppers Won: {dice_stats.coppers_won:,}")
+
+        embed_color = color_mapping.get(zone_level, 0x969696)
+        embed = discord.Embed(title="🎲 Three Eyed Snake Stats 🎲", color=embed_color)
+        embed.add_field(name=stats_info, value="\u200B", inline=False)
+        embed.set_thumbnail(url=generate_urls("nero", "dice"))
+
+        return embed
+
+    @staticmethod
+    def create_monster_kills_embed(monster_kills, zone_level):
+        kills_info = "\n".join([f"{monster}: {count}" for monster, count in monster_kills.monster_kills.items()])
+
+        # Find the monster with the highest kill count
+        most_killed_monster = max(monster_kills.monster_kills.items(), key=lambda x: x[1])[0]
+
+        embed_color = color_mapping.get(zone_level, 0x969696)
+        embed = discord.Embed(
+            title=f"{get_emoji('goblin_crown_emoji')} Monster Kills {get_emoji('goblin_crown_emoji')}",
+            color=embed_color)
+        embed.add_field(name=kills_info, value="\u200B", inline=False)
+        embed.set_thumbnail(url=generate_urls("monsters", most_killed_monster))
+
+        return embed
 
 class StatsCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
     @commands.slash_command(description="View your stats")
-    async def stats(self, ctx, progress: Option(str, "Choose a subgroup to view details",
-                                                choices=['Combat Level', 'Mining', 'Woodcutting'],
-                                                required=False,
-                                                default=None)):
+    async def stats(self, ctx):
         guild_id = ctx.guild.id
         author_id = str(ctx.author.id)
 
         player_data = load_player_data(guild_id)
         player = player_data[author_id]["stats"]
+        zone_level = player_data[author_id]["stats"]["zone_level"]
         exemplar = player_data[author_id]['exemplar']
         exemplar_capitalized = exemplar.capitalize()
 
-        level_data = load_level_data()
-
-        embed = discord.Embed(color=discord.Color.blue())
-
-        # Obtain the exemplar image and set it to the embed
+        embed_color = color_mapping.get(zone_level, 0x969696)
+        embed = discord.Embed(color=embed_color)
         embed.set_thumbnail(url=generate_urls("exemplars", exemplar_capitalized))
 
-        # Displaying weapon specialty in the footer
         weapon_specialty = {
-            "human": "Sword",
-            "elf": "Bow",
-            "orc": "Spear",
-            "dwarf": "Hammer",
-            "halfling": "Sword"
-        }
+                        "human": "Sword",
+                        "elf": "Bow",
+                        "orc": "Spear",
+                        "dwarf": "Hammer",
+                        "halfling": "Sword"
+                    }
 
-        if progress is None:
-            all_stats = f"""**Exemplar**: {str(player_data[author_id]['exemplar']).capitalize()}\n
-            ⚔️ **Combat Level**: {str(player['combat_level'])}
-            {get_emoji('heart_emoji')} **Health**: {str(player['health'])}
-            {get_emoji('strength_emoji')} **Strength**: {str(player['strength'])}
-            {get_emoji('stamina_emoji')}️ **Stamina**: {str(player['stamina'])}
-            🗡️ **Attack**: {str(player['attack'])}
-            🛡️ **Defense**: {str(player['defense'])}
-            ⛏️ **Mining Level**: {str(player['mining_level'])}
-            🪓 **Woodcutting Level**: {str(player['woodcutting_level'])}"""
+        # Add overall stats to the embed
+        all_stats = f"""**Exemplar**: {str(player_data[author_id]['exemplar']).capitalize()}\n
+                    ⚔️ **Combat Level**: {str(player['combat_level'])}
+                    {get_emoji('heart_emoji')} **Health**: {str(player['health'])}
+                    {get_emoji('strength_emoji')} **Strength**: {str(player['strength'])}
+                    {get_emoji('stamina_emoji')}️ **Stamina**: {str(player['stamina'])}
+                    🗡️ **Attack**: {str(player['attack'])}
+                    🛡️ **Defense**: {str(player['defense'])}
+                    ⛏️ **Mining Level**: {str(player['mining_level'])}
+                    🪓 **Woodcutting Level**: {str(player['woodcutting_level'])}"""
+        embed.add_field(name="Overall Stats", value=all_stats, inline=False)
+        specialty = weapon_specialty.get(exemplar)
+        embed.set_footer(text=f"Weapon Bonus: {specialty}")
 
-            embed.add_field(name="Overall Stats", value=all_stats, inline=False)
-            specialty = weapon_specialty.get(exemplar)
-            embed.set_footer(text=f"Weapon bonus: {specialty}")
-            await ctx.respond(content=f"{ctx.author.mention}'s Overall Stats", embed=embed)
-        else:
-            if progress == 'Combat Level':
-                display = '⚔️ Combat Level ⚔️'
-                level = player['combat_level']
-                current_exp = player['combat_experience']
-            elif progress == 'Mining':
-                display = '⛏️ Mining Level ⛏️'
-                level = player['mining_level']
-                current_exp = player['mining_experience']
-            else: #woodcutting
-                display = '🪓 Woodcutting Level 🪓'
-                level = player['woodcutting_level']
-                current_exp = player['woodcutting_experience']
+        # Send the embed with overall stats
+        await ctx.respond(content=f"{ctx.author.mention}'s Overall Stats", embed=embed)
 
-            next_level = int(level) + 1
-            exp_needed = experience_needed_to_next_level(level, current_exp, level_data)
-            progress_bar, progress_percentage = create_progress_bar(current_exp, level, level_data)
-
-            embed.add_field(name=f"Current Level", value=level, inline=True)
-
-            if str(next_level) in level_data:
-                embed.add_field(name=f"XP to Level {next_level}", value=exp_needed, inline=True)
-                embed.add_field(name=f"Progress: **{progress_percentage}%**", value=progress_bar, inline=True)
-            else:
-                embed.add_field(name="XP to Level Up", value="Max Level Reached", inline=True)
-                embed.add_field(name=f"Progress: **N/A**", value="Max Level Reached", inline=True)
-
-            await ctx.respond(content=f"{ctx.author.mention}'s **{display}**", embed=embed)
+        # Send the dropdown view for additional stats
+        view = StatsView(author_id=str(ctx.author.id), zone_level=zone_level)
+        await ctx.send("Select a category to view more details:", view=view)
 
 class ResurrectOptions(discord.ui.View, CommonResponses):
     def __init__(self, interaction, player_data, author_id, include_nero=True):

@@ -176,8 +176,8 @@ class BreadRow(discord.ui.View, CommonResponses):
             three_eyed_snake_recipe = Recipe(TavernSpecialItem(), None)  # Create a special recipe for Three Eyed Snake
             self.crafting_select.options.append(discord.SelectOption(
                 label=three_eyed_snake_recipe.result.name,
-                value='three_eyed_snake',  # Set a suitable value
-                emoji='🎲'  # Dice emoji
+                value='three_eyed_snake',
+                emoji='🎲'
             ))
         self.add_item(self.crafting_select)
 
