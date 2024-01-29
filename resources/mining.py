@@ -119,6 +119,138 @@ class MineButton(discord.ui.View, CommonResponses):
         self.author_id = author_id
         self.embed = embed
 
+        # Initialize stamina potion buttons
+        self.stamina_button = self.create_potion_button("Stamina Potion")
+        self.super_stamina_button = self.create_potion_button("Super Stamina Potion")
+
+        # Add buttons to the view
+        self.add_item(self.stamina_button)
+        self.add_item(self.super_stamina_button)
+
+    def create_potion_button(self, potion_name):
+        stack_count = self.player.get_potion_stack(potion_name)
+        emoji_str = get_emoji(potion_name)
+        emoji_id = int(emoji_str.split(':')[2].strip('>'))
+        emoji = discord.PartialEmoji(name=potion_name, id=emoji_id)
+        button_label = f" {stack_count}" if stack_count else ""
+        button = discord.ui.Button(
+            label=button_label,
+            custom_id=potion_name.lower().replace(" ", "_"),
+            style=discord.ButtonStyle.blurple,
+            emoji=emoji,
+            disabled=self.is_potion_disabled(potion_name)
+        )
+        button.callback = getattr(self, f"{potion_name.lower().replace(' ', '_')}_callback")
+        return button
+
+    def is_potion_disabled(self, potion_name):
+        potion = next((item for item in self.player.inventory.potions if item.name == potion_name), None)
+        return potion is None or potion.stack <= 0
+
+    async def stamina_potion_callback(self, interaction):
+        # Check authorization
+        if str(interaction.user.id) != self.author_id:
+            await self.nero_unauthorized_user_response(interaction)
+            return
+
+        await self.use_potion("Stamina Potion", interaction, self.stamina_button)
+
+    async def super_stamina_potion_callback(self, interaction):
+        # Check authorization
+        if str(interaction.user.id) != self.author_id:
+            await self.nero_unauthorized_user_response(interaction)
+            return
+
+        await self.use_potion("Super Stamina Potion", interaction, self.super_stamina_button)
+
+    async def use_potion(self, potion_name, interaction, button):
+        # Defer the interaction first
+        await interaction.response.defer()
+
+        # Refresh the player object from player_data
+        self.refresh_player_object()
+
+        # Use the potion and check if it was used successfully
+        potion_used = self.use_potion_logic(self.player, potion_name)
+
+        if potion_used:
+            player_id = str(interaction.user.id)
+
+            # Update player_data with the new stamina value
+            self.player_data[player_id]["stats"]["stamina"] = self.player.stats.stamina
+
+            # Decrement the potion stack in the player's inventory
+            for potion in self.player_data[player_id]["inventory"].potions:
+                if potion.name == potion_name:
+                    potion.stack -= 1
+                    break
+
+            # Save any changes to player data
+            save_player_data(self.guild_id, self.player_data)
+
+            # Update the button label to show new stack count
+            self.update_potion_button_label(button, potion_name)
+
+            # Check if the potion is now disabled
+            button.disabled = self.is_potion_disabled(potion_name)
+
+            potion = next((p for p in self.player.inventory.potions if p.name == potion_name), None)
+            emoji_str = get_emoji(potion_name)
+            potion_message = f"{emoji_str} **{potion_name} restores {potion.effect_value} {potion.effect_stat}**"
+            self.update_mine_messages(potion_message)
+
+            # Update the embed with the new stamina value
+            self.update_embed_stamina()
+
+            # Edit the message with the updated embed and view
+            await interaction.message.edit(embed=self.embed, view=self)
+
+    def refresh_player_object(self):
+        # Refresh the player object from the player data
+        player_data = load_player_data(self.guild_id)
+        # Reinitialize the player object
+        self.player = Exemplar(player_data[self.author_id]["exemplar"],
+                               player_data[self.author_id]["stats"],
+                               player_data[self.author_id]["inventory"])
+
+    @staticmethod
+    def use_potion_logic(player, potion_name):
+        potion = next((p for p in player.inventory.potions if p.name == potion_name), None)
+        if potion and potion.stack > 0:
+            # Apply the potion effect
+            player.stats.stamina = min(player.stats.stamina + potion.effect_value, player.stats.max_stamina)
+
+            # Decrement the potion stack
+            potion.stack -= 1
+            return True
+        return False
+
+    def update_potion_button_label(self, button, potion_name):
+        stack_count = self.player.get_potion_stack(potion_name)
+        button.label = f"{stack_count}" if stack_count else ""
+
+    def update_embed_stamina(self):
+        # Find and update the embed field for stamina
+        for field in self.embed.fields:
+            if field.name == "Stamina":
+                field.value = f"{get_emoji('stamina_emoji')} {self.player.stats.stamina}/{self.player.stats.max_stamina}"
+                break
+        else:
+            # Add the stamina field if it's not found
+            self.embed.add_field(name="Stamina",
+                                 value=f"{get_emoji('stamina_emoji')} {self.player.stats.stamina}/{self.player.stats.max_stamina}",
+                                 inline=True)
+
+    def update_mine_messages(self, new_message):
+        # Add the new message to the mine messages list
+        if len(self.mine_messages) >= 5:
+            self.mine_messages.pop(0)
+        self.mine_messages.append(new_message)
+
+        # Update the embed's description
+        updated_description = "\n".join(self.mine_messages)
+        self.embed.description = updated_description
+
     @discord.ui.button(label="Mine", custom_id="mine", style=discord.ButtonStyle.blurple)
     async def mine(self, button, interaction):
 
@@ -202,7 +334,7 @@ class MineButton(discord.ui.View, CommonResponses):
             stamina_str = f"{get_emoji('stamina_emoji')}  {self.player.stats.stamina}/{self.player.stats.max_stamina}"
             # Get the new ore count
             ore_count = self.player.inventory.get_item_quantity(self.ore_type)
-            ore_str = str(ore_count)
+            ore_str = "{:,}".format(ore_count)
 
             # Calculate current mining level and experience for the next level
             current_mining_level = self.player.stats.mining_level
@@ -215,12 +347,15 @@ class MineButton(discord.ui.View, CommonResponses):
 
             # Check if the player is at max level and add the XP field last
             if next_level >= 100:
-                self.embed.add_field(name="Max Level", value=f"📊  {current_experience}", inline=True)
+                formatted_current_experience = "{:,}".format(current_experience)
+                self.embed.add_field(name="Max Level", value=f"📊  {formatted_current_experience}", inline=True)
             else:
-                next_level_experience_needed = LEVEL_DATA.get(str(current_mining_level), {}).get(
-                    "total_experience")
+                next_level_experience_needed = LEVEL_DATA.get(str(current_mining_level), {}).get("total_experience")
+                xp_remaining = next_level_experience_needed - current_experience
+                formatted_xp_remaining = "{:,}".format(xp_remaining)
                 self.embed.add_field(name=f"XP to Level {next_level}",
-                                     value=f"📊  {current_experience} / {next_level_experience_needed}", inline=True)
+                                     value=f"📊 {formatted_xp_remaining}",
+                                     inline=True)
 
             # Set footer to show Mining level and Probability
             footer = footer_text_for_mining_embed(interaction, self.player, current_mining_level, zone_level,
@@ -321,7 +456,8 @@ class MineButton(discord.ui.View, CommonResponses):
 
                     experience_gained = monster.experience_reward
                     loothaven_effect = battle_outcome[5]  # Get the Loothaven effect status
-                    await self.player.gain_experience(experience_gained, 'combat', interaction)
+                    await self.player.gain_experience(experience_gained, 'combat', interaction, self.player)
+
                     self.player_data[self.author_id]["stats"]["stamina"] = self.player.stats.stamina
                     self.player_data[self.author_id]["stats"]["combat_level"] = self.player.stats.combat_level
                     self.player_data[self.author_id]["stats"]["combat_experience"] = self.player.stats.combat_experience
@@ -383,14 +519,6 @@ class MineButton(discord.ui.View, CommonResponses):
             # Clear the in_battle flag after the battle ends
             self.player_data[self.author_id]["in_battle"] = False
             save_player_data(self.guild_id, self.player_data)
-
-    @discord.ui.button(custom_id="stamina", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("Stamina Potion")}')
-    async def stamina_potion(self, button, interaction):
-        pass
-
-    @discord.ui.button(custom_id="super_stamina", style=discord.ButtonStyle.blurple, emoji=f'{get_emoji("Super Stamina Potion")}')
-    async def super_stamina_potion(self, button, interaction):
-        pass
 
 class MiningCog(commands.Cog):
     def __init__(self, bot):
@@ -499,7 +627,7 @@ class MiningCog(commands.Cog):
 
         # Use the get_ore_count method to get the ore count
         ore_count = player.inventory.get_item_quantity(ore_type)
-        ore_str = str(ore_count)
+        ore_str = "{:,}".format(ore_count)
 
         # Add updated fields to embed
         embed.add_field(name="Stamina", value=stamina_str, inline=True)
@@ -512,11 +640,15 @@ class MiningCog(commands.Cog):
 
         # Check if the player is at max level and add the XP field last
         if next_level >= 100:
-            embed.add_field(name="Max Level", value=f"📊  {current_experience}", inline=True)
+            formatted_current_experience = "{:,}".format(current_experience)
+            embed.add_field(name="Max Level", value=f"📊  {formatted_current_experience}", inline=True)
         else:
             next_level_experience_needed = LEVEL_DATA.get(str(current_mining_level), {}).get("total_experience")
+            xp_remaining = next_level_experience_needed - current_experience
+            formatted_xp_remaining = "{:,}".format(xp_remaining)
             embed.add_field(name=f"XP to Level {next_level}",
-                            value=f"📊  {current_experience} / {next_level_experience_needed}", inline=True)
+                            value=f"📊 {formatted_xp_remaining}",
+                            inline=True)
 
         # Set footer to show Mining level and Probability
         footer = footer_text_for_mining_embed(ctx, player, current_mining_level, player.stats.zone_level, ore_type)
@@ -526,6 +658,7 @@ class MiningCog(commands.Cog):
         view = MineButton(ctx, player, ore_type, player_data, guild_id, author_id, embed)
 
         await ctx.respond(embed=embed, view=view)
+
 
 def setup(bot):
     bot.add_cog(MiningCog(bot))

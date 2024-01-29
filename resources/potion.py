@@ -50,30 +50,30 @@ POTION_LIST = [
     Potion(
         name='Health Potion',
         effect_stat='health',
-        effect_value=10,
+        effect_value=50,
         value=10,
-        description="A basic potion that restores 10 health points.",
+        description="Restores 50 health",
     ),
     Potion(
         name='Stamina Potion',
         effect_stat='stamina',
-        effect_value=10,
+        effect_value=50,
         value=10,
-        description="A potion that restores 10 stamina points.",
+        description="Restores 50 stamina",
     ),
     Potion(
         name='Super Health Potion',
         effect_stat='health',
-        effect_value=20,
+        effect_value=250,
         value=20,
-        description="A potent potion that restores 20 health points.",
+        description="Restores 250 health",
     ),
     Potion(
         name='Super Stamina Potion',
         effect_stat='stamina',
         effect_value=20,
         value=20,
-        description="A potent potion that restores 20 stamina points.",
+        description="Restores 250 stamina",
     ),
 ]
 

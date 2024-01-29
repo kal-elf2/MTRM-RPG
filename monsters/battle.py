@@ -41,7 +41,6 @@ class LootOptions(discord.ui.View, CommonResponses):
         self.add_item(repeat_button)
 
     async def repeat_battle(self, interaction):
-        print('yep')
         # Check if the user who interacted is the same as the one who initiated the view
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)

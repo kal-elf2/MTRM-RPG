@@ -667,13 +667,13 @@ def create_crafting_stations(interaction, station_name=None):
                             value=25000)
 
     # Potions
-    stamina_potion = Potion("Stamina Potion", effect_stat="stamina", effect_value=10, value=10,
+    stamina_potion = Potion("Stamina Potion", effect_stat="stamina", effect_value=50, value=10,
                             description="Restores 50 stamina")
-    health_potion = Potion("Health Potion", effect_stat="health", effect_value=10, value=10,
+    health_potion = Potion("Health Potion", effect_stat="health", effect_value=50, value=10,
                            description="Restores 50 health")
-    super_stamina_potion = Potion("Super Stamina Potion", effect_stat="stamina", effect_value=20, value=20,
+    super_stamina_potion = Potion("Super Stamina Potion", effect_stat="stamina", effect_value=250, value=20,
                                   description="Restores 250 stamina")
-    super_health_potion = Potion("Super Health Potion", effect_stat="health", effect_value=20, value=20,
+    super_health_potion = Potion("Super Health Potion", effect_stat="health", effect_value=250, value=20,
                                  description="Restores 250 health")
 
     # Forge Crafting Station and Recipes
