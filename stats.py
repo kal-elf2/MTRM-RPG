@@ -135,10 +135,16 @@ class StatsDropdown(discord.ui.Select, CommonResponses):
 
     @staticmethod
     def create_three_eyed_snake_embed(dice_stats, zone_level):
+        # Check if coppers won is negative and adjust the label and value accordingly
+        if dice_stats.coppers_won < 0:
+            coppers_label = "Coppers Lost"
+        else:
+            coppers_label = "Coppers Won"
+
         stats_info = (f"#️⃣ Total Games: {dice_stats.total_games}\n"
                       f"🏆 Games Won: {dice_stats.games_won}\n"
                       f"💸 Games Lost: {dice_stats.games_lost}\n"
-                      f"{get_emoji('coppers_emoji')} Coppers Won: {dice_stats.coppers_won:,}")
+                      f"{get_emoji('coppers_emoji')} {coppers_label}: {dice_stats.coppers_won:,}")
 
         embed_color = color_mapping.get(zone_level, 0x969696)
         embed = discord.Embed(title="🎲 Three Eyed Snake Stats 🎲", color=embed_color)
