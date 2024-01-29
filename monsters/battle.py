@@ -792,21 +792,25 @@ def footer_text_for_embed(ctx, monster=None, player=None):
     current_combat_level = player_data[author_id]["stats"]["combat_level"]
     next_combat_level = current_combat_level + 1
     current_combat_experience = player_data[author_id]["stats"]["combat_experience"]
+    formatted_current_combat_experience = "{:,}".format(current_combat_experience)
 
     # Generate base footer text based on combat level
     if next_combat_level >= 100:
-        footer_text = f"⚔️ Combat Level: {current_combat_level} | 📊 Max Level! {current_combat_experience} XP"
+        footer_text = f"⚔️ Combat Level: {current_combat_level} | 📊 Max Level! {formatted_current_combat_experience} XP"
     else:
         next_level_experience_needed = LEVEL_DATA.get(str(current_combat_level), {}).get("total_experience")
-        footer_text = f"⚔️ Combat: {current_combat_level} ~~ 📊 XP to {next_combat_level}: {next_level_experience_needed - current_combat_experience}"
+        experience_to_next_level = next_level_experience_needed - current_combat_experience
+        formatted_experience_to_next_level = "{:,}".format(experience_to_next_level)
+        footer_text = f"⚔️ Combat: {current_combat_level} ~~ 📊 XP to {next_combat_level}: {formatted_experience_to_next_level}"
 
     # Calculate and append the run chance if the monster is not defeated
-    if not monster.is_defeated():
+    if monster and not monster.is_defeated():
         run_chance = calculate_run_chance(player, monster.health, monster.max_health)
         run_chance_percent = round(run_chance * 100)  # Convert to percentage
         footer_text += f" ~~ 💨 Run {run_chance_percent}%"
 
     return footer_text
+
 
 
 

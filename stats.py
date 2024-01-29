@@ -116,38 +116,41 @@ class StatsDropdown(discord.ui.Select, CommonResponses):
             skill_capitalized = skill.capitalize()
             level = stats[f'{skill}_level']
             current_exp = stats[f'{skill}_experience']
+            formatted_current_exp = "{:,}".format(current_exp)
 
-            if level == 99:  # Check if player is at max level
-                embed.add_field(name=f"{emoji} {skill_capitalized} {emoji}", value=f'Level {str(level)}', inline=True)
+            # Display skill level
+            embed.add_field(name=f"{emoji} {skill_capitalized}", value=f'Level {str(level)}', inline=True)
+
+            # Display experience to next level or max level status
+            if level == 99:
+                embed.add_field(name="Total Experience", value=formatted_current_exp, inline=True)
                 embed.add_field(name="Status", value="📊 Max Level!", inline=True)
-                embed.add_field(name="Total Experience", value=str(current_exp), inline=False)
             else:
                 next_level = int(level) + 1
                 exp_needed = experience_needed_to_next_level(level, current_exp, level_data)
-                progress_bar, progress_percentage = create_progress_bar(current_exp, level, level_data)
+                formatted_exp_needed = "{:,}".format(exp_needed)
+                embed.add_field(name=f"🔼 XP to Lvl {next_level}", value=formatted_exp_needed, inline=True)
+                embed.add_field(name="📊 Total XP", value=formatted_current_exp, inline=True)
 
-                embed.add_field(name=f"{emoji} {skill_capitalized} {emoji}", value=f'Level {str(level)}', inline=True)
-                embed.add_field(name=f"XP to Level {next_level}", value=str(exp_needed), inline=True)
-                embed.add_field(name=f"Progress: **{progress_percentage}%**\n{progress_bar}", value="\u200B",
-                                inline=False)
+            # Add progress bar for each skill
+            progress_bar, progress_percentage = create_progress_bar(current_exp, level, level_data)
+            embed.add_field(name=f"Progress: **{progress_percentage}%**", value=f"{progress_bar}\n\u200B", inline=False)
 
         return embed
 
     @staticmethod
     def create_three_eyed_snake_embed(dice_stats, zone_level):
         # Check if coppers won is negative and adjust the label and value accordingly
-        if dice_stats.coppers_won < 0:
-            coppers_label = "Coppers Lost"
-        else:
-            coppers_label = "Coppers Won"
+        coppers_label = "Coppers Lost" if dice_stats.coppers_won < 0 else "Coppers Won"
+        formatted_coppers_won = "{:,}".format(abs(dice_stats.coppers_won))
 
-        stats_info = (f"#️⃣ Total Games: {dice_stats.total_games}\n"
-                      f"🏆 Games Won: {dice_stats.games_won}\n"
-                      f"💸 Games Lost: {dice_stats.games_lost}\n"
-                      f"{get_emoji('coppers_emoji')} {coppers_label}: {dice_stats.coppers_won:,}")
+        stats_info = (f"#️⃣ Total Games: {dice_stats.total_games:,}\n"
+                      f"🏆 Games Won: {dice_stats.games_won:,}\n"
+                      f"💸 Games Lost: {dice_stats.games_lost:,}\n"
+                      f"{get_emoji('coppers_emoji')} {coppers_label}: {formatted_coppers_won}")
 
         embed_color = color_mapping.get(zone_level, 0x969696)
-        embed = discord.Embed(title="🎲 Three Eyed Snake Stats 🎲", color=embed_color)
+        embed = discord.Embed(title="🎲 __Three Eyed Snake Stats__ 🎲", color=embed_color)
         embed.add_field(name=stats_info, value="\u200B", inline=False)
         embed.set_thumbnail(url=generate_urls("nero", "dice"))
 
@@ -155,19 +158,22 @@ class StatsDropdown(discord.ui.Select, CommonResponses):
 
     @staticmethod
     def create_monster_kills_embed(monster_kills, zone_level):
-        kills_info = "\n".join([f"{monster}: {count}" for monster, count in monster_kills.monster_kills.items()])
+        # Format each kill count with commas
+        formatted_kills_info = "\n".join(
+            [f"{monster}: {count:,}" for monster, count in monster_kills.monster_kills.items()])
 
         # Find the monster with the highest kill count
         most_killed_monster = max(monster_kills.monster_kills.items(), key=lambda x: x[1])[0]
 
         embed_color = color_mapping.get(zone_level, 0x969696)
         embed = discord.Embed(
-            title=f"{get_emoji('goblin_crown_emoji')} Monster Kills {get_emoji('goblin_crown_emoji')}",
+            title=f"👾 __Monster Kills__ 👾",
             color=embed_color)
-        embed.add_field(name=kills_info, value="\u200B", inline=False)
+        embed.add_field(name=formatted_kills_info, value="\u200B", inline=False)
         embed.set_thumbnail(url=generate_urls("monsters", most_killed_monster))
 
         return embed
+
 
 class StatsCog(commands.Cog):
     def __init__(self, bot):
@@ -211,7 +217,7 @@ class StatsCog(commands.Cog):
                         {get_emoji('Materium')} **Materium**: {inventory.materium:,}
                         {get_emoji('coppers_emoji')} **Coppers**: {inventory.coppers:,}"""
 
-        embed.add_field(name="__Overall Stats__", value=all_stats, inline=False)
+        embed.add_field(name="📊  __Overall Stats__  📊", value=all_stats, inline=False)
         specialty = weapon_specialty.get(exemplar)
         embed.set_footer(text=f"Weapon Bonus: {specialty}")
 
