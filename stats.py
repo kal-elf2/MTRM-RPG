@@ -228,6 +228,184 @@ class StatsCog(commands.Cog):
         view = StatsView(author_id=str(ctx.author.id), zone_level=zone_level)
         await ctx.send("Select a category to view more details:", view=view)
 
+    @commands.slash_command(description="View leaderboards")
+    async def leaderboard(self, ctx):
+        guild_id = ctx.guild.id
+        author_id = str(ctx.author.id)
+
+        # Embed with pirate-themed message
+        embed = discord.Embed(
+            title="🏴‍☠️ Survey the Seas of Rivalry! 🏴‍☠️",
+            description=f"Avast, {ctx.author.mention}! Ye seek to know where ye stand 'mongst the ranks, aye? Peruse the leaderboards and see if ye be a legendary captain or just another scallywag on the high seas.",
+            color=discord.Color.dark_gold()
+        )
+        embed.set_thumbnail(url=generate_urls("nero", "gun"))
+
+        # Create the view with the dropdown and reset button
+        view = LeaderboardView(author_id, guild_id)
+
+        # Send the embed with the view
+        await ctx.respond(embed=embed, view=view)
+
+class LeaderboardView(discord.ui.View):
+    def __init__(self, author_id, guild_id):
+        super().__init__()
+        self.add_item(LeaderboardDropdown(author_id, guild_id))
+
+class LeaderboardDropdown(discord.ui.Select, CommonResponses):
+    def __init__(self, author_id, guild_id):
+        self.author_id = author_id
+        self.guild_id = guild_id
+
+        options = [
+            discord.SelectOption(label="📊 Skills", description="View skills leaderboard", value="skills"),
+            discord.SelectOption(label="👾 Monster Kills", description="View monster kills leaderboard",
+                                 value="monster_kills"),
+            discord.SelectOption(label="🎲 Three-Eyed-Snake", description="View Three-Eyed-Snake game leaderboard",
+                                 value="three_eyed_snake"),
+            discord.SelectOption(label="💰 Rich List", description="View the rich list leaderboard", value="rich_list")
+        ]
+        super().__init__(placeholder="Choose a category...", min_values=1, max_values=1, options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        if str(interaction.user.id) != self.author_id:
+            await self.nero_unauthorized_user_response(interaction)
+            return
+
+        self.view.clear_items()
+        selected_value = self.values[0]
+        if selected_value == "skills":
+            self.view.add_item(SkillsDropdown(self.author_id, self.guild_id))
+        elif selected_value == "monster_kills":
+            self.view.add_item(MonsterKillsDropdown(self.author_id, self.guild_id))
+        elif selected_value == "three_eyed_snake":
+            self.view.add_item(ThreeEyedSnakeDropdown(self.author_id, self.guild_id))
+        elif selected_value == "rich_list":
+            self.view.add_item(RichListDropdown(self.author_id, self.guild_id))
+
+        # Add the ResetButton back to the view
+        self.view.add_item(ResetButton(self.author_id, self.guild_id))
+
+        await interaction.response.edit_message(view=self.view)
+
+class SkillsDropdown(discord.ui.Select, CommonResponses):
+    def __init__(self, author_id, guild_id):
+        self.author_id = author_id
+        self.guild_id = guild_id
+        options = [
+            discord.SelectOption(label="⚔️ Combat", description="View combat skill leaderboard", value="combat"),
+            discord.SelectOption(label="🪓 Woodcutting", description="View woodcutting skill leaderboard", value="woodcutting"),
+            discord.SelectOption(label="⛏️ Mining", description="View mining skill leaderboard", value="mining")
+        ]
+        super().__init__(placeholder="Choose a skill...", min_values=1, max_values=1, options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        if str(interaction.user.id) != self.author_id:
+            await self.nero_unauthorized_user_response(interaction)
+            return
+
+        # Load player data
+        player_data = load_player_data(self.guild_id)
+
+        # Sort players based on selected skill's experience
+        skill = self.values[0]
+        sorted_players = sorted(player_data.items(), key=lambda x: x[1]['stats'][f'{skill}_experience'], reverse=True)
+
+        # Check if there are players with data
+        if not sorted_players or all(data['stats'][f'{skill}_experience'] == 0 for _, data in sorted_players):
+            await interaction.response.send_message("No leaders yet in this category.", ephemeral=True)
+            return
+
+        # Create embed to display leaderboard
+        skill_emoji = "⚔️" if skill == "combat" else "🪓" if skill == "woodcutting" else "⛏️"
+        embed = discord.Embed(title=f"{skill_emoji} __Top 5 {skill.capitalize()} Leaders__ {skill_emoji}",
+                              color=discord.Color.blue())
+
+        medals = ["🥇", "🥈", "🥉"]
+        for index, (player_id, data) in enumerate(sorted_players[:5]):
+            if data['stats'][f'{skill}_experience'] == 0:
+                continue
+            player = interaction.guild.get_member(int(player_id))
+            player_name = player.display_name
+            level = data['stats'][f'{skill}_level']
+            experience = "{:,}".format(data['stats'][f'{skill}_experience'])
+            rank = medals[index] if index < 3 else f"{index + 1}th"
+            embed.add_field(name=f"{rank} - {player_name}", value=f"Level: {level}  |  XP: {experience}",
+                            inline=False)
+            if index == 0:  # Set thumbnail for the first-place player
+                embed.set_thumbnail(url=player.avatar.url if player.avatar else None)
+
+        # Send the embed as an ephemeral message
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+class MonsterKillsDropdown(discord.ui.Select, CommonResponses):
+    def __init__(self, author_id, guild_id):
+        self.author_id = author_id
+        self.guild_id = guild_id
+        # You can dynamically generate these options based on the monsters in your game
+        options = [
+            discord.SelectOption(label="Goblin", description="View Goblin kills leaderboard", value="goblin"),
+            discord.SelectOption(label="Dragon", description="View Dragon kills leaderboard", value="dragon"),
+            # Add more options for other monsters
+        ]
+        super().__init__(placeholder="Choose a monster...", min_values=1, max_values=1, options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        if str(interaction.user.id) != self.author_id:
+            await self.nero_unauthorized_user_response(interaction)
+            return
+        # Logic to display the leaderboard for the selected monster
+        # ...
+
+class ThreeEyedSnakeDropdown(discord.ui.Select, CommonResponses):
+    def __init__(self, author_id, guild_id):
+        self.author_id = author_id
+        self.guild_id = guild_id
+        options = [
+            discord.SelectOption(label="#️⃣ Total Games", description="View Total Games leaderboard", value="total_games"),
+            discord.SelectOption(label="🏆 Games Won", description="View Games Won leaderboard", value="games_won"),
+            discord.SelectOption(label=f"{get_emoji('coppers_emoji')} Coppers Won", description="View Coppers Won leaderboard", value="coppers_won")
+        ]
+        super().__init__(placeholder="Choose a category...", min_values=1, max_values=1, options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        if str(interaction.user.id) != self.author_id:
+            await self.nero_unauthorized_user_response(interaction)
+            return
+        # Logic to display the leaderboard for the selected Three-Eyed-Snake category
+        # ...
+
+class RichListDropdown(discord.ui.Select, CommonResponses):
+    def __init__(self, author_id, guild_id):
+        self.author_id = author_id
+        self.guild_id = guild_id
+        options = [
+            discord.SelectOption(label=f"{get_emoji('copppers_emoji')} Coppers", description="View Coppers rich list", value="coppers"),
+            discord.SelectOption(label=f"{get_emoji('Materium')} Materium", description="View Materium rich list", value="materium")
+        ]
+        super().__init__(placeholder="Choose a category...", min_values=1, max_values=1, options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        if str(interaction.user.id) != self.author_id:
+            await self.nero_unauthorized_user_response(interaction)
+            return
+        # Logic to display the rich list for the selected category
+        # ...
+
+class ResetButton(discord.ui.Button, CommonResponses):
+    def __init__(self, author_id, guild_id):
+        self.author_id = author_id
+        self.guild_id = guild_id
+        super().__init__(label="Reset", style=discord.ButtonStyle.secondary)
+
+    async def callback(self, interaction: discord.Interaction):
+        if str(interaction.user.id) != self.author_id:
+            await self.nero_unauthorized_user_response(interaction)
+            return
+
+        self.view.clear_items()
+        self.view.add_item(LeaderboardDropdown(self.author_id, self.guild_id))
+        await interaction.response.edit_message(view=self.view)
+
 class ResurrectOptions(discord.ui.View, CommonResponses):
     def __init__(self, interaction, player_data, author_id, include_nero=True):
         super().__init__(timeout=None)

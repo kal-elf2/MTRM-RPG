@@ -16,7 +16,7 @@ from emojis import get_emoji
 from images.urls import generate_urls
 
 bot = commands.Bot(command_prefix="/", intents=discord.Intents.all())
-# Add the cog to your bot
+# Add the cogs to your bot
 bot.load_extension("stats")
 bot.load_extension("resources.woodcutting")
 bot.load_extension("resources.mining")
@@ -45,7 +45,6 @@ async def setchannel(ctx):
         guild_data[guild_id]["channel_id"] = ctx.channel.id
 
     await ctx.respond(f'{ctx.channel.name} Channel set. Please use "newgame" command to start a new adventure! .')
-
 
 # Exemplars class
 class PickExemplars(Select, CommonResponses):
