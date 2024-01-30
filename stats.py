@@ -337,6 +337,7 @@ class SkillsDropdown(discord.ui.Select, CommonResponses):
 
         # Send the embed as an ephemeral message
         await interaction.response.send_message(embed=embed, ephemeral=True)
+
 class MonsterKillsDropdown(discord.ui.Select, CommonResponses):
     def __init__(self, author_id, guild_id):
         self.author_id = author_id
@@ -393,7 +394,6 @@ class MonsterKillsDropdown(discord.ui.Select, CommonResponses):
 
         # Send the embed as an ephemeral message
         await interaction.response.send_message(embed=embed, ephemeral=True)
-
 
 class ThreeEyedSnakeDropdown(discord.ui.Select, CommonResponses):
     def __init__(self, author_id, guild_id):
@@ -458,14 +458,13 @@ class ThreeEyedSnakeDropdown(discord.ui.Select, CommonResponses):
         # Send the embed as an ephemeral message
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
-
 class RichListDropdown(discord.ui.Select, CommonResponses):
     def __init__(self, author_id, guild_id):
         self.author_id = author_id
         self.guild_id = guild_id
         options = [
-            discord.SelectOption(label=f"{get_emoji('copppers_emoji')} Coppers", description="View Coppers rich list", value="coppers"),
-            discord.SelectOption(label=f"{get_emoji('Materium')} Materium", description="View Materium rich list", value="materium")
+            discord.SelectOption(label="Coppers", value="coppers", emoji=get_emoji('coppers_emoji')),
+            discord.SelectOption(label="Materium", value="materium", emoji=get_emoji('Materium'))
         ]
         super().__init__(placeholder="Choose a category...", min_values=1, max_values=1, options=options)
 
@@ -473,8 +472,48 @@ class RichListDropdown(discord.ui.Select, CommonResponses):
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
-        # Logic to display the rich list for the selected category
-        # ...
+
+        # Load player data
+        player_data = load_player_data(self.guild_id)
+
+        # Initialize player objects and sort based on the selected category
+        sorted_players = []
+        for player_id, data in player_data.items():
+            player = Exemplar(data["exemplar"], data["stats"], data["inventory"])
+            sorted_players.append((player_id, player))
+
+        # Select the category
+        category = self.values[0]
+
+        sorted_players.sort(key=lambda x: getattr(x[1].inventory, category, 0), reverse=True)
+
+        # Filter out players with 0 value and limit to top 5
+        sorted_players = [(pid, p) for pid, p in sorted_players if getattr(p.inventory, category, 0) > 0][:5]
+
+        # Check if there are players with data
+        if not sorted_players:
+            await interaction.response.send_message(f"No leaders yet for {category.capitalize()}.", ephemeral=True)
+            return
+
+        # Create embed to display leaderboard
+        emoji = get_emoji('coppers_emoji') if category == 'coppers' else get_emoji('Materium')
+        title = f"{emoji} __Top 5 {category.capitalize()} Leaders__ {emoji}"
+        embed = discord.Embed(title=title, color=discord.Color.orange())
+
+        medals = ["🥇", "🥈", "🥉"]
+        for index, (player_id, player) in enumerate(sorted_players):
+            guild_member = interaction.guild.get_member(int(player_id))
+            player_name = guild_member.display_name if guild_member else "Unknown Player"
+            stat_count = "{:,}".format(getattr(player.inventory, category))
+            rank = medals[index] if index < 3 else f"{index + 1}th"
+            embed.add_field(name=f"{rank} - {player_name}", value=f"{emoji} {stat_count}", inline=False)
+
+            if index == 0 and guild_member and guild_member.avatar:
+                embed.set_thumbnail(url=guild_member.avatar.url)
+
+        # Send the embed as an ephemeral message
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
 
 class ResetButton(discord.ui.Button, CommonResponses):
     def __init__(self, author_id, guild_id):
