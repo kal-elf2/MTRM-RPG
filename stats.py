@@ -293,9 +293,9 @@ class SkillsDropdown(discord.ui.Select, CommonResponses):
         self.author_id = author_id
         self.guild_id = guild_id
         options = [
-            discord.SelectOption(label="⚔️ Combat", description="View combat skill leaderboard", value="combat"),
-            discord.SelectOption(label="🪓 Woodcutting", description="View woodcutting skill leaderboard", value="woodcutting"),
-            discord.SelectOption(label="⛏️ Mining", description="View mining skill leaderboard", value="mining")
+            discord.SelectOption(label="⚔️ Combat", value="combat"),
+            discord.SelectOption(label="🪓 Woodcutting", value="woodcutting"),
+            discord.SelectOption(label="⛏️ Mining", value="mining")
         ]
         super().__init__(placeholder="Choose a skill...", min_values=1, max_values=1, options=options)
 
@@ -341,11 +341,18 @@ class MonsterKillsDropdown(discord.ui.Select, CommonResponses):
     def __init__(self, author_id, guild_id):
         self.author_id = author_id
         self.guild_id = guild_id
-        # You can dynamically generate these options based on the monsters in your game
+
+        # Dynamically generate options based on the monsters in your game
         options = [
-            discord.SelectOption(label="Goblin", description="View Goblin kills leaderboard", value="goblin"),
-            discord.SelectOption(label="Dragon", description="View Dragon kills leaderboard", value="dragon"),
-            # Add more options for other monsters
+            discord.SelectOption(label="Rabbit", value="Rabbit"),
+            discord.SelectOption(label="Deer", value="Deer"),
+            discord.SelectOption(label="Buck", value="Buck"),
+            discord.SelectOption(label="Wolf", value="Wolf"),
+            discord.SelectOption(label="Goblin", value="Goblin"),
+            discord.SelectOption(label="Goblin Hunter", value="Goblin Hunter"),
+            discord.SelectOption(label="Mega Brute", value="Mega Brute"),
+            discord.SelectOption(label="Wisp", value="Wisp"),
+            discord.SelectOption(label="Mother", value="Mother")
         ]
         super().__init__(placeholder="Choose a monster...", min_values=1, max_values=1, options=options)
 
@@ -353,17 +360,49 @@ class MonsterKillsDropdown(discord.ui.Select, CommonResponses):
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
-        # Logic to display the leaderboard for the selected monster
-        # ...
+
+        # Load player data
+        player_data = load_player_data(self.guild_id)
+
+        # Select the monster
+        monster = self.values[0]
+
+        # Sort players based on the selected monster's kill count
+        sorted_players = sorted(player_data.items(), key=lambda x: x[1]['monster_kills'].get(monster, 0), reverse=True)
+
+        # Check if there are players with data
+        if not sorted_players or all(data['monster_kills'].get(monster, 0) == 0 for _, data in sorted_players):
+            await interaction.response.send_message(f"No leaders yet for {monster.capitalize()}.", ephemeral=True)
+            return
+
+        # Create embed to display leaderboard
+        embed = discord.Embed(title=f"Top 5 {monster.capitalize()} Hunters", color=discord.Color.green())
+
+        medals = ["🥇", "🥈", "🥉"]
+        # Iterate through the top 5 players
+        for index, (player_id, data) in enumerate(sorted_players[:5]):
+            if data['monster_kills'].get(monster, 0) == 0:
+                continue
+            player = interaction.guild.get_member(int(player_id))
+            player_name = player.display_name if player else "Unknown Player"
+            kill_count = "{:,}".format(data['monster_kills'][monster])  # Format with commas
+            rank = medals[index] if index < 3 else f"{index + 1}th"
+            embed.add_field(name=f"{rank} - {player_name}", value=f"Kills: {kill_count}", inline=False)
+            if index == 0:  # Set thumbnail for the first-place player
+                embed.set_thumbnail(url=player.avatar.url if player and player.avatar else None)
+
+        # Send the embed as an ephemeral message
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
 
 class ThreeEyedSnakeDropdown(discord.ui.Select, CommonResponses):
     def __init__(self, author_id, guild_id):
         self.author_id = author_id
         self.guild_id = guild_id
         options = [
-            discord.SelectOption(label="#️⃣ Total Games", description="View Total Games leaderboard", value="total_games"),
-            discord.SelectOption(label="🏆 Games Won", description="View Games Won leaderboard", value="games_won"),
-            discord.SelectOption(label=f"{get_emoji('coppers_emoji')} Coppers Won", description="View Coppers Won leaderboard", value="coppers_won")
+            discord.SelectOption(label="Games Played", value="total_games", emoji="🎲"),
+            discord.SelectOption(label="Games Won", value="games_won", emoji="🏆"),
+            discord.SelectOption(label="Coppers Won", value="coppers_won", emoji=get_emoji('coppers_emoji'))
         ]
         super().__init__(placeholder="Choose a category...", min_values=1, max_values=1, options=options)
 
@@ -371,8 +410,54 @@ class ThreeEyedSnakeDropdown(discord.ui.Select, CommonResponses):
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
-        # Logic to display the leaderboard for the selected Three-Eyed-Snake category
-        # ...
+
+        # Load player data
+        player_data = load_player_data(self.guild_id)
+
+        # Select the category
+        category = self.values[0]
+
+        # Sort players based on the selected category
+        sorted_players = sorted(player_data.items(), key=lambda x: x[1]['dice_stats'].get(category, 0), reverse=True)
+
+        # Filter out negative coppers if category is 'coppers_won'
+        if category == 'coppers_won':
+            sorted_players = [(id, data) for id, data in sorted_players if data['dice_stats'].get(category, 0) > 0]
+
+        # Check if there are players with data
+        if not sorted_players:
+            await interaction.response.send_message(f"No leaders yet for {category.replace('_', ' ').capitalize()}.",
+                                                    ephemeral=True)
+            return
+
+        # Create embed to display leaderboard
+        category_title = category.replace('_', ' ').title()
+        stat_label = "Games Played" if category == "total_games" else category_title
+        emoji = "🎲" if category == "total_games" else "🏆" if category == "games_won" else get_emoji('coppers_emoji')
+        title = f"{emoji} __Top 5 {category_title} Leaders__ {emoji}"
+        embed = discord.Embed(title=title, color=discord.Color.orange())
+
+        medals = ["🥇", "🥈", "🥉"]
+        for index, (player_id, data) in enumerate(sorted_players[:5]):
+            player = interaction.guild.get_member(int(player_id))
+            player_name = player.display_name if player else "Unknown Player"
+            stat_count = "{:,}".format(data['dice_stats'][category])
+            rank = medals[index] if index < 3 else f"{index + 1}th"
+
+            # Format the label differently for 'Coppers Won' category
+            if category == 'coppers_won':
+                label = f"{emoji} {stat_count}"
+            else:
+                label = f"{stat_label}: {stat_count}"
+
+            embed.add_field(name=f"{rank} - {player_name}", value=label, inline=False)
+
+            if index == 0 and player and player.avatar:
+                embed.set_thumbnail(url=player.avatar.url)
+
+        # Send the embed as an ephemeral message
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
 
 class RichListDropdown(discord.ui.Select, CommonResponses):
     def __init__(self, author_id, guild_id):
