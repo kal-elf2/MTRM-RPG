@@ -7,8 +7,8 @@ mtrm_drop_percent = 0.01
 herb_drop_percent = 0.25
 # Original value: 0.10 (10% chance)
 potion_drop_percent = 0.10
-# Original value: 0.0002 (.1% chance)
-spork_chance = 0.001
+# Original value: 0.001 (.1% chance)
+spork_chance = 0.99
 # Original value: 0.10 (10% chance)
 attack_percent = 0.10
 

@@ -229,7 +229,7 @@ class StatsCog(commands.Cog):
         await ctx.send("Select a category to view more details:", view=view)
 
     @commands.slash_command(description="View leaderboards")
-    async def leaderboard(self, ctx):
+    async def leaders(self, ctx):
         guild_id = ctx.guild.id
         author_id = str(ctx.author.id)
 

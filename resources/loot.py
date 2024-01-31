@@ -103,7 +103,7 @@ def generate_zone_loot(player, zone_level, monster_drop=None, name=None):
         coppers_dropped *= 2  # Double the coppers if Loothaven effect is active
     loot.append(('coppers', coppers_dropped))
     coppers_message = "Coppers" if coppers_dropped > 1 else "Copper"
-    loot_messages.append(f"{get_emoji('coppers_emoji')} You found {coppers_dropped} {coppers_message}!")
+    loot_messages.append(f"{get_emoji('coppers_emoji')} You found **{coppers_dropped} {coppers_message}**!")
 
     # Herb drops
     if random.random() < herb_drop_chance:
@@ -124,7 +124,7 @@ def generate_zone_loot(player, zone_level, monster_drop=None, name=None):
         herb_count = 2 if loothaven_effect else 1
         for _ in range(herb_count):
             loot.append(('herb', herb_dropped))
-        loot_messages.append(f"{get_emoji(herb_dropped.name)} You found {herb_count} {herb_dropped.name}!")
+        loot_messages.append(f"{get_emoji(herb_dropped.name)} You found **{herb_count} {herb_dropped.name}**!")
 
     # Materium drops
     if random.random() < materium_drop_chance:
@@ -132,7 +132,7 @@ def generate_zone_loot(player, zone_level, monster_drop=None, name=None):
         materium_count = 2 if loothaven_effect else 1
         for _ in range(materium_count):
             loot.append(('materium', materium_dropped))
-        loot_messages.append(f"{get_emoji('Materium')} You found {materium_count} Materium!")
+        loot_messages.append(f"{get_emoji('Materium')} You found **{materium_count} Materium**!")
 
     # Potion drops
     if random.random() < potion_drop_chance:
@@ -154,7 +154,7 @@ def generate_zone_loot(player, zone_level, monster_drop=None, name=None):
         for _ in range(potion_count):
             loot.append(('potion', potion_dropped))
         potion_name = potion_dropped.name + "s" if potion_count > 1 else potion_dropped.name
-        loot_messages.append(f"{get_emoji(potion_dropped.name)} You found {potion_count} {potion_name}!")
+        loot_messages.append(f"{get_emoji(potion_dropped.name)} You found **{potion_count} {potion_name}**!")
 
     if monster_drop:
         for drop, quantity in monster_drop:  # Iterate over each drop item and its quantity
@@ -188,7 +188,7 @@ def generate_zone_loot(player, zone_level, monster_drop=None, name=None):
                 item_name_plural = item.name
 
             loot_messages.append(
-                f"{get_emoji(item_emoji_mapping.get(item.name, ''))} You found {final_quantity} {item_name_plural}!")
+                f"{get_emoji(item_emoji_mapping.get(item.name, ''))} You found **{final_quantity} {item_name_plural}**!")
 
         # Rusty Spork drop logic
         if random.random() < spork_chance:
@@ -197,7 +197,7 @@ def generate_zone_loot(player, zone_level, monster_drop=None, name=None):
             for _ in range(spork_count):
                 loot.append(('items', [(spork_dropped, 1)]))  # Each drop is 1 item, even if doubled
             spork_message = "Rusty Sporks" if spork_count > 1 else "Rusty Spork"
-            loot_messages.append(f"{get_emoji('Rusty Spork')} You found {spork_count} {spork_message}!")
+            loot_messages.append(f"{get_emoji('Rusty Spork')} You found **{spork_count} {spork_message}**!")
 
         # Return the loot dropped (empty list if no loot is dropped) and the loot messages
         return loot, loot_messages, loothaven_effect

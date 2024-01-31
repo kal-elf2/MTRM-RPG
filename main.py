@@ -472,18 +472,27 @@ async def cemetery(ctx):
         # Send the message with the appropriate embed and view
         await ctx.respond(embed=cemetery_embed, view=view)
 
-@bot.slash_command()
+@bot.slash_command(description="View game commands")
 async def menu(ctx):
-    embed = Embed(title="Main Menu", description="Here are the available commands:", color=0x00ff00)
-    embed.add_field(name="!battle", value="💀 Fight monsters or search for dungeons", inline=False)
-    embed.add_field(name="!gather", value="🎣 Gather resources", inline=False)
-    embed.add_field(name="!citadel", value="🛡️ Craft items", inline=False)
-    embed.add_field(name="!travel", value="🐴 Travel towns or different zones", inline=False)
-    embed.add_field(name="!inventory", value="💰 Check your inventory", inline=False)
-    embed.add_field(name="!equip", value="🗡️ Equip or unequip items", inline=False)
-    embed.add_field(name="!stats", value="📊 Check your character's stats", inline=False)
+    embed = discord.Embed(
+        title="🏴‍☠️ Welcome to the Command Deck 🏴‍☠️",
+        description="Ye be ready to navigate through the seas of adventure? Here be the commands at yer disposal:\n\u200B",
+        color=discord.Color.dark_gold()
+    )
+    embed.set_image(url=generate_urls('nero', 'leaderboard'))
+
+    embed.add_field(name="💀 `/battle` Battle monsters", value="\u200B", inline=True)
+    embed.add_field(name="🪓 `/chop` Chop wood", value="\u200B", inline=True)
+    embed.add_field(name="⛏️ `/mine` Mine ore", value="\u200B", inline=True)
+    embed.add_field(name="🏰 `/citadel` Explore the citadel", value="\u200B", inline=True)
+    embed.add_field(name="🎒 `/backpack` Check your inventory", value="\u200B", inline=True)
+    embed.add_field(name="🪦 `/cemetery` Revive at the cemetery", value="\u200B", inline=True)
+    embed.add_field(name="📈 `/stats` Review your stats", value="\u200B", inline=True)
+    embed.add_field(name="🏆 `/leaders` View leaderboard", value="\u200B", inline=True)
+    embed.add_field(name="🆕 `/newgame` Begin a new adventure", value="\u200B", inline=True)
 
     await ctx.respond(embed=embed)
+
 
 bot.run(os.environ["DISCORD_TOKEN"])
 
