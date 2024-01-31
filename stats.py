@@ -377,7 +377,7 @@ class MonsterKillsDropdown(discord.ui.Select, CommonResponses):
             return
 
         # Create embed to display leaderboard
-        embed = discord.Embed(title=f"Top 5 {monster.capitalize()} Hunters", color=discord.Color.green())
+        embed = discord.Embed(title=f"Top 5 {monster.title()} Slayers", color=discord.Color.green())
 
         medals = ["🥇", "🥈", "🥉"]
         for index, (player_id, data) in enumerate(sorted_players[:5]):
@@ -389,8 +389,12 @@ class MonsterKillsDropdown(discord.ui.Select, CommonResponses):
             rank = medals[index] if index < 3 else f"{index + 1}th"
             embed.add_field(name=f"{rank} - {player_name}", value=f"Kills: {kill_count}", inline=False)
 
-            if index == 0 and player and player.avatar:  # Set thumbnail for the first-place player
-                embed.set_thumbnail(url=player.avatar.url)
+            if index == 0:
+                if player and player.avatar:
+                    embed.set_thumbnail(url=player.avatar.url)
+                else:
+                    # Set default thumbnail to the monster image
+                    embed.set_thumbnail(url=generate_urls('monsters', monster.title()))
 
         # Send the embed as an ephemeral message
         await interaction.response.send_message(embed=embed, ephemeral=True)
