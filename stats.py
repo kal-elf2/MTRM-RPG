@@ -235,11 +235,11 @@ class StatsCog(commands.Cog):
 
         # Embed with pirate-themed message
         embed = discord.Embed(
-            title="🏴‍☠️ Survey the Seas of Rivalry! 🏴‍☠️",
-            description=f"Avast, {ctx.author.mention}! Ye seek to know where ye stand 'mongst the ranks, aye? Peruse the leaderboards and see if ye be a legendary captain or just another scallywag on the high seas.",
+            title="🏴‍☠️ Captain Ner0's Scroll of Fame 🏴‍☠️",
+            description=f"Ahoy, {ctx.author.mention}! Are ye keen to see where ye rank in the arts of cunning and coin? Cast your eye upon the leaderboards, and discover whether ye be a master of skill and splendor, or just another dockside drifter counting coppers.",
             color=discord.Color.dark_gold()
         )
-        embed.set_thumbnail(url=generate_urls("nero", "gun"))
+        embed.set_image(url=generate_urls("nero", "leaderboard"))
 
         # Create the view with the dropdown and reset button
         view = LeaderboardView(author_id, guild_id)
@@ -330,10 +330,10 @@ class SkillsDropdown(discord.ui.Select, CommonResponses):
             level = data['stats'][f'{skill}_level']
             experience = "{:,}".format(data['stats'][f'{skill}_experience'])
             rank = medals[index] if index < 3 else f"{index + 1}th"
-            embed.add_field(name=f"{rank} - {player_name}", value=f"Level: {level}  |  XP: {experience}",
-                            inline=False)
-            if index == 0:  # Set thumbnail for the first-place player
-                embed.set_thumbnail(url=player.avatar.url if player.avatar else None)
+            embed.add_field(name=f"{rank} - {player_name}", value=f"Level: {level}  |  XP: {experience}", inline=False)
+
+            if index == 0 and player and player.avatar:  # Set thumbnail for the first-place player
+                embed.set_thumbnail(url=player.avatar.url)
 
         # Send the embed as an ephemeral message
         await interaction.response.send_message(embed=embed, ephemeral=True)
@@ -380,7 +380,6 @@ class MonsterKillsDropdown(discord.ui.Select, CommonResponses):
         embed = discord.Embed(title=f"Top 5 {monster.capitalize()} Hunters", color=discord.Color.green())
 
         medals = ["🥇", "🥈", "🥉"]
-        # Iterate through the top 5 players
         for index, (player_id, data) in enumerate(sorted_players[:5]):
             if data['monster_kills'].get(monster, 0) == 0:
                 continue
@@ -389,8 +388,9 @@ class MonsterKillsDropdown(discord.ui.Select, CommonResponses):
             kill_count = "{:,}".format(data['monster_kills'][monster])  # Format with commas
             rank = medals[index] if index < 3 else f"{index + 1}th"
             embed.add_field(name=f"{rank} - {player_name}", value=f"Kills: {kill_count}", inline=False)
-            if index == 0:  # Set thumbnail for the first-place player
-                embed.set_thumbnail(url=player.avatar.url if player and player.avatar else None)
+
+            if index == 0 and player and player.avatar:  # Set thumbnail for the first-place player
+                embed.set_thumbnail(url=player.avatar.url)
 
         # Send the embed as an ephemeral message
         await interaction.response.send_message(embed=embed, ephemeral=True)
