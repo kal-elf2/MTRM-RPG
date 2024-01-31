@@ -153,7 +153,7 @@ class BackpackView(discord.ui.View, CommonResponses):
 
         order = {
             "items": [
-                "Charcoal", "Iron", "Steel", "Onyx", "Pole", "Thick Pole",
+                "Charcoal", "Iron", "Steel", "Onyx", "Cannonball", "Pole", "Thick Pole",
                 "Pine Strip", "Yew Strip", "Ash Strip", "Poplar Strip",
                 "Flour", "Wheat", "Flax", "Linen", "Linen Thread", "Venison",
                 "Sinew", "Rabbit Body", "Rabbit Meat", "Deer Part",

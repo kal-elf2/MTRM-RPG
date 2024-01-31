@@ -1,33 +1,33 @@
 {
     "807063811852206090": {
-        "exemplar": "human",
+        "exemplar": "elf",
         "stats": {
-            "health": 686,
-            "max_health": 910,
-            "strength": 417,
-            "stamina": 234,
-            "max_stamina": 417,
-            "attack": 168,
-            "damage": 63,
-            "defense": 168,
-            "armor": 146,
-            "combat_level": 82,
-            "combat_experience": 700512,
-            "mining_level": 82,
-            "mining_experience": 700035,
-            "woodcutting_level": 83,
-            "woodcutting_experience": 761995,
+            "health": 1059,
+            "max_health": 95,
+            "strength": 11,
+            "stamina": 480,
+            "max_stamina": 13,
+            "attack": 6,
+            "damage": 60,
+            "defense": 7,
+            "armor": 6,
+            "combat_level": 1,
+            "combat_experience": 19,
+            "mining_level": 1,
+            "mining_experience": 1,
+            "woodcutting_level": 1,
+            "woodcutting_experience": 1,
             "zone_level": 5,
-            "damage_taken": 71
+            "damage_taken": 0
         },
         "inventory": {
-            "coppers": 428036,
+            "coppers": 19,
             "items": [
                 {
                     "name": "Charcoal",
                     "description": null,
                     "value": null,
-                    "stack": 1397
+                    "stack": 1392
                 },
                 {
                     "name": "Iron",
@@ -39,13 +39,13 @@
                     "name": "Steel",
                     "description": null,
                     "value": null,
-                    "stack": 2121
+                    "stack": 2101
                 },
                 {
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 876
+                    "stack": 810
                 },
                 {
                     "name": "Pole",
@@ -57,7 +57,7 @@
                     "name": "Thick Pole",
                     "description": null,
                     "value": null,
-                    "stack": 25580
+                    "stack": 25570
                 },
                 {
                     "name": "Pine Strip",
@@ -117,19 +117,19 @@
                     "name": "Venison",
                     "description": null,
                     "value": null,
-                    "stack": 959
+                    "stack": 934
                 },
                 {
                     "name": "Sinew",
                     "description": null,
                     "value": null,
-                    "stack": 847
+                    "stack": 797
                 },
                 {
                     "name": "Rabbit Body",
                     "description": "A furry rabbit body, warm to the touch. Can be used for citadel soft armors.",
                     "value": 10,
-                    "stack": 1140
+                    "stack": 1142
                 },
                 {
                     "name": "Rabbit Meat",
@@ -153,19 +153,19 @@
                     "name": "Wolf Skin",
                     "description": "A skin of a wild wolf. Known for its durability and strength.",
                     "value": 50,
-                    "stack": 236
+                    "stack": 238
                 },
                 {
                     "name": "Glowing Essence",
                     "description": "An ethereal essence that glows faintly. Used in powerful magical rituals and citadel.",
                     "value": 200,
-                    "stack": 989
+                    "stack": 988
                 },
                 {
                     "name": "Goblin Crown",
                     "description": "A powerful relic obtained from the Goblin Mother. Used to create powerful Charms.",
                     "value": 5000,
-                    "stack": 117
+                    "stack": 116
                 },
                 {
                     "name": "Leather",
@@ -177,19 +177,31 @@
                     "name": "Leather Straps",
                     "description": null,
                     "value": null,
-                    "stack": 770
+                    "stack": 765
                 },
                 {
                     "name": "Tough Leather Straps",
                     "description": null,
                     "value": null,
                     "stack": 817
+                },
+                {
+                    "name": "Rusty Spork",
+                    "description": "A rusty and useless trinket",
+                    "value": 100000,
+                    "stack": 1
+                },
+                {
+                    "name": "Cannonball",
+                    "description": null,
+                    "value": null,
+                    "stack": 5
                 }
             ],
             "trees": [
                 {
                     "name": "Pine",
-                    "stack": 995
+                    "stack": 1026
                 },
                 {
                     "name": "Yew",
@@ -208,28 +220,28 @@
                 {
                     "name": "Ranarr",
                     "value": 25,
-                    "stack": 1014
+                    "stack": 1010
                 },
                 {
                     "name": "Spirit Weed",
                     "value": 25,
-                    "stack": 1026
+                    "stack": 1022
                 },
                 {
                     "name": "Snapdragon",
                     "value": 350,
-                    "stack": 1022
+                    "stack": 1018
                 },
                 {
                     "name": "Bloodweed",
                     "value": 350,
-                    "stack": 1012
+                    "stack": 1010
                 }
             ],
             "ore": [
                 {
                     "name": "Iron Ore",
-                    "stack": 1003
+                    "stack": 1013
                 },
                 {
                     "name": "Coal",
@@ -237,7 +249,7 @@
                 },
                 {
                     "name": "Carbon",
-                    "stack": 839
+                    "stack": 824
                 }
             ],
             "potions": [
@@ -247,7 +259,7 @@
                     "effect_value": 50,
                     "value": 10,
                     "description": "Restores 50 stamina",
-                    "stack": 94
+                    "stack": 6
                 },
                 {
                     "name": "Health Potion",
@@ -255,7 +267,7 @@
                     "effect_value": 50,
                     "value": 10,
                     "description": "Restores 50 health",
-                    "stack": 99
+                    "stack": 3
                 },
                 {
                     "name": "Super Stamina Potion",
@@ -263,7 +275,7 @@
                     "effect_value": 250,
                     "value": 20,
                     "description": "Restores 250 stamina",
-                    "stack": 90
+                    "stack": 5
                 },
                 {
                     "name": "Super Health Potion",
@@ -271,79 +283,25 @@
                     "effect_value": 250,
                     "value": 20,
                     "description": "Restores 250 health",
-                    "stack": 75
+                    "stack": 2
                 }
             ],
             "limit": 49,
-            "armors": [
-                {
-                    "name": "Brigandine Armor",
-                    "description": null,
-                    "value": 1885,
-                    "stack": 1,
-                    "defense_modifier": 17,
-                    "armor_type": "chest",
-                    "zone_level": 4
-                },
-                {
-                    "name": "Leather Boots",
-                    "description": null,
-                    "value": 1602,
-                    "stack": 1,
-                    "defense_modifier": 8,
-                    "armor_type": "boots",
-                    "zone_level": 5
-                },
-                {
-                    "name": "Brigandine Gloves",
-                    "description": null,
-                    "value": 1133,
-                    "stack": 1,
-                    "defense_modifier": 9,
-                    "armor_type": "gloves",
-                    "zone_level": 4
-                }
-            ],
+            "armors": [],
             "equipped_armor": {
                 "chest": {
-                    "name": "Brigandine Armor",
+                    "name": "Padded Armor",
                     "description": null,
-                    "value": 205,
+                    "value": 44,
                     "stack": 1,
-                    "defense_modifier": 70,
+                    "defense_modifier": 6,
                     "armor_type": "chest",
-                    "zone_level": 5
+                    "zone_level": 1
                 },
-                "boots": {
-                    "name": "Brigandine Boots",
-                    "description": null,
-                    "value": 125,
-                    "stack": 1,
-                    "defense_modifier": 25,
-                    "armor_type": "boots",
-                    "zone_level": 5
-                },
-                "gloves": {
-                    "name": "Brigandine Gloves",
-                    "description": null,
-                    "value": 125,
-                    "stack": 1,
-                    "defense_modifier": 45,
-                    "armor_type": "gloves",
-                    "zone_level": 5
-                }
+                "boots": null,
+                "gloves": null
             },
             "weapons": [
-                {
-                    "name": "Voltaic Sword",
-                    "description": null,
-                    "value": 190,
-                    "stack": 2,
-                    "wtype": "Sword",
-                    "attack_modifier": 60,
-                    "special_attack": 4,
-                    "zone_level": 5
-                },
                 {
                     "name": "Long Sword",
                     "description": null,
@@ -366,64 +324,31 @@
                 "zone_level": 5
             },
             "shields": [],
-            "equipped_shield": {
-                "name": "Small Shield",
-                "description": null,
-                "value": 46,
-                "stack": 1,
-                "defense_modifier": 6,
-                "zone_level": 2
-            },
-            "charms": [
-                {
-                    "name": "Woodcleaver",
-                    "description": "Increase woodcutting success rate by 15% while wearing",
-                    "value": 25000,
-                    "stack": 1
-                },
-                {
-                    "name": "Stonebreaker",
-                    "description": "Increase mining success rate by 15% while wearing",
-                    "value": 25000,
-                    "stack": 1
-                },
-                {
-                    "name": "Mightstone",
-                    "description": "Doubles your critical hit chance *and* damage multiplier (**30%** and **3x**) while wearing",
-                    "value": 25000,
-                    "stack": 1
-                },
-                {
-                    "name": "Ironhide",
-                    "description": "Increases your chance to **evade all attacks** by 15% and **run chance** by **2x** while wearing",
-                    "value": 25000,
-                    "stack": 2
-                }
-            ],
-            "equipped_charm": {
-                "name": "Loothaven",
-                "description": "Gives a 25% chance to **double** your monster loot *and* their drop rates while wearing",
-                "value": 25000,
-                "stack": 1
-            },
+            "equipped_shield": null,
+            "charms": [],
+            "equipped_charm": null,
             "materium": 1
         },
         "dice_stats": {
-            "total_games": 123,
-            "games_won": 48,
-            "games_lost": 2,
-            "coppers_won": -718799
+            "total_games": 1,
+            "games_won": 1,
+            "games_lost": 1,
+            "coppers_won": -13000
         },
         "monster_kills": {
-            "Rabbit": 4,
-            "Deer": 0,
-            "Buck": 1,
-            "Wolf": 1,
-            "Goblin": 0,
-            "Goblin Hunter": 0,
-            "Mega Brute": 0,
-            "Wisp": 0,
-            "Mother": 1
+            "Rabbit": 3654551,
+            "Deer": 13654551,
+            "Buck": 13654551,
+            "Wolf": 36545510,
+            "Goblin": 36545510,
+            "Goblin Hunter": 36545510,
+            "Mega Brute": 36545510,
+            "Wisp": 36545510,
+            "Mother": 13654551
+        },
+        "shipwreck": {
+            "poplar_strip": 25,
+            "cannonball": 25
         },
         "in_battle": false
     }
