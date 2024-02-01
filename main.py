@@ -73,7 +73,7 @@ class PickExemplars(Select, CommonResponses):
         }
 
     async def callback(self, interaction: discord.Interaction):
-        from exemplars.exemplars import DiceStats, MonsterKills
+        from exemplars.exemplars import DiceStats, MonsterKills, Shipwreck
 
         # Check if the user who interacted is the same as the one who initiated the view
         if str(interaction.user.id) != self.author_id:
@@ -113,6 +113,7 @@ class PickExemplars(Select, CommonResponses):
         player_data[str(self.author_id)]["dice_stats"] = DiceStats().to_dict()
         player_data[str(self.author_id)]["monster_kills"] = MonsterKills().to_dict()
         player_data[str(self.author_id)]["inventory"] = Inventory().to_dict()
+        player_data[str(self.author_id)]["shipwreck"] = Shipwreck().to_dict()
         player_data[str(self.author_id)]["in_battle"] = False
 
         # Generate embed with exemplar stats

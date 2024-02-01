@@ -4,7 +4,7 @@ from citadel.crafting import CraftingSelect, create_crafting_stations
 from images.urls import generate_urls
 from citadel.grains import HarvestButton
 from discord import Embed
-from utils import CommonResponses
+from utils import CommonResponses, load_player_data
 
 class CitadelCog(commands.Cog):
     def __init__(self, bot):
@@ -333,13 +333,28 @@ class TravelRow(discord.ui.View, CommonResponses):
 
     @discord.ui.button(label="🏴‍☠️ Jolly Roger", custom_id="citadel_travel", style=discord.ButtonStyle.blurple)
     async def travel(self, button, interaction):
-        # Check if the user who interacted is the same as the one who initiated the view
-        # Inherited from CommonResponses class from utils
+        from exemplars.exemplars import Exemplar
+        from nero.options import JollyRogerView
+
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        await interaction.response.send_message("You're preparing to Travel!")
+        player_data = load_player_data(interaction.guild.id)
+        player = Exemplar(player_data[str(interaction.user.id)]["exemplar"],
+                          player_data[str(interaction.user.id)]["stats"],
+                          player_data[str(interaction.user.id)]["inventory"])
+
+        view = JollyRogerView(player, player_data[str(interaction.user.id)], self.author_id)
+
+        nero_embed = discord.Embed(
+            title="Captain Nero",
+            description="Ahoy, matey! Welcome aboard the Jolly Roger. Adventure and treasure await ye on the high seas!",
+            color=discord.Color.gold()
+        )
+        nero_embed.set_image(url=generate_urls("nero", "welcome"))
+
+        await interaction.response.send_message(embed=nero_embed, ephemeral=False, view=view)
 
     @discord.ui.button(label="🏟️ Colosseum", custom_id="citadel_colosseum", style=discord.ButtonStyle.blurple)
     async def colosseum(self, button, interaction):

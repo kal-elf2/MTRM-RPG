@@ -37,6 +37,7 @@ class Exemplar:
         )
         self.dice_stats = DiceStats()
         self.monster_kills = MonsterKills()
+        self.shipwreck = Shipwreck()
         self.inventory = inventory if inventory else Inventory()
         self.equipped_weapon = None
         self.equipped_armor = None
@@ -357,6 +358,24 @@ class MonsterKills:
         for name in monster_kills.monster_kills:
             monster_kills.monster_kills[name] = data.get(name, 0)
         return monster_kills
+
+class Shipwreck:
+    def __init__(self):
+        self.poplar_strip = 0
+        self.cannonball = 0
+
+    def to_dict(self):
+        return {
+            "poplar_strip": self.poplar_strip,
+            "cannonball": self.cannonball
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        shipwreck = cls()
+        shipwreck.poplar_strip = data.get("poplar_strip", 0)
+        shipwreck.cannonball = data.get("cannonball", 0)
+        return shipwreck
 
 
 class PlayerStats:
