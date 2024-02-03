@@ -207,11 +207,11 @@ class MineButton(discord.ui.View, CommonResponses):
 
     def refresh_player_object(self):
         # Refresh the player object from the player data
-        player_data = load_player_data(self.guild_id)
+        self.player_data = load_player_data(self.guild_id)
         # Reinitialize the player object
-        self.player = Exemplar(player_data[self.author_id]["exemplar"],
-                               player_data[self.author_id]["stats"],
-                               player_data[self.author_id]["inventory"])
+        self.player = Exemplar(self.player_data[self.author_id]["exemplar"],
+                               self.player_data[self.author_id]["stats"],
+                               self.player_data[self.author_id]["inventory"])
 
     @staticmethod
     def use_potion_logic(player, potion_name):
@@ -228,6 +228,12 @@ class MineButton(discord.ui.View, CommonResponses):
     def update_potion_button_label(self, button, potion_name):
         stack_count = self.player.get_potion_stack(potion_name)
         button.label = f"{stack_count}" if stack_count else ""
+
+    def refresh_button_states(self):
+        # Iterate over potion buttons and update their state
+        for button in [self.stamina_button, self.super_stamina_button]:
+            potion_name = button.custom_id.replace("_", " ").title()
+            button.disabled = self.is_potion_disabled(potion_name)
 
     def update_embed_stamina(self):
         # Find and update the embed field for stamina
@@ -259,6 +265,16 @@ class MineButton(discord.ui.View, CommonResponses):
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
+
+        # Refresh the player object from player_data
+        self.refresh_player_object()
+
+        # Update potion button labels to reflect the current inventory state (potions looted during battle)
+        self.update_potion_button_label(self.stamina_button, "Stamina Potion")
+        self.update_potion_button_label(self.super_stamina_button, "Super Stamina Potion")
+
+        # Refresh the state of the potion buttons to enable/disable them as appropriate
+        self.refresh_button_states()
 
         # Check if the player has space in the inventory or if the item is already in the inventory
         if self.player.inventory.total_items_count() >= self.player.inventory.limit and not self.player.inventory.has_item(
@@ -383,8 +399,33 @@ class MineButton(discord.ui.View, CommonResponses):
         else:
             message = f"You failed to mine {self.ore_type} ore."
 
+            # Get the new ore count
+            ore_count = self.player.inventory.get_item_quantity(self.ore_type)
+            ore_str = "{:,}".format(ore_count)
+            ore_emoji = get_emoji(ore_emoji_mapping.get(self.ore_type, "🪨"))
+
+            # Clear previous fields and add updated stamina field
+            self.embed.clear_fields()
+            stamina_str = f"{get_emoji('stamina_emoji')}  {self.player.stats.stamina}/{self.player.stats.max_stamina}"
+            self.embed.add_field(name="Stamina", value=stamina_str, inline=True)
+            self.embed.add_field(name=f"{self.ore_type}", value=f"{ore_str} {ore_emoji}", inline=True)
+
             # Calculate current mining level and experience for the next level
             current_mining_level = self.player.stats.mining_level
+            next_level = current_mining_level + 1
+            current_experience = self.player.stats.mining_experience
+
+            # Check if the player is at max level and add the XP field last
+            if next_level >= 100:
+                formatted_current_experience = "{:,}".format(current_experience)
+                self.embed.add_field(name="Max Level", value=f"📊  {formatted_current_experience}", inline=True)
+            else:
+                next_level_experience_needed = LEVEL_DATA.get(str(current_mining_level), {}).get("total_experience")
+                xp_remaining = next_level_experience_needed - current_experience
+                formatted_xp_remaining = "{:,}".format(xp_remaining)
+                self.embed.add_field(name=f"XP to Level {next_level}",
+                                     value=f"📊 {formatted_xp_remaining}",
+                                     inline=True)
 
             # Update the mine messages list
             if len(self.mine_messages) >= 5:
@@ -408,6 +449,9 @@ class MineButton(discord.ui.View, CommonResponses):
 
         # Monster encounter set in probabilities.py
         if np.random.rand() <= attack_percent and not self.player_data[self.author_id]["in_battle"]:
+            # Refresh the player object from player_data
+            self.refresh_player_object()
+
             self.player_data[self.author_id]["in_battle"] = True
             save_player_data(self.guild_id, self.player_data)
 
