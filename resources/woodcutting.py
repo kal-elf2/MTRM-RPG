@@ -463,6 +463,10 @@ class HarvestButton(discord.ui.View, CommonResponses):
             monster_name = generate_random_monster(self.tree_type)
             monster = generate_monster_by_name(monster_name, self.player.stats.zone_level)
 
+            # Send the warning message in the channel mentioning the user
+            warning_message = f"LOOK OUT {interaction.user.mention}!"
+            await interaction.followup.send(warning_message)
+
             battle_embed = await send_message(interaction.channel,
                                               create_battle_embed(interaction.user, self.player, monster,
                                                                   footer_text_for_embed(self.ctx, monster, self.player)))
