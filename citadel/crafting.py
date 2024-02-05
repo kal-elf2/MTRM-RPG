@@ -742,8 +742,8 @@ def create_crafting_stations(interaction, station_name=None):
 
     # ARCHERY STAND Crafting Station and Recipes
     archery_stand = CraftingStation("Archery Stand")
-    archery_stand.add_recipe(Recipe(short_bow, (pine, 2), (linen_thread, 3)))
-    archery_stand.add_recipe(Recipe(long_bow, (yew, 4), (sinew, 4)))
+    archery_stand.add_recipe(Recipe(short_bow, (pine_strip, 2), (linen_thread, 3)))
+    archery_stand.add_recipe(Recipe(long_bow, (yew_strip, 4), (sinew, 4)))
     archery_stand.add_recipe(Recipe(champion_bow, (ash_strip, 5), (sinew, 5)))
 
     # Tavern Trencher

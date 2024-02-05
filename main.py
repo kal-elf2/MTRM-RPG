@@ -480,7 +480,7 @@ async def menu(ctx):
         description="Ye be ready to navigate through the seas of adventure? Here be the commands at yer disposal:\n\u200B",
         color=discord.Color.dark_gold()
     )
-    embed.set_image(url=generate_urls('nero', 'leaderboard'))
+    embed.set_image(url=generate_urls('nero', 'welcome'))
 
     embed.add_field(name="💀 `/battle` Battle monsters", value="\u200B", inline=True)
     embed.add_field(name="🪓 `/chop` Chop wood", value="\u200B", inline=True)

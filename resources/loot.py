@@ -36,7 +36,7 @@ loot_definitions = {
         'description': 'A furry rabbit body, warm to the touch. Can be used for citadel soft armors.',
         'value': 10
     },
-    'Deer Part': {
+    'Deer Parts': {
         'description': 'Various parts of a deer. Some are useful for making tools and weapons.',
         'value': 20
     },
@@ -65,7 +65,7 @@ loot_definitions = {
 item_emoji_mapping = {
     'Onyx': 'onyx_emoji',
     'Deer Skin': 'deer_skin_emoji',
-    'Deer Part': 'deer_part_emoji',
+    'Deer Parts': 'deer_part_emoji',
     'Rabbit Body': 'rabbit_body_emoji',
     'Glowing Essence': 'glowing_essence_emoji',
     'Wolf Skin': 'wolf_skin_emoji',
@@ -182,6 +182,8 @@ def generate_zone_loot(player, zone_level, monster_drop=None, name=None):
                     item_name_plural = "Rabbit Bodies"
                 elif item.name == "Glowing Essence":
                     item_name_plural = "Glowing Essence"
+                elif item.name == "Deer Parts":
+                    item_name_plural = "Deer Parts"
                 else:
                     item_name_plural = item.name + "s"
             else:
