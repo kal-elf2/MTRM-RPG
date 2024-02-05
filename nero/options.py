@@ -1,7 +1,7 @@
 import discord
 from emojis import get_emoji
 from utils import CommonResponses
-from images.urls import generate_urls, generate_gif_urls
+from images.urls import generate_gif_urls
 class TravelSelect(discord.ui.Select, CommonResponses):
     ship_names = {1: "Picard", 2: "Crayer", 3: "Hoy", 4: "Carrack", 5: "Caravel"}
     def __init__(self, player, player_data, author_id):
@@ -25,7 +25,7 @@ class TravelSelect(discord.ui.Select, CommonResponses):
             options.append(discord.SelectOption(label="Fight Kraken", value="kraken", emoji="🦑"))
         else:
             ship_name = self.ship_names.get(zone_level, "Ship")
-            options.append(discord.SelectOption(label=f"Store supplies on {ship_name}", value="supplies", emoji=f"{get_emoji('Cannonball')}"))
+            options.append(discord.SelectOption(label=f"Stock {ship_name}", value="supplies", emoji=f"{get_emoji('Cannonball')}"))
 
         # Add "Got any hints?"
         options.append(discord.SelectOption(label="Uncover Secrets", value="hints", emoji="🗝️"))
@@ -57,7 +57,6 @@ class TravelSelect(discord.ui.Select, CommonResponses):
         # Create embed message
         embed = discord.Embed(
             title=f"Selected: {selected_option}",
-            description=f"You are currently in zone level {zone_level}.",
             color=embed_color
         )
 
@@ -75,20 +74,44 @@ class TravelSelect(discord.ui.Select, CommonResponses):
             from nero.supplies import DepositButton
             ship_name = TravelSelect.ship_names.get(zone_level, "Ship")
             ship_gif_url = generate_gif_urls("ships", ship_name)
-            embed.description = f"You are repairing a {ship_name}."
+            embed.title = f"{ship_name} Supplies"
             embed.set_image(url=ship_gif_url)
 
-            # Add buttons for depositing poplar strips
-            poplar_strip_button_1 = DepositButton(get_emoji('Poplar Strip'), "poplar_strip", 1, self.player,
-                                                  self.player_data, discord.ButtonStyle.green)
-            poplar_strip_button_5 = DepositButton(get_emoji('Poplar Strip'), "poplar_strip", 5, self.player,
-                                                  self.player_data, discord.ButtonStyle.green)
+            # Define required amount based on zone level
+            required_amount = 25 * zone_level
 
-            # Add buttons for depositing cannonballs
+            # Get quantities from the shipwreck
+            poplar_strip_shipwreck = self.player_data['shipwreck'].get('poplar_strip', 0)
+            cannonball_shipwreck = self.player_data['shipwreck'].get('cannonball', 0)
+
+            # Update embed description to show current supplies in the shipwreck
+            embed.description = f"{get_emoji('Poplar Strip')} **Poplar Strips: {poplar_strip_shipwreck}**\n" \
+                                f"{get_emoji('Cannonball')} **Cannonballs: {cannonball_shipwreck}**"
+
+            # Get quantities from the inventory and shipwreck
+            poplar_strip_inventory = self.player.inventory.get_item_quantity('Poplar Strip')
+            cannonball_inventory = self.player.inventory.get_item_quantity('Cannonball')
+            poplar_strip_shipwreck = self.player_data['shipwreck'].get('poplar_strip', 0)
+            cannonball_shipwreck = self.player_data['shipwreck'].get('cannonball', 0)
+
+            # Determine if buttons should be disabled based on inventory and shipwreck quantities
+            has_poplar_strips = poplar_strip_inventory >= 1 and poplar_strip_shipwreck < required_amount
+            has_cannonballs = cannonball_inventory >= 1 and cannonball_shipwreck < required_amount
+            has_5_poplar_strips = poplar_strip_inventory >= 5 and poplar_strip_shipwreck + 5 <= required_amount
+            has_5_cannonballs = cannonball_inventory >= 5 and cannonball_shipwreck + 5 <= required_amount
+
+            # Create buttons for depositing poplar strips and cannonballs
+            poplar_strip_button_1 = DepositButton(get_emoji('Poplar Strip'), "poplar_strip", 1, self.player,
+                                                  self.player_data, self.author_id, discord.ButtonStyle.green,
+                                                  disabled=not has_poplar_strips)
+            poplar_strip_button_5 = DepositButton(get_emoji('Poplar Strip'), "poplar_strip", 5, self.player,
+                                                  self.player_data, self.author_id, discord.ButtonStyle.green,
+                                                  disabled=not has_5_poplar_strips)
             cannonball_button_1 = DepositButton(get_emoji('Cannonball'), "cannonball", 1, self.player, self.player_data,
-                                                discord.ButtonStyle.grey)
+                                                self.author_id, discord.ButtonStyle.grey, disabled=not has_cannonballs)
             cannonball_button_5 = DepositButton(get_emoji('Cannonball'), "cannonball", 5, self.player, self.player_data,
-                                                discord.ButtonStyle.grey)
+                                                self.author_id, discord.ButtonStyle.grey,
+                                                disabled=not has_5_cannonballs)
 
             # Add buttons to the view
             view = discord.ui.View()
