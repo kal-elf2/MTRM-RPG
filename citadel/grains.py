@@ -16,18 +16,18 @@ class HarvestButton(discord.ui.View):
         author_id = str(interaction.user.id)
         guild_id = self.ctx.guild.id
 
-        player_data = load_player_data(guild_id)
+        player_data = load_player_data(guild_id, author_id)
         player = Exemplar(
-            player_data[author_id]["exemplar"],
-            player_data[author_id]["stats"],
-            player_data[author_id]["inventory"]
+            player_data["exemplar"],
+            player_data["stats"],
+            player_data["inventory"]
         )
 
         # Add 1 of the crop (either Wheat or Flax) to player's inventory
         crop_item = Item(name=self.crop)
         player.inventory.add_item_to_inventory(crop_item, amount=1)
 
-        save_player_data(guild_id, player_data)
+        save_player_data(guild_id, author_id, player_data)
 
         # Fetch quantity of the crop in the player's inventory
         crop_count = player.inventory.get_item_quantity(self.crop)

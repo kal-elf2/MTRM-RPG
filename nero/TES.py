@@ -39,10 +39,10 @@ class PlayButton(discord.ui.Button):
         new_view.add_item(self)  # Disabled 'Play' button
         new_view.add_item(RulesButton(label="Rules", custom_id="rules_3es"))  # Active 'Rules' button
 
-        player_data = load_player_data(interaction.guild.id)
-        player = Exemplar(player_data[str(interaction.user.id)]["exemplar"],
-                          player_data[str(interaction.user.id)]["stats"],
-                          player_data[str(interaction.user.id)]["inventory"])
+        player_data = load_player_data(interaction.guild.id, str(interaction.user.id))
+        player = Exemplar(player_data["exemplar"],
+                          player_data["stats"],
+                          player_data["inventory"])
 
         discord_file = await generate_game_image(interaction, player)
         # Pass the player object to GameView
@@ -719,7 +719,7 @@ class RollButton(discord.ui.Button, CommonResponses):
             coppers_emoji = get_emoji('coppers_emoji')  # Fetch the emoji
 
             # Determine the game result and update dice stats
-            dice_stats = DiceStats.from_dict(self.player_data[str(interaction.user.id)]["dice_stats"])
+            dice_stats = DiceStats.from_dict(self.player_data["dice_stats"])
 
             # Always increment total_games as a game was played
             dice_stats.total_games += 1
@@ -762,10 +762,10 @@ class RollButton(discord.ui.Button, CommonResponses):
                     outcome_message = f"{loss_reaction} Captain Nero's {nero_roll_name} beats your {player_roll_name}. You lose {coppers_emoji}{loss}."
 
             # Update the player_data with the new dice stats
-            self.player_data[str(interaction.user.id)]["dice_stats"] = dice_stats.to_dict()
+            self.player_data["dice_stats"] = dice_stats.to_dict()
 
             # Save the updated player data
-            save_player_data(interaction.guild.id, self.player_data)
+            save_player_data(interaction.guild.id, str(interaction.user.id), self.player_data)
 
             # Update the embed with the game outcome
             self.game_view.embed.clear_fields()  # Clear previous fields if any

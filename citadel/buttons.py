@@ -18,10 +18,10 @@ class CitadelCog(commands.Cog):
 
         guild_id = ctx.guild.id
         author_id = str(ctx.author.id)
-        player_data = load_player_data(guild_id)
+        player_data = load_player_data(guild_id, author_id)
 
         # Check if player data exists for the user
-        if author_id not in player_data:
+        if not player_data:
             embed = Embed(title="Captain Ner0",
                           description="Arr! What be this? No record of yer adventures? Start a new game with `/newgame` before I make ye walk the plank.",
                           color=discord.Color.dark_gold())
@@ -29,9 +29,9 @@ class CitadelCog(commands.Cog):
             await ctx.respond(embed=embed, ephemeral=True)
             return
 
-        player = Exemplar(player_data[author_id]["exemplar"],
-                          player_data[author_id]["stats"],
-                          player_data[author_id]["inventory"])
+        player = Exemplar(player_data["exemplar"],
+                          player_data["stats"],
+                          player_data["inventory"])
 
         # Check the player's health before starting a battle
         if player.stats.health <= 0:
@@ -280,11 +280,11 @@ class WheatRow(discord.ui.View, CommonResponses):
         # Load player data
         author_id = str(interaction.user.id)
         guild_id = self.ctx.guild.id
-        player_data = load_player_data(guild_id)
+        player_data = load_player_data(guild_id, author_id)
         player = Exemplar(
-            player_data[author_id]["exemplar"],
-            player_data[author_id]["stats"],
-            player_data[author_id]["inventory"]
+            player_data["exemplar"],
+            player_data["stats"],
+            player_data["inventory"]
         )
 
         # Generate health bar
@@ -340,12 +340,12 @@ class TravelRow(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        player_data = load_player_data(interaction.guild.id)
-        player = Exemplar(player_data[str(interaction.user.id)]["exemplar"],
-                          player_data[str(interaction.user.id)]["stats"],
-                          player_data[str(interaction.user.id)]["inventory"])
+        player_data = load_player_data(interaction.guild.id, str(interaction.user.id))
+        player = Exemplar(player_data["exemplar"],
+                          player_data["stats"],
+                          player_data["inventory"])
 
-        view = JollyRogerView(player, player_data[str(interaction.user.id)], self.author_id)
+        view = JollyRogerView(player, player_data, self.author_id)
 
         nero_embed = discord.Embed(
             title="Captain Nero",

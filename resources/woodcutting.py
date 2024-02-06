@@ -88,13 +88,13 @@ def attempt_mtrm_drop(zone_level):
 def footer_text_for_woodcutting_embed(ctx, player, player_level, zone_level, tree_type):
     guild_id = ctx.guild.id
     author_id = str(ctx.user.id)
-    player_data = load_player_data(guild_id)
+    player_data = load_player_data(guild_id, author_id)
 
     # Use the provided WoodcuttingCog method to calculate the success probability
     probability = WoodcuttingCog.calculate_probability(player, player_level, zone_level, tree_type)
     success_percentage = probability * 100  # Convert to percentage for display
 
-    woodcutting_level = player_data[author_id]["stats"]["woodcutting_level"]
+    woodcutting_level = player_data["stats"]["woodcutting_level"]
 
     # Check if the player has the Woodcleaver charm equipped
     if player.inventory.equipped_charm and player.inventory.equipped_charm.name == "Woodcleaver":
@@ -182,16 +182,16 @@ class HarvestButton(discord.ui.View, CommonResponses):
             player_id = str(interaction.user.id)
 
             # Update player_data with the new stamina value
-            self.player_data[player_id]["stats"]["stamina"] = self.player.stats.stamina
+            self.player_data["stats"]["stamina"] = self.player.stats.stamina
 
             # Decrement the potion stack in the player's inventory
-            for potion in self.player_data[player_id]["inventory"].potions:
+            for potion in self.player_data["inventory"].potions:
                 if potion.name == potion_name:
                     potion.stack -= 1
                     break
 
             # Save any changes to player data
-            save_player_data(self.guild_id, self.player_data)
+            save_player_data(self.guild_id, self.author_id, self.player_data)
 
             # Update the button label to show new stack count
             self.update_potion_button_label(button, potion_name)
@@ -212,11 +212,11 @@ class HarvestButton(discord.ui.View, CommonResponses):
 
     def refresh_player_object(self):
         # Refresh the player object from the player data
-        self.player_data = load_player_data(self.guild_id)
+        self.player_data = load_player_data(self.guild_id, self.author_id)
         # Reinitialize the player object
-        self.player = Exemplar(self.player_data[self.author_id]["exemplar"],
-                               self.player_data[self.author_id]["stats"],
-                               self.player_data[self.author_id]["inventory"])
+        self.player = Exemplar(self.player_data["exemplar"],
+                               self.player_data["stats"],
+                               self.player_data["inventory"])
 
     @staticmethod
     def use_potion_logic(player, potion_name):
@@ -342,12 +342,12 @@ class HarvestButton(discord.ui.View, CommonResponses):
                 self.player.inventory.add_item_to_inventory(mtrm_dropped, amount=1)
                 message += f"\n{get_emoji('Materium')} You also **found some Materium!**"
 
-            self.player_data[self.author_id]["stats"][
+            self.player_data["stats"][
                 "woodcutting_experience"] = self.player.stats.woodcutting_experience
-            self.player_data[self.author_id]["stats"]["woodcutting_level"] = self.player.stats.woodcutting_level
-            self.player_data[self.author_id]["stats"]["stamina"] = self.player.stats.stamina
-            self.player_data[self.author_id]["stats"]["attack"] = self.player.stats.attack
-            save_player_data(self.guild_id, self.player_data)
+            self.player_data["stats"]["woodcutting_level"] = self.player.stats.woodcutting_level
+            self.player_data["stats"]["stamina"] = self.player.stats.stamina
+            self.player_data["stats"]["attack"] = self.player.stats.attack
+            save_player_data(self.guild_id, self.author_id, self.player_data)
 
             # Clear previous fields and add new ones
             self.embed.clear_fields()
@@ -453,12 +453,12 @@ class HarvestButton(discord.ui.View, CommonResponses):
             await interaction.message.edit(embed=self.embed, view=self)
 
         # Monster encounter set in probabilities.py
-        if np.random.rand() <= attack_percent and not self.player_data[self.author_id]["in_battle"]:
+        if np.random.rand() <= attack_percent and not self.player_data["in_battle"]:
             # Refresh the player object from player_data
             self.refresh_player_object()
 
-            self.player_data[self.author_id]["in_battle"] = True
-            save_player_data(self.guild_id, self.player_data)
+            self.player_data["in_battle"] = True
+            save_player_data(self.guild_id, self.author_id, self.player_data)
 
             monster_name = generate_random_monster(self.tree_type)
             monster = generate_monster_by_name(monster_name, self.player.stats.zone_level)
@@ -499,8 +499,8 @@ class HarvestButton(discord.ui.View, CommonResponses):
 
             if battle_result is None:
                 # Save the player's current stats
-                self.player_data[self.author_id]["stats"].update(self.player.stats.__dict__)
-                save_player_data(self.guild_id, self.player_data)
+                self.player_data["stats"].update(self.player.stats.__dict__)
+                save_player_data(self.guild_id, self.author_id, self.player_data)
 
             else:
                 # Unpack the battle outcome and loot messages
@@ -511,20 +511,20 @@ class HarvestButton(discord.ui.View, CommonResponses):
                     loothaven_effect = battle_outcome[5]  # Get the Loothaven effect status
                     await self.player.gain_experience(experience_gained, 'combat', interaction, self.player)
 
-                    self.player_data[self.author_id]["stats"]["stamina"] = self.player.stats.stamina
-                    self.player_data[self.author_id]["stats"]["combat_level"] = self.player.stats.combat_level
-                    self.player_data[self.author_id]["stats"]["combat_experience"] = self.player.stats.combat_experience
+                    self.player_data["stats"]["stamina"] = self.player.stats.stamina
+                    self.player_data["stats"]["combat_level"] = self.player.stats.combat_level
+                    self.player_data["stats"]["combat_experience"] = self.player.stats.combat_experience
                     self.player.stats.damage_taken = 0
-                    self.player_data[self.author_id]["stats"].update(self.player.stats.__dict__)
+                    self.player_data["stats"].update(self.player.stats.__dict__)
 
                     if self.player.stats.health <= 0:
                         self.player.stats.health = self.player.stats.max_health
 
                     # Increment the count of the defeated monster
-                    self.player_data[self.author_id]["monster_kills"][monster.name] += 1
+                    self.player_data["monster_kills"][monster.name] += 1
 
                     # Save the player data after common actions
-                    save_player_data(self.guild_id, self.player_data)
+                    save_player_data(self.guild_id, self.author_id, self.player_data)
 
                     # Clear the previous views
                     await battle_context.special_attack_message.delete()
@@ -545,7 +545,7 @@ class HarvestButton(discord.ui.View, CommonResponses):
                 else:
                     # The player is defeated
                     self.player.stats.health = 0  # Set player's health to 0
-                    self.player_data[self.author_id]["stats"]["health"] = 0
+                    self.player_data["stats"]["health"] = 0
 
                     # Create a new embed with the defeat message
                     new_embed = create_battle_embed(interaction.user, self.player, monster, footer_text= "", messages=
@@ -568,8 +568,8 @@ class HarvestButton(discord.ui.View, CommonResponses):
                     await battle_embed.edit(embed=new_embed, view=ResurrectOptions(interaction, self.player_data, self.author_id))
 
             # Clear the in_battle flag after the battle ends
-            self.player_data[self.author_id]["in_battle"] = False
-            save_player_data(self.guild_id, self.player_data)
+            self.player_data["in_battle"] = False
+            save_player_data(self.guild_id, self.author_id, self.player_data)
 
 class WoodcuttingCog(commands.Cog):
     def __init__(self, bot):
@@ -609,10 +609,10 @@ class WoodcuttingCog(commands.Cog):
                                      required=True)):
         guild_id = ctx.guild.id
         author_id = str(ctx.author.id)
-        player_data = load_player_data(guild_id)
+        player_data = load_player_data(guild_id, author_id)
 
         # Check if player data exists for the user
-        if author_id not in player_data:
+        if not player_data:
             embed = Embed(title="Captain Ner0",
                           description="Arr! What be this? No record of yer adventures? Start a new game with `/newgame` before I make ye walk the plank.",
                           color=discord.Color.dark_gold())
@@ -620,9 +620,9 @@ class WoodcuttingCog(commands.Cog):
             await ctx.respond(embed=embed, ephemeral=True)
             return
 
-        player = Exemplar(player_data[author_id]["exemplar"],
-                          player_data[author_id]["stats"],
-                          player_data[author_id]["inventory"])
+        player = Exemplar(player_data["exemplar"],
+                          player_data["stats"],
+                          player_data["inventory"])
 
         # Check the player's health before starting a battle
         if player.stats.health <= 0:

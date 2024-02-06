@@ -19,7 +19,7 @@ class DepositButton(discord.ui.Button, CommonResponses):
         # Update shipwreck quantities
         current_amount = self.player_data.get('shipwreck', {}).get(self.item_name, 0)
         self.player_data['shipwreck'][self.item_name] = current_amount + self.amount
-        save_player_data(interaction.guild.id, self.player_data)
+        save_player_data(interaction.guild.id, self.author_id, self.player_data)
 
         # Fetch updated counts from shipwreck and inventory
         poplar_count_shipwreck = self.player_data['shipwreck'].get('poplar_strip', 0)

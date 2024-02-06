@@ -87,10 +87,10 @@ class LootOptions(discord.ui.View, CommonResponses):
         from exemplars.exemplars import Exemplar
 
         # Reload the latest player data
-        self.player_data = load_player_data(self.guild_id)
-        self.player = Exemplar(self.player_data[self.author_id]["exemplar"],
-                               self.player_data[self.author_id]["stats"],
-                               self.player_data[self.author_id]["inventory"])
+        self.player_data = load_player_data(self.guild_id, self.author_id)
+        self.player = Exemplar(self.player_data["exemplar"],
+                               self.player_data["stats"],
+                               self.player_data["inventory"])
 
         # Extract loot items and messages from the battle outcome
         loot = self.battle_outcome[3]
@@ -134,7 +134,7 @@ class LootOptions(discord.ui.View, CommonResponses):
                 for item, quantity in loot_items:
                     self.player.inventory.add_item_to_inventory(item, amount=quantity)
 
-        self.player_data[self.author_id]["inventory"] = self.player.inventory.to_dict()
+        self.player_data["inventory"] = self.player.inventory.to_dict()
 
         loot_message_string = '\n'.join(self.loot_messages)
         # Incorporate Loothaven charm effect in the message
@@ -151,7 +151,7 @@ class LootOptions(discord.ui.View, CommonResponses):
 
         final_embed = create_battle_embed(self.ctx.user, self.player, self.monster, footer_text_for_embed(self.ctx, self.monster, self.player), message_text)
 
-        save_player_data(self.guild_id, self.player_data)
+        save_player_data(self.guild_id, self.author_id, self.player_data)
 
         self.clear_items()
 
@@ -171,7 +171,7 @@ async def start_battle(ctx, monster, player_data, player, author_id, guild_id, b
     from stats import ResurrectOptions
 
     # Check if player data exists for the user
-    if author_id not in player_data:
+    if not player_data:
         embed = Embed(title="Captain Ner0",
                       description="Arr! What be this? No record of yer adventures? Start a new game with `/newgame` before I make ye walk the plank.",
                       color=discord.Color.dark_gold())
@@ -189,9 +189,9 @@ async def start_battle(ctx, monster, player_data, player, author_id, guild_id, b
         return
 
     # Initialize in_battle flag before starting the battle
-    player_data[author_id].setdefault("in_battle", False)
-    player_data[author_id]["in_battle"] = True
-    save_player_data(guild_id, player_data)
+    player_data.setdefault("in_battle", False)
+    player_data["in_battle"] = True
+    save_player_data(guild_id, author_id, player_data)
 
     zone_level = player.stats.zone_level
 
@@ -231,14 +231,14 @@ async def start_battle(ctx, monster, player_data, player, author_id, guild_id, b
 
     if battle_result is None:
         # Save the player's current stats
-        player_data[author_id]["stats"]["stamina"] = player.stats.stamina
-        player_data[author_id]["stats"]["combat_level"] = player.stats.combat_level
-        player_data[author_id]["stats"]["combat_experience"] = player.stats.combat_experience
-        player_data[author_id]["stats"]["health"] = player.stats.health
-        player_data[author_id]["stats"]["damage_taken"] = player.stats.damage_taken
-        player_data[author_id]["stats"].update(player.stats.__dict__)
+        player_data["stats"]["stamina"] = player.stats.stamina
+        player_data["stats"]["combat_level"] = player.stats.combat_level
+        player_data["stats"]["combat_experience"] = player.stats.combat_experience
+        player_data["stats"]["health"] = player.stats.health
+        player_data["stats"]["damage_taken"] = player.stats.damage_taken
+        player_data["stats"].update(player.stats.__dict__)
 
-        save_player_data(guild_id, player_data)
+        save_player_data(guild_id, author_id, player_data)
 
     # Process battle outcome
     else:
@@ -251,20 +251,20 @@ async def start_battle(ctx, monster, player_data, player, author_id, guild_id, b
             loothaven_effect = battle_outcome[5]  # Get the Loothaven effect status
             await player.gain_experience(experience_gained, 'combat', ctx, player)
 
-            player_data[author_id]["stats"]["stamina"] = player.stats.stamina
-            player_data[author_id]["stats"]["combat_level"] = player.stats.combat_level
-            player_data[author_id]["stats"]["combat_experience"] = player.stats.combat_experience
+            player_data["stats"]["stamina"] = player.stats.stamina
+            player_data["stats"]["combat_level"] = player.stats.combat_level
+            player_data["stats"]["combat_experience"] = player.stats.combat_experience
             player.stats.damage_taken = 0
-            player_data[author_id]["stats"].update(player.stats.__dict__)
+            player_data["stats"].update(player.stats.__dict__)
 
             if player.stats.health <= 0:
                 player.stats.health = player.stats.max_health
 
             # Increment the count of the defeated monster
-            player_data[author_id]["monster_kills"][monster.name] += 1
+            player_data["monster_kills"][monster.name] += 1
 
             # Save the player data after common actions
-            save_player_data(guild_id, player_data)
+            save_player_data(guild_id, author_id, player_data)
 
             # Clear the previous views
             await battle_context.special_attack_message.delete()
@@ -290,7 +290,7 @@ async def start_battle(ctx, monster, player_data, player, author_id, guild_id, b
 
             # The player is defeated
             player.stats.health = 0  # Set player's health to 0
-            player_data[author_id]["stats"]["health"] = 0
+            player_data["stats"]["health"] = 0
 
             # Create a new embed with the defeat message
             new_embed = create_battle_embed(ctx.user, player, monster, footer_text="", messages=
@@ -313,8 +313,8 @@ async def start_battle(ctx, monster, player_data, player, author_id, guild_id, b
             await battle_embed.edit(embed=new_embed, view=ResurrectOptions(ctx, player_data, author_id))
 
     # Clear the in_battle flag after the battle ends
-    player_data[author_id]["in_battle"] = False
-    save_player_data(guild_id, player_data)
+    player_data["in_battle"] = False
+    save_player_data(guild_id, author_id, player_data)
 
 def use_potion_logic(player, potion_name):
     """
@@ -552,9 +552,9 @@ class SpecialAttackOptions(discord.ui.View, CommonResponses):
                 f"**{interaction.user.mention} has successfully fled the battle with the {self.battle_context.monster.name}!**")
 
             # Clear the in_battle flag
-            player_data = load_player_data(self.battle_context.ctx.guild.id)
-            player_data[str(self.battle_context.user.id)]["in_battle"] = False
-            save_player_data(self.battle_context.ctx.guild.id, player_data)
+            player_data = load_player_data(self.battle_context.ctx.guild.id, str(self.battle_context.user.id))
+            player_data["in_battle"] = False
+            save_player_data(self.battle_context.ctx.guild.id, str(self.battle_context.user.id), player_data)
 
 
         else:  # Failed escape
@@ -787,11 +787,11 @@ def footer_text_for_embed(ctx, monster=None, player=None):
 
     guild_id = ctx.guild.id
     author_id = str(ctx.user.id)
-    player_data = load_player_data(guild_id)
+    player_data = load_player_data(guild_id, author_id)
 
-    current_combat_level = player_data[author_id]["stats"]["combat_level"]
+    current_combat_level = player_data["stats"]["combat_level"]
     next_combat_level = current_combat_level + 1
-    current_combat_experience = player_data[author_id]["stats"]["combat_experience"]
+    current_combat_experience = player_data["stats"]["combat_experience"]
     formatted_current_combat_experience = "{:,}".format(current_combat_experience)
 
     # Generate base footer text based on combat level
@@ -810,6 +810,7 @@ def footer_text_for_embed(ctx, monster=None, player=None):
         footer_text += f" ~~ 💨 Run {run_chance_percent}%"
 
     return footer_text
+
 
 
 

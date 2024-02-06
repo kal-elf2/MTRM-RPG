@@ -141,7 +141,7 @@ class CraftingStation:
     def add_recipe(self, recipe):
         self.recipes.append(recipe)
 
-    def craft(self, recipe_name, player, player_data, guild_id):
+    def craft(self, recipe_name, player, player_data, guild_id, author_id):
         from utils import save_player_data
 
         recipe = next((r for r in self.recipes if r.result.name == recipe_name), None)
@@ -170,7 +170,7 @@ class CraftingStation:
         # Add item to inventory for other items
         player.inventory.add_item_to_inventory(recipe.result)
 
-        save_player_data(guild_id, player_data)
+        save_player_data(guild_id, author_id, player_data)
 
         return recipe.result
 
@@ -200,7 +200,7 @@ class CraftButton(discord.ui.Button):
 
         # Use the CraftingStation's craft method
         crafted_item = self.station.craft(self.selected_recipe.result.name, self.player, self.player_data,
-                                          self.guild_id)
+                                          self.guild_id, self.author_id)
 
         # If crafted_item is a string, it indicates an error message.
         if isinstance(crafted_item, str):
@@ -249,16 +249,16 @@ class CraftButton(discord.ui.Button):
             # Update player stamina data after crafting bread or trencher
             if self.selected_recipe.result.name == "Bread":
                 # Update stamina in player_data
-                self.player_data[self.author_id]["stats"]["stamina"] = self.player.stats.stamina
+                self.player_data["stats"]["stamina"] = self.player.stats.stamina
                 # Save updated stamina data
-                save_player_data(self.guild_id, self.player_data)
+                save_player_data(self.guild_id, self.author_id, self.player_data)
 
             elif self.selected_recipe.result.name == "Trencher":
                 # Restore stamina to 100% and update player_data
                 self.player.stats.stamina = self.player.stats.max_stamina
-                self.player_data[self.author_id]["stats"]["stamina"] = self.player.stats.stamina
+                self.player_data["stats"]["stamina"] = self.player.stats.stamina
                 # Save updated stamina data
-                save_player_data(self.guild_id, self.player_data)
+                save_player_data(self.guild_id, self.author_id, self.player_data)
 
             # Check player's inventory for required ingredients.
             ingredients_list = []
@@ -341,10 +341,10 @@ class CraftingSelect(discord.ui.Select, CommonResponses):
         from utils import load_player_data
         self.guild_id = self.interaction.guild.id
         self.author_id = str(self.interaction.user.id)
-        self.player_data = load_player_data(self.guild_id)
-        self.player = Exemplar(self.player_data[self.author_id]["exemplar"],
-                               self.player_data[self.author_id]["stats"],
-                               self.player_data[self.author_id]["inventory"])
+        self.player_data = load_player_data(self.guild_id, self.author_id)
+        self.player = Exemplar(self.player_data["exemplar"],
+                               self.player_data["stats"],
+                               self.player_data["inventory"])
 
         # Define select options based on the provided recipes
         options = [
@@ -533,10 +533,10 @@ def create_crafting_stations(interaction, station_name=None):
 
     guild_id = interaction.guild.id
     author_id = str(interaction.user.id)
-    player_data = load_player_data(guild_id)
-    player = Exemplar(player_data[author_id]["exemplar"],
-                      player_data[author_id]["stats"],
-                      player_data[author_id]["inventory"])
+    player_data = load_player_data(guild_id, author_id)
+    player = Exemplar(player_data["exemplar"],
+                      player_data["stats"],
+                      player_data["inventory"])
 
     # Get zone level from player stats
     zone_level = player.stats.zone_level

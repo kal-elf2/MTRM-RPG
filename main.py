@@ -6,7 +6,7 @@ from discord.commands import Option
 from utils import load_player_data, save_player_data, send_message, CommonResponses
 from discord.ui import Select, View
 from discord.components import SelectOption
-from exemplars.exemplars import create_exemplar, Exemplar
+from exemplars.exemplars import Exemplar
 from monsters.monster import generate_monster_list, generate_monster_by_name, monster_battle, create_battle_embed, footer_text_for_embed
 from discord import Embed
 from resources.inventory import Inventory
@@ -73,26 +73,25 @@ class PickExemplars(Select, CommonResponses):
         }
 
     async def callback(self, interaction: discord.Interaction):
-        from exemplars.exemplars import DiceStats, MonsterKills, Shipwreck
+        from exemplars.exemplars import DiceStats, MonsterKills, Shipwreck, create_exemplar
 
-        # Check if the user who interacted is the same as the one who initiated the view
+        # Ensure the correct user is interacting
         if str(interaction.user.id) != self.author_id:
             await self.unauthorized_user_response(interaction)
             return
 
         guild_id = interaction.guild.id
-        player_data = load_player_data(guild_id)
+        player_id = str(interaction.user.id)
 
-        if str(self.author_id) not in player_data:
-            player_data[str(self.author_id)] = {}
+        # Attempt to load the player's data; initialize as empty dict if not found
+        player_data = load_player_data(guild_id, player_id) or {}
 
         # Update the exemplar in player_data
-        player_data[str(self.author_id)]["exemplar"] = self.values[0]
+        player_data["exemplar"] = self.values[0]
 
-        # Initialize the character's stats
+        # Initialize or reset the character's stats based on the chosen exemplar
         exemplar_instance = create_exemplar(self.values[0])
-
-        player_data[str(self.author_id)]["stats"] = {
+        player_data["stats"] = {
             "zone_level": exemplar_instance.stats.zone_level,
             "health": exemplar_instance.stats.health,
             "max_health": exemplar_instance.stats.max_health,
@@ -110,25 +109,23 @@ class PickExemplars(Select, CommonResponses):
             "woodcutting_level": exemplar_instance.stats.woodcutting_level,
             "woodcutting_experience": exemplar_instance.stats.woodcutting_experience,
         }
-        player_data[str(self.author_id)]["dice_stats"] = DiceStats().to_dict()
-        player_data[str(self.author_id)]["monster_kills"] = MonsterKills().to_dict()
-        player_data[str(self.author_id)]["inventory"] = Inventory().to_dict()
-        player_data[str(self.author_id)]["shipwreck"] = Shipwreck().to_dict()
-        player_data[str(self.author_id)]["in_battle"] = False
+        player_data["dice_stats"] = DiceStats().to_dict()
+        player_data["monster_kills"] = MonsterKills().to_dict()
+        player_data["inventory"] = Inventory().to_dict()
+        player_data["shipwreck"] = Shipwreck().to_dict()
+        player_data["in_battle"] = False
 
-        # Generate embed with exemplar stats
+        # Generate and send the confirmation message
         embed = self.generate_stats_embed(exemplar_instance)
-
-        # Create the confirmation view with two buttons
-        view = ConfirmExemplar(exemplar_instance, player_data, str(self.author_id), guild_id)
-
+        view = ConfirmExemplar(exemplar_instance, player_data, player_id, guild_id)
         await interaction.response.send_message(
             f'{interaction.user.mention}, verify your selection of {self.options_dict[self.values[0]]} Exemplar below!',
             embed=embed,
             view=view,
             ephemeral=False)
 
-    def generate_stats_embed(self, exemplar_instance):
+    @staticmethod
+    def generate_stats_embed(exemplar_instance):
         stats = exemplar_instance.stats
 
         # Assigning weapon specialties based on exemplar
@@ -195,7 +192,7 @@ class ConfirmExemplar(discord.ui.View, CommonResponses):
                 item.disabled = True
 
         # Save player data here
-        save_player_data(self.guild_id, self.player_data)
+        save_player_data(self.guild_id, self.author_id, self.player_data)
 
         # Update the message with the disabled view
         await interaction.response.edit_message(
@@ -221,12 +218,12 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
     from monsters.monster import BattleContext
 
     guild_id = ctx.guild.id
-    author_id = str(ctx.author.id)
+    player_id = str(ctx.author.id)  # Use player_id consistently for clarity
 
-    player_data = load_player_data(guild_id)
+    # Load only the specific player's data
+    player_data = load_player_data(guild_id, player_id)
 
-    # Check if player data exists for the user
-    if author_id not in player_data:
+    if not player_data:
         embed = Embed(title="Captain Ner0",
                       description="Arr! What be this? No record of yer adventures? Start a new game with `/newgame` before I make ye walk the plank.",
                       color=discord.Color.dark_gold())
@@ -234,11 +231,10 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
         await ctx.respond(embed=embed, ephemeral=True)
         return
 
-    player = Exemplar(player_data[author_id]["exemplar"],
-                      player_data[author_id]["stats"],
-                      player_data[author_id]["inventory"])
+    player = Exemplar(player_data["exemplar"],
+                      player_data["stats"],
+                      player_data["inventory"])
 
-    # Check the player's health before starting a battle
     if player.stats.health <= 0:
         embed = Embed(title="Captain Ner0",
                       description="Ahoy! Ye can't do that ye bloody ghost! Ye must travel to the 🪦 `/cemetery` to reenter the realm of the living.",
@@ -248,9 +244,9 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
         return
 
     # Initialize in_battle flag before starting the battle
-    player_data[author_id].setdefault("in_battle", False)
-    player_data[author_id]["in_battle"] = True
-    save_player_data(guild_id, player_data)
+    player_data.setdefault("in_battle", False)
+    player_data["in_battle"] = True
+    save_player_data(guild_id, player_id, player_data)
 
     zone_level = player.stats.zone_level
     monster = generate_monster_by_name(monster, zone_level)
@@ -290,14 +286,14 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
 
     if battle_result is None:
         # Save the player's current stats
-        player_data[author_id]["stats"]["stamina"] = player.stats.stamina
-        player_data[author_id]["stats"]["combat_level"] = player.stats.combat_level
-        player_data[author_id]["stats"]["combat_experience"] = player.stats.combat_experience
-        player_data[author_id]["stats"]["health"] = player.stats.health
-        player_data[author_id]["stats"]["damage_taken"] = player.stats.damage_taken
-        player_data[author_id]["stats"].update(player.stats.__dict__)
+        player_data["stats"]["stamina"] = player.stats.stamina
+        player_data["stats"]["combat_level"] = player.stats.combat_level
+        player_data["stats"]["combat_experience"] = player.stats.combat_experience
+        player_data["stats"]["health"] = player.stats.health
+        player_data["stats"]["damage_taken"] = player.stats.damage_taken
+        player_data["stats"].update(player.stats.__dict__)
 
-        save_player_data(guild_id, player_data)
+        save_player_data(guild_id, player_id ,player_data)
 
     # Process battle outcome
     else:
@@ -310,26 +306,26 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
             loothaven_effect = battle_outcome[5]  # Get the Loothaven effect status
             await player.gain_experience(experience_gained, 'combat', ctx, player)
 
-            player_data[author_id]["stats"]["stamina"] = player.stats.stamina
-            player_data[author_id]["stats"]["combat_level"] = player.stats.combat_level
-            player_data[author_id]["stats"]["combat_experience"] = player.stats.combat_experience
+            player_data["stats"]["stamina"] = player.stats.stamina
+            player_data["stats"]["combat_level"] = player.stats.combat_level
+            player_data["stats"]["combat_experience"] = player.stats.combat_experience
             player.stats.damage_taken = 0
-            player_data[author_id]["stats"].update(player.stats.__dict__)
+            player_data["stats"].update(player.stats.__dict__)
 
             if player.stats.health <= 0:
                 player.stats.health = player.stats.max_health
 
             # Increment the count of the defeated monster
-            player_data[author_id]["monster_kills"][monster.name] += 1
+            player_data["monster_kills"][monster.name] += 1
 
             # Save the player data after common actions
-            save_player_data(guild_id, player_data)
+            save_player_data(guild_id, player_id, player_data)
 
             # Clear the previous views
             await battle_context.special_attack_message.delete()
             await battle_options_msg.delete()
 
-            loot_view = LootOptions(ctx, player, monster, battle_embed, player_data, author_id, battle_outcome, loot_messages, guild_id, ctx, experience_gained, loothaven_effect)
+            loot_view = LootOptions(ctx, player, monster, battle_embed, player_data, player_id, battle_outcome, loot_messages, guild_id, ctx, experience_gained, loothaven_effect)
 
             # Construct the embed with the footer
             battle_outcome_embed = create_battle_embed(ctx.user, player, monster, footer_text_for_embed(ctx, monster),
@@ -347,7 +343,7 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
 
             # The player is defeated
             player.stats.health = 0  # Set player's health to 0
-            player_data[author_id]["stats"]["health"] = 0
+            player_data["stats"]["health"] = 0
 
             # Create a new embed with the defeat message
             new_embed = create_battle_embed(ctx.user, player, monster, footer_text = "", messages =
@@ -367,17 +363,17 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
             new_embed.set_image(url=generate_urls("cemetery", "dead"))
 
             # Update the message with the new embed and view
-            await battle_embed.edit(embed=new_embed, view=ResurrectOptions(ctx, player_data, author_id))
+            await battle_embed.edit(embed=new_embed, view=ResurrectOptions(ctx, player_data, player_id))
 
     # Clear the in_battle flag after the battle ends
-    player_data[author_id]["in_battle"] = False
-    save_player_data(guild_id, player_data)
+    player_data["in_battle"] = False
+    save_player_data(guild_id, player_id, player_data)
 
 @bot.slash_command(description="Start a new game.")
 async def newgame(ctx):
     guild_id = ctx.guild.id
     author_id = str(ctx.author.id)
-    player_data = load_player_data(guild_id)
+    player_data = load_player_data(guild_id, author_id)
 
     class NewGame(discord.ui.View, CommonResponses):
         def __init__(self, author_id=None):
@@ -393,12 +389,12 @@ async def newgame(ctx):
                 return
 
             # Explicitly remove and re-initialize player data
-            player_data[author_id] = {
+            player_data = {
                 "exemplar": None,
                 "stats": None,
                 "inventory": Inventory().to_dict(),
             }
-            save_player_data(guild_id, player_data)
+            save_player_data(guild_id, author_id, player_data)
 
             # Disable the button
             button.disabled = True
@@ -413,7 +409,7 @@ async def newgame(ctx):
                 f"{ctx.author.mention}, your progress has been erased. Please choose your exemplar from the list below.",
                 view=view)
 
-    if author_id not in player_data:
+    if not player_data:
         view = View()
         view.add_item(PickExemplars(author_id))
         await ctx.respond(f"{ctx.author.mention}, please choose your exemplar from the list below.", view=view)
@@ -428,10 +424,9 @@ async def cemetery(ctx):
     guild_id = ctx.guild.id
     author_id = str(ctx.author.id)
 
-    player_data = load_player_data(guild_id)
+    player_data = load_player_data(guild_id, author_id)
 
-    # Check if player data exists for the user
-    if author_id not in player_data:
+    if not player_data:
         embed = Embed(title="Captain Ner0",
                       description="Arr! What be this? No record of yer adventures? Start a new game with `/newgame` before I make ye walk the plank.",
                       color=discord.Color.dark_gold())
@@ -439,9 +434,9 @@ async def cemetery(ctx):
         await ctx.respond(embed=embed, ephemeral=True)
         return
 
-    player = Exemplar(player_data[author_id]["exemplar"],
-                      player_data[author_id]["stats"],
-                      player_data[author_id]["inventory"])
+    player = Exemplar(player_data["exemplar"],
+                      player_data["stats"],
+                      player_data["inventory"])
 
     cemetery_embed = discord.Embed()
 

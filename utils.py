@@ -32,30 +32,51 @@ class ExemplarJSONEncoder(json.JSONEncoder):
         else:
             return super().default(obj)
 
-def load_player_data(guild_id):
+def load_player_data(guild_id, player_id):
     with open(f'server/player_data_{guild_id}.json', 'r') as f:
-        player_data = json.load(f)
+        all_player_data = json.load(f)
 
-    for player_id, player_info in player_data.items():
+    # Convert player_id to string to ensure consistent dictionary key handling
+    player_id_str = str(player_id)
+    if player_id_str in all_player_data:
+        player_data = all_player_data[player_id_str]
+        player_data["inventory"] = Inventory.from_dict(player_data["inventory"])
+        return player_data
+    else:
+        return None  # Player data not found
+
+def load_all_player_data(guild_id):
+    with open(f'server/player_data_{guild_id}.json', 'r') as f:
+        all_player_data = json.load(f)
+
+    for player_id, player_info in all_player_data.items():
+        # Ensure that the inventory is properly converted from dict to Inventory objects
         player_info["inventory"] = Inventory.from_dict(player_info["inventory"])
 
-    return player_data
+    return all_player_data
 
-def save_player_data(guild_id, player_data):
-    with open(f'server/player_data_{guild_id}.json', "w") as c:
-        json.dump(player_data, c, indent=4, cls=ExemplarJSONEncoder)
+def save_player_data(guild_id, player_id, updated_player_data):
+    with open(f'server/player_data_{guild_id}.json', 'r') as f:
+        all_player_data = json.load(f)
+
+    # Update the specific player's data
+    all_player_data[str(player_id)] = updated_player_data
+
+    with open(f'server/player_data_{guild_id}.json', 'w') as f:
+        json.dump(all_player_data, f, indent=4, cls=ExemplarJSONEncoder)
+
 
 async def send_message(ctx: commands.Context, embed):
     return await ctx.send(embed=embed)
 
 def update_and_save_player_data(interaction: discord.Interaction, inventory, player_data, player=None):
     player_id = str(interaction.user.id)
-    player_data[player_id]["inventory"] = inventory
+    player_data["inventory"] = inventory
 
     if player:
-        player_data[player_id]["stats"] = player.stats
+        player_data["stats"] = player.stats
 
-    save_player_data(interaction.guild.id, player_data)
+    save_player_data(interaction.guild.id, player_id, player_data)
 
 class CommonResponses:
     @staticmethod

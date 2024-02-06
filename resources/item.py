@@ -1,4 +1,3 @@
-# item.py
 class Item:
     def __init__(self, name, description=None, value=None):
         self.name = name

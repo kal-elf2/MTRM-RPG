@@ -1,5 +1,6 @@
 from discord.ext import commands
 import discord
+from discord import Embed
 import copy
 from exemplars.exemplars import Exemplar
 from utils import load_player_data, update_and_save_player_data, save_player_data, CommonResponses
@@ -30,6 +31,20 @@ class BackpackCog(commands.Cog):
 
     @commands.slash_command(description="Open your backpack!")
     async def backpack(self, ctx):
+
+        guild_id = ctx.guild.id
+        author_id = str(ctx.author.id)
+        player_data = load_player_data(guild_id, author_id)
+
+        # Check if player data exists for the user
+        if not player_data:
+            embed = Embed(title="Captain Ner0",
+                          description="Arr! What be this? No record of yer adventures? Start a new game with `/newgame` before I make ye walk the plank.",
+                          color=discord.Color.dark_gold())
+            embed.set_thumbnail(url=generate_urls("nero", "confused"))
+            await ctx.respond(embed=embed, ephemeral=True)
+            return
+
         # Display initial backpack view with Equip and Unequip buttons
         view = BackpackView(ctx)
         await ctx.respond(f"Here's your backpack, {ctx.author.mention}:", view=view)
@@ -43,13 +58,12 @@ class BackpackView(discord.ui.View, CommonResponses):
         self.original_selection = None
 
         # Load the player's data
-        self.player_data = load_player_data(ctx.guild.id)
         self.guild_id = self.ctx.guild.id
         self.author_id = str(self.ctx.user.id)
-        self.player_data = load_player_data(self.guild_id)
-        self.player = Exemplar(self.player_data[self.author_id]["exemplar"],
-                               self.player_data[self.author_id]["stats"],
-                               self.player_data[self.author_id]["inventory"])
+        self.player_data = load_player_data(self.guild_id, self.author_id)
+        self.player = Exemplar(self.player_data["exemplar"],
+                               self.player_data["stats"],
+                               self.player_data["inventory"])
 
         self.inventory = self.player.inventory
 
@@ -97,9 +111,8 @@ class BackpackView(discord.ui.View, CommonResponses):
 
     async def refresh_view(self, action_type):
         # Load the player's updated data
-        self.player_data = load_player_data(self.ctx.guild.id)
-        player_id = str(self.ctx.author.id)
-        self.inventory = self.player_data[player_id]["inventory"]
+        self.player_data = load_player_data(self.ctx.guild.id, self.author_id)
+        self.inventory = self.player_data["inventory"]
 
         if self.original_selection:
             # This will set the dropdown back to the originally selected type
@@ -146,10 +159,10 @@ class BackpackView(discord.ui.View, CommonResponses):
 
         guild_id = interaction.guild.id
         author_id = str(interaction.user.id)
-        player_data = load_player_data(guild_id)
-        player = Exemplar(player_data[author_id]["exemplar"],
-                          player_data[author_id]["stats"],
-                          player_data[author_id]["inventory"])
+        player_data = load_player_data(guild_id, author_id)
+        player = Exemplar(player_data["exemplar"],
+                          player_data["stats"],
+                          player_data["inventory"])
 
         order = {
             "items": [
@@ -185,7 +198,7 @@ class BackpackView(discord.ui.View, CommonResponses):
                 sorted_items = sort_items(category_items, sorting_order)
                 setattr(player.inventory, category, sorted_items)
 
-        save_player_data(guild_id, player_data)
+        save_player_data(guild_id, author_id, player_data)
         await interaction.response.send_message(content="Inventory sorted.", view=self, ephemeral=True)
 
     @discord.ui.button(label="View", custom_id="backpack_inspect", style=discord.ButtonStyle.blurple, emoji="🔍")
@@ -733,7 +746,7 @@ class EquipTypeSelect(discord.ui.Select, CommonResponses):
             self.view.player.update_total_armor()
             self.view.player.update_total_damage()
 
-        update_and_save_player_data(interaction, inventory, self.view.player_data, player = self.view.player)
+        update_and_save_player_data(interaction, inventory, self.view.player_data, player=self.view.player)
 
         # At the end of the method, simply return None if there's no specific message to send
         return None, None

@@ -19,11 +19,11 @@ def generate_backpack_image(interaction):
 
     guild_id = interaction.guild.id
     author_id = str(interaction.user.id)
-    player_data = load_player_data(guild_id)
+    player_data = load_player_data(guild_id, author_id)
 
-    player = Exemplar(player_data[author_id]["exemplar"],
-                      player_data[author_id]["stats"],
-                      player_data[author_id]["inventory"])
+    player = Exemplar(player_data["exemplar"],
+                      player_data["stats"],
+                      player_data["inventory"])
 
     with Session() as session:  # Start a session
         # Prepare base image

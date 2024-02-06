@@ -20,8 +20,8 @@ class NeroView(discord.ui.View, CommonResponses):
 
         self.merge_items_from_saved_inventory(player_inventory, inventory_slots)
 
-        self.player_data[self.author_id]['inventory'] = player_inventory
-        save_player_data(self.interaction.guild.id, self.player_data)
+        self.player_data['inventory'] = player_inventory
+        save_player_data(self.interaction.guild.id, self.author_id, self.player_data)
 
         cost = buyback_cost * self.player.stats.zone_level
         formatted_cost = f"{cost:,}"  # Format the number with commas
@@ -41,10 +41,10 @@ class NeroView(discord.ui.View, CommonResponses):
 
         # Reinitialize the player object with the current state from player_data
         guild_id = interaction.guild.id
-        current_player_data = load_player_data(guild_id)
-        self.player = Exemplar(current_player_data[self.author_id]["exemplar"],
-                               current_player_data[self.author_id]["stats"],
-                               current_player_data[self.author_id]["inventory"])
+        current_player_data = load_player_data(guild_id, self.author_id)
+        self.player = Exemplar(current_player_data["exemplar"],
+                               current_player_data["stats"],
+                               current_player_data["inventory"])
 
         # Check available space and coppers before proceeding with buyback
         player_inventory = self.player.inventory
@@ -86,10 +86,10 @@ class NeroView(discord.ui.View, CommonResponses):
 
         # Reinitialize the player object with the current state from player_data
         guild_id = interaction.guild.id
-        current_player_data = load_player_data(guild_id)
-        self.player = Exemplar(current_player_data[self.author_id]["exemplar"],
-                               current_player_data[self.author_id]["stats"],
-                               current_player_data[self.author_id]["inventory"])
+        current_player_data = load_player_data(guild_id, self.author_id)
+        self.player = Exemplar(current_player_data["exemplar"],
+                               current_player_data["stats"],
+                               current_player_data["inventory"])
 
         # Now handle the buyback with the updated player object
         message = await self.handle_buy_back(player_inventory, inventory_slots)

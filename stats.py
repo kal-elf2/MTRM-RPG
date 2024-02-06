@@ -1,8 +1,9 @@
 import json
 import math
 import discord
+from discord import Embed
 from discord.ext import commands
-from utils import load_player_data, save_player_data, CommonResponses
+from utils import load_player_data, load_all_player_data, save_player_data, CommonResponses
 from exemplars.exemplars import Exemplar
 from emojis import get_emoji
 from images.urls import generate_urls
@@ -78,29 +79,29 @@ class StatsDropdown(discord.ui.Select, CommonResponses):
             return
 
         author_id = str(interaction.user.id)
-        player_data = load_player_data(interaction.guild.id)
+        player_data = load_player_data(interaction.guild.id, author_id)
 
         if self.values[0] == "level_progress":
             # Send combined level progress information
-            embed = self.create_level_progress_embed(player_data[author_id]["stats"], self.zone_level)
+            embed = self.create_level_progress_embed(player_data["stats"], self.zone_level)
             await interaction.response.send_message(embed=embed, ephemeral=False)
 
         elif self.values[0] == "three_eyed_snake":
             # Send Three Eyed Snake stats
-            dice_stats = DiceStats.from_dict(player_data[author_id]["dice_stats"])
+            dice_stats = DiceStats.from_dict(player_data["dice_stats"])
             embed = self.create_three_eyed_snake_embed(dice_stats, self.zone_level)
             await interaction.response.send_message(embed=embed, ephemeral=False)
 
         elif self.values[0] == "monster_kills":
             # Send Monster Kills stats
-            monster_kills = MonsterKills.from_dict(player_data[author_id]["monster_kills"])
+            monster_kills = MonsterKills.from_dict(player_data["monster_kills"])
             embed = self.create_monster_kills_embed(monster_kills, self.zone_level)
             await interaction.response.send_message(embed=embed, ephemeral=False)
 
     @staticmethod
     def create_level_progress_embed(stats, zone_level):
         level_data = load_level_data()
-        embed_color = color_mapping.get(zone_level, 0x969696)  # Default color if zone level is not found
+        embed_color = color_mapping.get(zone_level, 0x969696)
         embed = discord.Embed(title="__Level Progress__", color=embed_color)
 
         # Define emojis for each skill
@@ -184,11 +185,21 @@ class StatsCog(commands.Cog):
         guild_id = ctx.guild.id
         author_id = str(ctx.author.id)
 
-        player_data = load_player_data(guild_id)
-        player = player_data[author_id]["stats"]
-        inventory = player_data[author_id]["inventory"]
-        zone_level = player_data[author_id]["stats"]["zone_level"]
-        exemplar = player_data[author_id]['exemplar']
+        player_data = load_player_data(guild_id, author_id)
+
+        # Check if player data exists for the user
+        if not player_data:
+            embed = Embed(title="Captain Ner0",
+                          description="Arr! What be this? No record of yer adventures? Start a new game with `/newgame` before I make ye walk the plank.",
+                          color=discord.Color.dark_gold())
+            embed.set_thumbnail(url=generate_urls("nero", "confused"))
+            await ctx.respond(embed=embed, ephemeral=True)
+            return
+
+        player = player_data["stats"]
+        inventory = player_data["inventory"]
+        zone_level = player_data["stats"]["zone_level"]
+        exemplar = player_data['exemplar']
         exemplar_capitalized = exemplar.capitalize()
 
         embed_color = color_mapping.get(zone_level, 0x969696)
@@ -305,7 +316,7 @@ class SkillsDropdown(discord.ui.Select, CommonResponses):
             return
 
         # Load player data
-        player_data = load_player_data(self.guild_id)
+        player_data = load_all_player_data(self.guild_id)
 
         # Sort players based on selected skill's experience
         skill = self.values[0]
@@ -363,7 +374,7 @@ class MonsterKillsDropdown(discord.ui.Select, CommonResponses):
             return
 
         # Load player data
-        player_data = load_player_data(self.guild_id)
+        player_data = load_all_player_data(self.guild_id)
 
         # Select the monster
         monster = self.values[0]
@@ -416,7 +427,7 @@ class ThreeEyedSnakeDropdown(discord.ui.Select, CommonResponses):
             return
 
         # Load player data
-        player_data = load_player_data(self.guild_id)
+        player_data = load_all_player_data(self.guild_id)
 
         # Select the category
         category = self.values[0]
@@ -478,7 +489,7 @@ class RichListDropdown(discord.ui.Select, CommonResponses):
             return
 
         # Load player data
-        player_data = load_player_data(self.guild_id)
+        player_data = load_all_player_data(self.guild_id)
 
         # Initialize player objects and sort based on the selected category
         sorted_players = []
@@ -542,9 +553,9 @@ class ResurrectOptions(discord.ui.View, CommonResponses):
         self.author_id = author_id
         self.include_nero = include_nero
 
-        self.player = Exemplar(player_data[author_id]["exemplar"],
-                               player_data[author_id]["stats"],
-                               player_data[author_id]["inventory"])
+        self.player = Exemplar(player_data["exemplar"],
+                               player_data["stats"],
+                               player_data["inventory"])
 
         # Create the MTRM button, disabled if Materium is 0
         mtrm_button = discord.ui.Button(
@@ -575,20 +586,20 @@ class ResurrectOptions(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        self.player_data = load_player_data(interaction.guild.id)
-        self.player = Exemplar(self.player_data[self.author_id]["exemplar"],
-                               self.player_data[self.author_id]["stats"],
-                               self.player_data[self.author_id]["inventory"])
+        self.player_data = load_player_data(interaction.guild.id, self.author_id)
+        self.player = Exemplar(self.player_data["exemplar"],
+                               self.player_data["stats"],
+                               self.player_data["inventory"])
 
         if self.player.stats.health > 0:
             # Player is not dead
             return await self.not_dead_response(interaction)
 
-        if self.player_data[self.author_id]["inventory"].materium >= 1:
-            self.player_data[self.author_id]["inventory"].materium -= 1
+        if self.player_data["inventory"].materium >= 1:
+            self.player_data["inventory"].materium -= 1
             self.player.stats.health = self.player.stats.max_health
             self.player.stats.stamina = self.player.stats.max_stamina
-            self.player_data[self.author_id]["stats"].update(self.player.stats.__dict__)  # Save the updated stats
+            self.player_data["stats"].update(self.player.stats.__dict__)  # Save the updated stats
 
             # Create a new embed with only the renewed message
             new_embed = discord.Embed(title="Revived", description="You feel *strangely renewed* and **ready for battle**!",
@@ -600,7 +611,7 @@ class ResurrectOptions(discord.ui.View, CommonResponses):
                                       f"{get_emoji('stamina_emoji')}  {self.player.stats.stamina}/{self.player.stats.max_stamina}")
 
             new_embed.add_field(name=f"{self.mtrm}  Remaining",
-                                value=f"{self.player_data[self.author_id]['inventory'].materium}")
+                                value=f"{self.player_data['inventory'].materium}")
 
             # Add the "Revive" image to the embed
             new_embed.set_image(url="https://raw.githubusercontent.com/kal-elf2/MTRM-RPG/master/images/cemetery/Revive.png")
@@ -609,7 +620,7 @@ class ResurrectOptions(discord.ui.View, CommonResponses):
                 embed=new_embed,
                 view=None,
             )
-            save_player_data(interaction.guild.id, self.player_data)
+            save_player_data(interaction.guild.id, self.author_id, self.player_data)
 
     async def resurrect_callback(self, interaction):
 
@@ -619,10 +630,10 @@ class ResurrectOptions(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        self.player_data = load_player_data(interaction.guild.id)
-        self.player = Exemplar(self.player_data[self.author_id]["exemplar"],
-                               self.player_data[self.author_id]["stats"],
-                               self.player_data[self.author_id]["inventory"])
+        self.player_data = load_player_data(interaction.guild.id, self.author_id)
+        self.player = Exemplar(self.player_data["exemplar"],
+                               self.player_data["stats"],
+                               self.player_data["inventory"])
 
         if self.player.stats.health > 0:
             # Player is not dead
@@ -632,7 +643,7 @@ class ResurrectOptions(discord.ui.View, CommonResponses):
         levels_decreased = await apply_penalty(self.player_data, self.author_id, interaction)
 
         # Update player data for death penalty
-        player_inventory = self.player_data[self.author_id]['inventory']
+        player_inventory = self.player_data['inventory']
 
         # Before resetting the inventory, deep copy the entire inventory
         saved_inventory = copy.deepcopy(player_inventory)
@@ -647,10 +658,10 @@ class ResurrectOptions(discord.ui.View, CommonResponses):
         player_inventory.shields = []
 
         # Save the updated stats
-        save_player_data(interaction.guild.id, self.player_data)
+        save_player_data(interaction.guild.id, self.author_id, self.player_data)
 
         # Update self.player based on updated player_data
-        updated_stats = self.player_data[self.author_id]['stats']
+        updated_stats = self.player_data['stats']
         self.player.stats.health = updated_stats['health']
         self.player.stats.max_health = updated_stats['max_health']
 
@@ -725,11 +736,11 @@ class ResurrectOptions(discord.ui.View, CommonResponses):
         await interaction.response.send_message(embed=nero_embed, ephemeral=True)
 
 async def apply_penalty(player_data, author_id, interaction):
-    stats = player_data[author_id]["stats"]
+    stats = player_data["stats"]
     levels_decreased = {}
-    player = Exemplar(player_data[author_id]["exemplar"],
-                      player_data[author_id]["stats"],
-                      player_data[author_id]["inventory"])
+    player = Exemplar(player_data["exemplar"],
+                      player_data["stats"],
+                      player_data["inventory"])
 
     new_combat_level = None
     for skill in ["combat_experience", "woodcutting_experience", "mining_experience"]:
@@ -759,13 +770,13 @@ async def apply_penalty(player_data, author_id, interaction):
     # Call the function to update combat stats once, after all skills have been processed
     player.set_combat_stats(new_combat_level, player, woodcutting_level, mining_level)
 
-    player_data[author_id]["stats"]["health"] = player.stats.health
-    player_data[author_id]["stats"]["max_health"] = player.stats.max_health
-    player_data[author_id]["stats"]["strength"] = player.stats.strength
-    player_data[author_id]["stats"]["stamina"] = player.stats.stamina
-    player_data[author_id]["stats"]["max_stamina"] = player.stats.max_stamina
-    player_data[author_id]["stats"]["attack"] = player.stats.attack
-    player_data[author_id]["stats"]["defense"] = player.stats.defense
+    player_data["stats"]["health"] = player.stats.health
+    player_data["stats"]["max_health"] = player.stats.max_health
+    player_data["stats"]["strength"] = player.stats.strength
+    player_data["stats"]["stamina"] = player.stats.stamina
+    player_data["stats"]["max_stamina"] = player.stats.max_stamina
+    player_data["stats"]["attack"] = player.stats.attack
+    player_data["stats"]["defense"] = player.stats.defense
 
     return levels_decreased
 

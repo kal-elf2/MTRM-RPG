@@ -29,10 +29,10 @@ class HealTentButton(discord.ui.View):
         actual_healed_amount = self.player.stats.health - previous_health
 
         # Update the player_data with the modified player stats
-        self.player_data[self.author_id]["stats"] = self.player.stats
+        self.player_data["stats"] = self.player.stats
 
         # Save the updated player data
-        save_player_data(self.guild_id, self.player_data)
+        save_player_data(self.guild_id, self.author_id, self.player_data)
 
         # Generate and display the updated health bar
         updated_health_bar = health_bar(self.player.stats.health, self.player.stats.max_health)
