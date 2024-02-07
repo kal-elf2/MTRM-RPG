@@ -10,19 +10,27 @@ class TravelSelect(discord.ui.Select, CommonResponses):
         self.author_id = author_id
         zone_level = player.stats.zone_level
 
+
+
         options = [
             discord.SelectOption(label="Shop", value="shop", emoji=f"{get_emoji('coppers_emoji')}")
         ]
 
+        # Check for "Rusty Spork" in the player's inventory with at least 1 in stack
+        if any(item.name == "Rusty Spork" and item.stack >= 1 for item in player.inventory.items):
+            options.append(
+                discord.SelectOption(label="What is this Rusty Spork?", value="spork",
+                                     emoji=f"{get_emoji('Rusty Spork')}"))
+
         # Dynamic requirements based on zone level
         required_amount = 25 * zone_level
-        poplar_strip = self.player_data.get("shipwreck", {}).get("poplar_strip", 0)
-        cannonball = self.player_data.get("shipwreck", {}).get("cannonball", 0)
+        poplar_strip = self.player_data.get("shipwreck", {}).get("Poplar Strip", 0)
+        cannonball = self.player_data.get("shipwreck", {}).get("Cannonball", 0)
 
 
         # Conditionally add dynamic label based on zone level
         if poplar_strip >= required_amount and cannonball >= required_amount:
-            options.append(discord.SelectOption(label="Fight Kraken", value="kraken", emoji="🦑"))
+            options.append(discord.SelectOption(label="Hunt Kraken", value="kraken", emoji="🦑"))
         else:
             ship_name = self.ship_names.get(zone_level, "Ship")
             options.append(discord.SelectOption(label=f"Stock {ship_name}", value="supplies", emoji=f"{get_emoji('Cannonball')}"))
@@ -30,17 +38,16 @@ class TravelSelect(discord.ui.Select, CommonResponses):
         # Add "Got any hints?"
         options.append(discord.SelectOption(label="Uncover Secrets", value="hints", emoji="🗝️"))
 
-        # Check for "Rusty Spork" in the player's inventory with at least 1 in stack
-        if any(item.name == "Rusty Spork" and item.stack >= 1 for item in player.inventory.items):
-            options.append(
-                discord.SelectOption(label="What is a Rusty Spork used for?", value="spork", emoji=f"{get_emoji('Rusty Spork')}"))
-
         super().__init__(placeholder="Choose your action", options=options, min_values=1, max_values=1)
 
     async def callback(self, interaction: discord.Interaction):
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
+
+        # Check if the Reset Button is not already in the view
+        if not any(isinstance(item, ResetButton) for item in self.view.children):
+            self.view.add_item(ResetButton(self.player, self.player_data, self.author_id))
 
         # Handle the selection here
         selected_option = self.values[0]
@@ -52,13 +59,7 @@ class TravelSelect(discord.ui.Select, CommonResponses):
             4: 0x9900ff,
             5: 0xfebd0d
         }
-        embed_color = color_mapping.get(zone_level, 0x969696)  # Default color if zone level is not in mapping
-
-        # Create embed message
-        embed = discord.Embed(
-            title=f"Selected: {selected_option}",
-            color=embed_color
-        )
+        embed_color = color_mapping.get(zone_level)
 
         if selected_option == "shop":
             pass
@@ -72,56 +73,68 @@ class TravelSelect(discord.ui.Select, CommonResponses):
 
         if selected_option == "supplies":
             from nero.supplies import DepositButton
-            ship_name = TravelSelect.ship_names.get(zone_level, "Ship")
+            ship_name = self.ship_names.get(zone_level)
             ship_gif_url = generate_gif_urls("ships", ship_name)
-            embed.title = f"{ship_name} Supplies"
-            embed.set_image(url=ship_gif_url)
 
-            # Define required amount based on zone level
-            required_amount = 25 * zone_level
-
-            # Get quantities from the shipwreck
-            poplar_strip_shipwreck = self.player_data['shipwreck'].get('poplar_strip', 0)
-            cannonball_shipwreck = self.player_data['shipwreck'].get('cannonball', 0)
-
-            # Update embed description to show current supplies in the shipwreck
-            embed.description = f"{get_emoji('Poplar Strip')} **Poplar Strips: {poplar_strip_shipwreck}**\n" \
-                                f"{get_emoji('Cannonball')} **Cannonballs: {cannonball_shipwreck}**"
-
-            # Get quantities from the inventory and shipwreck
             poplar_strip_inventory = self.player.inventory.get_item_quantity('Poplar Strip')
             cannonball_inventory = self.player.inventory.get_item_quantity('Cannonball')
-            poplar_strip_shipwreck = self.player_data['shipwreck'].get('poplar_strip', 0)
-            cannonball_shipwreck = self.player_data['shipwreck'].get('cannonball', 0)
+            poplar_strip_shipwreck = self.player_data['shipwreck'].get('Poplar Strip', 0)
+            cannonball_shipwreck = self.player_data['shipwreck'].get('Cannonball', 0)
 
-            # Determine if buttons should be disabled based on inventory and shipwreck quantities
-            has_poplar_strips = poplar_strip_inventory >= 1 and poplar_strip_shipwreck < required_amount
-            has_cannonballs = cannonball_inventory >= 1 and cannonball_shipwreck < required_amount
-            has_5_poplar_strips = poplar_strip_inventory >= 5 and poplar_strip_shipwreck + 5 <= required_amount
-            has_5_cannonballs = cannonball_inventory >= 5 and cannonball_shipwreck + 5 <= required_amount
+            # Define required amount based on zone level, no max for zone 5
+            if zone_level < 5:
+                required_amount = 25 * zone_level
+                max_deposit_text = f"(Required: {required_amount})"
+            else:
+                required_amount = float('inf')  # Effectively no maximum
+                max_deposit_text = f"(Minimum: {zone_level * 25})"
 
-            # Create buttons for depositing poplar strips and cannonballs
-            poplar_strip_button_1 = DepositButton(get_emoji('Poplar Strip'), "poplar_strip", 1, self.player,
+            embed = discord.Embed(
+                title=f"{ship_name} Supplies",
+                color=embed_color
+            )
+            embed.set_image(url=ship_gif_url)
+            embed.add_field(
+                name="Backpack",
+                value=f"{get_emoji('Poplar Strip')} **{poplar_strip_inventory}**\n{get_emoji('Cannonball')} **{cannonball_inventory}**",
+                inline=True
+            )
+            embed.add_field(
+                name=f"Deposited: {max_deposit_text}",
+                value=f"{get_emoji('Poplar Strip')} **{poplar_strip_shipwreck}**\n{get_emoji('Cannonball')} **{cannonball_shipwreck}**",
+                inline=True
+            )
+
+            # Adjust conditions for button enable/disable
+            has_poplar_strips = poplar_strip_inventory >= 1 and (
+                        poplar_strip_shipwreck < required_amount or zone_level == 5)
+            has_cannonballs = cannonball_inventory >= 1 and (cannonball_shipwreck < required_amount or zone_level == 5)
+            has_5_poplar_strips = poplar_strip_inventory >= 5 and (
+                        poplar_strip_shipwreck + 5 <= required_amount or zone_level == 5)
+            has_5_cannonballs = cannonball_inventory >= 5 and (
+                        cannonball_shipwreck + 5 <= required_amount or zone_level == 5)
+
+            # Create and add buttons to the view, adjusting for zone 5's no max limit
+            poplar_strip_button_1 = DepositButton(get_emoji('Poplar Strip'), "Poplar Strip", 1, self.player,
                                                   self.player_data, self.author_id, discord.ButtonStyle.green,
                                                   disabled=not has_poplar_strips)
-            poplar_strip_button_5 = DepositButton(get_emoji('Poplar Strip'), "poplar_strip", 5, self.player,
+            poplar_strip_button_5 = DepositButton(get_emoji('Poplar Strip'), "Poplar Strip", 5, self.player,
                                                   self.player_data, self.author_id, discord.ButtonStyle.green,
                                                   disabled=not has_5_poplar_strips)
-            cannonball_button_1 = DepositButton(get_emoji('Cannonball'), "cannonball", 1, self.player, self.player_data,
+            cannonball_button_1 = DepositButton(get_emoji('Cannonball'), "Cannonball", 1, self.player, self.player_data,
                                                 self.author_id, discord.ButtonStyle.grey, disabled=not has_cannonballs)
-            cannonball_button_5 = DepositButton(get_emoji('Cannonball'), "cannonball", 5, self.player, self.player_data,
+            cannonball_button_5 = DepositButton(get_emoji('Cannonball'), "Cannonball", 5, self.player, self.player_data,
                                                 self.author_id, discord.ButtonStyle.grey,
                                                 disabled=not has_5_cannonballs)
 
-            # Add buttons to the view
             view = discord.ui.View()
             view.add_item(poplar_strip_button_1)
             view.add_item(poplar_strip_button_5)
             view.add_item(cannonball_button_1)
             view.add_item(cannonball_button_5)
 
-            # Respond to interaction with embed and buttons
             await interaction.response.send_message(embed=embed, view=view)
+
 
         elif selected_option == "hints":
             pass
@@ -138,3 +151,25 @@ class JollyRogerView(discord.ui.View):
     def __init__(self, player, player_data, author_id):
         super().__init__()
         self.add_item(TravelSelect(player, player_data, author_id))
+
+class ResetButton(discord.ui.Button):
+    def __init__(self, player, player_data, author_id):
+        super().__init__(label="Reset", style=discord.ButtonStyle.grey, emoji="🔄")
+        self.player = player
+        self.player_data = player_data
+        self.author_id = author_id
+
+    async def callback(self, interaction: discord.Interaction):
+        if str(interaction.user.id) != self.author_id:
+            await interaction.response.send_message("You are not authorized to perform this action.", ephemeral=True)
+            return
+
+        # Clear items from the view and add a fresh instance of TravelSelect
+        view = self.view
+        view.clear_items()
+        view.add_item(TravelSelect(self.player, self.player_data, self.author_id))
+
+        # Optionally, you could add the ResetButton again if you want it to persist
+        view.add_item(ResetButton(self.player, self.player_data, self.author_id))
+
+        await interaction.response.edit_message(view=view)

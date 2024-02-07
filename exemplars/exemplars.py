@@ -366,15 +366,15 @@ class Shipwreck:
 
     def to_dict(self):
         return {
-            "poplar_strip": self.poplar_strip,
-            "cannonball": self.cannonball
+            "Poplar Strip": self.poplar_strip,
+            "Cannonball": self.cannonball
         }
 
     @classmethod
     def from_dict(cls, data):
         shipwreck = cls()
-        shipwreck.poplar_strip = data.get("poplar_strip", 0)
-        shipwreck.cannonball = data.get("cannonball", 0)
+        shipwreck.poplar_strip = data.get("Poplar Strip", 0)
+        shipwreck.cannonball = data.get("Cannonball", 0)
         return shipwreck
 
 
