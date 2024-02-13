@@ -15,14 +15,19 @@ class DepositButton(discord.ui.Button, CommonResponses):
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.defer()
 
-        from nero.options import TravelSelect
+        from nero.options import TravelSelectDropdown
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
 
+        # Initial shipwreck counts before updating to not send multiple embeds after reaching minimum in zone 5
+        initial_poplar_count_shipwreck = self.player_data['shipwreck'].get('Poplar Strip', 0)
+        initial_cannonball_count_shipwreck = self.player_data['shipwreck'].get('Cannonball', 0)
+
         zone_level = self.player.stats.zone_level
-        ship_name = TravelSelect.ship_names.get(zone_level, "Ship")
+        ship_name = TravelSelectDropdown.ship_names.get(zone_level, "Ship")
         ship_gif_url = generate_gif_urls("ships", ship_name)
+
         color_mapping = {
             1: 0x969696,
             2: 0x15ce00,
@@ -32,49 +37,92 @@ class DepositButton(discord.ui.Button, CommonResponses):
         }
         embed_color = color_mapping.get(zone_level)
 
-        # Deduct from player's inventory
-        self.player.inventory.remove_item(self.item_name, self.amount)
-
-        # Update shipwreck quantities
         current_amount = self.player_data.get('shipwreck', {}).get(self.item_name, 0)
-        self.player_data['shipwreck'][self.item_name] = current_amount + self.amount
-
-        # Save the updated player data
-        save_player_data(interaction.guild.id, self.author_id, self.player_data)
-
-        # Define required_amount for max limit check
         required_amount = 25 * zone_level if zone_level < 5 else float('inf')
 
-        # Recalculate the updated counts from shipwreck and inventory AFTER updating
+        # Check if adding the items exceeds the maximum allowed
+        if current_amount + self.amount > required_amount and zone_level < 5:
+            nero_embed = discord.Embed(
+                title=f"{self.item_name.title()}s Full",
+                description=f"Yarr! Ye be trying to sink us? The limit is {required_amount}. Maybe ye need to reset yer buttons.",
+                color=discord.Color.dark_gold()
+            )
+            nero_embed.set_thumbnail(url=generate_urls("nero", "gun"))
+            await interaction.followup.send(embed=nero_embed, ephemeral=True)
+            return
+
+        # Proceed with updating the shipwreck inventory and player's inventory
+        self.player.inventory.remove_item(self.item_name, self.amount)
+        self.player_data['shipwreck'][self.item_name] = current_amount + self.amount
+
+        # Save the updated player data (Implement the `save_player_data` logic as needed)
+        save_player_data(interaction.guild.id, self.author_id, self.player_data)
+
+        # After recalculating the updated counts from shipwreck and inventory
         poplar_count_shipwreck = self.player_data['shipwreck'].get('Poplar Strip', 0)
         cannonball_count_shipwreck = self.player_data['shipwreck'].get('Cannonball', 0)
         poplar_count_inventory = self.player.inventory.get_item_quantity('Poplar Strip')
         cannonball_count_inventory = self.player.inventory.get_item_quantity('Cannonball')
 
+        # Initialize nero_embed_sent to False at the start
         nero_embed_sent = False
         nero_message = ""
 
-        # Adjust the Nero message as follows
+        # Adjust the Nero message as follows for Zone levels below 5
         if zone_level < 5 and poplar_count_shipwreck >= required_amount and cannonball_count_shipwreck >= required_amount:
-            nero_message = "Yarr! The ship is full to the brim! Come visit me again at the Jolly Roger to hunt down that kraken!"
-            nero_embed_sent = True
-        elif zone_level == 5 and (
-                poplar_count_shipwreck >= required_amount or cannonball_count_shipwreck >= required_amount):
-            nero_message = "Aye! Ye've gathered enough to face the kraken, but the sea be treacherous! Stock up as much as ye can carry!"
+            nero_message = "Yarr! The ship is full to the brim! Come visit me again at the Jolly Roger when yer ready hunt down that Kraken!"
             nero_embed_sent = True
 
-        # Update the part where you decide to send the Nero message or update the embed
+        if zone_level == 5:
+            required_minimum = 25 * zone_level
+            # Flags for checking if the threshold was previously crossed
+            battle_message_sent = self.player_data.get('battle_message_sent', False)
+
+            # Determine if each resource individually crossed the minimum threshold
+            crossed_minimum_poplar = initial_poplar_count_shipwreck < required_minimum <= poplar_count_shipwreck
+            crossed_minimum_cannonball = initial_cannonball_count_shipwreck < required_minimum <= cannonball_count_shipwreck
+
+            # Determine if both resources are now above the minimum
+            both_above_minimum = poplar_count_shipwreck >= required_minimum and cannonball_count_shipwreck >= required_minimum
+
+            # Send "Ready for Battle!" message if both resources are above the minimum and message not sent before
+            if both_above_minimum and not battle_message_sent:
+                nero_message = "Hoist the colors! Ye've stocked enough to challenge the depths itself. Though the Kraken awaits, more supplies mean a stronger fight. Keep 'em coming, for glory and treasure!"
+                nero_embed = discord.Embed(
+                    title="Ready for Battle!",
+                    description=nero_message,
+                    color=discord.Color.dark_gold()
+                )
+                nero_embed.set_image(url=generate_urls("nero", "kraken"))
+                await interaction.followup.send(embed=nero_embed, ephemeral=True)
+
+                # Update the player_data to indicate the message has been sent
+                self.player_data['battle_message_sent'] = True
+                save_player_data(interaction.guild.id, self.author_id, self.player_data)
+
+            elif (crossed_minimum_poplar or crossed_minimum_cannonball) and not both_above_minimum:
+                # Send the "Ye Be On Course!" message only if not all resources are above the minimum and the battle message hasn't been sent
+                nero_message = "Arrr! Ye've hoarded enough to set sail against the Kraken beastie, but don't ye be stoppin'! The seas are harsh and unforgiving. Gather all ye can to ensure victory!"
+                nero_embed = discord.Embed(
+                    title="Ye Be On Course!",
+                    description=nero_message,
+                    color=discord.Color.dark_gold()
+                )
+                nero_embed.set_thumbnail(url=generate_urls("nero", "kraken"))
+                await interaction.followup.send(embed=nero_embed, ephemeral=True)
+
+        # Send the Nero message if needed
         if nero_embed_sent:
             nero_embed = discord.Embed(
-                title="Captain Ner0",
+                title="A Message from Captain Ner0",
                 description=nero_message,
                 color=discord.Color.dark_gold()
             )
-            nero_embed.set_thumbnail(url=generate_urls("nero", "welcome"))
+            nero_embed.set_image(url=generate_urls("nero", "kraken"))
             await interaction.followup.send(embed=nero_embed, ephemeral=True)
 
         # Proceed with updating the supply counts and button states
-        max_deposit_text = f"(Minimum: {zone_level * 25})" if zone_level == 5 else f"(Required: {required_amount})"
+        max_deposit_text = f"(Minimum: {zone_level * 25})" if zone_level == 5 else f"(Need {required_amount})"
         embed = discord.Embed(title=f"{ship_name} Supplies", color=embed_color)
         embed.set_image(url=ship_gif_url)
         embed.add_field(
@@ -89,8 +137,7 @@ class DepositButton(discord.ui.Button, CommonResponses):
         )
 
         # Dynamically adjust the buttons based on the new item counts
-        view=self.view
-
+        view = self.view
         for item in view.children:
             if isinstance(item, DepositButton):
                 item_quantity = self.player.inventory.get_item_quantity(item.item_name)
@@ -98,6 +145,6 @@ class DepositButton(discord.ui.Button, CommonResponses):
                 item.disabled = item_quantity < item.amount or (
                             shipwreck_quantity + item.amount > required_amount and zone_level < 5)
 
-        await interaction.edit_original_response(embed=embed, view=self.view)
+        await interaction.edit_original_response(embed=embed, view=view)
 
 

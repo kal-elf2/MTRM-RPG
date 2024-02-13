@@ -2,14 +2,19 @@ import discord
 from emojis import get_emoji
 from utils import CommonResponses
 from images.urls import generate_gif_urls
-class TravelSelect(discord.ui.Select, CommonResponses):
+
+class JollyRogerView(discord.ui.View):
+    def __init__(self, player, player_data, author_id):
+        super().__init__()
+        self.add_item(TravelSelectDropdown(player, player_data, author_id))
+
+class TravelSelectDropdown(discord.ui.Select, CommonResponses):
     ship_names = {1: "Picard", 2: "Crayer", 3: "Hoy", 4: "Carrack", 5: "Caravel"}
     def __init__(self, player, player_data, author_id):
         self.player = player
         self.player_data = player_data
         self.author_id = author_id
         zone_level = player.stats.zone_level
-
 
 
         options = [
@@ -45,9 +50,7 @@ class TravelSelect(discord.ui.Select, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        # Check if the Reset Button is not already in the view
-        if not any(isinstance(item, ResetButton) for item in self.view.children):
-            self.view.add_item(ResetButton(self.player, self.player_data, self.author_id))
+        await interaction.response.defer()
 
         # Handle the selection here
         selected_option = self.values[0]
@@ -71,7 +74,7 @@ class TravelSelect(discord.ui.Select, CommonResponses):
         # Handle Fight Kraken action
         # Update embed description or other embed properties as needed
 
-        if selected_option == "supplies":
+        elif selected_option == "supplies":
             from nero.supplies import DepositButton
             ship_name = self.ship_names.get(zone_level)
             ship_gif_url = generate_gif_urls("ships", ship_name)
@@ -84,7 +87,7 @@ class TravelSelect(discord.ui.Select, CommonResponses):
             # Define required amount based on zone level, no max for zone 5
             if zone_level < 5:
                 required_amount = 25 * zone_level
-                max_deposit_text = f"(Required: {required_amount})"
+                max_deposit_text = f"(Need {required_amount})"
             else:
                 required_amount = float('inf')  # Effectively no maximum
                 max_deposit_text = f"(Minimum: {zone_level * 25})"
@@ -133,7 +136,7 @@ class TravelSelect(discord.ui.Select, CommonResponses):
             view.add_item(cannonball_button_1)
             view.add_item(cannonball_button_5)
 
-            await interaction.response.send_message(embed=embed, view=view)
+            await interaction.followup.send(embed=embed, view=view)
 
 
         elif selected_option == "hints":
@@ -146,30 +149,28 @@ class TravelSelect(discord.ui.Select, CommonResponses):
         # Handle Rusty Spork action
         # Update embed description or other embed properties as needed
 
+        # Check if ResetButton is already in the view
+        reset_button_exists = any(isinstance(item, ResetButton) for item in self.view.children)
 
-class JollyRogerView(discord.ui.View):
-    def __init__(self, player, player_data, author_id):
-        super().__init__()
-        self.add_item(TravelSelect(player, player_data, author_id))
+        # If not, add the ResetButton to the view
+        if not reset_button_exists:
+            self.view.add_item(ResetButton(self.player, self.player_data, self.author_id))
 
-class ResetButton(discord.ui.Button):
+        # Since you're using defer earlier, you should use edit_original_response here
+        await interaction.edit_original_response(view=self.view)
+
+class ResetButton(discord.ui.Button, CommonResponses):
     def __init__(self, player, player_data, author_id):
-        super().__init__(label="Reset", style=discord.ButtonStyle.grey, emoji="🔄")
         self.player = player
         self.player_data = player_data
         self.author_id = author_id
+        super().__init__(label="Reset", style=discord.ButtonStyle.secondary)
 
     async def callback(self, interaction: discord.Interaction):
         if str(interaction.user.id) != self.author_id:
-            await interaction.response.send_message("You are not authorized to perform this action.", ephemeral=True)
+            await self.nero_unauthorized_user_response(interaction)
             return
 
-        # Clear items from the view and add a fresh instance of TravelSelect
-        view = self.view
-        view.clear_items()
-        view.add_item(TravelSelect(self.player, self.player_data, self.author_id))
-
-        # Optionally, you could add the ResetButton again if you want it to persist
-        view.add_item(ResetButton(self.player, self.player_data, self.author_id))
-
-        await interaction.response.edit_message(view=view)
+        self.view.clear_items()
+        self.view.add_item(TravelSelectDropdown(self.player, self.player_data, self.author_id))
+        await interaction.response.edit_message(view=self.view)
