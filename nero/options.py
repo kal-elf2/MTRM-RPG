@@ -65,14 +65,15 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
         embed_color = color_mapping.get(zone_level)
 
         if selected_option == "shop":
-            pass
-        # Handle Shop action
-        # Update embed description or other embed properties as needed
+            from nero.shop import ShopCategorySelect
+            self.view.clear_items()  # Clear existing items
+            self.view.add_item(ShopCategorySelect(interaction.guild_id, self.author_id, self.player_data, self.player))
+            self.view.add_item(ResetButton(self.author_id))  # Keep the Reset button
+            await interaction.edit_original_response(content="Select a category to browse:", view=self.view)
 
         elif selected_option == "kraken":
             pass
         # Handle Fight Kraken action
-        # Update embed description or other embed properties as needed
 
         elif selected_option == "supplies":
             from nero.supplies import DepositButton
@@ -138,39 +139,48 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
 
             await interaction.followup.send(embed=embed, view=view)
 
-
         elif selected_option == "hints":
             pass
         # Handle Got any hints? action
-        # Update embed description or other embed properties as needed
 
         elif selected_option == "spork":
             pass
         # Handle Rusty Spork action
-        # Update embed description or other embed properties as needed
 
         # Check if ResetButton is already in the view
         reset_button_exists = any(isinstance(item, ResetButton) for item in self.view.children)
 
         # If not, add the ResetButton to the view
         if not reset_button_exists:
-            self.view.add_item(ResetButton(self.player, self.player_data, self.author_id))
+            self.view.add_item(ResetButton(self.author_id))
 
         # Since you're using defer earlier, you should use edit_original_response here
         await interaction.edit_original_response(view=self.view)
 
 class ResetButton(discord.ui.Button, CommonResponses):
-    def __init__(self, player, player_data, author_id):
-        self.player = player
-        self.player_data = player_data
+    def __init__(self, author_id):
+        super().__init__(label="Reset", style=discord.ButtonStyle.secondary, custom_id="reset_jolly_roger")
+
         self.author_id = author_id
-        super().__init__(label="Reset", style=discord.ButtonStyle.secondary)
 
     async def callback(self, interaction: discord.Interaction):
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
 
+        from exemplars.exemplars import Exemplar
+        from utils import load_player_data
+
+        # Fetch updated player data
+        guild_id = interaction.guild.id
+        player_data = load_player_data(guild_id, self.author_id)
+
+        # Reinitialize player with the fresh data
+        player = Exemplar(player_data["exemplar"],
+                          player_data["stats"],
+                          player_data["inventory"])
+
+        # Reset the Jolly Roger view
         self.view.clear_items()
-        self.view.add_item(TravelSelectDropdown(self.player, self.player_data, self.author_id))
+        self.view.add_item(TravelSelectDropdown(player, player_data, self.author_id))
         await interaction.response.edit_message(view=self.view)

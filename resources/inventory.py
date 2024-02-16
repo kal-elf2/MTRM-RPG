@@ -204,4 +204,16 @@ class Inventory:
 
         return False
 
+    def sell_item(self, item_name, amount=1):
+        """Adjusts the stack of an item or removes it if the stack reaches zero."""
+        for item_list in [self.weapons, self.armors, self.shields, self.charms, self.potions]:
+            for item in item_list:
+                if item.name == item_name:
+                    item.stack -= amount
+                    if item.stack <= 0:
+                        item_list.remove(item)
+                    return True
+        return False
+
+
 
