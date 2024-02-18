@@ -37,6 +37,7 @@ class ShopCategorySelect(discord.ui.Select, CommonResponses):
         self.view.add_item(RefreshShopButton(self.author_id))  # Add the Refresh Shop button
         await interaction.response.edit_message(content=f"Select an item from {selected_category}:", view=self.view)
 
+
 class DisplayItemsSelect(discord.ui.Select, CommonResponses):
     def __init__(self, interaction, items, author_id):
         self.interaction = interaction
@@ -48,31 +49,7 @@ class DisplayItemsSelect(discord.ui.Select, CommonResponses):
         self.player = Exemplar(self.player_data["exemplar"],
                                self.player_data["stats"],
                                self.player_data["inventory"])
-
-        options = [
-            discord.SelectOption(label=f"{item.name} - {item.value} Coppers", value=item.name, emoji=get_emoji(item.name)) for item in items
-        ]
-        super().__init__(placeholder="Select an item to view or sell", options=options, min_values=1, max_values=1)
-
-    async def callback(self, interaction: discord.Interaction):
-        if str(interaction.user.id) != self.author_id:
-            await self.nero_unauthorized_user_response(interaction)
-            return
-
-
-        selected_item_name = self.values[0]
-        selected_item = next((item for item in self.items if item.name == selected_item_name), None)
-
-        # Emojis for each zone
-        zone_emoji_mapping = {
-            1: 'common_emoji',
-            2: 'uncommon_emoji',
-            3: 'rare_emoji',
-            4: 'epic_emoji',
-            5: 'legendary_emoji'
-        }
-
-        zone_rarity = {
+        self.zone_rarity = {
             1: '(Common)',
             2: '(Uncommon)',
             3: '(Rare)',
@@ -80,52 +57,41 @@ class DisplayItemsSelect(discord.ui.Select, CommonResponses):
             5: '(Legendary)',
         }
 
-        # Colors for each zone
-        color_mapping = {
-            1: 0x969696,
-            2: 0x15ce00,
-            3: 0x0096f1,
-            4: 0x9900ff,
-            5: 0xfebd0d
-        }
 
-        # Utilize the mappings for emojis, rarities, and colors based on zone_level
-        zone_level = selected_item.zone_level
-        zone_emoji = get_emoji(zone_emoji_mapping.get(zone_level))
-        zone_rarity_label = zone_rarity.get(zone_level)
-        embed_color = color_mapping.get(zone_level)
+        options = [
+            discord.SelectOption(
+                label=f"{item.name} {self.zone_rarity.get(getattr(item, 'zone_level', ''), '')} - {format(item.value, ',')} Coppers",
+                # Conditionally construct value with or without zone_level
+                value=f"{item.name}:{getattr(item, 'zone_level', 'None')}",
+                emoji=get_emoji(item.name)
+            )
+            for item in items
+        ]
+        super().__init__(placeholder="Select an item to view or sell", options=options, min_values=1, max_values=1)
 
-        # Constructing the title with item name, zone rarity, and emoji
-        embed_title = f"{zone_emoji} {selected_item.name} {zone_rarity_label}"
 
-        # Constructing the description with item details
-        message_content = f"**Value:** {selected_item.value:,} {get_emoji('coppers_emoji')}\n"
-        if hasattr(selected_item, "attack_modifier"):
-            message_content += f"**Damage:** {selected_item.attack_modifier}\n"
-        if hasattr(selected_item, "defense_modifier"):
-            message_content += f"**Armor:** {selected_item.defense_modifier}\n"
-        if hasattr(selected_item, "special_attack"):
-            message_content += f"**Special Attack:** {selected_item.special_attack}\n"
-        if hasattr(selected_item, "description") and selected_item.description:
-            message_content += f"**Description:** {selected_item.description}\n"
-        message_content += "\nHow many would you like to sell?\n\n**Backpack:**"
+    async def callback(self, interaction: discord.Interaction):
+        if str(interaction.user.id) != self.author_id:
+            await self.nero_unauthorized_user_response(interaction)
+            return
 
-        embed = discord.Embed(title=embed_title, description=message_content, color=embed_color)
-        embed.set_thumbnail(
-            url=generate_urls("Icons", selected_item.name.replace(" ", "%20")))
 
-        formatted_coppers = f"{self.player.inventory.coppers:,}"
-        embed.set_footer(text=f"Quantity: {selected_item.stack}\nCoppers: {formatted_coppers}")
+        selected_item_value = self.values[0]
+        item_name, zone_level_str = selected_item_value.rsplit(':', 1)
 
-        # Determine if the "Sell 5" button should be enabled
-        can_sell_5 = selected_item.stack >= 5
-        view = discord.ui.View()
-        view.add_item(SellButton("Sell 1", 1, selected_item, self.guild_id, self.author_id, self.player_data, self.player))
-        # Add the "Sell 5" button, enabling or disabling based on the can_sell_5 flag
-        sell_5_button = SellButton("Sell 5", 5, selected_item, self.guild_id, self.author_id, self.player_data, self.player)
-        sell_5_button.disabled = not can_sell_5
-        view.add_item(sell_5_button)
-        view.add_item(SellCustomButton(selected_item, self.guild_id, self.author_id, self.player_data, self.player))
+        # Handle items without zone_level differently
+        if zone_level_str != 'None':
+            zone_level = int(zone_level_str)
+            selected_item = next((item for item in self.items if
+                                  item.name == item_name and getattr(item, 'zone_level', 0) == zone_level), None)
+        else:
+            selected_item = next(
+                (item for item in self.items if item.name == item_name and not hasattr(item, 'zone_level')), None)
+
+        embed = create_item_embed(selected_item, self.player)
+
+        # Initialize the view for displaying buttons with the SellItemView
+        view = SellItemView(selected_item, self.guild_id, self.author_id, self.player_data, self.player)
 
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
@@ -168,22 +134,29 @@ class SellButton(discord.ui.Button, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        # Adjust inventory and coppers
-        successful_sell = self.player.inventory.sell_item(self.item.name, self.sell_amount)
+        successful_sell = self.player.inventory.sell_item(self.item.name, self.sell_amount, getattr(self.item, 'zone_level', None))
+
         if successful_sell:
             sell_price = self.sell_amount * self.item.value
             self.player.inventory.add_coppers(sell_price)
             save_player_data(self.guild_id, self.author_id, self.player_data)
 
-            # Update the embed to reflect new quantity and coppers
-            updated_quantity = self.player.inventory.get_item_quantity(self.item.name)
-            updated_coppers = self.player.inventory.coppers
-            embed = interaction.message.embeds[0]  # Assuming there's only one embed
-            embed.set_footer(text=f"Quantity: {updated_quantity}\nCoppers: {updated_coppers:,}")
-            # Update the message
-            await interaction.response.edit_message(embed=embed, view=self.view)  # Ensure 'self.view' is updated with new button states
+            new_quantity = self.player.inventory.get_item_quantity(self.item.name, getattr(self.item, 'zone_level', None))
+            self.item.stack = new_quantity
+
+            updated_embed = create_item_embed(self.item, self.player)
+            await interaction.response.edit_message(embed=updated_embed, view=self.view)
         else:
-            await interaction.response.send_message("An error occurred while trying to sell the item.", ephemeral=True)
+            # Pirate-themed embed suggesting to refresh the shop
+            pirate_embed = discord.Embed(
+                title="Ye Olde Shoppe Mishap",
+                description="Ahoy! Something went awry whilst tradin'. Maybe give a hearty refresh to the shop, aye?",
+                color=discord.Color.dark_gold()
+            )
+            pirate_thumbnail_url = generate_urls("nero", "confused")
+            pirate_embed.set_thumbnail(url=pirate_thumbnail_url)
+
+            await interaction.response.send_message(embed=pirate_embed, ephemeral=True)
 
 class SellCustomButton(discord.ui.Button, CommonResponses):
     def __init__(self, item, guild_id, author_id, player_data, player):
@@ -236,3 +209,70 @@ class SellXModal(discord.ui.Modal, CommonResponses):
 
         # Send confirmation message
         await interaction.response.send_message(f"Successfully sold {quantity} of '{self.item.name}' for {sell_price:,} coppers.", ephemeral=True)
+
+class SellItemView(discord.ui.View):
+    def __init__(self, item, guild_id, author_id, player_data, player):
+        super().__init__()
+        self.item = item
+        self.guild_id = guild_id
+        self.author_id = author_id
+        self.player_data = player_data
+        self.player = player
+        self.update_buttons()
+
+    def update_buttons(self):
+        self.clear_items()
+        item_quantity = self.player.inventory.get_item_quantity(self.item.name)
+
+        # Directly pass `self` to each button
+        self.add_item(SellButton("Sell 1", 1, self.item, self.guild_id, self.author_id, self.player_data, self.player))
+        sell_5_button = SellButton("Sell 5", 5, self.item, self.guild_id, self.author_id, self.player_data, self.player)
+        sell_5_button.disabled = item_quantity < 5
+        self.add_item(sell_5_button)
+        self.add_item(SellCustomButton(self.item, self.guild_id, self.author_id, self.player_data, self.player))
+
+def create_item_embed(item, player):
+    zone_emoji_mapping = {
+        1: 'common_emoji',
+        2: 'uncommon_emoji',
+        3: 'rare_emoji',
+        4: 'epic_emoji',
+        5: 'legendary_emoji'
+    }
+    zone_rarity = {
+        1: '(Common)',
+        2: '(Uncommon)',
+        3: '(Rare)',
+        4: '(Epic)',
+        5: '(Legendary)',
+    }
+    color_mapping = {
+        1: 0x969696,
+        2: 0x15ce00,
+        3: 0x0096f1,
+        4: 0x9900ff,
+        5: 0xfebd0d
+    }
+
+    zone_level = getattr(item, 'zone_level', 0)
+    zone_emoji = get_emoji(zone_emoji_mapping.get(zone_level))
+    zone_rarity_label = zone_rarity.get(zone_level, '')
+    embed_color = color_mapping.get(zone_level, 0x000000)
+
+    embed_title = f"{zone_emoji} {item.name} {zone_rarity_label}"
+    message_content = f"**Value:** {item.value:,} {get_emoji('coppers_emoji')}\n"
+    if hasattr(item, "attack_modifier"):
+        message_content += f"**Damage:** {item.attack_modifier}\n"
+    if hasattr(item, "defense_modifier"):
+        message_content += f"**Armor:** {item.defense_modifier}\n"
+    if hasattr(item, "special_attack"):
+        message_content += f"**Special Attack:** {item.special_attack}\n"
+    if hasattr(item, "description") and item.description:
+        message_content += f"**Description:** {item.description}\n"
+    message_content += "\nHow many would you like to sell?\n\n**Backpack:**"
+
+    embed = discord.Embed(title=embed_title, description=message_content, color=embed_color)
+    embed.set_thumbnail(url=generate_urls("Icons", item.name.replace(" ", "%20")))
+    formatted_coppers = f"{player.inventory.coppers:,}"
+    embed.set_footer(text=f"Quantity: {item.stack}\nCoppers: {formatted_coppers}")
+    return embed

@@ -204,16 +204,18 @@ class Inventory:
 
         return False
 
-    def sell_item(self, item_name, amount=1):
-        """Adjusts the stack of an item or removes it if the stack reaches zero."""
+    def sell_item(self, item_name, amount, zone_level=None):
+        """Adjusts the stack of an item or removes it if the stack reaches zero, considering zone_level."""
         for item_list in [self.weapons, self.armors, self.shields, self.charms, self.potions]:
             for item in item_list:
-                if item.name == item_name:
+                # Check both name and zone_level (if provided)
+                if item.name == item_name and (zone_level is None or getattr(item, 'zone_level', None) == zone_level):
                     item.stack -= amount
                     if item.stack <= 0:
                         item_list.remove(item)
                     return True
         return False
+
 
 
 
