@@ -1,7 +1,7 @@
 import discord
 from emojis import get_emoji
 from utils import CommonResponses
-from images.urls import generate_gif_urls
+from images.urls import generate_gif_urls, generate_urls
 
 class JollyRogerView(discord.ui.View):
     def __init__(self, player, player_data, author_id):
@@ -66,10 +66,25 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
 
         if selected_option == "shop":
             from nero.shop import ShopCategorySelect
-            self.view.clear_items()  # Clear existing items
-            self.view.add_item(ShopCategorySelect(interaction.guild_id, self.author_id, self.player_data, self.player))
-            self.view.add_item(ResetButton(self.author_id))  # Keep the Reset button
-            await interaction.edit_original_response(content="Select a category to browse:", view=self.view)
+            # Check if there are any items across all categories
+            has_items = any(getattr(self.player.inventory, category) for category in
+                            ["weapons", "armors", "shields", "charms", "potions"])
+
+            if not has_items:
+                # Send a pirate-themed message if no items are available
+                pirate_embed = discord.Embed(
+                    title="Yarr, No Booty to Barter!",
+                    description="Shiver me timbers! Ye hold be as empty as a deserted isle. Gather some loot before ye come to trade, ye scurvy dog!",
+                    color=discord.Color.dark_gold()
+                )
+                pirate_thumbnail_url = generate_urls("nero", "confused")
+                pirate_embed.set_thumbnail(url=pirate_thumbnail_url)
+                await interaction.followup.send(embed=pirate_embed, ephemeral=True)
+            else:
+                self.view.clear_items()  # Clear existing items
+                self.view.add_item(ShopCategorySelect(interaction.guild_id, self.author_id, self.player_data, self.player))
+                self.view.add_item(ResetButton(self.author_id))  # Keep the Reset button
+                await interaction.edit_original_response(content="Select a category to browse:", view=self.view)
 
         elif selected_option == "kraken":
             pass

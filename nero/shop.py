@@ -4,6 +4,7 @@ from utils import CommonResponses, save_player_data, load_player_data
 from nero.options import ResetButton
 from images.urls import generate_urls
 from exemplars.exemplars import Exemplar
+
 class ShopCategorySelect(discord.ui.Select, CommonResponses):
     def __init__(self, guild_id, author_id, player_data, player):
         self.guild_id = guild_id
@@ -11,13 +12,18 @@ class ShopCategorySelect(discord.ui.Select, CommonResponses):
         self.player_data = player_data
         self.player = player
 
-        options = [
-            discord.SelectOption(label="Weapons", value="weapons"),
-            discord.SelectOption(label="Armors", value="armors"),
-            discord.SelectOption(label="Shields", value="shields"),
-            discord.SelectOption(label="Charms", value="charms"),
-            discord.SelectOption(label="Potions", value="potions")
+        # Define all possible categories
+        all_categories = [
+            "weapons", "armors", "shields", "charms", "potions"
         ]
+
+        # Dynamically generate options based on the player's inventory
+        options = []
+        for category in all_categories:
+            if getattr(self.player.inventory, category):  # Check if inventory has items in this category
+                label = category.capitalize()  # Capitalize the category name for display
+                options.append(discord.SelectOption(label=label, value=category))
+
         super().__init__(placeholder="Select a category to browse items", options=options, min_values=1, max_values=1)
 
     async def callback(self, interaction: discord.Interaction):
@@ -29,7 +35,6 @@ class ShopCategorySelect(discord.ui.Select, CommonResponses):
         items = getattr(self.player.inventory, selected_category, [])
 
         self.view.clear_items()  # Clear current items
-        # Dynamically create and add the DisplayItemsSelect dropdown
         if items:
             item_select = DisplayItemsSelect(interaction, items, self.author_id)
             self.view.add_item(item_select)
@@ -106,16 +111,28 @@ class RefreshShopButton(discord.ui.Button, CommonResponses):
         guild_id = interaction.guild.id
         author_id = str(interaction.user.id)
         player_data = load_player_data(guild_id, author_id)
-        player = Exemplar(player_data["exemplar"],
-                          player_data["stats"],
-                          player_data["inventory"])
+        player = Exemplar(player_data["exemplar"], player_data["stats"], player_data["inventory"])
 
-        # Refresh the Shop view to show categories
-        self.view.clear_items()
-        self.view.add_item(ShopCategorySelect(guild_id, author_id, player_data, player))
-        self.view.add_item(ResetButton(self.author_id))  # Ensure Reset button is still present
-        # Note: The Refresh Shop button will be re-added when a category is selected, not here
-        await interaction.response.edit_message(content="Select a category to browse items:", view=self.view)
+        # Check if there are any items across all categories
+        has_items = any(getattr(player.inventory, category) for category in ["weapons", "armors", "shields", "charms", "potions"])
+
+        if not has_items:
+            # Send a pirate-themed message if no items are available
+            pirate_embed = discord.Embed(
+                title="Yarr, No Booty to Barter!",
+                description="Shiver me timbers! Ye hold be as empty as a deserted isle. Gather some loot before ye come to trade, ye scurvy dog!",
+                color=discord.Color.dark_gold()
+            )
+            pirate_thumbnail_url = generate_urls("nero", "confused")
+            pirate_embed.set_thumbnail(url=pirate_thumbnail_url)
+            await interaction.response.send_message(embed=pirate_embed, ephemeral=True)
+        else:
+            # Refresh the Shop view to show categories
+            shop_category_select = ShopCategorySelect(guild_id, author_id, player_data, player)
+            view = discord.ui.View()
+            view.add_item(shop_category_select)
+            view.add_item(ResetButton(author_id))
+            await interaction.response.edit_message(content="Select a category to browse items:", view=view)
 
 class SellButton(discord.ui.Button, CommonResponses):
     def __init__(self, label, sell_amount, item, guild_id, author_id, player_data, player):
@@ -153,7 +170,6 @@ class SellButton(discord.ui.Button, CommonResponses):
             pirate_embed.set_thumbnail(url=pirate_thumbnail_url)
 
             await interaction.response.send_message(embed=pirate_embed, ephemeral=True)
-
 
 class SellItemView(discord.ui.View):
     def __init__(self, item, guild_id, author_id, player_data, player):
@@ -245,7 +261,8 @@ def create_item_embed(item, player, sell_amount=None):
 
     # Include sell amount if provided
     if sell_amount is not None:
-        message_content += f" (+{sell_amount})"
+        formatted_sell_amount = f"{sell_amount:,}"
+        message_content += f" (+{formatted_sell_amount})"
 
     embed = discord.Embed(title=embed_title, description=message_content, color=embed_color)
     embed.set_thumbnail(url=generate_urls("Icons", item.name.replace(" ", "%20")))
