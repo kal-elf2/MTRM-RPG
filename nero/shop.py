@@ -37,7 +37,6 @@ class ShopCategorySelect(discord.ui.Select, CommonResponses):
         self.view.add_item(RefreshShopButton(self.author_id))  # Add the Refresh Shop button
         await interaction.response.edit_message(content=f"Select an item from {selected_category}:", view=self.view)
 
-
 class DisplayItemsSelect(discord.ui.Select, CommonResponses):
     def __init__(self, interaction, items, author_id):
         self.interaction = interaction
@@ -57,7 +56,6 @@ class DisplayItemsSelect(discord.ui.Select, CommonResponses):
             5: '(Legendary)',
         }
 
-
         options = [
             discord.SelectOption(
                 label=f"{item.name} {self.zone_rarity.get(getattr(item, 'zone_level', ''), '')} - {format(item.value, ',')} Coppers",
@@ -67,7 +65,7 @@ class DisplayItemsSelect(discord.ui.Select, CommonResponses):
             )
             for item in items
         ]
-        super().__init__(placeholder="Select an item to view or sell", options=options, min_values=1, max_values=1)
+        super().__init__(placeholder="Select an item to sell", options=options, min_values=1, max_values=1)
 
 
     async def callback(self, interaction: discord.Interaction):
@@ -134,23 +132,21 @@ class SellButton(discord.ui.Button, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
+        # Attempt to sell the item
         successful_sell = self.player.inventory.sell_item(self.item.name, self.sell_amount, getattr(self.item, 'zone_level', None))
 
         if successful_sell:
-            sell_price = self.sell_amount * self.item.value
+            sell_price = self.sell_amount * self.item.value  # Calculated sell price
             self.player.inventory.add_coppers(sell_price)
             save_player_data(self.guild_id, self.author_id, self.player_data)
 
-            new_quantity = self.player.inventory.get_item_quantity(self.item.name, getattr(self.item, 'zone_level', None))
-            self.item.stack = new_quantity
-
-            updated_embed = create_item_embed(self.item, self.player)
-            await interaction.response.edit_message(embed=updated_embed, view=self.view)
+            # Call update_view_and_message with sell_price as an additional argument
+            await self.view.update_view_and_message(interaction, self.item, sell_price)
         else:
-            # Pirate-themed embed suggesting to refresh the shop
+            # If sell operation was not successful, possibly due to an inventory mismatch, show a thematic error message
             pirate_embed = discord.Embed(
-                title="Ye Olde Shoppe Mishap",
-                description="Ahoy! Something went awry whilst tradin'. Maybe give a hearty refresh to the shop, aye?",
+                title="Ye Broke Sumthin'",
+                description="Arrr! Seems we've hit a snag with that transaction. Perhaps a quick refresh of the shoppe is in order?",
                 color=discord.Color.dark_gold()
             )
             pirate_thumbnail_url = generate_urls("nero", "confused")
@@ -158,57 +154,6 @@ class SellButton(discord.ui.Button, CommonResponses):
 
             await interaction.response.send_message(embed=pirate_embed, ephemeral=True)
 
-class SellCustomButton(discord.ui.Button, CommonResponses):
-    def __init__(self, item, guild_id, author_id, player_data, player):
-        super().__init__(style=discord.ButtonStyle.secondary, label="Sell X")
-        self.item = item
-        self.guild_id = guild_id
-        self.author_id = author_id
-        self.player_data = player_data
-        self.player = player
-
-    async def callback(self, interaction: discord.Interaction):
-        if str(interaction.user.id) != self.author_id:
-            await self.nero_unauthorized_user_response(interaction)
-            return
-
-        # Open a modal for entering the custom sell amount
-        modal = SellXModal(self.item, self.guild_id, self.author_id, self.player_data, self.player)
-        await interaction.response.send_modal(modal)
-
-class SellXModal(discord.ui.Modal, CommonResponses):
-    def __init__(self, item, guild_id, author_id, player_data, player):
-        super().__init__(title=f"Sell How Many {item.name}?")
-        self.item = item
-        self.guild_id = guild_id
-        self.author_id = author_id
-        self.player_data = player_data
-        self.player = player
-
-        self.quantity = discord.ui.InputText(label="Quantity", placeholder="Enter a number")
-        self.add_item(self.quantity)
-
-    async def callback(self, interaction: discord.Interaction):
-        quantity_str = self.quantity.value.strip()
-        if not quantity_str.isdigit() or int(quantity_str) <= 0:
-            await interaction.response.send_message("Please enter a valid positive integer.", ephemeral=True)
-            return
-
-        quantity = int(quantity_str)
-        if quantity > self.player.inventory.get_item_quantity(self.item.name):
-            await interaction.response.send_message("You do not have enough items to sell this quantity.", ephemeral=True)
-            return
-
-        # Adjust inventory and coppers
-        self.player.inventory.sell_item(self.item.name, quantity)
-        sell_price = quantity * self.item.value
-        self.player.inventory.add_coppers(sell_price)
-
-        # Update and save player data
-        save_player_data(self.guild_id, self.author_id, self.player.to_dict())
-
-        # Send confirmation message
-        await interaction.response.send_message(f"Successfully sold {quantity} of '{self.item.name}' for {sell_price:,} coppers.", ephemeral=True)
 
 class SellItemView(discord.ui.View):
     def __init__(self, item, guild_id, author_id, player_data, player):
@@ -222,16 +167,37 @@ class SellItemView(discord.ui.View):
 
     def update_buttons(self):
         self.clear_items()
-        item_quantity = self.player.inventory.get_item_quantity(self.item.name)
+        item_quantity = self.player.inventory.get_item_quantity(self.item.name, getattr(self.item, 'zone_level', None))
 
-        # Directly pass `self` to each button
-        self.add_item(SellButton("Sell 1", 1, self.item, self.guild_id, self.author_id, self.player_data, self.player))
-        sell_5_button = SellButton("Sell 5", 5, self.item, self.guild_id, self.author_id, self.player_data, self.player)
-        sell_5_button.disabled = item_quantity < 5
-        self.add_item(sell_5_button)
-        self.add_item(SellCustomButton(self.item, self.guild_id, self.author_id, self.player_data, self.player))
+        # Define sell amounts and labels
+        potential_sell_amounts = [1, 5, 10, 25]
 
-def create_item_embed(item, player):
+        # Ensure "Sell 1" button is always shown when there is at least 1 item
+        if item_quantity >= 1:
+            self.add_item(SellButton("Sell 1", 1, self.item, self.guild_id, self.author_id, self.player_data, self.player))
+
+        # Add "Sell X" buttons for amounts greater than 1 based on the item quantity criteria
+        for amount in potential_sell_amounts[1:]:  # Start from the second element (5) to avoid duplicating "Sell 1"
+            if item_quantity >= amount and item_quantity != amount:  # Show button if you have at least that amount, excluding exact matches
+                label = f"Sell {amount}"
+                button = SellButton(label, amount, self.item, self.guild_id, self.author_id, self.player_data, self.player)
+                self.add_item(button)
+
+        # Always include "Sell All" if there's more than 1 item
+        if item_quantity > 1:
+            sell_all_label = "Sell All"
+            button = SellButton(sell_all_label, item_quantity, self.item, self.guild_id, self.author_id, self.player_data, self.player)
+            self.add_item(button)
+
+    async def update_view_and_message(self, interaction, item, sell_price=None):
+        item_quantity = self.player.inventory.get_item_quantity(item.name, getattr(item, 'zone_level', None))
+        item.stack = item_quantity  # Ensure the item quantity is updated
+        self.update_buttons()
+        updated_embed = create_item_embed(item, self.player, sell_price)
+        await interaction.response.edit_message(embed=updated_embed, view=self)
+
+
+def create_item_embed(item, player, sell_amount=None):
     zone_emoji_mapping = {
         1: 'common_emoji',
         2: 'uncommon_emoji',
@@ -269,10 +235,19 @@ def create_item_embed(item, player):
         message_content += f"**Special Attack:** {item.special_attack}\n"
     if hasattr(item, "description") and item.description:
         message_content += f"**Description:** {item.description}\n"
-    message_content += "\nHow many would you like to sell?\n\n**Backpack:**"
+    # Adjusted message content to optionally include sell_amount
+    message_content += "\nHow many would you like to sell?"
+
+    # Adding Quantity and Coppers to the main embed content
+    formatted_coppers = f"{player.inventory.coppers:,}"
+    coppers_emoji = get_emoji('coppers_emoji')
+    message_content += f"\n\n**Backpack:**\nQuantity: {item.stack}\n{formatted_coppers} {coppers_emoji}"
+
+    # Include sell amount if provided
+    if sell_amount is not None:
+        message_content += f" (+{sell_amount})"
 
     embed = discord.Embed(title=embed_title, description=message_content, color=embed_color)
     embed.set_thumbnail(url=generate_urls("Icons", item.name.replace(" ", "%20")))
-    formatted_coppers = f"{player.inventory.coppers:,}"
-    embed.set_footer(text=f"Quantity: {item.stack}\nCoppers: {formatted_coppers}")
+
     return embed

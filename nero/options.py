@@ -18,7 +18,7 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
 
 
         options = [
-            discord.SelectOption(label="Shop", value="shop", emoji=f"{get_emoji('coppers_emoji')}")
+            discord.SelectOption(label="Sell Booty", value="shop", emoji=f"{get_emoji('coppers_emoji')}")
         ]
 
         # Check for "Rusty Spork" in the player's inventory with at least 1 in stack
