@@ -159,8 +159,22 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
         # Handle Got any hints? action
 
         elif selected_option == "spork":
-            pass
-        # Handle Rusty Spork action
+            from nero.spork import RustySporkDialogView
+
+            # Initialize the RustySporkDialogView with the first offer index (0 by default)
+            view = RustySporkDialogView(self.player, self.author_id, self.player_data, 0)
+
+            # Modify the initial embed to include the first offer
+            first_offer_amount = "{:,.0f}".format(view.offers[0])
+            nero_embed = discord.Embed(
+                title="Captain Nero's Offer",
+                description=f"Arrr, what's this? A **Rusty Spork** ye say? Looks like a piece o' junk to me.\n\nBut I suppose I could take it off yer hands for {first_offer_amount} {get_emoji('coppers_emoji')}...",
+                color=discord.Color.dark_gold()
+            )
+
+            nero_embed.set_thumbnail(url=generate_urls("nero", "shop"))
+            # Send the initial message with the view (RustySporkDialogView)
+            await interaction.followup.send(embed=nero_embed, view=view, ephemeral=False)
 
         # Check if ResetButton is already in the view
         reset_button_exists = any(isinstance(item, ResetButton) for item in self.view.children)

@@ -206,6 +206,17 @@ class Inventory:
 
     def sell_item(self, item_name, amount, zone_level=None):
         """Adjusts the stack of an item or removes it if the stack reaches zero, considering zone_level."""
+        # First, check if the item to sell is Rusty Spork
+        if item_name == "Rusty Spork":
+            for item in self.items:
+                if item.name == item_name:
+                    item.stack -= amount
+                    if item.stack <= 0:
+                        self.items.remove(item)
+                    return True
+            return False
+
+        # For other item types, continue with the existing logic
         for item_list in [self.weapons, self.armors, self.shields, self.charms, self.potions]:
             for item in item_list:
                 # Check both name and zone_level (if provided)
@@ -215,6 +226,7 @@ class Inventory:
                         item_list.remove(item)
                     return True
         return False
+
 
 
 

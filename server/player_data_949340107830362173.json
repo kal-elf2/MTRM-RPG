@@ -21,7 +21,7 @@
             "damage_taken": 0
         },
         "inventory": {
-            "coppers": 3009,
+            "coppers": 213009,
             "items": [
                 {
                     "name": "Charcoal",
@@ -325,7 +325,7 @@
                     "name": "Champion Bow",
                     "description": null,
                     "value": 155,
-                    "stack": 7,
+                    "stack": 5,
                     "wtype": "Bow",
                     "attack_modifier": 35,
                     "special_attack": 3,
@@ -335,7 +335,7 @@
                     "name": "Voltaic Sword",
                     "description": null,
                     "value": 190,
-                    "stack": 3,
+                    "stack": 25,
                     "wtype": "Sword",
                     "attack_modifier": 60,
                     "special_attack": 4,
@@ -345,7 +345,7 @@
                     "name": "Voltaic Sword",
                     "description": null,
                     "value": 94,
-                    "stack": 20,
+                    "stack": 60,
                     "wtype": "Sword",
                     "attack_modifier": 12,
                     "special_attack": 4,
