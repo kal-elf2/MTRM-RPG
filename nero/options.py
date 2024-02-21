@@ -41,7 +41,7 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
             options.append(discord.SelectOption(label=f"Stock {ship_name}", value="supplies", emoji=f"{get_emoji('Cannonball')}"))
 
         # Add "Got any hints?"
-        options.append(discord.SelectOption(label="Uncover Secrets", value="hints", emoji="🗝️"))
+        options.append(discord.SelectOption(label="Got Any Hints? ", value="hints", emoji="🗝️"))
 
         super().__init__(placeholder="Choose your action", options=options, min_values=1, max_values=1)
 
@@ -155,8 +155,9 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
             await interaction.followup.send(embed=embed, view=view)
 
         elif selected_option == "hints":
-            pass
-        # Handle Got any hints? action
+            from nero.hints import create_nero_embed
+            embed, view = create_nero_embed(self.player)
+            await interaction.followup.send(embed=embed, view=view, ephemeral=True)
 
         elif selected_option == "spork":
             from nero.spork import RustySporkDialogView
