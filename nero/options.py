@@ -86,9 +86,56 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
                 self.view.add_item(ResetButton(self.author_id))  # Keep the Reset button
                 await interaction.edit_original_response(content="Select a category to browse:", view=self.view)
 
+
+
         elif selected_option == "kraken":
-            pass
-        # Handle Fight Kraken action
+
+            required_level = zone_level * 20
+            if zone_level == 5:
+                required_level = 99
+            requirements_met = True
+            requirements_status = []
+
+            for skill_name, skill_level in [("combat", self.player.stats.combat_level),
+                                            ("woodcutting", self.player.stats.woodcutting_level),
+                                            ("mining", self.player.stats.mining_level)]:
+
+                check_mark_emoji = "✅"
+                cross_mark_emoji = "❌"
+
+                if skill_level < required_level:
+                    requirements_met = False
+                    status_emoji = cross_mark_emoji
+                else:
+                    status_emoji = check_mark_emoji
+                requirements_status.append(
+                    f"{status_emoji} {skill_name.capitalize()} Level: {skill_level}/{required_level}")
+            requirements_message = "\n".join(requirements_status)
+
+            if not requirements_met:
+                message_title = "Ye be not ready to face the Kraken!"
+                message_description = f"Ye need more training, matey! Here be what ye lack:\n\n{requirements_message}\n\nI'll keep the ship ready for ye. Come back when yer ready, aye?"
+
+                # Create and send the embed without the button as requirements are not met
+                embed = discord.Embed(title=message_title, description=message_description,
+                                      color=discord.Color.dark_gold())
+                embed.set_thumbnail(url=generate_urls("nero", "confused"))
+                await interaction.followup.send(embed=embed, ephemeral=True)
+
+            else:
+                from nero.kraken import HuntKrakenButton
+                # Player meets the requirements
+                message_title = "To the Kraken battle!"
+                message_description = f"Ye be ready to face the Kraken!\n\n{requirements_message}\n\nGood luck, matey!"
+
+                # Create the embed and view with the "Hunt Kraken" button
+                embed = discord.Embed(title=message_title, description=message_description,
+                                      color=discord.Color.dark_gold())
+                embed.set_thumbnail(url=generate_urls("nero", "kraken"))
+                view = discord.ui.View()
+                view.add_item(HuntKrakenButton())
+                await interaction.followup.send(embed=embed, view=view, ephemeral=True)
+
 
         elif selected_option == "supplies":
             from nero.supplies import DepositButton
