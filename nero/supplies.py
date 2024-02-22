@@ -25,8 +25,13 @@ class DepositButton(discord.ui.Button, CommonResponses):
         initial_cannonball_count_shipwreck = self.player_data['shipwreck'].get('Cannonball', 0)
 
         zone_level = self.player.stats.zone_level
+        required_minimum = 25 * zone_level
         ship_name = TravelSelectDropdown.ship_names.get(zone_level, "Ship")
         ship_gif_url = generate_gif_urls("ships", ship_name)
+
+        # Check initial inventory against the target before deposit
+        initial_above_minimum_poplar = initial_poplar_count_shipwreck >= required_minimum
+        initial_above_minimum_cannonball = initial_cannonball_count_shipwreck >= required_minimum
 
         color_mapping = {
             1: 0x969696,
@@ -74,35 +79,28 @@ class DepositButton(discord.ui.Button, CommonResponses):
             nero_embed_sent = True
 
         if zone_level == 5:
-            required_minimum = 25 * zone_level
-            # Flags for checking if the threshold was previously crossed
-            battle_message_sent = self.player_data.get('battle_message_sent', False)
-
-            # Determine if each resource individually crossed the minimum threshold
-            crossed_minimum_poplar = initial_poplar_count_shipwreck < required_minimum <= poplar_count_shipwreck
-            crossed_minimum_cannonball = initial_cannonball_count_shipwreck < required_minimum <= cannonball_count_shipwreck
-
             # Determine if both resources are now above the minimum
             both_above_minimum = poplar_count_shipwreck >= required_minimum and cannonball_count_shipwreck >= required_minimum
 
-            # Send "Ready for Battle!" message if both resources are above the minimum and message not sent before
-            if both_above_minimum and not battle_message_sent:
+            # Only proceed if we haven't already marked the player as ready for battle
+            if both_above_minimum and not (initial_above_minimum_poplar and initial_above_minimum_cannonball):
+                # Send "Ready for Battle!" message only if we are transitioning from below to above the minimum for both resources
                 nero_message = "Hoist the colors! Ye've stocked enough to challenge the depths itself. Though the Kraken awaits, more supplies mean a stronger fight. Keep 'em coming, for glory and treasure!"
                 nero_embed = discord.Embed(
                     title="Ready for Battle!",
                     description=nero_message,
                     color=discord.Color.dark_gold()
                 )
-                nero_embed.set_image(url=generate_urls("nero", "kraken"))
+                nero_embed.set_image(
+                    url=generate_urls("nero", "kraken"))
                 await interaction.followup.send(embed=nero_embed, ephemeral=True)
 
-                # Update the player_data to indicate the message has been sent
-                self.player_data['battle_message_sent'] = True
-                save_player_data(interaction.guild.id, self.author_id, self.player_data)
-
-            elif (crossed_minimum_poplar or crossed_minimum_cannonball) and not both_above_minimum:
-                # Send the "Ye Be On Course!" message only if not all resources are above the minimum and the battle message hasn't been sent
-                nero_message = "Arrr! Ye've hoarded enough to set sail against the Kraken beastie, but don't ye be stoppin'! The seas are harsh and unforgiving. Gather all ye can to ensure victory!"
+            elif any([
+                initial_poplar_count_shipwreck < required_minimum <= poplar_count_shipwreck,
+                initial_cannonball_count_shipwreck < required_minimum <= cannonball_count_shipwreck
+            ]):
+                # Send the "Ye Be On Course!" message only if one of the resources crosses the threshold
+                nero_message = f"Arrr! **Ye've hoarded enough {get_emoji(self.item_name)} {self.item_name}s** to set sail against the Kraken beastie, but don't ye be stoppin'! The seas are harsh and unforgiving. Gather all ye can to ensure victory!"
                 nero_embed = discord.Embed(
                     title="Ye Be On Course!",
                     description=nero_message,

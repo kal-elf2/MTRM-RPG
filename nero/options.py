@@ -125,7 +125,7 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
             else:
                 from nero.kraken import HuntKrakenButton
                 # Player meets the requirements
-                message_title = "To the Kraken battle!"
+                message_title = "Battle Stations!"
                 message_description = f"Ye be ready to face the Kraken!\n\n{requirements_message}\n\nGood luck, matey!"
 
                 # Create the embed and view with the "Hunt Kraken" button
