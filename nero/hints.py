@@ -19,7 +19,7 @@ class HintsManager:
             {"text": "Base Hint 12", "type": "nero", "detail": "gun"},
         ]
         self.invites = [
-            {"text": "Ahoy, mateys! This be but a taste of the grand saga! The true adventure unfolds in Mirandus being created by Gala Games, where treasures vast and mysteries deep await in the real world! Hoist yer sails and join the Mirandus Discord! Treasures beyond yer wildest dreams be there, ripe for the takin'! https://discord.gg/gogalagames", "type": "Icons", "detail": "Mirandus", "is_invite": True},
+            {"text": "Ahoy, mateys! This be but a taste of the grand saga! The true adventure unfolds in Mirandus that be created by Gala Games, where treasures vast and mysteries deep await ye! Hoist yer sails and join the Mirandus Discord! Treasures beyond yer wildest dreams be there, ripe for the takin'! https://discord.gg/gogalagames", "type": "Icons", "detail": "Mirandus", "is_invite": True},
             {"text": "Looking for a crew to conquer the seas? Join Everglen, the finest guild in all of Mirandus! Together, we'll claim the riches that await! https://discord.gg/94uFkRq88m", "type": "Icons", "detail": "Everglen", "is_invite": True},
         ]
         self.hint_sequence = self._generate_hint_sequence()
@@ -53,7 +53,7 @@ class HintButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         next_hint = hints_manager.get_next_hint()
-        new_embed = discord.Embed(title="Tales of the Tavern", description=next_hint["text"], color=discord.Color.blurple())
+        new_embed = discord.Embed(title="Tales of the Tavern", description=next_hint["text"], color=discord.Color.dark_gold())
         # Set an image for invites and a thumbnail for regular hints
         if next_hint.get("is_invite"):
             new_embed.set_image(url=generate_urls(next_hint["type"], next_hint["detail"]))
