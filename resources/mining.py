@@ -307,10 +307,23 @@ class MineButton(discord.ui.View, CommonResponses):
             return
 
         success_prob = MiningCog.calculate_probability(self.player, player_level, self.player.stats.zone_level, self.ore_type)
-
         success = random.random() < success_prob
 
         zone_level = self.player.stats.zone_level
+        current_level = self.player.stats.mining_level
+
+        # Define the maximum level for each zone
+        zone_max_levels = {
+            1: 20,
+            2: 40,
+            3: 60,
+            4: 80,
+        }
+
+        # Determine the XP gain based on whether the player has reached the zone's level cap
+        exp_gain = 0
+        if zone_level in zone_max_levels and current_level < zone_max_levels[zone_level]:
+            exp_gain = MINING_EXPERIENCE[self.ore_type]
 
         message = ""
         if success:
@@ -322,9 +335,10 @@ class MineButton(discord.ui.View, CommonResponses):
             self.player.inventory.add_item_to_inventory(mined_ore, amount=1)
             self.player.stats.stamina -= 1
 
-            # Gain mining experience
-            exp_gain = MINING_EXPERIENCE[self.ore_type]
-            level_up_message = await self.player.gain_experience(exp_gain, "mining", interaction)
+            # Gain mining experience, passing 0 if the player has reached the cap
+            messages = await self.player.gain_experience(exp_gain, "mining", interaction)
+            # Ensure messages is iterable if it's None
+            messages = messages or []
 
             # Attempt herb drop
             herb_dropped = attempt_herb_drop(zone_level)
@@ -393,8 +407,8 @@ class MineButton(discord.ui.View, CommonResponses):
 
             await interaction.message.edit(embed=self.embed, view=self)
 
-            if level_up_message:
-                await interaction.followup.send(embed=level_up_message, ephemeral=True)
+            for msg_embed in messages:
+                await interaction.followup.send(embed=msg_embed, ephemeral=False)
 
         else:
             message = f"You failed to mine {self.ore_type} ore."
@@ -502,9 +516,20 @@ class MineButton(discord.ui.View, CommonResponses):
                 battle_outcome, loot_messages = battle_result
                 if battle_outcome[0]:
 
-                    experience_gained = monster.experience_reward
+                    # Check if the player is at or above the level cap for their current zone
+                    if zone_level in zone_max_levels and self.player.stats.combat_level >= zone_max_levels[zone_level]:
+                        # Player is at or has exceeded the level cap for their zone; set XP gain to 0
+                        experience_gained = 0
+                    else:
+                        # Player is below the level cap; award XP from the monster
+                        experience_gained = monster.experience_reward
+
                     loothaven_effect = battle_outcome[5]  # Get the Loothaven effect status
-                    await self.player.gain_experience(experience_gained, 'combat', interaction, self.player)
+                    messages = await self.player.gain_experience(experience_gained, 'combat', interaction, self.player)
+                    # Ensure messages is iterable if it's None
+                    messages = messages or []
+                    for msg_embed in messages:
+                        await interaction.followup.send(embed=msg_embed, ephemeral=False)
 
                     self.player_data["stats"]["stamina"] = self.player.stats.stamina
                     self.player_data["stats"]["combat_level"] = self.player.stats.combat_level
@@ -528,11 +553,16 @@ class MineButton(discord.ui.View, CommonResponses):
                     loot_view = LootOptions(interaction, self.player, monster, battle_embed, self.player_data, self.author_id, battle_outcome,
                                             loot_messages, self.guild_id, interaction, experience_gained, loothaven_effect, add_repeat_button=False)
 
+                    # Send max XP cap message if experience gained is 0
+                    max_cap_message = ""
+                    if experience_gained == 0:
+                        max_cap_message = f"\n**(Max XP cap reached for Zone {self.player.stats.zone_level})**"
+
                     await battle_embed.edit(
                         embed=create_battle_embed(interaction.user, self.player, monster, footer_text_for_embed(self.ctx, monster, self.player),
                                                   f"You have **DEFEATED** the {monster.name}!\n\n"
                                                   f"You dealt **{battle_outcome[1]} damage** to the monster and took **{battle_outcome[2]} damage**. "
-                                                  f"You gained {experience_gained} combat XP.\n"
+                                                  f"You gained {experience_gained} combat XP. {max_cap_message}\n"
                                                   f"\n"),
                         view=loot_view
                     )

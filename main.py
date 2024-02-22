@@ -302,9 +302,30 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
 
         if battle_outcome[0]:
 
-            experience_gained = monster.experience_reward
+            # Define the maximum level for each zone
+            zone_max_levels = {
+                1: 20,
+                2: 40,
+                3: 60,
+                4: 80,
+            }
+
+            # Check if the player is at or above the level cap for their current zone
+            if zone_level in zone_max_levels and player.stats.combat_level >= zone_max_levels[zone_level]:
+                # Player is at or has exceeded the level cap for their zone; set XP gain to 0
+                experience_gained = 0
+            else:
+                # Player is below the level cap; award XP from the monster
+                experience_gained = monster.experience_reward
+
             loothaven_effect = battle_outcome[5]  # Get the Loothaven effect status
-            await player.gain_experience(experience_gained, 'combat', ctx, player)
+            messages = await player.gain_experience(experience_gained, 'combat', ctx, player)
+
+            # Ensure messages is iterable if it's None
+            messages = messages or []
+
+            for msg_embed in messages:
+                await ctx.followup.send(embed=msg_embed, ephemeral=False)
 
             player_data["stats"]["stamina"] = player.stats.stamina
             player_data["stats"]["combat_level"] = player.stats.combat_level
@@ -327,11 +348,15 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
 
             loot_view = LootOptions(ctx, player, monster, battle_embed, player_data, player_id, battle_outcome, loot_messages, guild_id, ctx, experience_gained, loothaven_effect)
 
+            max_cap_message = ""
+            if experience_gained == 0:
+                max_cap_message = f"\n**(Max XP cap reached for Zone {player.stats.zone_level})**"
+
             # Construct the embed with the footer
             battle_outcome_embed = create_battle_embed(ctx.user, player, monster, footer_text_for_embed(ctx, monster),
                                                        f"You have **DEFEATED** the {monster.name}!\n"
                                                        f"You dealt **{battle_outcome[1]} damage** to the monster and took **{battle_outcome[2]} damage**. "
-                                                       f"You gained {experience_gained} combat XP.\n"
+                                                       f"You gained {experience_gained} combat XP. {max_cap_message}\n"
                                                        f"\n\u00A0\u00A0")
 
             await battle_embed.edit(

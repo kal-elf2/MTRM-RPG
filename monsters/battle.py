@@ -140,10 +140,14 @@ class LootOptions(discord.ui.View, CommonResponses):
         # Incorporate Loothaven charm effect in the message
         loothaven_message = f"\n{get_emoji('Loothaven')} Your **Loothaven charm** is *glowing*!\n" if self.loothaven_effect else ""
 
+        max_cap_message = ""
+        if self.experience_gained == 0:
+            max_cap_message = f"\n**(Max XP cap reached for Zone {self.player.stats.zone_level})**"
+
         message_text = (
             f"You have **DEFEATED** the {self.monster.name}!\n"
             f"You dealt **{self.battle_outcome[1]} damage** to the monster and took **{self.battle_outcome[2]} damage**.\n"
-            f"You gained {self.experience_gained} combat XP.\n"
+            f"You gained {self.experience_gained} combat XP. {max_cap_message}\n"
             f"{loothaven_message}\n"
             f"__**Loot picked up:**__\n"
             f"{loot_message_string}"
@@ -245,9 +249,24 @@ async def start_battle(ctx, monster, player_data, player, author_id, guild_id, b
         # Unpack the battle outcome and loot messages
         battle_outcome, loot_messages = battle_result
 
+        # Define the maximum level for each zone
+        zone_max_levels = {
+            1: 20,
+            2: 40,
+            3: 60,
+            4: 80,
+        }
+
         if battle_outcome[0]:
 
-            experience_gained = monster.experience_reward
+            # Check if the player is at or above the level cap for their current zone
+            if zone_level in zone_max_levels and player.stats.combat_level >= zone_max_levels[zone_level]:
+                # Player is at or has exceeded the level cap for their zone; set XP gain to 0
+                experience_gained = 0
+            else:
+                # Player is below the level cap; award XP from the monster
+                experience_gained = monster.experience_reward
+
             loothaven_effect = battle_outcome[5]  # Get the Loothaven effect status
             await player.gain_experience(experience_gained, 'combat', ctx, player)
 
@@ -273,12 +292,16 @@ async def start_battle(ctx, monster, player_data, player, author_id, guild_id, b
             loot_view = LootOptions(ctx, player, monster, battle_embed, player_data, author_id, battle_outcome,
                                     loot_messages, guild_id, ctx, experience_gained, loothaven_effect)
 
+            max_cap_message = ""
+            if experience_gained == 0:
+                max_cap_message = f"\n**(Max XP cap reached for Zone {player.stats.zone_level})**"
+
             # Construct the embed with the footer
             battle_outcome_embed = create_battle_embed(ctx.user, player, monster,
                                                        footer_text_for_embed(ctx, monster),
                                                        f"You have **DEFEATED** the {monster.name}!\n"
                                                        f"You dealt **{battle_outcome[1]} damage** to the monster and took **{battle_outcome[2]} damage**. "
-                                                       f"You gained {experience_gained} combat XP.\n"
+                                                       f"You gained {experience_gained} combat XP. {max_cap_message}\n"
                                                        f"\n\u00A0\u00A0")
 
             await battle_embed.edit(

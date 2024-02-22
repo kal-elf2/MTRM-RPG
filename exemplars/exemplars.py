@@ -115,7 +115,6 @@ class Exemplar:
                             inline=True)
             embed.add_field(name="🗡️ Attack", value=f"**{self.stats.attack}**   (+2)", inline=True)
             embed.add_field(name="🛡️ Defense", value=f"**{self.stats.defense}**   (+2)", inline=True)
-            await interaction.followup.send(embed=embed, ephemeral=True)
         else:
             increase_value = 1  # Always +1 for these skills
             if skill == "mining":
@@ -136,6 +135,8 @@ class Exemplar:
         updated_exp = current_exp + experience_points
         setattr(self.stats, skill_exp_key, updated_exp)
 
+        messages_to_send = []
+
         # Call the set_level method after gaining experience
         previous_level = getattr(self.stats, skill_level_key)
         updated_level, max_level = self.set_level(experience_type, updated_exp, player_object=player)
@@ -150,8 +151,24 @@ class Exemplar:
                 self.stats.stamina = self.stats.max_stamina
 
             if interaction:
-                embed = await self.send_level_up_message(interaction, experience_type, updated_level)
-                return embed
+                from images.urls import generate_urls
+                level_up_embed = await self.send_level_up_message(interaction, experience_type, updated_level)
+                messages_to_send.append(level_up_embed)
+
+                # Check for reaching the zone cap and inform the player accordingly
+                zone_max_levels = {1: 20, 2: 40, 3: 60, 4: 80}
+                if self.stats.zone_level in zone_max_levels and updated_level == zone_max_levels[self.stats.zone_level]:
+                    cap_message = f"Ahoy! **Ye've hit the {experience_type.title()} XP cap** for this zone. No more XP 'til ye sail to new waters!"
+                    cap_embed = discord.Embed(
+                        title="Cap'n's Orders!",
+                        description=cap_message,
+                        color=discord.Color.dark_gold()
+                    )
+                    cap_embed.set_thumbnail(url=generate_urls("nero", "confused"))
+                    # Store this embed so that it can be sent after level up message
+                    messages_to_send.append(cap_embed)
+
+                return messages_to_send
 
         return None  # return None if there's no level-up
 
