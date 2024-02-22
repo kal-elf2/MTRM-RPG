@@ -364,7 +364,8 @@ class MonsterKillsDropdown(discord.ui.Select, CommonResponses):
             discord.SelectOption(label="Goblin Hunter", value="Goblin Hunter"),
             discord.SelectOption(label="Mega Brute", value="Mega Brute"),
             discord.SelectOption(label="Wisp", value="Wisp"),
-            discord.SelectOption(label="Mother", value="Mother")
+            discord.SelectOption(label="Mother", value="Mother"),
+            discord.SelectOption(label="Kraken", value="Kraken")
         ]
         super().__init__(placeholder="Choose a monster...", min_values=1, max_values=1, options=options)
 
@@ -384,7 +385,7 @@ class MonsterKillsDropdown(discord.ui.Select, CommonResponses):
 
         # Check if there are players with data
         if not sorted_players or all(data['monster_kills'].get(monster, 0) == 0 for _, data in sorted_players):
-            await interaction.response.send_message(f"No leaders yet for {monster.capitalize()}.", ephemeral=True)
+            await interaction.response.send_message(f"The {monster.capitalize()} has yet to be slain.", ephemeral=True)
             return
 
         # Create embed to display leaderboard

@@ -346,7 +346,8 @@ class MonsterKills:
             'Goblin Hunter',
             'Mega Brute',
             'Wisp',
-            'Mother'
+            'Mother',
+            'Kraken'
         ]}
 
     def to_dict(self):
