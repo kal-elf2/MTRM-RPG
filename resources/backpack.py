@@ -245,7 +245,7 @@ class BackpackView(discord.ui.View, CommonResponses):
             # Send the generated image as an ephemeral message
             await interaction.followup.send(content="Here's your backpack:",
                                             file=discord.File(fp=image_binary, filename='backpack_with_items.png'),
-                                            ephemeral=True)
+                                            ephemeral=False)
 
 class UnequipTypeSelect(discord.ui.Select, CommonResponses):
 
