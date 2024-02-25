@@ -323,7 +323,7 @@ async def start_battle(ctx, monster, player_data, player, author_id, guild_id, b
             f"__**Options for Revival:**__\n"
             f"1. Use {get_emoji('Materium')} to revive without penalty.\n"
             f"2. Resurrect with 2.5% penalty to all skills."
-            f"**Lose all items in inventory** (Keep coppers, MTRM, potions, and charms)")
+            f"**Lose all items in inventory** (Keep equipped items, coppers, MTRM, potions, and charms)")
 
             # Clear the previous BattleOptions view
             await battle_context.special_attack_message.delete()

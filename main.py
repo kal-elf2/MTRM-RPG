@@ -378,7 +378,7 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
             f"__**Options for Revival:**__\n"
             f"1. Use {get_emoji('Materium')} to revive without penalty.\n"
             f"2. Resurrect with 2.5% penalty to all skills."
-            f"**Lose all items in inventory** (Keep coppers, MTRM, potions, and charms)"                                )
+            f"**Lose all items in inventory** (Keep equipped items, coppers, MTRM, potions, and charms)"                                )
 
             # Clear the previous BattleOptions view
             await battle_context.special_attack_message.delete()
@@ -473,7 +473,7 @@ async def cemetery(ctx):
             f"__**Options for Revival:**__\n"
             f"1. Use {get_emoji('Materium')} to revive without penalty.\n"
             f"2. Resurrect with 2.5% penalty to all skills. "
-            f"**Lose all items in inventory** (Keep coppers, MTRM, potions, and charms)"
+            f"**Lose all items in inventory** (Keep equipped items, coppers, MTRM, potions, and charms)"
         )
         cemetery_embed.set_image(url=generate_urls("cemetery", "dead"))
         resurrect_view = ResurrectOptions(ctx, player_data, author_id)
