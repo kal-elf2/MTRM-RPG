@@ -641,7 +641,7 @@ class ResurrectOptions(discord.ui.View, CommonResponses):
             return await self.not_dead_response(interaction)
 
         # Apply the penalty since the user doesn't have enough MTRM
-        levels_decreased = await apply_penalty(self.player_data, self.author_id, interaction)
+        levels_decreased, zone_level_decreased = await apply_penalty(self.player_data)
 
         # Update player data for death penalty
         player_inventory = self.player_data['inventory']
@@ -663,7 +663,8 @@ class ResurrectOptions(discord.ui.View, CommonResponses):
 
         # Update self.player based on updated player_data
         updated_stats = self.player_data['stats']
-        self.player.stats.health = updated_stats['health']
+        # Set health to 50% of max health, rounded to the nearest integer
+        self.player.stats.health = round(self.player.stats.max_health * 0.5)
         self.player.stats.max_health = updated_stats['max_health']
 
         # Create a new embed with adjusted info
@@ -684,14 +685,14 @@ class ResurrectOptions(discord.ui.View, CommonResponses):
                  for skill, (new_level, diff) in levels_decreased.items()]
             )
             # Add the full health bar to the embed
-            new_embed.add_field(name="Your Health has been Restored",
+            new_embed.add_field(name="Your Health has been Partially Restored",
                                 value=f"{get_emoji('heart_emoji')}  {self.player.stats.health}/{self.player.stats.max_health}")
 
             new_embed.add_field(name="Skills Affected", value=level_decreased_message)
 
         else:
             # Add the full health bar to the embed
-            new_embed.add_field(name="Your Health has been Restored",
+            new_embed.add_field(name="Your Health has been Partially Restored",
                                 value=f"{get_emoji('heart_emoji')}  {self.player.stats.health}/{self.player.stats.max_health}")
 
             new_embed.add_field(name="Skills Affected", value="No skills were affected.")
@@ -701,6 +702,26 @@ class ResurrectOptions(discord.ui.View, CommonResponses):
 
         # Send the new embed as a new message, without view buttons
         await interaction.message.edit(embed=new_embed, view=None)
+
+        # If the zone level has decreased, send the pirate-themed message next
+        if zone_level_decreased:
+            # Reset shipwreck items to 0
+            self.player_data['shipwreck']['Poplar Strip'] = 0
+            self.player_data['shipwreck']['Cannonball'] = 0
+            save_player_data(interaction.guild.id, self.author_id,
+                             self.player_data)
+
+            # Using generate_urls function for the thumbnail URL
+            thumbnail_url = generate_urls("nero", "confused")
+            pirate_embed = discord.Embed(
+                title=f"Return to Zone {self.player_data['stats']['zone_level']}",
+                description="Looks like that zone bested ye, matey. Lucky for ye I was headed back here anyway. Regrettably, yer booty's been claimed by the depths, only yer rags remain. Visit me at the `/citadel` when yer ready to head back.",
+                color=discord.Color.dark_gold()
+            )
+            pirate_embed.set_thumbnail(url=thumbnail_url)
+            channel = interaction.channel
+            await channel.send(embed=pirate_embed)
+            return
 
         if self.include_nero:
             from nero.cemetery_buyback import NeroView
@@ -736,9 +757,12 @@ class ResurrectOptions(discord.ui.View, CommonResponses):
         nero_embed.set_thumbnail(url=generate_urls("nero", "confused"))
         await interaction.response.send_message(embed=nero_embed, ephemeral=True)
 
-async def apply_penalty(player_data, author_id, interaction):
+async def apply_penalty(player_data):
     stats = player_data["stats"]
     levels_decreased = {}
+    # Will tell us if we need to return to previous zone based on level penalty
+    zone_level_decreased = False
+
     player = Exemplar(player_data["exemplar"],
                       player_data["stats"],
                       player_data["inventory"])
@@ -779,7 +803,17 @@ async def apply_penalty(player_data, author_id, interaction):
     player_data["stats"]["attack"] = player.stats.attack
     player_data["stats"]["defense"] = player.stats.defense
 
-    return levels_decreased
+    zone_requirements = {2: 20, 3: 40, 4: 60, 5: 80}
+    current_zone = stats["zone_level"]
+    min_level_required = zone_requirements.get(current_zone, 0)
+
+    if any(stats[skill] < min_level_required for skill in ["combat_level", "woodcutting_level", "mining_level"]):
+        if current_zone > 1:  # Ensure we don't decrease below zone 1
+            stats["zone_level"] -= 1  # Decrease zone level by 1
+            zone_level_decreased = True  # Set flag to True since zone level was decreased
+
+    # Return both the levels decreased and the zone level decrease flag
+    return levels_decreased, zone_level_decreased
 
 def recalculate_level(updated_exp):
     with open("level_data.json", "r") as f:
