@@ -166,18 +166,12 @@ class BackpackView(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        from exemplars.exemplars import Exemplar
-
         self.clear_items()
         def sort_items(items, order):
             return sorted(items, key=lambda item: (getattr(item, 'zone_level', 0), order.index(item.name)))
 
-        guild_id = interaction.guild.id
-        author_id = str(interaction.user.id)
-        player_data = load_player_data(guild_id, author_id)
-        player = Exemplar(player_data["exemplar"],
-                          player_data["stats"],
-                          player_data["inventory"])
+        # Refresh player object from the latest player data
+        await self.refresh_player_from_data()
 
         order = {
             "items": [
@@ -208,12 +202,12 @@ class BackpackView(discord.ui.View, CommonResponses):
         }
 
         for category, sorting_order in order.items():
-            if hasattr(player.inventory, category):
-                category_items = getattr(player.inventory, category)
+            if hasattr(self.player.inventory, category):
+                category_items = getattr(self.player.inventory, category)
                 sorted_items = sort_items(category_items, sorting_order)
-                setattr(player.inventory, category, sorted_items)
+                setattr(self.player.inventory, category, sorted_items)
 
-        save_player_data(guild_id, author_id, player_data)
+        save_player_data(self.guild_id, self.author_id, self.player_data)
         await interaction.response.send_message(content="Inventory sorted.", view=self, ephemeral=True)
 
     @discord.ui.button(label="View", custom_id="backpack_inspect", style=discord.ButtonStyle.blurple, emoji="🔍")
