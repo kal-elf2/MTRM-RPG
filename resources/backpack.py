@@ -67,6 +67,15 @@ class BackpackView(discord.ui.View, CommonResponses):
 
         self.inventory = self.player.inventory
 
+    async def refresh_player_from_data(self):
+        """Refresh the player object from the latest player data."""
+        self.player_data = load_player_data(self.guild_id, self.author_id)
+        # Assuming Exemplar class can initialize a player object from player_data directly
+        self.player = Exemplar(self.player_data["exemplar"],
+                               self.player_data["stats"],
+                               self.player_data["inventory"])
+        self.inventory = self.player.inventory
+
     def unequip_add_item_type_select(self, action_type):
         # Always present all the options
         options = [
@@ -126,6 +135,9 @@ class BackpackView(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
+        # Refresh player object from the latest player data
+        await self.refresh_player_from_data()
+
         # Open the select menu for item types for the Equip action
         self.equip_add_item_type_select("equip")
         await interaction.response.edit_message(content="Choose an item type to equip:", view=self)
@@ -137,6 +149,9 @@ class BackpackView(discord.ui.View, CommonResponses):
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
+
+        # Refresh player object from the latest player data
+        await self.refresh_player_from_data()
 
         # Open the select menu for item types for the Unequip action
         self.unequip_add_item_type_select("unequip")
@@ -169,7 +184,7 @@ class BackpackView(discord.ui.View, CommonResponses):
                 "Charcoal", "Iron", "Steel", "Onyx", "Cannonball", "Pole", "Thick Pole",
                 "Pine Strip", "Yew Strip", "Ash Strip", "Poplar Strip",
                 "Flour", "Wheat", "Flax", "Linen", "Linen Thread", "Venison",
-                "Sinew", "Rabbit Body", "Rabbit Meat", "Deer Part",
+                "Sinew", "Rabbit Body", "Rabbit Meat", "Deer Parts",
                 "Deer Skin", "Wolf Skin", "Glowing Essence", "Goblin Crown", "Leather",
                 "Tough Leather", "Leather Straps", "Tough Leather Straps", "Rusty Spork"
             ],
@@ -208,6 +223,9 @@ class BackpackView(discord.ui.View, CommonResponses):
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
+
+        # Refresh player object from the latest player data
+        await self.refresh_player_from_data()
 
         # Defer the response to prevent the interaction from timing out
         await interaction.response.defer()
