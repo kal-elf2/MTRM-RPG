@@ -194,7 +194,8 @@ def generate_zone_loot(player, zone_level, monster_drop=None, name=None):
 
         # Rusty Spork drop logic
         if random.random() < spork_chance:
-            spork_dropped = Item("Rusty Spork", description="A rusty and useless trinket", value=100000)
+            from probabilities import spork_value
+            spork_dropped = Item("Rusty Spork", description="A rusty and useless trinket", value=spork_value)
             spork_count = 2 if loothaven_effect else 1
             for _ in range(spork_count):
                 loot.append(('items', [(spork_dropped, 1)]))  # Each drop is 1 item, even if doubled
