@@ -2,6 +2,8 @@ import discord
 import random
 from images.urls import generate_urls
 
+#spork, run when no stamina 50%,
+
 class HintsManager:
     def __init__(self):
         self.base_hints = [

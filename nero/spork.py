@@ -2,6 +2,7 @@ import discord
 from utils import CommonResponses, save_player_data
 from emojis import get_emoji
 from images.urls import generate_urls
+from probabilities import spork_value
 class RustySporkDialogView(discord.ui.View):
     def __init__(self, player, author_id, player_data, current_offer=0):
         super().__init__()
@@ -29,7 +30,7 @@ class RustySporkDialogView(discord.ui.View):
         offer_formatted = "{:,.0f}".format(self.offers[offer_index])
         # Prepend the context message to the embed's description
         context_message = self.context_messages[min(offer_index, len(self.context_messages) - 1)]
-        updated_description = f"{context_message}\n\n{self.dialogues[offer_index]} \n\n**What do ye say... {offer_formatted} {get_emoji('coppers_emoji')} for it?!**"
+        updated_description = f"{context_message}\n\n{self.dialogues[offer_index]} \n\n**What do ye say... {offer_formatted}{get_emoji('coppers_emoji')} for it?!**"
         embed.description = updated_description
         return embed
 
@@ -91,15 +92,17 @@ class RustySporkFinalAcceptButton(discord.ui.Button, CommonResponses):
 
         successful_sell = self.player.inventory.sell_item("Rusty Spork", 1)
         if successful_sell:
-            self.player.inventory.add_coppers(100000)
+            self.player.inventory.add_coppers(spork_value)
             save_player_data(interaction.guild_id, self.author_id, self.player_data)
+            formatted_spork_value = "{:,.0f}".format(spork_value)
             confirmation_embed = discord.Embed(
                 title="Transaction Complete",
-                description=f"Captain Nero gleefully snatches the {get_emoji('Rusty Spork')} Rusty Spork and tosses you a hefty bag of 100,000 {get_emoji('coppers_emoji')}",
+                description=f"Ahoy! A treasure beyond measure! I know just where this will fit on me ship.\n\nCaptain Nero gleefully snatches the {get_emoji('Rusty Spork')} Rusty Spork and **tosses you a hefty bag of {formatted_spork_value}{get_emoji('coppers_emoji')}**",
                 color=discord.Color.dark_gold()
             )
             pirate_thumbnail_url = generate_urls("nero", "shop")
             confirmation_embed.set_thumbnail(url=pirate_thumbnail_url)
+
 
         else:
             confirmation_embed = discord.Embed(

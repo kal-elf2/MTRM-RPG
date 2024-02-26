@@ -273,7 +273,7 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
             first_offer_amount = "{:,.0f}".format(view.offers[0])
             nero_embed = discord.Embed(
                 title="Captain Nero's Offer",
-                description=f"Arrr, what's this? A **Rusty Spork** ye say? Looks like a piece o' junk to me.\n\nBut I suppose I could take it off yer hands for {first_offer_amount} {get_emoji('coppers_emoji')}...",
+                description=f"Arrr, what's this? A **Rusty Spork** ye say? Looks like a piece o' junk to me.\n\n**But I suppose I could take it off yer hands for {first_offer_amount}{get_emoji('coppers_emoji')}...**",
                 color=discord.Color.dark_gold()
             )
 
