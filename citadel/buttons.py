@@ -330,6 +330,7 @@ class TravelRow(discord.ui.View, CommonResponses):
         self.ctx = ctx
         self.author_id = author_id
         self.crafting_select = None
+        self.guild_id = ctx.guild.id
 
     @discord.ui.button(label="🏴‍☠️ Jolly Roger", custom_id="citadel_travel", style=discord.ButtonStyle.blurple)
     async def travel(self, button, interaction):
@@ -345,7 +346,7 @@ class TravelRow(discord.ui.View, CommonResponses):
                           player_data["stats"],
                           player_data["inventory"])
 
-        view = JollyRogerView(player, player_data, self.author_id)
+        view = JollyRogerView(self.guild_id, player, player_data, self.author_id)
 
         nero_embed = discord.Embed(
             title="Captain Nero",

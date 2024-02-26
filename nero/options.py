@@ -1,21 +1,30 @@
 import discord
 from emojis import get_emoji
-from utils import CommonResponses
+from utils import CommonResponses, load_player_data
 from images.urls import generate_gif_urls, generate_urls
 
 class JollyRogerView(discord.ui.View):
-    def __init__(self, player, player_data, author_id):
+    def __init__(self, guild_id, player, player_data, author_id):
         super().__init__()
-        self.add_item(TravelSelectDropdown(player, player_data, author_id))
+        self.add_item(TravelSelectDropdown(guild_id, player, player_data, author_id))
+        self.author_id = author_id
+
+    def ensure_reset_button(self):
+        # Check if ResetButton is already in the view
+        reset_button_exists = any(isinstance(item, ResetButton) for item in self.children)
+        # If not, add the ResetButton to the view
+        if not reset_button_exists:
+            self.add_item(ResetButton(self.author_id))
 
 class TravelSelectDropdown(discord.ui.Select, CommonResponses):
     ship_names = {1: "Picard", 2: "Crayer", 3: "Hoy", 4: "Carrack", 5: "Caravel"}
-    def __init__(self, player, player_data, author_id):
+    def __init__(self, guild_id, player, player_data, author_id):
+        self.guild_id = guild_id
         self.player = player
         self.player_data = player_data
         self.author_id = author_id
-        zone_level = player.stats.zone_level
 
+        zone_level = player.stats.zone_level
 
         options = [
             discord.SelectOption(label="Sell Booty", value="shop", emoji=f"{get_emoji('coppers_emoji')}")
@@ -45,6 +54,15 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
 
         super().__init__(placeholder="Choose your action", options=options, min_values=1, max_values=1)
 
+    async def refresh_player_from_data(self):
+        from exemplars.exemplars import Exemplar
+        """Refresh the player object from the latest player data."""
+        self.player_data = load_player_data(self.guild_id, self.author_id)
+        self.player = Exemplar(self.player_data["exemplar"],
+                               self.player_data["stats"],
+                               self.player_data["inventory"])
+
+
     async def callback(self, interaction: discord.Interaction):
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
@@ -65,7 +83,12 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
         embed_color = color_mapping.get(zone_level)
 
         if selected_option == "shop":
+
             from nero.shop import ShopCategorySelect
+
+            # Refresh player object from the latest player data
+            await self.refresh_player_from_data()
+
             # Check if there are any items across all categories
             has_items = any(getattr(self.player.inventory, category) for category in
                             ["weapons", "armors", "shields", "charms", "potions"])
@@ -86,9 +109,9 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
                 self.view.add_item(ResetButton(self.author_id))  # Keep the Reset button
                 await interaction.edit_original_response(content="Select a category to browse:", view=self.view)
 
-
-
         elif selected_option == "kraken":
+            # Refresh player object from the latest player data
+            await self.refresh_player_from_data()
 
             required_level = zone_level * 20
             if zone_level == 5:
@@ -123,7 +146,27 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
                 await interaction.followup.send(embed=embed, ephemeral=True)
 
             else:
-                from nero.kraken import HuntKrakenButton
+                from nero.kraken import HuntKrakenButton, SellAllButton
+
+                # New: Check inventory and offer "Sell All" if in zones 1-4
+                if zone_level < 5:
+                    sellable_items_exist = any(getattr(self.player.inventory, category) for category in
+                                               ["weapons", "armors", "shields", "charms", "potions"])
+                    if sellable_items_exist:
+                        # Send a message offering to sell all items
+                        nero_thumbnail_url = generate_urls("nero", "shop")
+                        sell_offer_embed = discord.Embed(
+                            title="Ye Can't Take It With Ye!",
+                            description="Arr, matey! There be no room on the ship for extra plunder whilst we set sail to battle the Kraken. Ye must part with yer goods, keeping only yer **Equipped Gear**, **Coppers**, and **Materium**.",
+                            color=discord.Color.dark_gold()
+                        )
+                        sell_offer_embed.set_thumbnail(url=nero_thumbnail_url)
+                        sell_all_view = discord.ui.View()
+                        sell_all_view.add_item(SellAllButton("Sell Yer Loot", self.author_id, self.guild_id))
+                        self.view.ensure_reset_button()
+                        await interaction.followup.send(embed=sell_offer_embed, view=sell_all_view, ephemeral=True)
+                        return
+
                 # Player meets the requirements
                 message_title = "Battle Stations!"
                 message_description = f"Ye be ready to face the Kraken!\n\n{requirements_message}\n\nGood luck, matey!"
@@ -132,13 +175,17 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
                 embed = discord.Embed(title=message_title, description=message_description,
                                       color=discord.Color.dark_gold())
                 embed.set_thumbnail(url=generate_urls("nero", "kraken"))
+
                 view = discord.ui.View()
                 view.add_item(HuntKrakenButton())
+                self.view.ensure_reset_button()
                 await interaction.followup.send(embed=embed, view=view, ephemeral=True)
-
 
         elif selected_option == "supplies":
             from nero.supplies import DepositButton
+            # Refresh player object from the latest player data
+            await self.refresh_player_from_data()
+
             ship_name = self.ship_names.get(zone_level)
             ship_gif_url = generate_gif_urls("ships", ship_name)
 
@@ -199,15 +246,25 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
             view.add_item(cannonball_button_1)
             view.add_item(cannonball_button_5)
 
+            self.view.ensure_reset_button()
+
             await interaction.followup.send(embed=embed, view=view)
 
         elif selected_option == "hints":
             from nero.hints import create_nero_embed
+
+            # Refresh player object from the latest player data
+            await self.refresh_player_from_data()
+
             embed, view = create_nero_embed(self.player)
+            self.view.ensure_reset_button()
             await interaction.followup.send(embed=embed, view=view, ephemeral=True)
 
         elif selected_option == "spork":
             from nero.spork import RustySporkDialogView
+
+            # Refresh player object from the latest player data
+            await self.refresh_player_from_data()
 
             # Initialize the RustySporkDialogView with the first offer index (0 by default)
             view = RustySporkDialogView(self.player, self.author_id, self.player_data, 0)
@@ -221,8 +278,9 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
             )
 
             nero_embed.set_thumbnail(url=generate_urls("nero", "shop"))
+            self.view.ensure_reset_button()
             # Send the initial message with the view (RustySporkDialogView)
-            await interaction.followup.send(embed=nero_embed, view=view, ephemeral=False)
+            await interaction.followup.send(embed=nero_embed, view=view, ephemeral=True)
 
         # Check if ResetButton is already in the view
         reset_button_exists = any(isinstance(item, ResetButton) for item in self.view.children)
@@ -231,7 +289,6 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
         if not reset_button_exists:
             self.view.add_item(ResetButton(self.author_id))
 
-        # Since you're using defer earlier, you should use edit_original_response here
         await interaction.edit_original_response(view=self.view)
 
 class ResetButton(discord.ui.Button, CommonResponses):
@@ -259,5 +316,5 @@ class ResetButton(discord.ui.Button, CommonResponses):
 
         # Reset the Jolly Roger view
         self.view.clear_items()
-        self.view.add_item(TravelSelectDropdown(player, player_data, self.author_id))
+        self.view.add_item(TravelSelectDropdown(guild_id, player, player_data, self.author_id))
         await interaction.response.edit_message(view=self.view)

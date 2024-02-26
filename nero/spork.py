@@ -29,7 +29,7 @@ class RustySporkDialogView(discord.ui.View):
         offer_formatted = "{:,.0f}".format(self.offers[offer_index])
         # Prepend the context message to the embed's description
         context_message = self.context_messages[min(offer_index, len(self.context_messages) - 1)]
-        updated_description = f"{context_message}\n\n{self.dialogues[offer_index]} \n\nWhat do ye say... {offer_formatted} {get_emoji('coppers_emoji')} for it?"
+        updated_description = f"{context_message}\n\n{self.dialogues[offer_index]} \n\n**What do ye say... {offer_formatted} {get_emoji('coppers_emoji')} for it?!**"
         embed.description = updated_description
         return embed
 
