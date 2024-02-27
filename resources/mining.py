@@ -269,6 +269,11 @@ class MineButton(discord.ui.View, CommonResponses):
         # Refresh the player object from player_data
         self.refresh_player_object()
 
+        # Check for battle flag and return if battling
+        if self.player_data["location"] == "battle":
+            await self.ongoing_battle_response(interaction)
+            return
+
         # Update potion button labels to reflect the current inventory state (potions looted during battle)
         self.update_potion_button_label(self.stamina_button, "Stamina Potion")
         self.update_potion_button_label(self.super_stamina_button, "Super Stamina Potion")
@@ -462,11 +467,11 @@ class MineButton(discord.ui.View, CommonResponses):
             await interaction.message.edit(embed=self.embed, view=self)
 
         # Monster encounter set in probabilities.py
-        if np.random.rand() <= attack_percent and not self.player_data["in_battle"]:
+        if np.random.rand() <= attack_percent and self.player_data["location"] != "battle":
             # Refresh the player object from player_data
             self.refresh_player_object()
 
-            self.player_data["in_battle"] = True
+            self.player_data["location"] = "battle"
             save_player_data(self.guild_id, self.author_id, self.player_data)
 
             monster_name = generate_random_monster(self.ore_type)
@@ -594,8 +599,8 @@ class MineButton(discord.ui.View, CommonResponses):
                     # Update the message with the new embed and view
                     await battle_embed.edit(embed=new_embed, view=ResurrectOptions(interaction, self.player_data, self.author_id))
 
-            # Clear the in_battle flag after the battle ends
-            self.player_data["in_battle"] = False
+            # Clear the battle flag after the battle ends
+            self.player_data["location"] = None
             save_player_data(self.guild_id, self.author_id, self.player_data)
 
 class MiningCog(commands.Cog):

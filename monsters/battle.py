@@ -192,9 +192,7 @@ async def start_battle(ctx, monster, player_data, player, author_id, guild_id, b
         await ctx.respond(embed=embed, ephemeral=True)
         return
 
-    # Initialize in_battle flag before starting the battle
-    player_data.setdefault("in_battle", False)
-    player_data["in_battle"] = True
+    player_data["location"] = "battle"
     save_player_data(guild_id, author_id, player_data)
 
     zone_level = player.stats.zone_level
@@ -335,8 +333,8 @@ async def start_battle(ctx, monster, player_data, player, author_id, guild_id, b
             # Update the message with the new embed and view
             await battle_embed.edit(embed=new_embed, view=ResurrectOptions(ctx, player_data, author_id))
 
-    # Clear the in_battle flag after the battle ends
-    player_data["in_battle"] = False
+    # Clear the battle flag after the battle ends
+    player_data["location"] = None
     save_player_data(guild_id, author_id, player_data)
 
 def use_potion_logic(player, potion_name):
@@ -574,9 +572,9 @@ class SpecialAttackOptions(discord.ui.View, CommonResponses):
             await self.battle_context.add_battle_message(
                 f"**{interaction.user.mention} has successfully fled the battle with the {self.battle_context.monster.name}!**")
 
-            # Clear the in_battle flag
+            # Clear the battle flag
             player_data = load_player_data(self.battle_context.ctx.guild.id, str(self.battle_context.user.id))
-            player_data["in_battle"] = False
+            player_data["location"] = None
             save_player_data(self.battle_context.ctx.guild.id, str(self.battle_context.user.id), player_data)
 
 

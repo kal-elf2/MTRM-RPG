@@ -113,7 +113,7 @@ class PickExemplars(Select, CommonResponses):
         player_data["monster_kills"] = MonsterKills().to_dict()
         player_data["inventory"] = Inventory().to_dict()
         player_data["shipwreck"] = Shipwreck().to_dict()
-        player_data["in_battle"] = False
+        player_data["location"] = None
 
         # Generate and send the confirmation message
         embed = self.generate_stats_embed(exemplar_instance)
@@ -243,9 +243,7 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
         await ctx.respond(embed=embed, ephemeral=True)
         return
 
-    # Initialize in_battle flag before starting the battle
-    player_data.setdefault("in_battle", False)
-    player_data["in_battle"] = True
+    player_data["location"] = "battle"
     save_player_data(guild_id, player_id, player_data)
 
     zone_level = player.stats.zone_level
@@ -390,8 +388,8 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
             # Update the message with the new embed and view
             await battle_embed.edit(embed=new_embed, view=ResurrectOptions(ctx, player_data, player_id))
 
-    # Clear the in_battle flag after the battle ends
-    player_data["in_battle"] = False
+    # Clear the battle flag after the battle ends
+    player_data["location"] = None
     save_player_data(guild_id, player_id, player_data)
 
 @bot.slash_command(description="Start a new game.")

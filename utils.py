@@ -99,6 +99,19 @@ class CommonResponses:
             ephemeral=True
         )
 
+    @staticmethod
+    async def ongoing_battle_response(interaction):
+        from images.urls import generate_urls
+
+        nero_embed = discord.Embed(
+            title="Captain Nero",
+            description="Avast, ye scallywag! Ye be locked in combat... **Keep yer eyes on the horizon!**",
+            color=discord.Color.dark_gold()
+        )
+        nero_embed.set_thumbnail(url=generate_urls("nero", "gun"))
+
+        await interaction.response.send_message(embed=nero_embed, ephemeral=True)
+
 # User pressing wrong buttons
 def get_nero_warning(interaction):
     warnings = [
