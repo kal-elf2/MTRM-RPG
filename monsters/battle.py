@@ -67,7 +67,7 @@ class LootOptions(discord.ui.View, CommonResponses):
                 description="Arr! The battle session has expired, matey. Start a new battle if ye dare!",
                 color=discord.Color.dark_gold()
             )
-            expired_embed.set_thumbnail(url=generate_urls("nero", "pirate_hat"))
+            expired_embed.set_thumbnail(url=generate_urls("nero", "confused"))
 
             # Send the embed as a response to the interaction
             await interaction.followup.send(embed=expired_embed, ephemeral=True)

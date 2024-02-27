@@ -1,10 +1,12 @@
 import discord
+import asyncio
 from discord.ext import commands
+import numpy as np
 from citadel.crafting import CraftingSelect, create_crafting_stations
 from images.urls import generate_urls
 from citadel.grains import HarvestButton
 from discord import Embed
-from utils import CommonResponses, load_player_data
+from utils import CommonResponses, load_player_data, save_player_data
 
 class CitadelCog(commands.Cog):
     def __init__(self, bot):
@@ -42,12 +44,15 @@ class CitadelCog(commands.Cog):
             await ctx.respond(embed=embed, ephemeral=True)
             return
 
+        player_data["location"] = "citadel"
+        save_player_data(guild_id, author_id, player_data)
+
         # Initialize the rows with the author_id
-        row1 = ForgeRow(ctx, author_id=author_id)
-        row2 = TanneryRow(ctx, author_id=author_id)
-        row3 = BreadRow(ctx, author_id=author_id)
-        row4 = WheatRow(ctx, author_id=author_id)
-        row5 = TravelRow(ctx, author_id=author_id)
+        row1 = ForgeRow(player_data, ctx, author_id=author_id)
+        row2 = TanneryRow(player_data, ctx, author_id=author_id)
+        row3 = BreadRow(player_data, ctx, author_id=author_id)
+        row4 = WheatRow(player_data, ctx, author_id=author_id)
+        row5 = TravelRow(player_data, ctx, author_id=author_id)
 
         await ctx.respond(view=row1)
         await ctx.send(view=row2)
@@ -56,8 +61,9 @@ class CitadelCog(commands.Cog):
         await ctx.send(view=row5)
 
 class ForgeRow(discord.ui.View, CommonResponses):
-    def __init__(self, ctx=None, author_id=None):
+    def __init__(self, player_data, ctx=None, author_id=None):
         super().__init__(timeout=None)
+        self.player_data = player_data
         self.ctx = ctx
         self.author_id = author_id
         self.crafting_select = None
@@ -76,6 +82,11 @@ class ForgeRow(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
+        # Check for battle flag and return if battling
+        if self.player_data["location"] == "battle":
+            await self.ongoing_battle_response(interaction)
+            return
+
         station = create_crafting_stations(interaction, "forge")
         self.update_or_add_crafting_select(station, interaction)
         await interaction.response.edit_message(content="Choose an item to Forge:", view=self)
@@ -86,6 +97,11 @@ class ForgeRow(discord.ui.View, CommonResponses):
         # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
+            return
+
+        # Check for battle flag and return if battling
+        if self.player_data["location"] == "battle":
+            await self.ongoing_battle_response(interaction)
             return
 
         station = create_crafting_stations(interaction, "woodshop")
@@ -100,14 +116,20 @@ class ForgeRow(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
+        # Check for battle flag and return if battling
+        if self.player_data["location"] == "battle":
+            await self.ongoing_battle_response(interaction)
+            return
+
         station = create_crafting_stations(interaction, "archery_stand")
         self.update_or_add_crafting_select(station, interaction)
         await interaction.response.edit_message(content="Choose an item from the Archery Stand:", view=self)
 
 
 class TanneryRow(discord.ui.View, CommonResponses):
-    def __init__(self, ctx=None, author_id=None):
+    def __init__(self, player_data, ctx=None, author_id=None):
         super().__init__(timeout=None)
+        self.player_data = player_data
         self.ctx = ctx
         self.author_id = author_id
         self.crafting_select = None
@@ -126,6 +148,11 @@ class TanneryRow(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
+        # Check for battle flag and return if battling
+        if self.player_data["location"] == "battle":
+            await self.ongoing_battle_response(interaction)
+            return
+
         station = create_crafting_stations(interaction, "tannery")
         self.update_or_add_crafting_select(station, interaction)
         await interaction.response.edit_message(content="Choose an item from the Tannery:", view=self)
@@ -136,6 +163,11 @@ class TanneryRow(discord.ui.View, CommonResponses):
         # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
+            return
+
+        # Check for battle flag and return if battling
+        if self.player_data["location"] == "battle":
+            await self.ongoing_battle_response(interaction)
             return
 
         station = create_crafting_stations(interaction, "clothiery")
@@ -150,14 +182,19 @@ class TanneryRow(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
+        # Check for battle flag and return if battling
+        if self.player_data["location"] == "battle":
+            await self.ongoing_battle_response(interaction)
+            return
+
         station = create_crafting_stations(interaction, "potion_shop")
         self.update_or_add_crafting_select(station, interaction)
         await interaction.response.edit_message(content="Choose an item from the Potion Shop:", view=self)
 
-
 class BreadRow(discord.ui.View, CommonResponses):
-    def __init__(self, ctx=None, author_id=None):
+    def __init__(self, player_data, ctx=None, author_id=None):
         super().__init__(timeout=None)
+        self.player_data = player_data
         self.ctx = ctx
         self.author_id = author_id
         self.crafting_select = None
@@ -189,6 +226,11 @@ class BreadRow(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
+        # Check for battle flag and return if battling
+        if self.player_data["location"] == "battle":
+            await self.ongoing_battle_response(interaction)
+            return
+
         station = create_crafting_stations(interaction, "bread_stand")
         self.update_or_add_crafting_select(station, interaction)
         await interaction.response.edit_message(content="Choose an item from the Bread Stand:", view=self)
@@ -199,6 +241,11 @@ class BreadRow(discord.ui.View, CommonResponses):
         # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
+            return
+
+        # Check for battle flag and return if battling
+        if self.player_data["location"] == "battle":
+            await self.ongoing_battle_response(interaction)
             return
 
         station = create_crafting_stations(interaction, "meat_stand")
@@ -214,14 +261,20 @@ class BreadRow(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
+        # Check for battle flag and return if battling
+        if self.player_data["location"] == "battle":
+            await self.ongoing_battle_response(interaction)
+            return
+
         station = create_crafting_stations(interaction, "tavern")
         self.update_or_add_crafting_select(station, interaction)
         self.update_or_add_crafting_select(station, interaction, is_tavern=True)
         await interaction.response.edit_message(content="Choose an item from the Tavern:", view=self)
 
 class WheatRow(discord.ui.View, CommonResponses):
-    def __init__(self, ctx=None, author_id=None):
+    def __init__(self, player_data, ctx=None, author_id=None):
         super().__init__(timeout=None)
+        self.player_data = player_data
         self.ctx = ctx
         self.author_id = author_id
         self.crafting_select = None
@@ -232,6 +285,11 @@ class WheatRow(discord.ui.View, CommonResponses):
         # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
+            return
+
+        # Check for battle flag and return if battling
+        if self.player_data["location"] == "battle":
+            await self.ongoing_battle_response(interaction)
             return
 
         embed = discord.Embed(
@@ -248,9 +306,13 @@ class WheatRow(discord.ui.View, CommonResponses):
     @discord.ui.button(label="🌿 Flax", custom_id="citadel_flax", style=discord.ButtonStyle.blurple)
     async def flax(self, button, interaction):
         # Check if the user who interacted is the same as the one who initiated the view
-        # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
+            return
+
+        # Check for battle flag and return if battling
+        if self.player_data["location"] == "battle":
+            await self.ongoing_battle_response(interaction)
             return
 
         embed = discord.Embed(
@@ -270,6 +332,11 @@ class WheatRow(discord.ui.View, CommonResponses):
         # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
+            return
+
+        # Check for battle flag and return if battling
+        if self.player_data["location"] == "battle":
+            await self.ongoing_battle_response(interaction)
             return
 
         from exemplars.exemplars import Exemplar
@@ -325,8 +392,9 @@ class WheatRow(discord.ui.View, CommonResponses):
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
 class TravelRow(discord.ui.View, CommonResponses):
-    def __init__(self, ctx=None, author_id=None):
+    def __init__(self, player_data, ctx=None, author_id=None):
         super().__init__(timeout=None)
+        self.player_data = player_data
         self.ctx = ctx
         self.author_id = author_id
         self.crafting_select = None
@@ -341,6 +409,11 @@ class TravelRow(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
+        # Check for battle flag and return if battling
+        if self.player_data["location"] == "battle":
+            await self.ongoing_battle_response(interaction)
+            return
+
         player_data = load_player_data(interaction.guild.id, str(interaction.user.id))
         player = Exemplar(player_data["exemplar"],
                           player_data["stats"],
@@ -349,7 +422,7 @@ class TravelRow(discord.ui.View, CommonResponses):
         view = JollyRogerView(self.guild_id, player, player_data, self.author_id)
 
         nero_embed = discord.Embed(
-            title="Captain Nero",
+            title="Captain Ner0",
             description="Ahoy, matey! Welcome aboard the Jolly Roger. Adventure and treasure await ye on the high seas!",
             color=discord.Color.gold()
         )
@@ -364,6 +437,11 @@ class TravelRow(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
+        # Check for battle flag and return if battling
+        if self.player_data["location"] == "battle":
+            await self.ongoing_battle_response(interaction)
+            return
+
         # Send a message about the Colosseum
         nero_embed = discord.Embed(
             title="Captain Nero",
@@ -374,13 +452,40 @@ class TravelRow(discord.ui.View, CommonResponses):
         await interaction.response.send_message(embed=nero_embed, ephemeral=True)
 
     @discord.ui.button(label="🚪 Exit", custom_id="citadel_exit", style=discord.ButtonStyle.blurple)
-    async def exit(self, button, interaction):# Check if the user who interacted is the same as the one who initiated the view
-        # Inherited from CommonResponses class from utils
+    async def exit(self, button, interaction):
+        from probabilities import brute_percent
+        from citadel.brute import mega_brute_encounter
+
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        await interaction.response.send_message("You left the Citadel!")
+        if self.player_data["location"] == "battle":
+            await self.ongoing_battle_response(interaction)
+            return
+
+        embed = discord.Embed(title="Captain Ner0",
+                              description="Hmmm... do you hear that?",
+                              color=discord.Color.dark_gold())
+        embed.set_thumbnail(url=generate_urls("nero", "confused"))
+        await interaction.response.send_message(embed=embed, ephemeral=False)
+
+        await asyncio.sleep(2.5)  # Delay to build suspense
+
+        if np.random.rand() <= brute_percent:
+            embed.description = "Arrr! Ye better leg it, ye pointy-eared scallywags! **The brute be comin' for ye!**"
+            embed.set_thumbnail(url=generate_urls("nero", "laugh"))
+            await interaction.edit_original_response(embed=embed)
+            await asyncio.sleep(2.5)
+            await mega_brute_encounter(self.player_data, self.ctx, interaction, self.guild_id, self.author_id)
+        else:
+            embed.description = "**The coast is clear, me hearties!** Time to plunder and claim our fortunes! Onward!"
+            embed.set_thumbnail(url=generate_urls("nero", "gun"))
+            await interaction.edit_original_response(embed=embed)
+
+        self.player_data["location"] = None
+        # Ensure save_player_data is correctly implemented
+        save_player_data(self.guild_id, self.author_id, self.player_data)
 
 def setup(bot):
     bot.add_cog(CitadelCog(bot))

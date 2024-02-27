@@ -216,9 +216,10 @@ def update_special_attack_options(battle_context):
 @bot.slash_command(description="Battle a monster!")
 async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=generate_monster_list(), required=True)):
     from monsters.monster import BattleContext
+    from utils import CommonResponses
 
     guild_id = ctx.guild.id
-    player_id = str(ctx.author.id)  # Use player_id consistently for clarity
+    player_id = str(ctx.author.id)
 
     # Load only the specific player's data
     player_data = load_player_data(guild_id, player_id)
@@ -241,6 +242,11 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
                       color=discord.Color.dark_gold())
         embed.set_thumbnail(url=generate_urls("nero", "confused"))
         await ctx.respond(embed=embed, ephemeral=True)
+        return
+
+    # Check for battle flag and return if battling
+    if player_data["location"] == "citadel":
+        await CommonResponses.exit_citadel_response(ctx)
         return
 
     player_data["location"] = "battle"

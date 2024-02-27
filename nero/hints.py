@@ -2,7 +2,11 @@ import discord
 import random
 from images.urls import generate_urls
 
-#spork, run when no stamina 50%, harder monsters attack you in higher zones, when you go to the next zone (inventory),
+#spork,
+# run when no stamina 50%,
+# harder monsters attack you in higher zones,
+# when you go to the next zone (inventory),
+# attack % (married to a witch)
 
 class HintsManager:
     def __init__(self):
