@@ -606,7 +606,7 @@ class HarvestButton(discord.ui.View, CommonResponses):
             self.player_data["location"] = None
             save_player_data(self.guild_id, self.author_id, self.player_data)
 
-class WoodcuttingCog(commands.Cog):
+class WoodcuttingCog(commands.Cog, CommonResponses):
     def __init__(self, bot):
         self.bot = bot
 
@@ -666,6 +666,11 @@ class WoodcuttingCog(commands.Cog):
                           color=discord.Color.dark_gold())
             embed.set_thumbnail(url=generate_urls("nero", "confused"))
             await ctx.respond(embed=embed, ephemeral=True)
+            return
+
+        # Check for battle flag and return if battling
+        if player_data["location"] == "citadel":
+            await self.exit_citadel_response(ctx)
             return
 
         base_min_levels = {
