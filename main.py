@@ -350,7 +350,7 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
             await battle_context.special_attack_message.delete()
             await battle_options_msg.delete()
 
-            loot_view = LootOptions(ctx, player, monster, battle_embed, player_data, player_id, battle_outcome, loot_messages, guild_id, ctx, experience_gained, loothaven_effect)
+            loot_view = LootOptions(ctx, player, monster, battle_embed, player_data, player_id, battle_outcome, loot_messages, guild_id, ctx, experience_gained, loothaven_effect, battle_context.rusty_spork_dropped)
 
             max_cap_message = ""
             if experience_gained == 0:

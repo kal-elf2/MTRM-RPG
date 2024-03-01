@@ -100,7 +100,7 @@ async def mega_brute_encounter(player_data, ctx, interaction, guild_id, author_i
 
             loot_view = LootOptions(interaction, player, monster, battle_embed, player_data,
                                     author_id, battle_outcome,
-                                    loot_messages, guild_id, interaction, experience_gained, loothaven_effect,
+                                    loot_messages, guild_id, interaction, experience_gained, loothaven_effect, battle_context.rusty_spork_dropped,
                                     add_repeat_button=False)
 
             # Send max XP cap message if experience gained is 0

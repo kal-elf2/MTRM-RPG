@@ -132,6 +132,7 @@ class BattleContext:
         self.zone_level = zone_level
         self.update_callback = update_callback
         self.is_battle_active = True
+        self.rusty_spork_dropped = False
 
     def end_battle(self):
         self.is_battle_active = False
@@ -254,8 +255,18 @@ async def monster_battle(battle_context):
     # Determine the battle outcome
     if battle_context.monster.is_defeated():
         # Handle monster defeat
-        loot, loot_messages, loothaven_effect = generate_zone_loot(battle_context.player, battle_context.zone_level, battle_context.monster.drop, battle_context.monster.name)
-        return (True, battle_context.monster.max_health, battle_context.player.stats.damage_taken, loot, battle_context.monster.experience_reward, loothaven_effect), loot_messages
+        loot, loot_messages, loothaven_effect, rusty_spork_dropped = generate_zone_loot(
+            battle_context.player, battle_context.zone_level, battle_context.monster.drop, battle_context.monster.name
+        )
+
+        # Store the rusty_spork_dropped flag in the battle context for later use
+        battle_context.rusty_spork_dropped = rusty_spork_dropped
+
+        return (
+            True, battle_context.monster.max_health, battle_context.player.stats.damage_taken,
+            loot, battle_context.monster.experience_reward, loothaven_effect
+        ), loot_messages
+
     elif battle_context.player.is_defeated():
         # Handle player defeat
         return (False, battle_context.monster.max_health, battle_context.player.stats.damage_taken, None, None, False), None

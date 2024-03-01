@@ -87,6 +87,7 @@ monster_difficulty_multiplier = {
 def generate_zone_loot(player, zone_level, monster_drop=None, name=None):
     loot_messages = []
     loot = []
+    rusty_spork_dropped = False
 
     # Check if the player has the Loothaven charm equipped
     loothaven_effect = (player.inventory.equipped_charm and player.inventory.equipped_charm.name == "Loothaven") and random.random() < loothaven_percent
@@ -194,6 +195,7 @@ def generate_zone_loot(player, zone_level, monster_drop=None, name=None):
 
         # Rusty Spork drop logic
         if random.random() < spork_chance:
+            rusty_spork_dropped = True
             from probabilities import spork_value
             spork_dropped = Item("Rusty Spork", description="A rusty and useless trinket", value=spork_value)
             spork_count = 2 if loothaven_effect else 1
@@ -203,7 +205,7 @@ def generate_zone_loot(player, zone_level, monster_drop=None, name=None):
             loot_messages.append(f"{get_emoji('Rusty Spork')} You found **{spork_count} {spork_message}**!")
 
         # Return the loot dropped (empty list if no loot is dropped) and the loot messages
-        return loot, loot_messages, loothaven_effect
+        return loot, loot_messages, loothaven_effect, rusty_spork_dropped
 
 
 

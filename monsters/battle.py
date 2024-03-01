@@ -9,7 +9,7 @@ import asyncio
 
 class LootOptions(discord.ui.View, CommonResponses):
     def __init__(self, interaction, player, monster, battle_embed, player_data, author_id, battle_outcome,
-                 loot_messages, guild_id, ctx, experience_gained, loothaven_effect, add_repeat_button=True):
+                 loot_messages, guild_id, ctx, experience_gained, loothaven_effect, rusty_spork_dropped, add_repeat_button=True):
         super().__init__(timeout=None)
         self.interaction = interaction
         self.player = player
@@ -23,6 +23,7 @@ class LootOptions(discord.ui.View, CommonResponses):
         self.ctx = ctx
         self.experience_gained = experience_gained
         self.loothaven_effect = loothaven_effect
+        self.rusty_spork_dropped = rusty_spork_dropped
 
         # Store the state for adding the repeat button
         self.should_add_repeat_button = add_repeat_button
@@ -154,6 +155,15 @@ class LootOptions(discord.ui.View, CommonResponses):
         )
 
         final_embed = create_battle_embed(self.ctx.user, self.player, self.monster, footer_text_for_embed(self.ctx, self.monster, self.player), message_text)
+
+        if self.rusty_spork_dropped:
+            special_nero_embed = discord.Embed(
+                title="Avast! A 'Mundane' Discovery!",
+                description=f"Ahoy, matey! What's this? Ye've dug up a {get_emoji('Rusty Sprok')}**Rusty Spork**! Ah, such a common find, really—nothing to get yer sails in a twist over. Seems pretty worthless, but come see me at the Jolly Roger anyway. I might be able to scrounge up some Coppers for it.",
+                color=discord.Color.gold()
+            )
+            special_nero_embed.set_thumbnail(url=generate_urls("nero", "nero"))
+            await interaction.followup.send(embed=special_nero_embed)
 
         save_player_data(self.guild_id, self.author_id, self.player_data)
 
@@ -288,7 +298,7 @@ async def start_battle(ctx, monster, player_data, player, author_id, guild_id, b
             await battle_options_msg.delete()
 
             loot_view = LootOptions(ctx, player, monster, battle_embed, player_data, author_id, battle_outcome,
-                                    loot_messages, guild_id, ctx, experience_gained, loothaven_effect)
+                                    loot_messages, guild_id, ctx, experience_gained, loothaven_effect, battle_context.rusty_spork_dropped)
 
             max_cap_message = ""
             if experience_gained == 0:

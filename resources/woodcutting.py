@@ -561,7 +561,7 @@ class HarvestButton(discord.ui.View, CommonResponses):
                     await battle_options_msg.delete()
 
                     loot_view = LootOptions(interaction, self.player, monster, battle_embed, self.player_data, self.author_id, battle_outcome,
-                                            loot_messages, self.guild_id, interaction, experience_gained, loothaven_effect, add_repeat_button=False)
+                                            loot_messages, self.guild_id, interaction, experience_gained, loothaven_effect, battle_context.rusty_spork_dropped, add_repeat_button=False)
 
                     # Send max XP cap message if experience gained is 0
                     max_cap_message = ""
