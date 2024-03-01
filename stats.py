@@ -209,9 +209,8 @@ class StatsCog(commands.Cog):
             "halfling": "Sword"
         }
 
-        # New Player Info section
-        player_info = f"Exemplar: {exemplar.capitalize()}\n" \
-                      f"Current Zone: {zone_level}"
+        player_info = f"👤 Exemplar: {exemplar.capitalize()}\n" \
+                      f"🗺️ Current Zone: {zone_level}"
         embed.add_field(name="Player Info", value=player_info, inline=False)
 
         # Adjusted Combat Stats to include Attack and Defense
