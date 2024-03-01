@@ -175,7 +175,6 @@ class StatsDropdown(discord.ui.Select, CommonResponses):
 
         return embed
 
-
 class StatsCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -186,8 +185,6 @@ class StatsCog(commands.Cog):
         author_id = str(ctx.author.id)
 
         player_data = load_player_data(guild_id, author_id)
-
-        # Check if player data exists for the user
         if not player_data:
             embed = Embed(title="Captain Ner0",
                           description="Arr! What be this? No record of yer adventures? Start a new game with `/newgame` before I make ye walk the plank.",
@@ -198,46 +195,46 @@ class StatsCog(commands.Cog):
 
         player = player_data["stats"]
         inventory = player_data["inventory"]
-        zone_level = player_data["stats"]["zone_level"]
+        zone_level = player["zone_level"]
         exemplar = player_data['exemplar']
-        exemplar_capitalized = exemplar.capitalize()
-
         embed_color = color_mapping.get(zone_level, 0x969696)
         embed = discord.Embed(color=embed_color)
-        embed.set_thumbnail(url=generate_urls("exemplars", exemplar_capitalized))
+        embed.set_thumbnail(url=generate_urls("exemplars", exemplar.capitalize()))
 
         weapon_specialty = {
-                        "human": "Sword",
-                        "elf": "Bow",
-                        "orc": "Spear",
-                        "dwarf": "Hammer",
-                        "halfling": "Sword"
-                    }
+            "human": "Sword",
+            "elf": "Bow",
+            "orc": "Spear",
+            "dwarf": "Hammer",
+            "halfling": "Sword"
+        }
 
-        # Add overall stats and inventory to the embed
-        all_stats = f"""**Exemplar**: {exemplar.capitalize()}
-                        **Current Zone**: {zone_level}\n
-                        ⚔️ **Combat Level**: {player['combat_level']}
-                        {get_emoji('heart_emoji')} **Health**: {player['health']}
-                        {get_emoji('strength_emoji')} **Strength**: {player['strength']}
-                        {get_emoji('stamina_emoji')}️ **Stamina**: {player['stamina']}
-                        🗡️ **Attack**: {player['attack']}
-                        🛡️ **Defense**: {player['defense']}
-                        ⛏️ **Mining Level**: {player['mining_level']}
-                        🪓 **Woodcutting Level**: {player['woodcutting_level']}\n
-                        {get_emoji('Materium')} **Materium**: {inventory.materium:,}
-                        {get_emoji('coppers_emoji')} **Coppers**: {inventory.coppers:,}"""
+        # New Player Info section
+        player_info = f"Exemplar: {exemplar.capitalize()}\n" \
+                      f"Current Zone: {zone_level}"
+        embed.add_field(name="Player Info", value=player_info, inline=False)
 
-        embed.add_field(name="📊  __Overall Stats__  📊", value=all_stats, inline=False)
-        specialty = weapon_specialty.get(exemplar)
+        # Adjusted Combat Stats to include Attack and Defense
+        combat_stats = f"⚔️ Combat: {player['combat_level']}\n" \
+                       f"{get_emoji('heart_emoji')} Health: {player['health']}\n" \
+                       f"{get_emoji('strength_emoji')} Strength: {player['strength']}\n" \
+                       f"{get_emoji('stamina_emoji')}️ Stamina: {player['stamina']}\n" \
+                       f"🗡️ Attack: {player['attack']}\n" \
+                       f"🛡️ Defense: {player['defense']}"
+        embed.add_field(name="Combat Stats", value=combat_stats, inline=False)
+
+        skill_stats = f"⛏️ Mining: {player['mining_level']}\n" \
+                      f"🪓 Woodcutting: {player['woodcutting_level']}"
+        embed.add_field(name="Skill Stats", value=skill_stats, inline=True)
+
+        inventory_stats = f"{get_emoji('Materium')} Materium: {inventory.materium:,}\n" \
+                          f"{get_emoji('coppers_emoji')} Coppers: {inventory.coppers:,}"
+        embed.add_field(name="Inventory", value=inventory_stats, inline=False)
+
+        specialty = weapon_specialty.get(exemplar, "None")
         embed.set_footer(text=f"Weapon Bonus: {specialty}")
 
-        # Send the embed with overall stats
         await ctx.respond(content=f"{ctx.author.mention}'s Overall Stats", embed=embed)
-
-        # Send the dropdown view for additional stats
-        view = StatsView(author_id=str(ctx.author.id), zone_level=zone_level)
-        await ctx.send("Select a category to view more details:", view=view)
 
     @commands.slash_command(description="View leaderboards")
     async def leaders(self, ctx):

@@ -683,7 +683,7 @@ def create_crafting_stations(interaction, station_name=None):
     forge.add_recipe(Recipe(iron, (charcoal, 2), (iron_ore, 2)))
     forge.add_recipe(Recipe(carbon, (coal, 2)))
     forge.add_recipe(Recipe(steel, (charcoal, 3), (carbon, 2), (iron, 1)))
-    forge.add_recipe(Recipe(cannonball, (onyx, 2), (carbon, 3), (steel, 2)))
+    forge.add_recipe(Recipe(cannonball, (onyx, 2), (carbon, 2), (steel, 1)))
     forge.add_recipe(Recipe(short_sword, (charcoal, 3), (iron, 3), (leather_straps, 2)))
     forge.add_recipe(Recipe(long_sword, (charcoal, 3), (steel, 3), (leather_straps, 4)))
     forge.add_recipe(Recipe(champion_sword, (charcoal, 5), (steel, 5), (leather_straps, 4)))
