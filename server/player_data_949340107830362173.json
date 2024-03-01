@@ -2,10 +2,10 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "health": 85,
+            "health": 105,
             "max_health": 105,
             "strength": 16,
-            "stamina": 8,
+            "stamina": 18,
             "max_stamina": 18,
             "attack": 8,
             "damage": 5,
@@ -27,7 +27,7 @@
                     "name": "Charcoal",
                     "description": null,
                     "value": null,
-                    "stack": 1377
+                    "stack": 1372
                 },
                 {
                     "name": "Iron",
@@ -39,7 +39,7 @@
                     "name": "Steel",
                     "description": null,
                     "value": null,
-                    "stack": 2073
+                    "stack": 2063
                 },
                 {
                     "name": "Onyx",
@@ -57,7 +57,7 @@
                     "name": "Thick Pole",
                     "description": null,
                     "value": null,
-                    "stack": 25550
+                    "stack": 25540
                 },
                 {
                     "name": "Pine Strip",
@@ -99,7 +99,7 @@
                     "name": "Flax",
                     "description": null,
                     "value": null,
-                    "stack": 2008
+                    "stack": 2012
                 },
                 {
                     "name": "Linen",
@@ -112,12 +112,6 @@
                     "description": null,
                     "value": null,
                     "stack": 952
-                },
-                {
-                    "name": "Venison",
-                    "description": null,
-                    "value": null,
-                    "stack": 934
                 },
                 {
                     "name": "Sinew",
@@ -153,7 +147,7 @@
                     "name": "Glowing Essence",
                     "description": "An ethereal essence that glows faintly. Used in powerful magical rituals and citadel.",
                     "value": 200,
-                    "stack": 986
+                    "stack": 985
                 },
                 {
                     "name": "Goblin Crown",
@@ -171,7 +165,7 @@
                     "name": "Leather Straps",
                     "description": null,
                     "value": null,
-                    "stack": 752
+                    "stack": 747
                 },
                 {
                     "name": "Tough Leather Straps",
@@ -195,7 +189,13 @@
                     "name": "Deer Parts",
                     "description": "Various parts of a deer. Some are useful for making tools and weapons.",
                     "value": 20,
-                    "stack": 102
+                    "stack": 90
+                },
+                {
+                    "name": "Venison",
+                    "description": null,
+                    "value": null,
+                    "stack": 3
                 }
             ],
             "trees": [
@@ -345,7 +345,7 @@
                     "name": "Voltaic Sword",
                     "description": null,
                     "value": 94,
-                    "stack": 60,
+                    "stack": 61,
                     "wtype": "Sword",
                     "attack_modifier": 12,
                     "special_attack": 4,
@@ -380,7 +380,7 @@
                 }
             ],
             "equipped_charm": null,
-            "materium": 95
+            "materium": 94
         },
         "dice_stats": {
             "total_games": 2,
@@ -403,6 +403,6 @@
             "Poplar Strip": 25,
             "Cannonball": 25
         },
-        "location": "citadel"
+        "location": null
     }
 }

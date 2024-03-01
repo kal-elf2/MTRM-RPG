@@ -84,7 +84,7 @@ class CommonResponses:
     async def nero_unauthorized_user_response(interaction):
 
         nero_embed = discord.Embed(
-            title="Captain Nero",
+            title="Captain Ner0",
             description=get_nero_warning(interaction),
             color=discord.Color.dark_gold()
         )
@@ -103,7 +103,7 @@ class CommonResponses:
 
         battle_warning = get_nero_battle_warnings(interaction)
         nero_embed = discord.Embed(
-            title="Captain Nero",
+            title="Captain Ner0",
             description=battle_warning,
             color=discord.Color.dark_gold()
         )
@@ -115,12 +115,24 @@ class CommonResponses:
 
         citadel_exit_warning = leave_citadel_message(interaction)
         nero_embed = discord.Embed(
-            title="Captain Nero",
+            title="Captain Ner0",
             description=citadel_exit_warning,
             color=discord.Color.dark_gold()
         )
         nero_embed.set_thumbnail(url=generate_urls("nero", "confused"))
         await interaction.response.send_message(embed=nero_embed, ephemeral=True)
+
+    @staticmethod
+    async def not_in_citadel_response(interaction):
+        embed = discord.Embed(
+            title="Captain Ner0",
+            description=("Yarrr, seems ye've wandered off the map! This be no place for citadel affairs. "
+                         "Hoist yer sails and navigate back to the citadel with `/citadel`, then try yer luck again!"),
+            color=discord.Color.dark_gold()
+        )
+        embed.set_thumbnail(url=generate_urls("nero", "confused"))
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
 
 # User pressing wrong buttons
 def get_nero_warning(interaction):

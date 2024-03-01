@@ -8,7 +8,7 @@ from citadel.grains import HarvestButton
 from discord import Embed
 from utils import CommonResponses, load_player_data, save_player_data
 
-class CitadelCog(commands.Cog):
+class CitadelCog(commands.Cog, CommonResponses):
     def __init__(self, bot):
         self.bot = bot
 
@@ -42,6 +42,11 @@ class CitadelCog(commands.Cog):
                           color=discord.Color.dark_gold())
             embed.set_thumbnail(url=generate_urls("nero", "confused"))
             await ctx.respond(embed=embed, ephemeral=True)
+            return
+
+        # Check for battle flag and return if battling
+        if player_data["location"] == "battle":
+            await self.ongoing_battle_response(ctx)
             return
 
         player_data["location"] = "citadel"
@@ -82,9 +87,9 @@ class ForgeRow(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        # Check for battle flag and return if battling
-        if self.player_data["location"] == "battle":
-            await self.ongoing_battle_response(interaction)
+        # Check if the player is not in the citadel
+        if self.player_data["location"] != "citadel":
+            await self.not_in_citadel_response(interaction)
             return
 
         station = create_crafting_stations(interaction, "forge")
@@ -99,9 +104,9 @@ class ForgeRow(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        # Check for battle flag and return if battling
-        if self.player_data["location"] == "battle":
-            await self.ongoing_battle_response(interaction)
+        # Check if the player is not in the citadel
+        if self.player_data["location"] != "citadel":
+            await self.not_in_citadel_response(interaction)
             return
 
         station = create_crafting_stations(interaction, "woodshop")
@@ -116,9 +121,9 @@ class ForgeRow(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        # Check for battle flag and return if battling
-        if self.player_data["location"] == "battle":
-            await self.ongoing_battle_response(interaction)
+        # Check if the player is not in the citadel
+        if self.player_data["location"] != "citadel":
+            await self.not_in_citadel_response(interaction)
             return
 
         station = create_crafting_stations(interaction, "archery_stand")
@@ -148,9 +153,9 @@ class TanneryRow(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        # Check for battle flag and return if battling
-        if self.player_data["location"] == "battle":
-            await self.ongoing_battle_response(interaction)
+        # Check if the player is not in the citadel
+        if self.player_data["location"] != "citadel":
+            await self.not_in_citadel_response(interaction)
             return
 
         station = create_crafting_stations(interaction, "tannery")
@@ -165,9 +170,9 @@ class TanneryRow(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        # Check for battle flag and return if battling
-        if self.player_data["location"] == "battle":
-            await self.ongoing_battle_response(interaction)
+        # Check if the player is not in the citadel
+        if self.player_data["location"] != "citadel":
+            await self.not_in_citadel_response(interaction)
             return
 
         station = create_crafting_stations(interaction, "clothiery")
@@ -182,9 +187,9 @@ class TanneryRow(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        # Check for battle flag and return if battling
-        if self.player_data["location"] == "battle":
-            await self.ongoing_battle_response(interaction)
+        # Check if the player is not in the citadel
+        if self.player_data["location"] != "citadel":
+            await self.not_in_citadel_response(interaction)
             return
 
         station = create_crafting_stations(interaction, "potion_shop")
@@ -226,9 +231,9 @@ class BreadRow(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        # Check for battle flag and return if battling
-        if self.player_data["location"] == "battle":
-            await self.ongoing_battle_response(interaction)
+        # Check if the player is not in the citadel
+        if self.player_data["location"] != "citadel":
+            await self.not_in_citadel_response(interaction)
             return
 
         station = create_crafting_stations(interaction, "bread_stand")
@@ -243,9 +248,9 @@ class BreadRow(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        # Check for battle flag and return if battling
-        if self.player_data["location"] == "battle":
-            await self.ongoing_battle_response(interaction)
+        # Check if the player is not in the citadel
+        if self.player_data["location"] != "citadel":
+            await self.not_in_citadel_response(interaction)
             return
 
         station = create_crafting_stations(interaction, "meat_stand")
@@ -261,9 +266,9 @@ class BreadRow(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        # Check for battle flag and return if battling
-        if self.player_data["location"] == "battle":
-            await self.ongoing_battle_response(interaction)
+        # Check if the player is not in the citadel
+        if self.player_data["location"] != "citadel":
+            await self.not_in_citadel_response(interaction)
             return
 
         station = create_crafting_stations(interaction, "tavern")
@@ -287,9 +292,9 @@ class WheatRow(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        # Check for battle flag and return if battling
-        if self.player_data["location"] == "battle":
-            await self.ongoing_battle_response(interaction)
+        # Check if the player is not in the citadel
+        if self.player_data["location"] != "citadel":
+            await self.not_in_citadel_response(interaction)
             return
 
         embed = discord.Embed(
@@ -310,9 +315,9 @@ class WheatRow(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        # Check for battle flag and return if battling
-        if self.player_data["location"] == "battle":
-            await self.ongoing_battle_response(interaction)
+        # Check if the player is not in the citadel
+        if self.player_data["location"] != "citadel":
+            await self.not_in_citadel_response(interaction)
             return
 
         embed = discord.Embed(
@@ -334,9 +339,9 @@ class WheatRow(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        # Check for battle flag and return if battling
-        if self.player_data["location"] == "battle":
-            await self.ongoing_battle_response(interaction)
+        # Check if the player is not in the citadel
+        if self.player_data["location"] != "citadel":
+            await self.not_in_citadel_response(interaction)
             return
 
         from exemplars.exemplars import Exemplar
@@ -409,9 +414,9 @@ class TravelRow(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        # Check for battle flag and return if battling
-        if self.player_data["location"] == "battle":
-            await self.ongoing_battle_response(interaction)
+        # Check if the player is not in the citadel
+        if self.player_data["location"] != "citadel":
+            await self.not_in_citadel_response(interaction)
             return
 
         player_data = load_player_data(interaction.guild.id, str(interaction.user.id))
@@ -437,9 +442,9 @@ class TravelRow(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        # Check for battle flag and return if battling
-        if self.player_data["location"] == "battle":
-            await self.ongoing_battle_response(interaction)
+        # Check if the player is not in the citadel
+        if self.player_data["location"] != "citadel":
+            await self.not_in_citadel_response(interaction)
             return
 
         # Send a message about the Colosseum
@@ -457,35 +462,43 @@ class TravelRow(discord.ui.View, CommonResponses):
         from citadel.brute import mega_brute_encounter
 
         if str(interaction.user.id) != self.author_id:
-            await self.nero_unauthorized_user_response(interaction)
+            await self.unauthorized_user_response(interaction)
             return
 
-        if self.player_data["location"] == "battle":
-            await self.ongoing_battle_response(interaction)
+        if self.player_data["location"] != "citadel":
+            await self.not_in_citadel_response(interaction)
             return
 
+        # Defer the response immediately to prepare for sending the initial message
+        await interaction.response.defer(ephemeral=False)
+
+        # Prepare the initial suspenseful message
         embed = discord.Embed(title="Captain Ner0",
                               description="Hmmm... do you hear that?",
                               color=discord.Color.dark_gold())
         embed.set_thumbnail(url=generate_urls("nero", "confused"))
-        await interaction.response.send_message(embed=embed, ephemeral=False)
 
-        await asyncio.sleep(2.5)  # Delay to build suspense
+        # Send the initial message by editing the original response
+        await interaction.edit_original_response(embed=embed)
+
+        # Wait for the suspense to build
+        await asyncio.sleep(2.5)
 
         if np.random.rand() <= brute_percent:
-            embed.description = "Arrr! Ye better leg it, ye pointy-eared scallywags! **The brute be comin' for ye!**"
+            # Update the embed for the brute encounter
+            embed.description = "Arrr! Ye better leg it, ye pointy-eared scallywags! **BRUTE AT THE GATE!**"
             embed.set_thumbnail(url=generate_urls("nero", "laugh"))
             await interaction.edit_original_response(embed=embed)
-            await asyncio.sleep(2.5)
+            await asyncio.sleep(2.5)  # Optional wait before starting the encounter
             await mega_brute_encounter(self.player_data, self.ctx, interaction, self.guild_id, self.author_id)
         else:
+            # If no brute encounter, update the message to "coast is clear"
             embed.description = "**The coast is clear, me hearties!** Time to plunder and claim our fortunes! Onward!"
             embed.set_thumbnail(url=generate_urls("nero", "gun"))
             await interaction.edit_original_response(embed=embed)
 
         self.player_data["location"] = None
-        # Ensure save_player_data is correctly implemented
-        save_player_data(self.guild_id, self.author_id, self.player_data)
+
 
 def setup(bot):
     bot.add_cog(CitadelCog(bot))

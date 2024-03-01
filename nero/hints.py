@@ -7,6 +7,10 @@ from images.urls import generate_urls
 # harder monsters attack you in higher zones,
 # when you go to the next zone (inventory),
 # attack % (married to a witch)
+# deposit to ship, death doesn't matter
+#Sell your items in the shop at the jolly roger
+# you need Combat, Woodcutting, and Mining to be at level {} in this zone
+# can't take anything with you so craft/sell as much as you can
 
 class HintsManager:
     def __init__(self):
