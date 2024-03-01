@@ -16,7 +16,7 @@ spork_value = 100000
 # Original value: 0.075 (7.5% chance)
 attack_percent = 0.075
 # Original value: 0.02 (2% chance)
-brute_percent = 0.02
+brute_percent = 0.99
 
 #CHARMS
 # Original value: 0.15 (15% chance)

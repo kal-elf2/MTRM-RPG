@@ -469,33 +469,37 @@ class TravelRow(discord.ui.View, CommonResponses):
             await self.not_in_citadel_response(interaction)
             return
 
-        # Defer the response immediately to prepare for sending the initial message
-        await interaction.response.defer(ephemeral=False)
+        # Determine if the brute encounter will happen
+        will_encounter_brute = np.random.rand() <= brute_percent
 
-        # Prepare the initial suspenseful message
-        embed = discord.Embed(title="Captain Ner0",
-                              description="Hmmm... do you hear that?",
-                              color=discord.Color.dark_gold())
-        embed.set_thumbnail(url=generate_urls("nero", "confused"))
+        await interaction.response.defer()
 
-        # Send the initial message by editing the original response
-        await interaction.edit_original_response(embed=embed)
+        if will_encounter_brute:
+            # Prepare the suspenseful message for brute encounter
+            embed = discord.Embed(title="Captain Ner0",
+                                  description="Hmmm... do you hear that?",
+                                  color=discord.Color.dark_gold())
+            embed.set_thumbnail(url=generate_urls("nero", "confused"))
 
-        # Wait for the suspense to build
-        await asyncio.sleep(2.5)
+            # Send the suspenseful message as a new follow-up message
+            suspense_message = await interaction.followup.send(embed=embed, wait=True)
 
-        if np.random.rand() <= brute_percent:
+            await asyncio.sleep(2.5)  # Wait for suspense to build
+
             # Update the embed for the brute encounter
             embed.description = "Arrr! Ye better leg it, ye pointy-eared scallywags! **BRUTE AT THE GATE!**"
             embed.set_thumbnail(url=generate_urls("nero", "laugh"))
-            await interaction.edit_original_response(embed=embed)
-            await asyncio.sleep(2.5)  # Optional wait before starting the encounter
+            await suspense_message.edit(embed=embed)  # Update the existing follow-up message
+
             await mega_brute_encounter(self.player_data, self.ctx, interaction, self.guild_id, self.author_id)
         else:
-            # If no brute encounter, update the message to "coast is clear"
-            embed.description = "**The coast is clear, me hearties!** Time to plunder and claim our fortunes! Onward!"
+
+            # Prepare and send the "coast is clear" message directly
+            embed = discord.Embed(title="Captain Ner0",
+                                  description="**The coast is clear, me hearties!** Time to plunder and claim our fortunes! Onward!",
+                                  color=discord.Color.dark_gold())
             embed.set_thumbnail(url=generate_urls("nero", "gun"))
-            await interaction.edit_original_response(embed=embed)
+            await interaction.followup.send(embed=embed, ephemeral = True)
 
         self.player_data["location"] = None
 

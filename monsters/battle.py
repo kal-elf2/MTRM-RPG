@@ -541,7 +541,7 @@ class SpecialAttackOptions(discord.ui.View, CommonResponses):
         self.add_item(run_button)
 
     async def reenable_run_button_after_delay(self, interaction):
-        await asyncio.sleep(3.5)
+        await asyncio.sleep(1)
         self.run_button_disabled = False
         self.run_button_cooldown = False
         self.update_button_states()
@@ -580,11 +580,13 @@ class SpecialAttackOptions(discord.ui.View, CommonResponses):
 
         else:  # Failed escape
             self.disable_run_button()
+            await interaction.edit_original_response(view=self)
             self.run_button_cooldown = True
             # Add failed escape attempt to battle messages
             await self.battle_context.add_battle_message(f"**{interaction.user.mention} tried to flee but failed!**")
             # Schedule re-enabling the run button
             asyncio.create_task(self.reenable_run_button_after_delay(interaction))
+            await interaction.edit_original_response(view=self)
 
     def disable_run_button(self):
         self.run_button_disabled = True
@@ -617,17 +619,20 @@ class SpecialAttackOptions(discord.ui.View, CommonResponses):
         custom_id = interaction.data["custom_id"]
         attack_level = 1 if custom_id == "unarmed" else int(custom_id.split("_")[-1])
 
+        # Disable all buttons immediately to prevent spamming
         self.disable_all_buttons()
 
-        if self.battle_context.monster.is_defeated():
-            if not interaction.response.is_done():
-                await interaction.response.send_message(f"The battle is over. The monster {self.battle_context.monster.name} is defeated.", ephemeral=True)
-            return
+        # Update the view to reflect the disabled buttons
+        await interaction.edit_original_response(view=self)
 
+        # Now proceed with the attack handling
         await self.handle_attack(interaction, attack_level)
+
+        # After handling the attack, update the button states based on the new game context
         self.update_button_states()
 
         try:
+            # Finally, edit the original response to reflect the updated button states
             await interaction.edit_original_response(view=self)
         except discord.NotFound:
             pass
