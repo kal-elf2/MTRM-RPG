@@ -551,7 +551,10 @@ class SpecialAttackOptions(discord.ui.View, CommonResponses):
         self.add_item(run_button)
 
     async def reenable_run_button_after_delay(self, interaction):
-        await asyncio.sleep(1)
+        # Set sleep time based on the stamina value
+        sleep_time = 2 if self.player.stats.stamina == 0 else 1
+        await asyncio.sleep(sleep_time)
+
         self.run_button_disabled = False
         self.run_button_cooldown = False
         self.update_button_states()
