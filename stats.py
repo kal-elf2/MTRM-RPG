@@ -730,8 +730,9 @@ class ResurrectOptions(discord.ui.View, CommonResponses):
             thumbnail_url = generate_urls("nero", "cemetery")
             nero_embed = discord.Embed(
                 title="Captain Ner0",
-                description=f"Arr, there ye be, {interaction.user.mention}! I've scooped up all yer belongings after that nasty scuffle. "
-                            f"Ye can have 'em back, but it'll cost ye some coppers, savvy? Hows about **{formatted_cost}**{get_emoji('coppers_emoji')}? A fair price for a fair service, says I.\n\n"
+                description=f"Well, well...Look who's back. {interaction.user.mention} musta got too close to a critter with **TEETH!**"
+                            f" I happen'd to come across some fine gear and wouldn't mind offloadin' it on ye, for a price."
+                            f" Hows about **{formatted_cost}**{get_emoji('coppers_emoji')}?\n\n"
                             f"**Backpack**: {formatted_coppers}{get_emoji('coppers_emoji')}",
                 color=discord.Color.dark_gold()
             )
@@ -747,7 +748,7 @@ class ResurrectOptions(discord.ui.View, CommonResponses):
         # Static method to handle the response when the player is not dead
         nero_embed = discord.Embed(
             title="Captain Ner0",
-            description="Errr... Yer not dead, matey. What are ye doin' here playin' with these buttons?",
+            description="HEY! Those be MY buttons! LEAVE 'EM BE!",
             color=discord.Color.dark_gold()
         )
         nero_embed.set_thumbnail(url=generate_urls("nero", "confused"))

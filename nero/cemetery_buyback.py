@@ -26,7 +26,7 @@ class NeroView(discord.ui.View, CommonResponses):
         cost = buyback_cost * self.player.stats.zone_level
         formatted_cost = f"{cost:,}"  # Format the number with commas
 
-        return f"Avast! Thanks for the **{formatted_cost}**{get_emoji('coppers_emoji')}, matey.\n\nYour items have been restored. Check yer pockets!"
+        return f"Ha! Well done! I added a bottle of Rum too! Wait, I drank that. Never mind! Thanks for the **{formatted_cost}**{get_emoji('coppers_emoji')}, matey.\n\n**Your items have been restored.** Check yer pockets!"
 
     @discord.ui.button(label="Yes", style=discord.ButtonStyle.primary)
     async def yes_button(self, button, interaction):
@@ -61,7 +61,7 @@ class NeroView(discord.ui.View, CommonResponses):
             thumbnail_url = generate_urls("nero", "confused")
             nero_embed = discord.Embed(
                 title="Captain Ner0",
-                description=f"Err...sorry, matey. Not enough room in yer inventory. Ye need {additional_slots_needed} more open {slots_message} to take back all yer belongings!",
+                description=f"Ye be encumbered, matey! Free up at least {additional_slots_needed} more {slots_message} so I can secure ye loot!",
                 color=discord.Color.dark_gold()
             )
             nero_embed.set_thumbnail(url=thumbnail_url)

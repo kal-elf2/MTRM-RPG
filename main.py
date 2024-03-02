@@ -515,9 +515,9 @@ async def cemetery(ctx):
     else:
         # Player is alive, just visiting the cemetery
         cemetery_embed.title = "Cemetery"
-        cemetery_embed.description = f"Are you here to count how many pointy-eared 'splars are buried here too, {ctx.author.mention}?\n\nFeel free to pay yer respects, but as ye're still among the livin', there's not much else here for ye, savvy?"
+        cemetery_embed.description = f"The Cemetery! ARRR! I love this place! It shivers me timbers! All to do here is drink Rum and dance on the graves of the elves! Care to dance, {ctx.author.mention}?\n\nFeel free to pay yer respects, but as ye're still among the livin', there's not much else here for ye, savvy?"
         cemetery_embed.set_image(url=generate_urls("cemetery", "dead"))
-        cemetery_embed.set_thumbnail(url=generate_urls("nero", "confused"))
+        cemetery_embed.set_thumbnail(url=generate_urls("nero", "evil"))
         view = None  # No view necessary for living players
 
         # Send the message with the appropriate embed and view
