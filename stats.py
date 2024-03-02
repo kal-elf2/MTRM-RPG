@@ -8,7 +8,7 @@ from exemplars.exemplars import Exemplar
 from emojis import get_emoji
 from images.urls import generate_urls
 import copy
-from probabilities import buyback_cost
+from probabilities import buyback_cost, death_penalty
 import asyncio
 
 def load_level_data():
@@ -768,8 +768,8 @@ async def apply_penalty(player_data):
         original_skill_name = skill[:-11]  # Remove '_experience' from the skill name
         original_level = stats[f"{original_skill_name}_level"]
 
-        # Apply the 2.5% penalty
-        new_exp = max(0, math.floor(stats[skill] * 0.975))
+        # Apply the penalty
+        new_exp = max(0, math.floor(stats[skill] * (1 - death_penalty)))
         stats[skill] = new_exp  # Update the experience in player_data
 
         # Recalculate the level based on the new experience

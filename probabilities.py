@@ -39,6 +39,7 @@ buyback_cost = 5000
 weapon_specialty_bonus = 0.05
 
 # Constants
+death_penalty = 0.05 # 5% stat reduction upon death
 CRITICAL_HIT_CHANCE = 0.10  # 10% chance of a critical hit
 CRITICAL_HIT_MULTIPLIER = 1.5  # 1.5 times the damage for a critical hit
 

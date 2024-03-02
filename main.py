@@ -154,59 +154,85 @@ class PickExemplars(Select, CommonResponses):
 
         return embed
 
+
 class ConfirmExemplar(discord.ui.View, CommonResponses):
     def __init__(self, exemplar_instance, player_data, author_id, guild_id):
         super().__init__(timeout=None)
-        self.exemplar_instance = exemplar_instance
+        self.exemplar_list = ['Human', 'Dwarf', 'Orc', 'Halfling', 'Elf']  # List of exemplars
+        self.current_exemplar_index = self.exemplar_list.index(exemplar_instance.name)  # Get index of current exemplar
         self.player_data = player_data
         self.author_id = author_id
         self.guild_id = guild_id
+        self.exemplar_instance = exemplar_instance
 
-        # Create the confirm button with a dynamic label
-        self.confirm_button = discord.ui.Button(
-            label=f"Select {self.exemplar_instance.name}",
-            custom_id="confirm_yes",
-            style=discord.ButtonStyle.blurple
-        )
+        # Initially set up the button layout with the Select button in the middle
+        self.setup_buttons()
+
+    def setup_buttons(self):
+        # Left arrow button
+        self.left_arrow = discord.ui.Button(label='◀', style=discord.ButtonStyle.grey)
+        self.left_arrow.callback = self.prev_exemplar
+
+        # Confirm/Select button with dynamic label for the selected exemplar
+        current_exemplar = self.exemplar_list[self.current_exemplar_index]
+        self.confirm_button = discord.ui.Button(label=f"Select {current_exemplar}", style=discord.ButtonStyle.blurple)
         self.confirm_button.callback = self.confirm_yes
+
+        # Right arrow button
+        self.right_arrow = discord.ui.Button(label='▶', style=discord.ButtonStyle.grey)
+        self.right_arrow.callback = self.next_exemplar
+
+        # Add items in the specific order to ensure the Select button appears in the middle
+        self.add_item(self.left_arrow)
         self.add_item(self.confirm_button)
+        self.add_item(self.right_arrow)
 
-        # Create the back button
-        self.back_button = discord.ui.Button(
-            label="Back",
-            custom_id="confirm_no",
-            style=discord.ButtonStyle.grey
-        )
-        self.back_button.callback = self.confirm_no
-        self.add_item(self.back_button)
-
-    async def confirm_yes(self, interaction):
-        # Check if the user who interacted is the same as the one who initiated the view
+    async def prev_exemplar(self, interaction):
+        # Ensure only the initiating user can interact
         if str(interaction.user.id) != self.author_id:
             await self.unauthorized_user_response(interaction)
             return
 
-        # Disable both buttons
-        for item in self.children:
-            if isinstance(item, discord.ui.Button):
-                item.disabled = True
+        self.current_exemplar_index = (self.current_exemplar_index - 1) % len(self.exemplar_list)
+        await self.update_view(interaction)
+
+    async def next_exemplar(self, interaction):
+        # Ensure only the initiating user can interact
+        if str(interaction.user.id) != self.author_id:
+            await self.unauthorized_user_response(interaction)
+            return
+
+        self.current_exemplar_index = (self.current_exemplar_index + 1) % len(self.exemplar_list)
+        await self.update_view(interaction)
+
+    async def update_view(self, interaction):
+        from exemplars.exemplars import create_exemplar
+        # Update the exemplar instance based on the new index
+        exemplar_name = self.exemplar_list[self.current_exemplar_index].lower()
+        self.exemplar_instance = create_exemplar(exemplar_name)
+        self.player_data["exemplar"] = exemplar_name
+        # Update stats and the confirm button label to reflect the new selection
+        embed = PickExemplars.generate_stats_embed(self.exemplar_instance)
+        self.confirm_button.label = f"Select {self.exemplar_list[self.current_exemplar_index]}"
+        await interaction.response.edit_message(embed=embed, view=self)
+
+    async def confirm_yes(self, interaction):
+        # Ensure only the initiating user can interact
+        if str(interaction.user.id) != self.author_id:
+            await self.unauthorized_user_response(interaction)
+            return
 
         # Save player data here
         save_player_data(self.guild_id, self.author_id, self.player_data)
 
-        # Update the message with the disabled view
+        # Disable all buttons
+        self.left_arrow.disabled = True
+        self.confirm_button.disabled = True
+        self.right_arrow.disabled = True
+
+        # Update the message to reflect the selection has been saved and disable the buttons
         await interaction.response.edit_message(
             content=f"Your selection of {self.exemplar_instance.name} Exemplar has been saved!", view=self)
-
-    async def confirm_no(self, interaction):
-        # Check if the user who interacted is the same as the one who initiated the view
-        if str(interaction.user.id) != self.author_id:
-            await self.unauthorized_user_response(interaction)
-            return
-
-        # Re-send the PickExemplars view
-        view = PickExemplars(self.author_id)
-        await interaction.response.send_message("Please choose your exemplar from the list below.", view=view, ephemeral=False)
 
 def update_special_attack_options(battle_context):
     # Assuming battle_context has a reference to the special_attack_options_view
