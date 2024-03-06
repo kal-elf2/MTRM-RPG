@@ -137,7 +137,7 @@ class HarvestButton(discord.ui.View, CommonResponses):
         emoji_str = get_emoji(potion_name)
         emoji_id = int(emoji_str.split(':')[2].strip('>'))
         emoji = discord.PartialEmoji(name=potion_name, id=emoji_id)
-        button_label = f" {stack_count}" if stack_count else ""
+        button_label = f" {stack_count:,}" if stack_count else ""
         button = discord.ui.Button(
             label=button_label,
             custom_id=potion_name.lower().replace(" ", "_"),
@@ -232,7 +232,7 @@ class HarvestButton(discord.ui.View, CommonResponses):
 
     def update_potion_button_label(self, button, potion_name):
         stack_count = self.player.get_potion_stack(potion_name)
-        button.label = f"{stack_count}" if stack_count else ""
+        button.label = f"{stack_count:,}" if stack_count else ""
 
     def refresh_button_states(self):
         # Iterate over potion buttons and update their state
