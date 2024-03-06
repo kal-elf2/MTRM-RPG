@@ -119,12 +119,12 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
             requirements_met = True
             requirements_status = []
 
+            check_mark_emoji = "✅"
+            cross_mark_emoji = "❌"
+
             for skill_name, skill_level in [("combat", self.player.stats.combat_level),
                                             ("woodcutting", self.player.stats.woodcutting_level),
                                             ("mining", self.player.stats.mining_level)]:
-
-                check_mark_emoji = "✅"
-                cross_mark_emoji = "❌"
 
                 if skill_level < required_level:
                     requirements_met = False
@@ -133,11 +133,20 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
                     status_emoji = check_mark_emoji
                 requirements_status.append(
                     f"{status_emoji} {skill_name.capitalize()} Level: {skill_level}/{required_level}")
+
+            goblin_crown_owned = self.player.inventory.get_item_quantity("Goblin Crown") > 0
+            if goblin_crown_owned:
+                requirements_status.append(f"{check_mark_emoji} Goblin Crown {get_emoji('goblin_crown_emoji')}")
+            else:
+                requirements_met = False
+                requirements_status.append(f"{cross_mark_emoji} Goblin Crown {get_emoji('goblin_crown_emoji')}")
+
             requirements_message = "\n".join(requirements_status)
 
+
             if not requirements_met:
-                message_title = "Ye be not ready to face the Kraken!"
-                message_description = f"Ye need more training, matey! Here be what ye lack:\n\n{requirements_message}\n\nI'll keep the ship ready for ye. Come back when yer ready, aye?"
+                message_title = "Ye be lackin' in preparation, matey!"
+                message_description = f"Before ye can take on the Kraken, ye must meet these conditions:\n\n{requirements_message}\n\n'Tis risky business, Kraken huntin'. I'll be needin one of them **Goblin Crowns** as payment for the journey. I'll keep the ship ready for yer return."
 
                 # Create and send the embed without the button as requirements are not met
                 embed = discord.Embed(title=message_title, description=message_description,
@@ -214,7 +223,7 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
             )
             embed.add_field(
                 name=f"Deposited: {max_deposit_text}",
-                value=f"{get_emoji('Poplar Strip')} **{poplar_strip_shipwreck}**\n{get_emoji('Cannonball')} **{cannonball_shipwreck}**",
+                value=f"{get_emoji('Poplar Strip')} **{poplar_strip_shipwreck}** Poplar Strips\n{get_emoji('Cannonball')} **{cannonball_shipwreck}** Cannonballs",
                 inline=True
             )
 

@@ -392,7 +392,7 @@ class BattleOptions(discord.ui.View, CommonResponses):
         emoji_str = get_emoji(potion_name)
         emoji_id = int(emoji_str.split(':')[2].strip('>'))
         emoji = discord.PartialEmoji(name=potion_name, id=emoji_id)
-        button_label = f" {stack_count}" if stack_count else ""
+        button_label = f" {stack_count:,}" if stack_count else ""
         button = discord.ui.Button(
             label=button_label,
             custom_id=potion_name.lower().replace(" ", "_"),

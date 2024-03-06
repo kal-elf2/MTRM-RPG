@@ -130,7 +130,7 @@ class DepositButton(discord.ui.Button, CommonResponses):
         )
         embed.add_field(
             name=f"Deposited: {max_deposit_text}",
-            value=f"{get_emoji('Poplar Strip')} **{poplar_count_shipwreck}**\n{get_emoji('Cannonball')} **{cannonball_count_shipwreck}**",
+            value=f"{get_emoji('Poplar Strip')} **{poplar_count_shipwreck}** Poplar Strips\n{get_emoji('Cannonball')} **{cannonball_count_shipwreck}** Cannonballs",
             inline=True
         )
 
