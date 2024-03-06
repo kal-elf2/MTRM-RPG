@@ -15,8 +15,8 @@ spork_value = 100000
 # ATTACKS
 # Original value: 0.075 (7.5% chance)
 attack_percent = 0.075
-# Original value: 0.02 (2% chance)
-brute_percent = 0.02
+# Original value: 0.02 (5% chance)
+brute_percent = 0.05
 
 #CHARMS
 # Original value: 0.15 (15% chance)
@@ -42,9 +42,10 @@ weapon_specialty_bonus = 0.05
 death_penalty = 0.05 # 5% stat reduction upon death
 CRITICAL_HIT_CHANCE = 0.10  # 10% chance of a critical hit
 CRITICAL_HIT_MULTIPLIER = 1.5  # 1.5 times the damage for a critical hit
+base_run_chance = 0.25 # Base run chance
 
 # HP per heal
 tent_health = 25
 
-# Unarmed damage_reduction (95%)
+# Unarmed damage_reduction (95% reduction)
 unarmed_damaged_reduction = 0.05

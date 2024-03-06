@@ -696,14 +696,14 @@ class SpecialAttackOptions(discord.ui.View, CommonResponses):
             pass
 
 def calculate_run_chance(player, monster_health, monster_max_health):
-    base_chance = 0.25
+    from probabilities import base_run_chance
 
     # Calculate base run chance
     if monster_health > monster_max_health * 0.5:
-        run_chance = base_chance  # Base chance of 25% if monster health is above 50%
+        run_chance = base_run_chance  # Base chance if monster health is above 50%
     else:
-        # Linearly increase the run chance from 25% to 50% as monster health decreases from 50% to 0%
-        run_chance = base_chance + (0.25 * ((monster_max_health * 0.5 - monster_health) / (monster_max_health * 0.5)))
+        # Linearly increase the run chance from base to 50% as monster health decreases from 50% to 0%
+        run_chance = base_run_chance + ((0.5 - base_run_chance) * ((monster_max_health * 0.5 - monster_health) / (monster_max_health * 0.5)))
 
     # Double the run chance if Ironhide charm is equipped
     if player.inventory.equipped_charm and player.inventory.equipped_charm.name == "Ironhide":
