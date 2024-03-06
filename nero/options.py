@@ -177,7 +177,7 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
                         return
 
                 # Player meets the requirements
-                message_title = "Battle Stations!"
+                message_title = "Ready the Cannons!"
                 message_description = f"Ye be ready to face the Kraken!\n\n{requirements_message}\n\nGood luck, matey!"
 
                 # Create the embed and view with the "Hunt Kraken" button
@@ -206,7 +206,7 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
             # Define required amount based on zone level, no max for zone 5
             if zone_level < 5:
                 required_amount = 25 * zone_level
-                max_deposit_text = f"(Need {required_amount})"
+                max_deposit_text = f"({required_amount} Required)"
             else:
                 required_amount = float('inf')  # Effectively no maximum
                 max_deposit_text = f"(Minimum: {zone_level * 25})"

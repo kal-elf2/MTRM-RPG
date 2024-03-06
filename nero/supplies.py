@@ -75,7 +75,7 @@ class DepositButton(discord.ui.Button, CommonResponses):
 
         # Adjust the Nero message as follows for Zone levels below 5
         if zone_level < 5 and poplar_count_shipwreck >= required_amount and cannonball_count_shipwreck >= required_amount:
-            nero_message = "Yarr! The ship is full to the brim! Come visit me again at the Jolly Roger when yer ready hunt down that Kraken!"
+            nero_message = "Yarr! The ship is full to the brim! Come **visit me again at the Jolly Roger** when yer ready hunt down that Kraken!"
             nero_embed_sent = True
 
         if zone_level == 5:
@@ -120,7 +120,7 @@ class DepositButton(discord.ui.Button, CommonResponses):
             await interaction.followup.send(embed=nero_embed, ephemeral=True)
 
         # Proceed with updating the supply counts and button states
-        max_deposit_text = f"(Minimum: {zone_level * 25})" if zone_level == 5 else f"(Need {required_amount})"
+        max_deposit_text = f"(Minimum: {zone_level * 25})" if zone_level == 5 else f"({required_amount} Required)"
         embed = discord.Embed(title=f"{ship_name} Supplies", color=embed_color)
         embed.set_image(url=ship_gif_url)
         embed.add_field(
