@@ -331,7 +331,11 @@ class HarvestButton(discord.ui.View, CommonResponses):
 
         # Determine the XP gain based on whether the player has reached the zone's level cap
         exp_gain = 0
-        if zone_level in zone_max_levels and current_level < zone_max_levels[zone_level]:
+        if zone_level in zone_max_levels:
+            if current_level < zone_max_levels[zone_level]:
+                exp_gain = WOODCUTTING_EXPERIENCE[self.tree_type]
+        else:
+            # If the player is in zone 5 or any zone without a defined max level, they can gain XP indefinitely
             exp_gain = WOODCUTTING_EXPERIENCE[self.tree_type]
 
         message = ""
