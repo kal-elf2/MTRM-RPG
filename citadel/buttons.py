@@ -474,6 +474,8 @@ class TravelRow(discord.ui.View, CommonResponses):
 
         await interaction.response.defer()
 
+        player_data = load_player_data(interaction.guild.id, str(interaction.user.id))
+
         if will_encounter_brute:
             # Prepare the suspenseful message for brute encounter
             embed = discord.Embed(title="Captain Ner0",
@@ -491,7 +493,7 @@ class TravelRow(discord.ui.View, CommonResponses):
             embed.set_thumbnail(url=generate_urls("nero", "laugh"))
             await suspense_message.edit(embed=embed)  # Update the existing follow-up message
 
-            await mega_brute_encounter(self.player_data, self.ctx, interaction, self.guild_id, self.author_id)
+            await mega_brute_encounter(player_data, self.ctx, interaction, self.guild_id, self.author_id)
         else:
 
             # Prepare and send the "coast is clear" message directly
@@ -501,7 +503,8 @@ class TravelRow(discord.ui.View, CommonResponses):
             embed.set_thumbnail(url=generate_urls("nero", "gun"))
             await interaction.followup.send(embed=embed, ephemeral = True)
 
-        self.player_data["location"] = None
+        player_data["location"] = None
+        save_player_data(self.guild_id, self.author_id, player_data)
 
 
 def setup(bot):
