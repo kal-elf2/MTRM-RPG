@@ -1,16 +1,119 @@
 import discord
-from utils import save_player_data, CommonResponses
+from utils import save_player_data, CommonResponses, load_player_data
 from emojis import get_emoji
 from images.urls import generate_gif_urls, generate_urls
 
+class StockCaravelButton(discord.ui.Button, CommonResponses):
+    def __init__(self, guild_id, player, player_data, author_id):
+        # Initialize the button, set label and style as needed
+        super().__init__(label="Stock Caravel", style=discord.ButtonStyle.secondary, emoji=f"{get_emoji('Cannonball')}")
+        self.guild_id = guild_id
+        self.player = player
+        self.player_data = player_data
+        self.author_id = author_id
+
+    async def callback(self, interaction: discord.Interaction):
+        if str(interaction.user.id) != self.author_id:
+            await self.nero_unauthorized_user_response(interaction)
+            return
+        await interaction.response.defer()
+
+        stock_supplies = StockSupplies(guild_id=self.guild_id, player=self.player,
+                                       player_data=self.player_data, author_id=self.author_id)
+
+        # Directly calling the display method of StockSupplies class
+        await stock_supplies.display_supplies(interaction=interaction, zone_level=self.player.stats.zone_level,
+                                              embed_color=discord.Color.dark_gold())
+
+class StockSupplies:
+    def __init__(self, guild_id, player, player_data, author_id):
+        self.guild_id = guild_id
+        self.player = player
+        self.player_data = player_data
+        self.author_id = author_id
+
+    async def display_supplies(self, interaction, zone_level, embed_color):
+        from nero.options import TravelSelectDropdown
+
+        ship_name = TravelSelectDropdown.ship_names.get(zone_level)
+        ship_gif_url = generate_gif_urls("ships", ship_name)
+
+        poplar_strip_inventory = self.player.inventory.get_item_quantity('Poplar Strip')
+        cannonball_inventory = self.player.inventory.get_item_quantity('Cannonball')
+        poplar_strip_shipwreck = self.player_data['shipwreck'].get('Poplar Strip', 0)
+        cannonball_shipwreck = self.player_data['shipwreck'].get('Cannonball', 0)
+
+        if zone_level < 5:
+            required_amount = 25 * zone_level
+            max_deposit_text = f"({required_amount} Required)"
+        else:
+            required_amount = float('inf')  # Effectively no maximum
+            max_deposit_text = f"(Minimum: {zone_level * 25})"
+
+        embed = discord.Embed(
+            title=f"{ship_name} Supplies",
+            color=embed_color
+        )
+        embed.set_image(url=ship_gif_url)
+        embed.add_field(
+            name="Backpack",
+            value=f"{get_emoji('Poplar Strip')} **{poplar_strip_inventory}**\n{get_emoji('Cannonball')} **{cannonball_inventory}**",
+            inline=True
+        )
+        embed.add_field(
+            name=f"Deposited: {max_deposit_text}",
+            value=f"{get_emoji('Poplar Strip')} **{poplar_strip_shipwreck}** Poplar Strips\n{get_emoji('Cannonball')} **{cannonball_shipwreck}** Cannonballs",
+            inline=True
+        )
+
+        # Adjust conditions for button enable/disable based on inventory
+        has_poplar_strips = poplar_strip_inventory >= 1 and (
+                poplar_strip_shipwreck < required_amount or zone_level == 5)
+        has_cannonballs = cannonball_inventory >= 1 and (cannonball_shipwreck < required_amount or zone_level == 5)
+        has_5_poplar_strips = poplar_strip_inventory >= 5 and (
+                poplar_strip_shipwreck + 5 <= required_amount or zone_level == 5)
+        has_5_cannonballs = cannonball_inventory >= 5 and (
+                cannonball_shipwreck + 5 <= required_amount or zone_level == 5)
+
+        # Create and add buttons to the view, adjusting for zone 5's no max limit
+        poplar_strip_button_1 = DepositButton(get_emoji('Poplar Strip'), "Poplar Strip", 1, self.player,
+                                              self.player_data, self.author_id, self.guild_id, discord.ButtonStyle.green,
+                                              disabled=not has_poplar_strips)
+        poplar_strip_button_5 = DepositButton(get_emoji('Poplar Strip'), "Poplar Strip", 5, self.player,
+                                              self.player_data, self.author_id, self.guild_id, discord.ButtonStyle.green,
+                                              disabled=not has_5_poplar_strips)
+        cannonball_button_1 = DepositButton(get_emoji('Cannonball'), "Cannonball", 1, self.player, self.player_data,
+                                            self.author_id, self.guild_id, discord.ButtonStyle.grey, disabled=not has_cannonballs)
+        cannonball_button_5 = DepositButton(get_emoji('Cannonball'), "Cannonball", 5, self.player, self.player_data,
+                                            self.author_id, self.guild_id, discord.ButtonStyle.grey,
+                                            disabled=not has_5_cannonballs)
+
+        view = discord.ui.View()
+        view.add_item(poplar_strip_button_1)
+        view.add_item(poplar_strip_button_5)
+        view.add_item(cannonball_button_1)
+        view.add_item(cannonball_button_5)
+
+        await interaction.followup.send(embed=embed, view=view)
+
 class DepositButton(discord.ui.Button, CommonResponses):
-    def __init__(self, emoji, item_name, amount, player, player_data, author_id, style, disabled=False):
+    def __init__(self, emoji, item_name, amount, player, player_data, author_id, guild_id, style, disabled=False):
         super().__init__(style=style, label=f"x {amount}", emoji=emoji, disabled=disabled)
         self.item_name = item_name
         self.amount = amount
         self.player = player
         self.player_data = player_data
         self.author_id = author_id
+        self.guild_id = guild_id
+
+    async def refresh_player_from_data(self):
+        from exemplars.exemplars import Exemplar
+        """Refresh the player object from the latest player data."""
+        self.player_data = load_player_data(self.guild_id, self.author_id)
+        # Assuming Exemplar class can initialize a player object from player_data directly
+        self.player = Exemplar(self.player_data["exemplar"],
+                               self.player_data["stats"],
+                               self.player_data["inventory"])
 
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.defer()
@@ -19,6 +122,9 @@ class DepositButton(discord.ui.Button, CommonResponses):
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
+
+        # Refresh player object so revisiting previous buttons won't use previous player object
+        await self.refresh_player_from_data()
 
         # Initial shipwreck counts before updating to not send multiple embeds after reaching minimum in zone 5
         initial_poplar_count_shipwreck = self.player_data['shipwreck'].get('Poplar Strip', 0)

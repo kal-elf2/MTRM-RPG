@@ -1,7 +1,7 @@
 import discord
 from emojis import get_emoji
 from utils import CommonResponses, load_player_data
-from images.urls import generate_gif_urls, generate_urls
+from images.urls import generate_urls
 
 class JollyRogerView(discord.ui.View):
     def __init__(self, guild_id, player, player_data, author_id):
@@ -156,6 +156,19 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
 
             else:
                 from nero.kraken import HuntKrakenButton, SellAllButton
+                from nero.supplies import StockCaravelButton
+
+                # Player meets the requirements
+                message_title = "Ready the Cannons!"
+                message_description = f"Ye be ready to face the Kraken!\n\n{requirements_message}\n\nGood luck, matey!"
+
+                # Create the embed and view with the "Hunt Kraken" button
+                embed = discord.Embed(title=message_title, description=message_description,
+                                      color=discord.Color.dark_gold())
+                embed.set_thumbnail(url=generate_urls("nero", "kraken"))
+
+                view = discord.ui.View()
+                view.add_item(HuntKrakenButton())
 
                 # New: Check inventory and offer "Sell All" if in zones 1-4
                 if zone_level < 5:
@@ -176,88 +189,25 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
                         await interaction.followup.send(embed=sell_offer_embed, view=sell_all_view, ephemeral=True)
                         return
 
-                # Player meets the requirements
-                message_title = "Ready the Cannons!"
-                message_description = f"Ye be ready to face the Kraken!\n\n{requirements_message}\n\nGood luck, matey!"
+                # If in zone level 5, add the StockCaravelButton to the view
+                if self.player.stats.zone_level == 5:
+                    stock_caravel_button = StockCaravelButton(
+                        guild_id=self.guild_id,
+                        player=self.player,
+                        player_data=self.player_data,
+                        author_id=self.author_id
+                    )
+                    view.add_item(stock_caravel_button)
 
-                # Create the embed and view with the "Hunt Kraken" button
-                embed = discord.Embed(title=message_title, description=message_description,
-                                      color=discord.Color.dark_gold())
-                embed.set_thumbnail(url=generate_urls("nero", "kraken"))
-
-                view = discord.ui.View()
-                view.add_item(HuntKrakenButton())
                 self.view.ensure_reset_button()
-                await interaction.followup.send(embed=embed, view=view, ephemeral=True)
+
+                await interaction.followup.send(embed=embed, view=view, ephemeral=False)
 
         elif selected_option == "supplies":
-            from nero.supplies import DepositButton
-            # Refresh player object from the latest player data
-            await self.refresh_player_from_data()
+            from nero.supplies import StockSupplies
 
-            ship_name = self.ship_names.get(zone_level)
-            ship_gif_url = generate_gif_urls("ships", ship_name)
-
-            poplar_strip_inventory = self.player.inventory.get_item_quantity('Poplar Strip')
-            cannonball_inventory = self.player.inventory.get_item_quantity('Cannonball')
-            poplar_strip_shipwreck = self.player_data['shipwreck'].get('Poplar Strip', 0)
-            cannonball_shipwreck = self.player_data['shipwreck'].get('Cannonball', 0)
-
-            # Define required amount based on zone level, no max for zone 5
-            if zone_level < 5:
-                required_amount = 25 * zone_level
-                max_deposit_text = f"({required_amount} Required)"
-            else:
-                required_amount = float('inf')  # Effectively no maximum
-                max_deposit_text = f"(Minimum: {zone_level * 25})"
-
-            embed = discord.Embed(
-                title=f"{ship_name} Supplies",
-                color=embed_color
-            )
-            embed.set_image(url=ship_gif_url)
-            embed.add_field(
-                name="Backpack",
-                value=f"{get_emoji('Poplar Strip')} **{poplar_strip_inventory}**\n{get_emoji('Cannonball')} **{cannonball_inventory}**",
-                inline=True
-            )
-            embed.add_field(
-                name=f"Deposited: {max_deposit_text}",
-                value=f"{get_emoji('Poplar Strip')} **{poplar_strip_shipwreck}** Poplar Strips\n{get_emoji('Cannonball')} **{cannonball_shipwreck}** Cannonballs",
-                inline=True
-            )
-
-            # Adjust conditions for button enable/disable
-            has_poplar_strips = poplar_strip_inventory >= 1 and (
-                        poplar_strip_shipwreck < required_amount or zone_level == 5)
-            has_cannonballs = cannonball_inventory >= 1 and (cannonball_shipwreck < required_amount or zone_level == 5)
-            has_5_poplar_strips = poplar_strip_inventory >= 5 and (
-                        poplar_strip_shipwreck + 5 <= required_amount or zone_level == 5)
-            has_5_cannonballs = cannonball_inventory >= 5 and (
-                        cannonball_shipwreck + 5 <= required_amount or zone_level == 5)
-
-            # Create and add buttons to the view, adjusting for zone 5's no max limit
-            poplar_strip_button_1 = DepositButton(get_emoji('Poplar Strip'), "Poplar Strip", 1, self.player,
-                                                  self.player_data, self.author_id, discord.ButtonStyle.green,
-                                                  disabled=not has_poplar_strips)
-            poplar_strip_button_5 = DepositButton(get_emoji('Poplar Strip'), "Poplar Strip", 5, self.player,
-                                                  self.player_data, self.author_id, discord.ButtonStyle.green,
-                                                  disabled=not has_5_poplar_strips)
-            cannonball_button_1 = DepositButton(get_emoji('Cannonball'), "Cannonball", 1, self.player, self.player_data,
-                                                self.author_id, discord.ButtonStyle.grey, disabled=not has_cannonballs)
-            cannonball_button_5 = DepositButton(get_emoji('Cannonball'), "Cannonball", 5, self.player, self.player_data,
-                                                self.author_id, discord.ButtonStyle.grey,
-                                                disabled=not has_5_cannonballs)
-
-            view = discord.ui.View()
-            view.add_item(poplar_strip_button_1)
-            view.add_item(poplar_strip_button_5)
-            view.add_item(cannonball_button_1)
-            view.add_item(cannonball_button_5)
-
-            self.view.ensure_reset_button()
-
-            await interaction.followup.send(embed=embed, view=view)
+            stock_supplies = StockSupplies(self.guild_id, self.player, self.player_data, self.author_id)
+            await stock_supplies.display_supplies(interaction, self.player.stats.zone_level, embed_color)
 
         elif selected_option == "hints":
             from nero.hints import create_nero_embed
