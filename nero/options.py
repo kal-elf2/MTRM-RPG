@@ -68,6 +68,13 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
+        # Refresh player object from the latest player data
+        await self.refresh_player_from_data()
+
+        if self.player_data["location"] == "kraken":
+            await CommonResponses.during_kraken_battle_response(interaction)
+            return
+
         await interaction.response.defer()
 
         # Handle the selection here

@@ -133,6 +133,17 @@ class CommonResponses:
         embed.set_thumbnail(url=generate_urls("nero", "confused"))
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
+    @staticmethod
+    async def during_kraken_battle_response(interaction):
+        embed = discord.Embed(
+            title="Captain Ner0's Orders",
+            description=(
+                f"Ye can't be fiddlin' with other tasks whilst we're battlin' the Kraken, {interaction.user.mention}! Keep yer eyes on the horizon and yer hands ready for battle!"),
+            color=discord.Color.dark_gold()
+        )
+        embed.set_thumbnail(url=generate_urls("nero", "kraken"))
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
 
 # User pressing wrong buttons
 def get_nero_warning(interaction):

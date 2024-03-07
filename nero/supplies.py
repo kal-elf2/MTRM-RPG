@@ -16,6 +16,15 @@ class StockCaravelButton(discord.ui.Button, CommonResponses):
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
+
+        if self.player_data["location"] == "kraken":
+            await CommonResponses.during_kraken_battle_response(interaction)
+            return
+
+        if self.player_data["location"] == "kraken":
+            await CommonResponses.during_kraken_battle_response(interaction)
+            return
+
         await interaction.response.defer()
 
         stock_supplies = StockSupplies(guild_id=self.guild_id, player=self.player,

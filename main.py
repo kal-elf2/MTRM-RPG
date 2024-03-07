@@ -275,6 +275,10 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
         await CommonResponses.exit_citadel_response(ctx)
         return
 
+    if player_data["location"] == "kraken":
+        await CommonResponses.during_kraken_battle_response(ctx)
+        return
+
     player_data["location"] = "battle"
     save_player_data(guild_id, player_id, player_data)
 
@@ -487,6 +491,10 @@ async def cemetery(ctx):
                       color=discord.Color.dark_gold())
         embed.set_thumbnail(url=generate_urls("nero", "confused"))
         await ctx.respond(embed=embed, ephemeral=True)
+        return
+
+    if player_data["location"] == "kraken":
+        await CommonResponses.during_kraken_battle_response(ctx)
         return
 
     player = Exemplar(player_data["exemplar"],

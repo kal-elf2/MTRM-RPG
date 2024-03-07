@@ -673,6 +673,10 @@ class MiningCog(commands.Cog, CommonResponses):
             await self.exit_citadel_response(ctx)
             return
 
+        if player_data["location"] == "kraken":
+            await self.during_kraken_battle_response(ctx)
+            return
+
         base_min_levels = {
             "Iron Ore": 0,
             "Coal": 7,

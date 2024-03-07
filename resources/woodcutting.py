@@ -677,6 +677,10 @@ class WoodcuttingCog(commands.Cog, CommonResponses):
             await self.exit_citadel_response(ctx)
             return
 
+        if player_data["location"] == "kraken":
+            await self.during_kraken_battle_response(ctx)
+            return
+
         base_min_levels = {
             "Pine": 0,
             "Yew": 5,

@@ -49,6 +49,10 @@ class CitadelCog(commands.Cog, CommonResponses):
             await self.ongoing_battle_response(ctx)
             return
 
+        if player_data["location"] == "kraken":
+            await self.during_kraken_battle_response(ctx)
+            return
+
         player_data["location"] = "citadel"
         save_player_data(guild_id, author_id, player_data)
 

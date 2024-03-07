@@ -45,6 +45,10 @@ class BackpackCog(commands.Cog):
             await ctx.respond(embed=embed, ephemeral=True)
             return
 
+        if player_data["location"] == "kraken":
+            await CommonResponses.during_kraken_battle_response(ctx)
+            return
+
         # Display initial backpack view with Equip and Unequip buttons
         view = BackpackView(ctx)
         await ctx.respond(f"Here's your backpack, {ctx.author.mention}:", view=view)

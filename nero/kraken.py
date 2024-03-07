@@ -99,7 +99,7 @@ class HuntKrakenButton(discord.ui.Button, CommonResponses):
         await interaction.response.defer()
 
         # Set player location to None
-        self.player_data["location"] = None
+        self.player_data["location"] = "kraken"
 
         zone_level = self.player.stats.zone_level
 
