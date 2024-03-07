@@ -168,7 +168,7 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
                 embed.set_thumbnail(url=generate_urls("nero", "kraken"))
 
                 view = discord.ui.View()
-                view.add_item(HuntKrakenButton())
+                view.add_item(HuntKrakenButton(self.guild_id, self.player_data, self.author_id))
 
                 # New: Check inventory and offer "Sell All" if in zones 1-4
                 if zone_level < 5:
@@ -184,7 +184,7 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
                         )
                         sell_offer_embed.set_thumbnail(url=nero_thumbnail_url)
                         sell_all_view = discord.ui.View()
-                        sell_all_view.add_item(SellAllButton("Sell Yer Loot", self.author_id, self.guild_id))
+                        sell_all_view.add_item(SellAllButton("Sell Yer Loot", self.author_id, self.guild_id, self.player_data))
                         self.view.ensure_reset_button()
                         await interaction.followup.send(embed=sell_offer_embed, view=sell_all_view, ephemeral=True)
                         return

@@ -6,10 +6,11 @@ from images.urls import generate_urls
 from emojis import get_emoji
 
 class ConfirmSellView(discord.ui.View, CommonResponses):
-    def __init__(self, author_id: str, guild_id: str):
+    def __init__(self, author_id, guild_id, player_data):
         super().__init__()
         self.author_id = author_id
         self.guild_id = guild_id
+        self.player_data = player_data
 
     @discord.ui.button(label="Yes", style=discord.ButtonStyle.blurple, custom_id="confirm_sell_yes")
     async def confirm_sell(self, button: discord.ui.Button, interaction: discord.Interaction):
@@ -39,7 +40,7 @@ class ConfirmSellView(discord.ui.View, CommonResponses):
         )
         sell_feedback_embed.set_thumbnail(url=generate_urls("nero", "kraken"))
         view = discord.ui.View()
-        view.add_item(HuntKrakenButton())
+        view.add_item(HuntKrakenButton(self.guild_id, self.player_data, self.author_id))
         await interaction.response.edit_message(embed=sell_feedback_embed, view=view)
 
     @discord.ui.button(label="No", style=discord.ButtonStyle.grey, custom_id="confirm_sell_no")
@@ -56,10 +57,11 @@ class ConfirmSellView(discord.ui.View, CommonResponses):
         await interaction.response.edit_message(embed=cancel_embed, view=None)
 
 class SellAllButton(discord.ui.Button, CommonResponses):
-    def __init__(self, label: str, author_id, guild_id, style=discord.ButtonStyle.blurple):
+    def __init__(self, label: str, author_id, guild_id, player_data, style=discord.ButtonStyle.blurple):
         super().__init__(style=style, label=label)
         self.author_id = author_id
         self.guild_id = guild_id
+        self.player_data = player_data
 
     async def callback(self, interaction: discord.Interaction):
         if str(interaction.user.id) != self.author_id:
@@ -72,14 +74,26 @@ class SellAllButton(discord.ui.Button, CommonResponses):
             color=discord.Color.dark_gold()
         )
         confirm_embed.set_thumbnail(url=generate_urls("nero", "gun"))
-        confirm_view = ConfirmSellView(self.author_id, self.guild_id)
+        confirm_view = ConfirmSellView(self.author_id, self.guild_id, self.player_data)
         await interaction.response.edit_message(embed=confirm_embed, view=confirm_view)
 
-class HuntKrakenButton(discord.ui.Button):
-    def __init__(self):
+class HuntKrakenButton(discord.ui.Button, CommonResponses):
+    def __init__(self, guild_id, player_data, author_id):
         super().__init__(style=discord.ButtonStyle.green, label="Hunt Kraken", emoji="🦑")
+        self.guild_id = guild_id
+        self.player_data = player_data
+        self.author_id = author_id
+
+        self.player = Exemplar(self.player_data["exemplar"],
+                               self.player_data["stats"],
+                               self.player_data["inventory"])
 
     async def callback(self, interaction: discord.Interaction):
+        if str(interaction.user.id) != self.author_id:
+            return await self.nero_unauthorized_user_response(interaction)
+
+        await interaction.response.defer()
+
         # Placeholder for actual battle logic
         print('battle kraken')
         pass
