@@ -73,13 +73,13 @@ class SellAllButton(discord.ui.Button, CommonResponses):
             description="Are ye sure ye want to sell all yer loot?\n\n***There ain't no going back after this, savvy?***",
             color=discord.Color.dark_gold()
         )
-        confirm_embed.set_thumbnail(url=generate_urls("nero", "gun"))
+        confirm_embed.set_thumbnail(url=generate_urls("nero", "gun "))
         confirm_view = ConfirmSellView(self.author_id, self.guild_id, self.player_data)
         await interaction.response.edit_message(embed=confirm_embed, view=confirm_view)
 
 class HuntKrakenButton(discord.ui.Button, CommonResponses):
     def __init__(self, guild_id, player_data, author_id):
-        super().__init__(style=discord.ButtonStyle.green, label="Hunt Kraken", emoji="🦑")
+        super().__init__(style=discord.ButtonStyle.green, label="Hunt Kraken", emoji=f"{get_emoji('kraken')}")
         self.guild_id = guild_id
         self.player_data = player_data
         self.author_id = author_id

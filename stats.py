@@ -64,9 +64,9 @@ class StatsDropdown(discord.ui.Select, CommonResponses):
         self.author_id = author_id
         self.zone_level = zone_level
         options = [
-            discord.SelectOption(label="📊 Level Progress", value="level_progress", description="View your progress in levels"),
-            discord.SelectOption(label="🎲 Three Eyed Snake", value="three_eyed_snake", description="View your Three Eyed Snake stats"),
-            discord.SelectOption(label="👾 Monster Kills", value="monster_kills", description="View your Monster Kills stats")
+            discord.SelectOption(label="Level Progress", value="level_progress", description="View your progress in levels", emoji="📈"),
+            discord.SelectOption(label="Three Eyed Snake", value="three_eyed_snake", description="View your Three Eyed Snake stats", emoji="🎲"),
+            discord.SelectOption(label="Monster Kills", value="monster_kills", description="View your Monster Kills stats", emoji=f"{get_emoji('kraken')}")
         ]
         super().__init__(placeholder="Choose a category...", min_values=1, max_values=1, options=options)
 
@@ -168,7 +168,7 @@ class StatsDropdown(discord.ui.Select, CommonResponses):
 
         embed_color = color_mapping.get(zone_level, 0x969696)
         embed = discord.Embed(
-            title=f"👾 __Monster Kills__ 👾",
+            title=f"{get_emoji('kraken')} __Monster Kills__ {get_emoji('kraken')}",
             color=embed_color)
         embed.add_field(name=formatted_kills_info, value="\u200B", inline=False)
         embed.set_thumbnail(url=generate_urls("monsters", most_killed_monster))
@@ -233,7 +233,9 @@ class StatsCog(commands.Cog):
         specialty = weapon_specialty.get(exemplar, "None")
         embed.set_footer(text=f"Weapon Bonus: {specialty}")
 
-        await ctx.respond(content=f"{ctx.author.mention}'s Overall Stats", embed=embed)
+        # Create and send the StatsView with the StatsDropdown
+        stats_view = StatsView(author_id, zone_level)
+        await ctx.respond(content=f"{ctx.author.mention}'s Overall Stats", embed=embed, view=stats_view)
 
     @commands.slash_command(description="View leaderboards")
     async def leaders(self, ctx):
@@ -265,12 +267,12 @@ class LeaderboardDropdown(discord.ui.Select, CommonResponses):
         self.guild_id = guild_id
 
         options = [
-            discord.SelectOption(label="📊 Skills", description="View skills leaderboard", value="skills"),
-            discord.SelectOption(label="👾 Monster Kills", description="View monster kills leaderboard",
-                                 value="monster_kills"),
-            discord.SelectOption(label="🎲 Three-Eyed-Snake", description="View Three-Eyed-Snake game leaderboard",
-                                 value="three_eyed_snake"),
-            discord.SelectOption(label="💰 Rich List", description="View the rich list leaderboard", value="rich_list")
+            discord.SelectOption(label="Skills", description="View skills leaderboard", value="skills", emoji="📊"),
+            discord.SelectOption(label="Monster Kills", description="View monster kills leaderboard",
+                                 value="monster_kills", emoji=f"{get_emoji('kraken')}"),
+            discord.SelectOption(label="Three-Eyed-Snake", description="View Three-Eyed-Snake game leaderboard",
+                                 value="three_eyed_snake", emoji="🎲"),
+            discord.SelectOption(label="Rich List", description="View the rich list leaderboard", value="rich_list", emoji="💰")
         ]
         super().__init__(placeholder="Choose a category...", min_values=1, max_values=1, options=options)
 

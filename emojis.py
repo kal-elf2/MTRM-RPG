@@ -52,7 +52,6 @@ def get_emoji(emoji_name):
         'Flour': '<:Flour:1164773254460866560>',
         'Hammer': '<:Hammer:1164773266590793748>',
         'Iron': '<:Iron:1164773279056269322>',
-        'Lantern of the Sun': '<:LanteroftheSun:1164773292192837683>',
         'Large Shield': '<:LargeShield:1164773305555894342>',
         'Leather Armor': '<:LeatherArmor:1164773316104564786>',
         'Leather Boots': '<:LeatherBoots:1164773325810176020>',
@@ -75,7 +74,6 @@ def get_emoji(emoji_name):
         'Pole': '<:Pole:1164773552025763870>',
         'Poplar Strip': '<:PoplarStrip:1164773563107115089>',
         'Rabbit Meat': '<:RabbitMeat:1164773578634444862>',
-        'Ring of Discord': '<:RingofDiscord:1164773589975842826>',
         'Short Bow': '<:ShortBow:1164773603628286003>',
         'Short Spear': '<:ShortSpear:1164773616731312168>',
         'Short Sword': '<:ShortSword:1164773628320153681>',
@@ -103,7 +101,9 @@ def get_emoji(emoji_name):
         'q': '<:Q_:1160444478046359724>',
         'e': '<:E_:1160444475676565544>',
         'Rusty Spork': '<:RustySpork:1180716935604875305>',
-        'Cannonball': '<:Cannonball:1202310297986011176>'
+        'Cannonball': '<:Cannonball:1202310297986011176>',
+        'kraken': '<:kraken:1215355183438102578>',
+        'helm': '<:helm:1215353462787932200>'
     }
 
     # Return the appropriate emoji string, or an empty string if not found

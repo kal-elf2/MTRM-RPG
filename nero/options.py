@@ -44,7 +44,7 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
 
         # Conditionally add dynamic label based on zone level
         if poplar_strip >= required_amount and cannonball >= required_amount:
-            options.append(discord.SelectOption(label="Hunt Kraken", value="kraken", emoji="🦑"))
+            options.append(discord.SelectOption(label="Hunt Kraken", value="kraken", emoji=f"{get_emoji('kraken')}"))
         else:
             ship_name = self.ship_names.get(zone_level, "Ship")
             options.append(discord.SelectOption(label=f"Stock {ship_name}", value="supplies", emoji=f"{get_emoji('Cannonball')}"))
