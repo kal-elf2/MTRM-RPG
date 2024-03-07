@@ -112,6 +112,7 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
         elif selected_option == "kraken":
             # Refresh player object from the latest player data
             await self.refresh_player_from_data()
+            self.view.ensure_reset_button()
 
             required_level = zone_level * 20
             if zone_level == 5:
@@ -160,7 +161,7 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
 
                 # Player meets the requirements
                 message_title = "Ready the Cannons!"
-                message_description = f"Ye be ready to face the Kraken!\n\n{requirements_message}\n\nGood luck, matey!"
+                message_description = f"Ye be ready to face the Kraken {interaction.user.mention}!\n\n{requirements_message}\n\nGood luck, matey!"
 
                 # Create the embed and view with the "Hunt Kraken" button
                 embed = discord.Embed(title=message_title, description=message_description,
@@ -198,8 +199,6 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
                         author_id=self.author_id
                     )
                     view.add_item(stock_caravel_button)
-
-                self.view.ensure_reset_button()
 
                 await interaction.followup.send(embed=embed, view=view, ephemeral=False)
 

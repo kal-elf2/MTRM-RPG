@@ -84,6 +84,7 @@ class HuntKrakenButton(discord.ui.Button, CommonResponses):
         self.player_data = player_data
         self.author_id = author_id
 
+        # Initialize the player from player_data
         self.player = Exemplar(self.player_data["exemplar"],
                                self.player_data["stats"],
                                self.player_data["inventory"])
@@ -92,8 +93,39 @@ class HuntKrakenButton(discord.ui.Button, CommonResponses):
         if str(interaction.user.id) != self.author_id:
             return await self.nero_unauthorized_user_response(interaction)
 
+        # Disable the button
+        self.disabled = True
+
         await interaction.response.defer()
 
+        # Set player location to None
+        self.player_data["location"] = None
+
+        zone_level = self.player.stats.zone_level
+
+        # Handle inventory based on zone level
+        if zone_level < 5:
+            # Clear inventory for zones 1 through 4
+            self.player.inventory.items = []
+            self.player.inventory.trees = []
+            self.player.inventory.herbs = []
+            self.player.inventory.ore = []
+            self.player.inventory.armors = []
+            self.player.inventory.weapons = []
+            self.player.inventory.shields = []
+            self.player.inventory.charms = []
+            self.player.inventory.potions = []
+
+        else:
+            # Subtract one Goblin Crown from the inventory in zone 5
+            self.player.inventory.remove_item("Goblin Crown", 1)
+
+        # Save the updated player data
+        save_player_data(self.guild_id, self.author_id, self.player_data)
+
+        # Update view to disable button
+        await interaction.edit_original_response(view=self.view)
+
         # Placeholder for actual battle logic
-        print('battle kraken')
-        pass
+        await interaction.followup.send("Kraken battle initiated! Good luck!", ephemeral=True)
+

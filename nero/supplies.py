@@ -181,7 +181,7 @@ class DepositButton(discord.ui.Button, CommonResponses):
 
         # Adjust the Nero message as follows for Zone levels below 5
         if zone_level < 5 and poplar_count_shipwreck >= required_amount and cannonball_count_shipwreck >= required_amount:
-            nero_message = "Yarr! The ship is full to the brim! Come **visit me again at the Jolly Roger** when yer ready hunt down that Kraken!"
+            nero_message = f"Yarr! The ship is full to the brim {interaction.user.mention}! Come **visit me again at the Jolly Roger** when yer ready hunt down that Kraken!"
             nero_embed_sent = True
 
         if zone_level == 5:
@@ -191,7 +191,7 @@ class DepositButton(discord.ui.Button, CommonResponses):
             # Only proceed if we haven't already marked the player as ready for battle
             if both_above_minimum and not (initial_above_minimum_poplar and initial_above_minimum_cannonball):
                 # Send "Ready for Battle!" message only if we are transitioning from below to above the minimum for both resources
-                nero_message = "Hoist the colors! Ye've stocked enough to challenge the depths itself. Though the Kraken awaits, more supplies mean a stronger fight. Keep 'em coming, for glory and treasure!"
+                nero_message = f"Hoist the colors {interaction.user.mention}! Ye've stocked enough to challenge the depths herself. Though the Kraken awaits, more supplies mean a stronger fight. Keep 'em coming, for glory and treasure!"
                 nero_embed = discord.Embed(
                     title="Ready for Battle!",
                     description=nero_message,
@@ -199,21 +199,21 @@ class DepositButton(discord.ui.Button, CommonResponses):
                 )
                 nero_embed.set_image(
                     url=generate_urls("nero", "kraken"))
-                await interaction.followup.send(embed=nero_embed, ephemeral=True)
+                await interaction.followup.send(embed=nero_embed, ephemeral=False)
 
             elif any([
                 initial_poplar_count_shipwreck < required_minimum <= poplar_count_shipwreck,
                 initial_cannonball_count_shipwreck < required_minimum <= cannonball_count_shipwreck
             ]):
                 # Send the "Ye Be On Course!" message only if one of the resources crosses the threshold
-                nero_message = f"Arrr! **Ye've hoarded enough {get_emoji(self.item_name)} {self.item_name}s** to set sail against the Kraken beastie, but don't ye be stoppin'! The seas are harsh and unforgiving. Gather all ye can to ensure victory!"
+                nero_message = f"Arrr! **Ye've hoarded enough {get_emoji(self.item_name)} {self.item_name}s** to set sail against the Kraken beastie {interaction.user.mention}, but don't ye be stoppin'! The seas are harsh and unforgiving. Gather all ye can to ensure victory!"
                 nero_embed = discord.Embed(
                     title="Ye Be On Course!",
                     description=nero_message,
                     color=discord.Color.dark_gold()
                 )
                 nero_embed.set_thumbnail(url=generate_urls("nero", "kraken"))
-                await interaction.followup.send(embed=nero_embed, ephemeral=True)
+                await interaction.followup.send(embed=nero_embed, ephemeral=False)
 
         # Send the Nero message if needed
         if nero_embed_sent:
@@ -223,7 +223,7 @@ class DepositButton(discord.ui.Button, CommonResponses):
                 color=discord.Color.dark_gold()
             )
             nero_embed.set_image(url=generate_urls("nero", "kraken"))
-            await interaction.followup.send(embed=nero_embed, ephemeral=True)
+            await interaction.followup.send(embed=nero_embed, ephemeral=False)
 
         # Proceed with updating the supply counts and button states
         max_deposit_text = f"(Minimum: {zone_level * 25})" if zone_level == 5 else f"({required_amount} Required)"

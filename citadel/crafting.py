@@ -174,7 +174,6 @@ class CraftingStation:
 
         return recipe.result
 
-
 class CraftButtonView(discord.ui.View):
     def __init__(self, player, player_data, station, selected_recipe, guild_id, author_id, disabled=True):
         super().__init__()
