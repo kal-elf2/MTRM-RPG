@@ -132,6 +132,10 @@ class DepositButton(discord.ui.Button, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
+        if self.player_data["location"] == "kraken":
+            await self.during_kraken_battle_response(interaction)
+            return
+
         # Refresh player object so revisiting previous buttons won't use previous player object
         await self.refresh_player_from_data()
 

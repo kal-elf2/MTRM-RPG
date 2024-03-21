@@ -22,11 +22,13 @@ bot.load_extension("resources.woodcutting")
 bot.load_extension("resources.mining")
 bot.load_extension("resources.backpack")
 bot.load_extension("citadel.buttons")
+bot.load_extension("nero.kraken")
 
 guild_data = {}
 
 @bot.event
 async def on_ready():
+    # await bot.sync_commands()
     print(f'We have logged in as {bot.user}')
 
 @bot.slash_command()
