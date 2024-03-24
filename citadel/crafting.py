@@ -184,7 +184,7 @@ class CraftButtonView(discord.ui.View):
         self.author_id = author_id
         self.add_item(CraftButton(disabled, station, selected_recipe, player, player_data, guild_id, author_id))
 
-class CraftButton(discord.ui.Button):
+class CraftButton(discord.ui.Button, CommonResponses):
     def __init__(self, disabled, station, selected_recipe, player, player_data, guild_id, author_id):
         super().__init__(label="Craft", style=discord.ButtonStyle.primary, disabled=disabled)
         self.station = station
@@ -194,8 +194,25 @@ class CraftButton(discord.ui.Button):
         self.guild_id = guild_id
         self.author_id = author_id
 
+    async def refresh_player_from_data(self):
+        from exemplars.exemplars import Exemplar
+        from utils import load_player_data
+        """Refresh the player object from the latest player data."""
+        self.player_data = load_player_data(self.guild_id, self.author_id)
+        self.player = Exemplar(self.player_data["exemplar"],
+                               self.player_data["stats"],
+                               self.player_data["inventory"])
+
     async def callback(self, interaction: discord.Interaction):
         from utils import save_player_data
+
+        # Refresh player object from the latest player data
+        await self.refresh_player_from_data()
+
+        # Check if the player is not in the citadel
+        if self.player_data["location"] != "citadel":
+            await self.not_in_citadel_response(interaction)
+            return
 
         # Use the CraftingStation's craft method
         crafted_item = self.station.craft(self.selected_recipe.result.name, self.player, self.player_data,
@@ -345,6 +362,7 @@ class CraftingSelect(discord.ui.Select, CommonResponses):
                                self.player_data["stats"],
                                self.player_data["inventory"])
 
+
         # Define select options based on the provided recipes
         options = [
             discord.SelectOption(
@@ -362,6 +380,15 @@ class CraftingSelect(discord.ui.Select, CommonResponses):
 
         # Initialize the Select element with the generated options
         super().__init__(placeholder=placeholder_message, options=options, min_values=1, max_values=1)
+
+    async def refresh_player_from_data(self):
+        from exemplars.exemplars import Exemplar
+        from utils import load_player_data
+        """Refresh the player object from the latest player data."""
+        self.player_data = load_player_data(self.guild_id, self.author_id)
+        self.player = Exemplar(self.player_data["exemplar"],
+                               self.player_data["stats"],
+                               self.player_data["inventory"])
 
     def _get_item_label(self, item):
         """Return the appropriate label for the item, including defense or attack modifier if applicable."""
@@ -398,15 +425,13 @@ class CraftingSelect(discord.ui.Select, CommonResponses):
 
     async def callback(self, interaction: discord.Interaction):
 
-        from utils import load_player_data
-
         # Check authorization
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        # Refresh player data to prevent selections when outside citadel
-        self.player_data = load_player_data(self.guild_id, self.author_id)
+        # Refresh player object from the latest player data
+        await self.refresh_player_from_data()
 
         # Check if the player is not in the citadel
         if self.player_data["location"] != "citadel":
