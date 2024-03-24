@@ -398,9 +398,19 @@ class CraftingSelect(discord.ui.Select, CommonResponses):
 
     async def callback(self, interaction: discord.Interaction):
 
+        from utils import load_player_data
+
         # Check authorization
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
+            return
+
+        # Refresh player data to prevent selections when outside citadel
+        self.player_data = load_player_data(self.guild_id, self.author_id)
+
+        # Check if the player is not in the citadel
+        if self.player_data["location"] != "citadel":
+            await self.not_in_citadel_response(interaction)
             return
 
         from nero.TES import handle_three_eyed_snake_selection

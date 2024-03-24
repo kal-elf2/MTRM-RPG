@@ -57,7 +57,7 @@ class CitadelCog(commands.Cog, CommonResponses):
         save_player_data(guild_id, author_id, player_data)
 
         # Initialize the rows with the author_id
-        row1 = ForgeRow(player_data, ctx, author_id=author_id)
+        row1 = ForgeRow(ctx, author_id=author_id)
         row2 = TanneryRow(player_data, ctx, author_id=author_id)
         row3 = BreadRow(player_data, ctx, author_id=author_id)
         row4 = WheatRow(player_data, ctx, author_id=author_id)
@@ -77,7 +77,9 @@ class ForgeRow(discord.ui.View, CommonResponses):
         self.author_id = author_id
         self.crafting_select = None
 
+
     def update_or_add_crafting_select(self, recipes, interaction):
+
         if self.crafting_select:
             self.remove_item(self.crafting_select)
         self.crafting_select = CraftingSelect(recipes, interaction, self.author_id)
@@ -90,6 +92,9 @@ class ForgeRow(discord.ui.View, CommonResponses):
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
+
+        # Refresh player data to prevent exploit after citadel exit.
+        self.player_data = load_player_data(interaction.guild_id, self.author_id)
 
         # Check if the player is not in the citadel
         if self.player_data["location"] != "citadel":
@@ -108,6 +113,9 @@ class ForgeRow(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
+        # Refresh player data to prevent exploit after citadel exit.
+        self.player_data = load_player_data(interaction.guild_id, self.author_id)
+
         # Check if the player is not in the citadel
         if self.player_data["location"] != "citadel":
             await self.not_in_citadel_response(interaction)
@@ -124,6 +132,9 @@ class ForgeRow(discord.ui.View, CommonResponses):
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
+
+        # Refresh player data to prevent exploit after citadel exit.
+        self.player_data = load_player_data(interaction.guild_id, self.author_id)
 
         # Check if the player is not in the citadel
         if self.player_data["location"] != "citadel":
@@ -157,6 +168,9 @@ class TanneryRow(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
+        # Refresh player data to prevent exploit after citadel exit.
+        self.player_data = load_player_data(interaction.guild_id, self.author_id)
+
         # Check if the player is not in the citadel
         if self.player_data["location"] != "citadel":
             await self.not_in_citadel_response(interaction)
@@ -174,6 +188,9 @@ class TanneryRow(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
+        # Refresh player data to prevent exploit after citadel exit.
+        self.player_data = load_player_data(interaction.guild_id, self.author_id)
+
         # Check if the player is not in the citadel
         if self.player_data["location"] != "citadel":
             await self.not_in_citadel_response(interaction)
@@ -190,6 +207,9 @@ class TanneryRow(discord.ui.View, CommonResponses):
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
+
+        # Refresh player data to prevent exploit after citadel exit.
+        self.player_data = load_player_data(interaction.guild_id, self.author_id)
 
         # Check if the player is not in the citadel
         if self.player_data["location"] != "citadel":
@@ -235,6 +255,9 @@ class BreadRow(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
+        # Refresh player data to prevent exploit after citadel exit.
+        self.player_data = load_player_data(interaction.guild_id, self.author_id)
+
         # Check if the player is not in the citadel
         if self.player_data["location"] != "citadel":
             await self.not_in_citadel_response(interaction)
@@ -246,11 +269,16 @@ class BreadRow(discord.ui.View, CommonResponses):
 
     @discord.ui.button(label="🍖 Meat Stand", custom_id="citadel_meat_stand", style=discord.ButtonStyle.blurple)
     async def meat_stand(self, button, interaction):
+
+        from utils import load_player_data
         # Check if the user who interacted is the same as the one who initiated the view
         # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
+
+        # Refresh player data to prevent exploit after citadel exit.
+        self.player_data = load_player_data(interaction.guild_id, self.author_id)
 
         # Check if the player is not in the citadel
         if self.player_data["location"] != "citadel":
@@ -269,6 +297,9 @@ class BreadRow(discord.ui.View, CommonResponses):
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
+
+        # Refresh player data to prevent exploit after citadel exit.
+        self.player_data = load_player_data(interaction.guild_id, self.author_id)
 
         # Check if the player is not in the citadel
         if self.player_data["location"] != "citadel":
@@ -296,6 +327,9 @@ class WheatRow(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
+        # Refresh player data to prevent exploit after citadel exit.
+        self.player_data = load_player_data(interaction.guild_id, self.author_id)
+
         # Check if the player is not in the citadel
         if self.player_data["location"] != "citadel":
             await self.not_in_citadel_response(interaction)
@@ -319,6 +353,9 @@ class WheatRow(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
+        # Refresh player data to prevent exploit after citadel exit.
+        self.player_data = load_player_data(interaction.guild_id, self.author_id)
+
         # Check if the player is not in the citadel
         if self.player_data["location"] != "citadel":
             await self.not_in_citadel_response(interaction)
@@ -337,11 +374,15 @@ class WheatRow(discord.ui.View, CommonResponses):
 
     @discord.ui.button(label="⛺ Heal Tent", custom_id="citadel_heal_tent", style=discord.ButtonStyle.blurple)
     async def heal_tent(self, button, interaction):
+        from utils import load_player_data
         # Check if the user who interacted is the same as the one who initiated the view
         # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
+
+        # Refresh player data to prevent exploit after citadel exit.
+        self.player_data = load_player_data(interaction.guild_id, self.author_id)
 
         # Check if the player is not in the citadel
         if self.player_data["location"] != "citadel":
@@ -418,6 +459,9 @@ class TravelRow(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
+        # Refresh player data to prevent exploit after citadel exit.
+        self.player_data = load_player_data(interaction.guild_id, self.author_id)
+
         # Check if the player is not in the citadel
         if self.player_data["location"] != "citadel":
             await self.not_in_citadel_response(interaction)
@@ -446,6 +490,9 @@ class TravelRow(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
+        # Refresh player data to prevent exploit after citadel exit.
+        self.player_data = load_player_data(interaction.guild_id, self.author_id)
+
         # Check if the player is not in the citadel
         if self.player_data["location"] != "citadel":
             await self.not_in_citadel_response(interaction)
@@ -468,6 +515,9 @@ class TravelRow(discord.ui.View, CommonResponses):
         if str(interaction.user.id) != self.author_id:
             await self.unauthorized_user_response(interaction)
             return
+
+        # Refresh player data to prevent exploit after citadel exit.
+        self.player_data = load_player_data(interaction.guild_id, self.author_id)
 
         if self.player_data["location"] != "citadel":
             await self.not_in_citadel_response(interaction)
