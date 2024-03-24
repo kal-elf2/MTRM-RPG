@@ -1,5 +1,5 @@
 import discord
-from utils import save_player_data, CommonResponses, load_player_data
+from utils import save_player_data, CommonResponses, refresh_player_from_data
 from emojis import get_emoji
 from images.urls import generate_gif_urls, generate_urls
 
@@ -115,15 +115,6 @@ class DepositButton(discord.ui.Button, CommonResponses):
         self.author_id = author_id
         self.guild_id = guild_id
 
-    async def refresh_player_from_data(self):
-        from exemplars.exemplars import Exemplar
-        """Refresh the player object from the latest player data."""
-        self.player_data = load_player_data(self.guild_id, self.author_id)
-        # Assuming Exemplar class can initialize a player object from player_data directly
-        self.player = Exemplar(self.player_data["exemplar"],
-                               self.player_data["stats"],
-                               self.player_data["inventory"])
-
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.defer()
 
@@ -132,12 +123,12 @@ class DepositButton(discord.ui.Button, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
+        # Refresh player object from the latest player data
+        self.player, self.player_data = await refresh_player_from_data(self, interaction)
+
         if self.player_data["location"] == "kraken":
             await self.during_kraken_battle_response(interaction)
             return
-
-        # Refresh player object so revisiting previous buttons won't use previous player object
-        await self.refresh_player_from_data()
 
         # Initial shipwreck counts before updating to not send multiple embeds after reaching minimum in zone 5
         initial_poplar_count_shipwreck = self.player_data['shipwreck'].get('Poplar Strip', 0)

@@ -8,7 +8,7 @@ from resources.ore import Ore
 from resources.potion import Potion
 from resources.materium import Materium
 from probabilities import stonebreaker_percent, woodcleaver_percent, loothaven_percent, mightstone_multiplier, ironhide_percent, ironhide_multiplier, CRITICAL_HIT_CHANCE, CRITICAL_HIT_MULTIPLIER
-from utils import CommonResponses
+from utils import CommonResponses, refresh_player_from_data
 
 class Weapon(Item):
     def __init__(self, name, wtype, attack_modifier, special_attack, value, zone_level, description=None, stack=1):
@@ -194,20 +194,11 @@ class CraftButton(discord.ui.Button, CommonResponses):
         self.guild_id = guild_id
         self.author_id = author_id
 
-    async def refresh_player_from_data(self):
-        from exemplars.exemplars import Exemplar
-        from utils import load_player_data
-        """Refresh the player object from the latest player data."""
-        self.player_data = load_player_data(self.guild_id, self.author_id)
-        self.player = Exemplar(self.player_data["exemplar"],
-                               self.player_data["stats"],
-                               self.player_data["inventory"])
-
     async def callback(self, interaction: discord.Interaction):
-        from utils import save_player_data
+        from utils import save_player_data, refresh_player_from_data
 
         # Refresh player object from the latest player data
-        await self.refresh_player_from_data()
+        self.player, self.player_data = await refresh_player_from_data(self, interaction)
 
         # Check if the player is not in the citadel
         if self.player_data["location"] != "citadel":
@@ -381,15 +372,6 @@ class CraftingSelect(discord.ui.Select, CommonResponses):
         # Initialize the Select element with the generated options
         super().__init__(placeholder=placeholder_message, options=options, min_values=1, max_values=1)
 
-    async def refresh_player_from_data(self):
-        from exemplars.exemplars import Exemplar
-        from utils import load_player_data
-        """Refresh the player object from the latest player data."""
-        self.player_data = load_player_data(self.guild_id, self.author_id)
-        self.player = Exemplar(self.player_data["exemplar"],
-                               self.player_data["stats"],
-                               self.player_data["inventory"])
-
     def _get_item_label(self, item):
         """Return the appropriate label for the item, including defense or attack modifier if applicable."""
         label = item.name
@@ -431,7 +413,7 @@ class CraftingSelect(discord.ui.Select, CommonResponses):
             return
 
         # Refresh player object from the latest player data
-        await self.refresh_player_from_data()
+        self.player, self.player_data = await refresh_player_from_data(self, interaction)
 
         # Check if the player is not in the citadel
         if self.player_data["location"] != "citadel":

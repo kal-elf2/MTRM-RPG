@@ -79,6 +79,16 @@ def update_and_save_player_data(interaction: discord.Interaction, inventory, pla
 
     save_player_data(interaction.guild.id, player_id, player_data)
 
+async def refresh_player_from_data(self, interaction):
+    from exemplars.exemplars import Exemplar
+    """Refresh the player object from the latest player data."""
+    self.player_data = load_player_data(interaction.guild_id, self.author_id)
+    self.player = Exemplar(self.player_data["exemplar"],
+                           self.player_data["stats"],
+                           self.player_data["inventory"])
+
+    return self.player, self.player_data
+
 class CommonResponses:
     @staticmethod
     async def nero_unauthorized_user_response(interaction):

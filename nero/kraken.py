@@ -160,16 +160,35 @@ class BattleCommands(commands.Cog):
         self.battle_message = None
         self.cannon_angle = 45
 
+    @staticmethod
+    def find_correct_angle(distance, velocity=100):
+        g = 9.8  # acceleration due to gravity in m/s^2
+        try:
+            angle_radians = math.asin(distance * g / velocity ** 2) / 2
+            angle_degrees = math.degrees(angle_radians)
+            return angle_degrees
+        except ValueError:
+            # Return None or an appropriate value if the distance is too great for a hit at this velocity
+            return None
+
+
     async def set_kraken_direction(self):
         directions = ["N", "S", "E", "W", "NW", "NE", "SE", "SW"]
         self.kraken_direction = choice(directions)  # Randomly set the Kraken's direction
-        self.kraken_distance = randint(100, 500)  # Set initial Kraken distance
+        self.kraken_distance = randint(50, 1020)  # Set initial Kraken distance
 
-    def create_battle_embed(self, ctx):
-        """Generates the battle embed based on the current state, including Kraken's direction and distance."""
-        description = f"**The Kraken appears `{self.kraken_direction}` at `{self.kraken_distance}` meters.**\n\n" \
-                      f"**Cannon angle:** {self.cannon_angle}°\n\n" \
-                      f"Adjust our heading and cannons as needed, {ctx.author.mention}. **Fire at will!**"
+    def create_battle_embed(self, ctx, player_data):
+        # Calculate the correct angle for a hit based on the Kraken's distance
+        correct_angle = self.find_correct_angle(self.kraken_distance)
+        print(correct_angle)
+        """Generates the battle embed based on the current state, including Kraken's direction and distance, and shows current cannonball count in the shipwreck."""
+        # Access the cannonball count from the shipwreck in player_data
+        cannonball_count = player_data['shipwreck'].get('Cannonball', 0)
+        description = (
+            f"**The Kraken is `{self.kraken_direction}` at `{self.kraken_distance}` meters.**\n\n"
+            f"**Cannon angle:** {self.cannon_angle}°\n"
+            f"{get_emoji('Cannonball')} **{cannonball_count}** Cannonballs."
+        )
         embed = discord.Embed(title="There She Blows!", description=description, color=discord.Color.dark_gold())
         embed.set_image(url=generate_urls("nero", "kraken"))
         embed.set_thumbnail(url=generate_urls("Kraken", self.ship_direction))
@@ -187,16 +206,16 @@ class BattleCommands(commands.Cog):
         embed.set_image(url=generate_urls("Kraken", "Looking"))
         return embed
 
-    async def move_kraken(self, ctx):
+    async def move_kraken(self, ctx, player_data):
         """Randomly moves the Kraken and notifies players of its new position."""
         self.kraken_visible = False
-        await asyncio.sleep(randint(5, 15))  # Kraken temporarily disappears
+        await asyncio.sleep(randint(5, 12))  # Kraken temporarily disappears
         await self.set_kraken_direction()  # Randomly set the new direction and distance for the Kraken
         self.kraken_visible = True
 
         # Update the battle_message with the new Kraken position and state
         if self.battle_message:
-            await self.battle_message.edit(embed=self.create_battle_embed(ctx))
+            await self.battle_message.edit(embed=self.create_battle_embed(ctx, player_data))
 
     @commands.slash_command(name="kraken", description="Initiate a battle with the Kraken!")
     async def kraken(self, ctx):
@@ -211,8 +230,8 @@ class BattleCommands(commands.Cog):
                 color=discord.Color.dark_gold()
             )
             embed.set_image(
-                url=generate_urls("nero", "pirate"))
-            await ctx.send(embed=embed, ephemeral=True)
+                url=generate_urls("nero", "confused"))
+            await ctx.respond(embed=embed, ephemeral=True)
             return
 
         await ctx.respond(f"{ctx.author.mention} sails into Kraken-infested waters...")
@@ -226,23 +245,25 @@ class BattleCommands(commands.Cog):
         await asyncio.sleep(5)
 
         # Edit the original battle_message with the updated embed
-        await self.battle_message.edit(embed=self.create_battle_embed(ctx))
+        await self.battle_message.edit(embed=self.create_battle_embed(ctx, player_data))
 
         # Prepare views for steering and aiming
-        steering_view = SteeringView(author_id=str(ctx.author.id), battle_commands=self, ctx=ctx)
-        aiming_view = AimingView(author_id=str(ctx.author.id), battle_commands=self, ctx=ctx)
+        steering_view = SteeringView(author_id=str(ctx.author.id), battle_commands=self, ctx=ctx, player_data=player_data)
+        aiming_view = AimingView(author_id=str(ctx.author.id), battle_commands=self, ctx=ctx, player=player, player_data=player_data)
 
         # Send the views in separate messages to organize them into rows
         await ctx.send(view=steering_view)
         await ctx.send(view=aiming_view)
 
 class SteerButton(discord.ui.Button, CommonResponses):
-    def __init__(self, label, author_id, battle_commands, direction_change, ctx, disabled=False):
+    def __init__(self, label, author_id, battle_commands, direction_change, ctx, player_data, disabled=False):
         super().__init__(style=discord.ButtonStyle.secondary, label=label, disabled=disabled)
         self.author_id = author_id
         self.battle_commands = battle_commands
         self.direction_change = direction_change
         self.ctx = ctx
+        self.player_data = player_data
+
     async def callback(self, interaction: discord.Interaction):
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
@@ -258,15 +279,16 @@ class SteerButton(discord.ui.Button, CommonResponses):
 
         # Update the battle message's thumbnail to reflect the new direction
         if self.battle_commands.battle_message:
-            await self.battle_commands.battle_message.edit(embed=self.battle_commands.create_battle_embed(self.ctx))
+            await self.battle_commands.battle_message.edit(embed=self.battle_commands.create_battle_embed(self.ctx, self.player_data))
 
 class AimButton(discord.ui.Button, CommonResponses):
-    def __init__(self, label, author_id, battle_commands, angle_change, ctx, disabled=False):
+    def __init__(self, label, author_id, battle_commands, angle_change, ctx, player_data, disabled=False):
         super().__init__(style=discord.ButtonStyle.secondary, label=label, disabled=disabled)
         self.author_id = author_id
         self.battle_commands = battle_commands
         self.angle_change = angle_change
         self.ctx = ctx
+        self.player_data = player_data
 
     async def callback(self, interaction: discord.Interaction):
         if str(interaction.user.id) != self.author_id:
@@ -281,7 +303,7 @@ class AimButton(discord.ui.Button, CommonResponses):
 
         # Update the battle message to reflect the new cannon angle
         if self.battle_commands.battle_message:
-            await self.battle_commands.battle_message.edit(embed=self.battle_commands.create_battle_embed(self.ctx))
+            await self.battle_commands.battle_message.edit(embed=self.battle_commands.create_battle_embed(self.ctx, self.player_data))
 
 class MiddleSteerButton(discord.ui.Button, CommonResponses):
     def __init__(self, emoji, author_id):
@@ -307,12 +329,14 @@ class MiddleSteerButton(discord.ui.Button, CommonResponses):
 
 
 class FireButton(discord.ui.Button, CommonResponses):
-    def __init__(self, author_id, emoji, aim_angle, ctx, battle_commands):
+    def __init__(self, author_id, emoji, aim_angle, ctx, battle_commands, player, player_data):
         super().__init__(style=discord.ButtonStyle.secondary, disabled=False, emoji=emoji)
         self.author_id = author_id
         self.aim_angle = aim_angle
         self.ctx = ctx
         self.battle_commands = battle_commands
+        self.player = player
+        self.player_data = player_data
 
     async def callback(self, interaction: discord.Interaction):
         if str(interaction.user.id) != self.author_id:
@@ -320,46 +344,66 @@ class FireButton(discord.ui.Button, CommonResponses):
             return
 
         if not self.battle_commands.kraken_visible:
-            # If Kraken is not visible, inform player and exit
             await interaction.response.send_message("Ye cannot see the Kraken! Wait for it to resurface.", ephemeral=True)
             return
 
-        hit = check_hit(self.battle_commands.kraken_distance, self.aim_angle)
-        if hit:
-            response = "Direct hit! The Kraken roars in fury."
-            # Move the Kraken to a new position after a delay
-            asyncio.create_task(self.battle_commands.move_kraken(self.ctx))
-        else:
-            response = "Miss! The Kraken dives deep, readying its next attack."
+        # Check and update cannonball inventory in shipwreck
+        cannonball_count = self.player_data['shipwreck'].get('Cannonball', 0)
+        if cannonball_count > 0:
+            self.player_data['shipwreck']['Cannonball'] -= 1
+            self.disabled = True  # Disable the button after firing
+            hit = check_hit(self.battle_commands.kraken_distance, self.aim_angle)
 
-        await interaction.response.send_message(response, ephemeral=True)
+            if hit:
+                response = "Direct hit! The Kraken roars in fury."
+            else:
+                response = "Miss! The Kraken dives deep, readying its next attack."
+
+            await interaction.response.edit_message(content=response, view=None)  # Remove the view to disable the button
+            # Update the embed to show "Kraken, Looking" and the new cannonball count
+            embed = discord.Embed(
+                title="There She Blows!",
+                description=f"{response}\n\n{get_emoji('Cannonball')} **{self.player_data['shipwreck'].get('Cannonball', 0)}** Cannonballs left in shipwreck.",
+                color=discord.Color.dark_gold()
+            )
+            embed.set_image(url=generate_urls("Kraken", "Looking"))
+            await self.battle_commands.battle_message.edit(embed=embed)
+
+            # Move the Kraken after a short delay
+            asyncio.create_task(self.battle_commands.move_kraken(self.ctx, self.player_data))
+        else:
+            await interaction.response.send_message("Ye have no cannonballs left in the shipwreck!", ephemeral=True)
+
 
 
 class SteeringView(discord.ui.View):
-    def __init__(self, author_id, battle_commands, ctx):
+    def __init__(self, author_id, battle_commands, ctx, player_data):
         super().__init__()
         self.author_id = author_id
         self.battle_commands = battle_commands
         self.ctx = ctx
+        self.player_data = player_data
 
         # Define direction changes for the left and right buttons
         left_direction_change = -1
         right_direction_change = 1
 
         # Adjust the SteerButton initialization with new parameters
-        self.add_item(SteerButton(label="⬅️", author_id=self.author_id, battle_commands=self.battle_commands, direction_change=left_direction_change, ctx=self.ctx))
+        self.add_item(SteerButton(label="⬅️", author_id=self.author_id, battle_commands=self.battle_commands, direction_change=left_direction_change, ctx=self.ctx, player_data=self.player_data))
         self.add_item(MiddleSteerButton(emoji=get_emoji('helm'), author_id=self.author_id))
-        self.add_item(SteerButton(label="➡️", author_id=self.author_id, battle_commands=self.battle_commands, direction_change=right_direction_change, ctx=self.ctx))
+        self.add_item(SteerButton(label="➡️", author_id=self.author_id, battle_commands=self.battle_commands, direction_change=right_direction_change, ctx=self.ctx, player_data=self.player_data))
 
 class AimingView(discord.ui.View):
-    def __init__(self, author_id, battle_commands, ctx):
+    def __init__(self, author_id, battle_commands, ctx, player, player_data):
         super().__init__()
         self.author_id = author_id
         self.battle_commands = battle_commands
         self.ctx = ctx
-        self.add_item(AimButton(label="⬆️", author_id=self.author_id, battle_commands=self.battle_commands, angle_change=5, ctx=self.ctx))
-        self.add_item(FireButton(emoji=get_emoji('Cannonball'), author_id=self.author_id, aim_angle=self.battle_commands.cannon_angle, ctx=None, battle_commands=self.battle_commands))
-        self.add_item(AimButton(label="⬇️", author_id=self.author_id, battle_commands=self.battle_commands, angle_change=-5, ctx=self.ctx))
+        self.player = player
+        self.player_data = player_data
+        self.add_item(AimButton(label="⬆️", author_id=self.author_id, battle_commands=self.battle_commands, angle_change=5, ctx=self.ctx, player_data=player_data))
+        self.add_item(FireButton(emoji=get_emoji('Cannonball'), author_id=self.author_id, aim_angle=self.battle_commands.cannon_angle, ctx=None, battle_commands=self.battle_commands, player=self.player, player_data=player_data))
+        self.add_item(AimButton(label="⬇️", author_id=self.author_id, battle_commands=self.battle_commands, angle_change=-5, ctx=self.ctx, player_data=player_data))
 
 
 # Helper function to calculate the projectile range

@@ -1,6 +1,6 @@
 import discord
 from emojis import get_emoji
-from utils import CommonResponses, load_player_data
+from utils import CommonResponses, refresh_player_from_data
 from images.urls import generate_urls
 
 class JollyRogerView(discord.ui.View):
@@ -54,22 +54,13 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
 
         super().__init__(placeholder="Choose your action", options=options, min_values=1, max_values=1)
 
-    async def refresh_player_from_data(self):
-        from exemplars.exemplars import Exemplar
-        """Refresh the player object from the latest player data."""
-        self.player_data = load_player_data(self.guild_id, self.author_id)
-        self.player = Exemplar(self.player_data["exemplar"],
-                               self.player_data["stats"],
-                               self.player_data["inventory"])
-
-
     async def callback(self, interaction: discord.Interaction):
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
 
         # Refresh player object from the latest player data
-        await self.refresh_player_from_data()
+        self.player, self.player_data = await refresh_player_from_data(self, interaction)
 
         if self.player_data["location"] == "kraken":
             await CommonResponses.during_kraken_battle_response(interaction)
