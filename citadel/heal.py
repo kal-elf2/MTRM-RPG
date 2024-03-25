@@ -2,6 +2,7 @@ import discord
 from images.urls import generate_urls
 from utils import save_player_data, CommonResponses, refresh_player_from_data
 from emojis import get_emoji
+import asyncio
 
 class HealTentButton(discord.ui.View, CommonResponses):
     def __init__(self, ctx, player, player_data, author_id, guild_id):
@@ -69,4 +70,15 @@ class HealTentButton(discord.ui.View, CommonResponses):
         tent_url = generate_urls('Citadel', 'Heal')
         embed.set_image(url=tent_url)
 
+        # Disable the button
+        button.disabled = True
+        # Reflect the button's disabled state in the response
         await interaction.response.edit_message(embed=embed, view=self)
+
+        # Wait for 1.5 seconds
+        await asyncio.sleep(1.5)
+
+        # Re-enable the button
+        button.disabled = False
+        # You might need to update the message again to reflect the re-enabled state
+        await interaction.edit_original_response(view=self)

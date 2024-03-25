@@ -137,7 +137,7 @@ class CommonResponses:
         embed = discord.Embed(
             title="Captain Ner0",
             description=("Yarrr, seems ye've wandered off the map! This be no place for citadel affairs. "
-                         "Hoist yer sails and navigate back to the citadel with `/citadel`, then try yer luck again!"),
+                         "Hoist yer sails and navigate back with `/citadel`, then try yer luck again!"),
             color=discord.Color.dark_gold()
         )
         embed.set_thumbnail(url=generate_urls("nero", "confused"))
