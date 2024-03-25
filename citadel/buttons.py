@@ -343,7 +343,7 @@ class WheatRow(discord.ui.View, CommonResponses):
         wheat_url = generate_urls("Citadel", "Wheat")
         embed.set_thumbnail(url=wheat_url)
 
-        view = HarvestButton(ctx=self.ctx, crop="Wheat")
+        view = HarvestButton(ctx=self.ctx, crop="Wheat", player_data=self.player_data, author_id=self.author_id, guild_id=interaction.guild_id)
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
     @discord.ui.button(label="🌿 Flax", custom_id="citadel_flax", style=discord.ButtonStyle.blurple)
@@ -369,7 +369,7 @@ class WheatRow(discord.ui.View, CommonResponses):
         flax_url = generate_urls("Citadel", "Flax")
         embed.set_thumbnail(url=flax_url)
         view = HarvestButton(ctx=self.ctx,
-                             crop="Flax")
+                             crop="Flax", player_data=self.player_data, author_id=self.author_id, guild_id=interaction.guild_id)
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
     @discord.ui.button(label="⛺ Heal Tent", custom_id="citadel_heal_tent", style=discord.ButtonStyle.blurple)

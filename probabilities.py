@@ -8,7 +8,7 @@ herb_drop_percent = 0.15
 # Original value: 0.10 (10% chance)
 potion_drop_percent = 0.10
 # Original value: 0.001 (.1% chance)
-spork_chance = 0.99
+spork_chance = 0.001
 # Original value: 100000
 spork_value = 100000
 

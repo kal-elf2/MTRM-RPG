@@ -1,9 +1,9 @@
 import discord
 from images.urls import generate_urls
-from utils import save_player_data
+from utils import save_player_data, CommonResponses, refresh_player_from_data
 from emojis import get_emoji
 
-class HealTentButton(discord.ui.View):
+class HealTentButton(discord.ui.View, CommonResponses):
     def __init__(self, ctx, player, player_data, author_id, guild_id):
         super().__init__(timeout=None)
         self.ctx = ctx
@@ -16,6 +16,20 @@ class HealTentButton(discord.ui.View):
     async def heal(self, button, interaction):
 
         from probabilities import tent_health
+
+        # Inherited from CommonResponses class from utils
+        if str(interaction.user.id) != self.author_id:
+            await self.nero_unauthorized_user_response(interaction)
+            return
+
+        # Refresh player object from the latest player data
+        self.player, self.player_data = await refresh_player_from_data(self, interaction)
+
+        # Check if the player is not in the citadel
+        if self.player_data["location"] != "citadel":
+            await self.not_in_citadel_response(interaction)
+            return
+
         # Define the health_bar function
         def health_bar(current, max_health):
             bar_length = 20
