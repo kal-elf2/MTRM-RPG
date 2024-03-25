@@ -69,6 +69,8 @@ class BackpackView(discord.ui.View, CommonResponses):
                                self.player_data["stats"],
                                self.player_data["inventory"])
 
+        self.inventory = self.player.inventory
+
 
     def unequip_add_item_type_select(self, action_type):
         # Always present all the options
@@ -130,7 +132,7 @@ class BackpackView(discord.ui.View, CommonResponses):
             return
 
         # Refresh player object from the latest player data
-        await self.refresh_player_from_data()
+        self.player, self.player_data = await refresh_player_from_data(self, interaction)
 
         # Open the select menu for item types for the Equip action
         self.equip_add_item_type_select("equip")
@@ -145,7 +147,7 @@ class BackpackView(discord.ui.View, CommonResponses):
             return
 
         # Refresh player object from the latest player data
-        await self.refresh_player_from_data()
+        self.player, self.player_data = await refresh_player_from_data(self, interaction)
 
         # Open the select menu for item types for the Unequip action
         self.unequip_add_item_type_select("unequip")
@@ -165,7 +167,7 @@ class BackpackView(discord.ui.View, CommonResponses):
             return sorted(items, key=lambda item: (getattr(item, 'zone_level', 0), order.index(item.name)))
 
         # Refresh player object from the latest player data
-        await self.refresh_player_from_data()
+        self.player, self.player_data = await refresh_player_from_data(self, interaction)
 
         order = {
             "items": [
@@ -213,7 +215,7 @@ class BackpackView(discord.ui.View, CommonResponses):
             return
 
         # Refresh player object from the latest player data
-        await self.refresh_player_from_data()
+        self.player, self.player_data = await refresh_player_from_data(self, interaction)
 
         # Defer the response to prevent the interaction from timing out
         await interaction.response.defer()

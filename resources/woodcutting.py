@@ -12,7 +12,7 @@ from resources.materium import Materium
 from stats import ResurrectOptions
 from exemplars.exemplars import Exemplar
 from emojis import get_emoji
-from utils import load_player_data, save_player_data, send_message, CommonResponses
+from utils import load_player_data, save_player_data, send_message, CommonResponses, refresh_player_from_data
 from monsters.monster import create_battle_embed, monster_battle, generate_monster_by_name
 from monsters.battle import BattleOptions, LootOptions, footer_text_for_embed
 from images.urls import generate_urls
@@ -172,8 +172,8 @@ class HarvestButton(discord.ui.View, CommonResponses):
         # Defer the interaction first
         await interaction.response.defer()
 
-        # Refresh the player object from player_data
-        self.refresh_player_object()
+        # Refresh player object from the latest player data
+        self.player, self.player_data = await refresh_player_from_data(self, interaction)
 
         # Use the potion and check if it was used successfully
         potion_used = self.use_potion_logic(self.player, potion_name)
@@ -209,14 +209,6 @@ class HarvestButton(discord.ui.View, CommonResponses):
 
             # Edit the message with the updated embed and view
             await interaction.message.edit(embed=self.embed, view=self)
-
-    def refresh_player_object(self):
-        # Refresh the player object from the player data
-        self.player_data = load_player_data(self.guild_id, self.author_id)
-        # Reinitialize the player object
-        self.player = Exemplar(self.player_data["exemplar"],
-                               self.player_data["stats"],
-                               self.player_data["inventory"])
 
     @staticmethod
     def use_potion_logic(player, potion_name):
@@ -270,8 +262,8 @@ class HarvestButton(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        # Refresh the player object from player_data
-        self.refresh_player_object()
+        # Refresh player object from the latest player data
+        self.player, self.player_data = await refresh_player_from_data(self, interaction)
 
         # Check for battle flag and return if battling
         if self.player_data["location"] == "battle":
@@ -477,8 +469,9 @@ class HarvestButton(discord.ui.View, CommonResponses):
 
         # Monster encounter set in probabilities.py
         if np.random.rand() <= attack_percent and self.player_data["location"] != "battle":
-            # Refresh the player object from player_data
-            self.refresh_player_object()
+
+            # Refresh player object from the latest player data
+            self.player, self.player_data = await refresh_player_from_data(self, interaction)
 
             self.player_data["location"] = "battle"
             save_player_data(self.guild_id, self.author_id, self.player_data)

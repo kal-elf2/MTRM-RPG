@@ -159,7 +159,7 @@ class LootOptions(discord.ui.View, CommonResponses):
         if self.rusty_spork_dropped:
             special_nero_embed = discord.Embed(
                 title="Avast! A 'Mundane' Discovery!",
-                description=f"Ahoy, matey! What's this? Ye've dug up a {get_emoji('Rusty Sprok')}**Rusty Spork**! Ah, such a common find, really—nothing to get yer sails in a twist over. Seems pretty worthless, but come see me at the Jolly Roger anyway. I might be able to scrounge up some Coppers for it.",
+                description=f"Ahoy, matey! What's this? Ye've dug up a {get_emoji('Rusty Spork')}**Rusty Spork**! Ah, such a common find, really—nothing to get yer sails in a twist over. Seems pretty worthless, but come see me at the Jolly Roger anyway. I might be able to scrounge up some {get_emoji('coppers_emoji')}Coppers for it.",
                 color=discord.Color.gold()
             )
             special_nero_embed.set_thumbnail(url=generate_urls("nero", "nero"))
