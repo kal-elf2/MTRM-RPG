@@ -3,7 +3,7 @@ import discord
 from discord import Embed
 import copy
 from exemplars.exemplars import Exemplar
-from utils import load_player_data, update_and_save_player_data, save_player_data, CommonResponses
+from utils import load_player_data, update_and_save_player_data, save_player_data, CommonResponses, refresh_player_from_data
 from images.urls import generate_urls
 from citadel.crafting import Armor
 import io
@@ -69,16 +69,6 @@ class BackpackView(discord.ui.View, CommonResponses):
                                self.player_data["stats"],
                                self.player_data["inventory"])
 
-        self.inventory = self.player.inventory
-
-    async def refresh_player_from_data(self):
-        """Refresh the player object from the latest player data."""
-        self.player_data = load_player_data(self.guild_id, self.author_id)
-        # Assuming Exemplar class can initialize a player object from player_data directly
-        self.player = Exemplar(self.player_data["exemplar"],
-                               self.player_data["stats"],
-                               self.player_data["inventory"])
-        self.inventory = self.player.inventory
 
     def unequip_add_item_type_select(self, action_type):
         # Always present all the options
@@ -114,7 +104,7 @@ class BackpackView(discord.ui.View, CommonResponses):
         if self.item_type_select:
             selected_type = self.item_type_select.values[0]
 
-            items = getattr(self.inventory, selected_type.lower() + "s", [])
+            items = getattr(self.player.inventory, selected_type.lower() + "s", [])
 
             self.item_type_select.options.clear()
 
@@ -125,7 +115,7 @@ class BackpackView(discord.ui.View, CommonResponses):
     async def refresh_view(self, action_type):
         # Load the player's updated data
         self.player_data = load_player_data(self.ctx.guild.id, self.author_id)
-        self.inventory = self.player_data["inventory"]
+        self.player.inventory = self.player_data["inventory"]
 
         if self.original_selection:
             # This will set the dropdown back to the originally selected type
