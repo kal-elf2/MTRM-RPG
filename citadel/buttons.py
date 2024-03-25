@@ -318,6 +318,7 @@ class WheatRow(discord.ui.View, CommonResponses):
         self.ctx = ctx
         self.author_id = author_id
         self.crafting_select = None
+        self.guild_id = ctx.guild.id
 
     @discord.ui.button(label="🌾 Wheat", custom_id="citadel_wheat", style=discord.ButtonStyle.blurple)
     async def wheat(self, button, interaction):
@@ -382,27 +383,15 @@ class WheatRow(discord.ui.View, CommonResponses):
             return
 
         # Refresh player object from the latest player data
-        _, self.player_data = await refresh_player_from_data(self, self.ctx)
+        player, self.player_data = await refresh_player_from_data(self, self.ctx)
 
         # Check if the player is not in the citadel
         if self.player_data["location"] != "citadel":
             await self.not_in_citadel_response(interaction)
             return
 
-        from exemplars.exemplars import Exemplar
-        from utils import load_player_data
         from emojis import get_emoji
         from citadel.heal import HealTentButton
-
-        # Load player data
-        author_id = str(interaction.user.id)
-        guild_id = self.ctx.guild.id
-        player_data = load_player_data(guild_id, author_id)
-        player = Exemplar(
-            player_data["exemplar"],
-            player_data["stats"],
-            player_data["inventory"]
-        )
 
         # Generate health bar
         def health_bar(current, max_health):
@@ -431,7 +420,7 @@ class WheatRow(discord.ui.View, CommonResponses):
         embed.set_image(url=heal_tent_url)
 
         # Create the view and pass the player, player_data, and author_id
-        view = HealTentButton(ctx=self.ctx, player=player, player_data=player_data, author_id=author_id, guild_id=guild_id)
+        view = HealTentButton(ctx=self.ctx, player=player, player_data=self.player_data, author_id=self.author_id, guild_id=self.guild_id)
 
         # Disable the Heal button if the player's health is full
         if is_full_health:
