@@ -154,7 +154,7 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
                 await interaction.followup.send(embed=embed, ephemeral=True)
 
             else:
-                from nero.kraken import HuntKrakenButton, SellAllButton
+                from nero.SellAll import HuntKrakenButton, SellAllButton
                 from nero.supplies import StockCaravelButton
 
                 # Player meets the requirements
