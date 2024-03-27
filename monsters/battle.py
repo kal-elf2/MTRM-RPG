@@ -3,7 +3,7 @@ import discord
 import json
 import random
 from emojis import get_emoji
-from utils import save_player_data, load_player_data, CommonResponses
+from utils import save_player_data, load_player_data, CommonResponses, refresh_player_from_data
 from images.urls import generate_urls
 import asyncio
 
@@ -231,7 +231,7 @@ async def start_battle(ctx, monster, player_data, player, author_id, guild_id, b
 
     # Send the battle options message and store the reference
     battle_options_msg = await ctx.send(
-        view=BattleOptions(ctx, player, battle_context, special_attack_options_view))
+        view=BattleOptions(ctx, player, player_data, battle_context, special_attack_options_view))
     battle_context.battle_options_msg = battle_options_msg
 
     # Now update the special attack options view with the message references
@@ -367,10 +367,11 @@ def use_potion_logic(player, potion_name):
     return False
 
 class BattleOptions(discord.ui.View, CommonResponses):
-    def __init__(self, interaction, player, battle_context, special_attack_options_view):
+    def __init__(self, interaction, player, player_data, battle_context, special_attack_options_view):
         super().__init__(timeout=None)
         self.interaction = interaction
         self.player = player
+        self.player_data = player_data
         self.battle_context = battle_context
         self.special_attack_options_view = special_attack_options_view
         self.author_id = str(interaction.user.id)
@@ -412,6 +413,10 @@ class BattleOptions(discord.ui.View, CommonResponses):
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
+
+        # Refresh player object from the latest player data
+        self.player, self.player_data = await refresh_player_from_data(self, interaction)
+
         await self.use_potion("Stamina Potion", interaction, self.stamina_button)
 
     async def super_stamina_button_callback(self, interaction):
@@ -419,6 +424,10 @@ class BattleOptions(discord.ui.View, CommonResponses):
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
+
+        # Refresh player object from the latest player data
+        self.player, self.player_data = await refresh_player_from_data(self, interaction)
+
         await self.use_potion("Super Stamina Potion", interaction, self.super_stamina_button)
 
     async def health_button_callback(self, interaction):
@@ -426,6 +435,10 @@ class BattleOptions(discord.ui.View, CommonResponses):
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
+
+        # Refresh player object from the latest player data
+        self.player, self.player_data = await refresh_player_from_data(self, interaction)
+
         await self.use_potion("Health Potion", interaction, self.health_button)
 
     async def super_health_button_callback(self, interaction):
@@ -433,6 +446,10 @@ class BattleOptions(discord.ui.View, CommonResponses):
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
+
+        # Refresh player object from the latest player data
+        self.player, self.player_data = await refresh_player_from_data(self, interaction)
+
         await self.use_potion("Super Health Potion", interaction, self.super_health_button)
 
     def is_potion_disabled(self, potion_name):
@@ -444,6 +461,9 @@ class BattleOptions(discord.ui.View, CommonResponses):
         await interaction.response.defer()
 
         potion_used = use_potion_logic(self.player, potion_name)
+
+        # Save any changes to player data
+        save_player_data(self.interaction.guild_id, self.author_id, self.player_data)
 
         if potion_used:
             # Update the button label to show new stack count

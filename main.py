@@ -310,7 +310,7 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
     battle_context.special_attack_message = special_attack_message
 
     # Send the battle options message and store the reference
-    battle_options_msg = await ctx.send(view=BattleOptions(ctx, player, battle_context, special_attack_options_view))
+    battle_options_msg = await ctx.send(view=BattleOptions(ctx, player, player_data, battle_context, special_attack_options_view))
     battle_context.battle_options_msg = battle_options_msg
 
     # Now update the special attack options view with the message references

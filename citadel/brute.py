@@ -46,7 +46,7 @@ async def mega_brute_encounter(player_data, ctx, interaction, guild_id, author_i
     battle_context.special_attack_message = special_attack_message
 
     battle_options_msg = await ctx.send(
-        view=BattleOptions(ctx, player, battle_context, special_attack_options_view))
+        view=BattleOptions(ctx, player, player_data, battle_context, special_attack_options_view))
     battle_context.battle_options_msg = battle_options_msg
 
     special_attack_options_view.battle_options_msg = battle_options_msg

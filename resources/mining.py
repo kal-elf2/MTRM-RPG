@@ -153,6 +153,9 @@ class MineButton(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
+        # Refresh player object from the latest player data
+        self.player, self.player_data = await refresh_player_from_data(self, interaction)
+
         await self.use_potion("Stamina Potion", interaction, self.stamina_button)
 
     async def super_stamina_potion_callback(self, interaction):
@@ -160,6 +163,9 @@ class MineButton(discord.ui.View, CommonResponses):
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
+
+        # Refresh player object from the latest player data
+        self.player, self.player_data = await refresh_player_from_data(self, interaction)
 
         await self.use_potion("Super Stamina Potion", interaction, self.super_stamina_button)
 
@@ -174,16 +180,9 @@ class MineButton(discord.ui.View, CommonResponses):
         potion_used = self.use_potion_logic(self.player, potion_name)
 
         if potion_used:
-            player_id = str(interaction.user.id)
 
             # Update player_data with the new stamina value
             self.player_data["stats"]["stamina"] = self.player.stats.stamina
-
-            # Decrement the potion stack in the player's inventory
-            for potion in self.player_data["inventory"].potions:
-                if potion.name == potion_name:
-                    potion.stack -= 1
-                    break
 
             # Save any changes to player data
             save_player_data(self.guild_id, self.author_id, self.player_data)
@@ -499,7 +498,7 @@ class MineButton(discord.ui.View, CommonResponses):
             battle_context.special_attack_message = special_attack_message
 
             battle_options_msg = await self.ctx.send(
-                view=BattleOptions(self.ctx, self.player, battle_context, special_attack_options_view))
+                view=BattleOptions(self.ctx, self.player, self.player_data, battle_context, special_attack_options_view))
             battle_context.battle_options_msg = battle_options_msg
 
             special_attack_options_view.battle_options_msg = battle_options_msg
