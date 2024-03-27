@@ -1,5 +1,5 @@
 import discord
-from utils import load_player_data, save_player_data, send_message, CommonResponses
+from utils import load_player_data, save_player_data, send_message, CommonResponses, refresh_player_from_data
 from exemplars.exemplars import Exemplar
 from images.urls import generate_urls
 from emojis import get_emoji
@@ -339,10 +339,14 @@ class FireButton(discord.ui.Button, CommonResponses):
 
             existing_embed.title = f"She went back under!"
 
-            # Modify the existing embed description with the new response
-            existing_embed.description = f"{response}\n\n{get_emoji('Cannonball')} **{format(self.player_data['shipwreck'].get('Cannonball', 0), ',d')} Cannonballs left**"
+            cannonball_count = self.player_data['shipwreck'].get('Cannonball', 0)
+            cannonball_text = "Cannonball" if cannonball_count == 1 else "Cannonballs"
 
-            existing_embed.clear_fields()  # Clear existing fields to avoid duplicating them
+            # Modify the existing embed description with the new response, dynamically adjusting the cannonball text
+            existing_embed.description = f"{response}\n\n{get_emoji('Cannonball')} **{format(cannonball_count, ',d')} {cannonball_text} left**"
+
+            # Clear existing fields to avoid duplicating them
+            existing_embed.clear_fields()
 
             # Kraken's health formatted with commas
             kraken_current_health_formatted = f"{self.kraken.health:,}"
@@ -354,6 +358,9 @@ class FireButton(discord.ui.Button, CommonResponses):
                                      value=f"{get_emoji('heart_emoji')} {kraken_current_health_formatted}/{kraken_max_health_formatted}\n{kraken_health_bar}",
                                      inline=False)
 
+            # Update the player data and save
+            save_player_data(interaction.guild_id, self.author_id, self.player_data)
+
             # Edit the original message with the updated embed
             await self.battle_commands.battle_message.edit(embed=existing_embed)
 
@@ -364,7 +371,45 @@ class FireButton(discord.ui.Button, CommonResponses):
                 # Handle victory conditions, if applicable
                 pass
         else:
-            await interaction.response.send_message("Ye have no cannonballs left in the shipwreck!", ephemeral=True)
+            # Player has run out of cannonballs
+            await self.handle_no_cannonballs(interaction)
+
+    async def handle_no_cannonballs(self, interaction: discord.Interaction):
+        # Refresh player object from the latest player data
+        self.player, self.player_data = await refresh_player_from_data(self, interaction)
+
+        if self.player.stats.zone_level < 5:
+            # Advance to the next zone
+            self.player.stats.zone_level += 1
+            self.player_data["stats"]["zone_level"] = self.player.stats.zone_level
+
+            message_title = "We Had to Flee!"
+            message_description = (
+                "Arr, we ran out of cannonballs and had no chance to take her down. "
+                "Luckily this citadel was here, we narrowly escaped. "
+                "I'll get started on finding a bigger ship, you start training and looting. "
+                "Be careful though, monsters here are a lot stronger than the last zone we were in..."
+            )
+        else:
+            # Stay in zone 5
+            message_title = "A Narrow Escape!"
+            message_description = (
+                "We barely escaped... I could tell we weren't going to make it so I turned her around "
+                "before we got lost to the sea... try bringing more cannonballs next time. "
+                "I'll start repairing the ship. Come back when yer ready."
+            )
+
+        # Update the player data and save
+        save_player_data(interaction.guild_id, self.author_id, self.player_data)
+
+        # Send Nero's message
+        embed = discord.Embed(
+            title=message_title,
+            description=message_description,
+            color=discord.Color.dark_gold()
+        )
+        embed.set_thumbnail(url=generate_urls("nero", "confused"))
+        await interaction.followup.send(embed=embed, ephemeral=True)
 
 class SteeringView(discord.ui.View):
     def __init__(self, author_id, battle_commands, ctx, player_data):

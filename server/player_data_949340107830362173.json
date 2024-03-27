@@ -2,26 +2,26 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "health": 238,
+            "health": 843,
             "max_health": 1075,
             "strength": 599,
-            "stamina": 467,
+            "stamina": 495,
             "max_stamina": 503,
             "attack": 300,
-            "damage": 5,
+            "damage": 0,
             "defense": 203,
             "armor": 11,
             "combat_level": 99,
-            "combat_experience": 2451210,
+            "combat_experience": 2451300,
             "mining_level": 99,
-            "mining_experience": 2450211,
+            "mining_experience": 2450491,
             "woodcutting_level": 99,
             "woodcutting_experience": 2450211,
-            "zone_level": 5,
+            "zone_level": 2,
             "damage_taken": 0
         },
         "inventory": {
-            "coppers": 204214,
+            "coppers": 184275,
             "items": [
                 {
                     "name": "Charcoal",
@@ -39,19 +39,13 @@
                     "name": "Steel",
                     "description": null,
                     "value": null,
-                    "stack": 999
+                    "stack": 989
                 },
                 {
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
                     "stack": 21998
-                },
-                {
-                    "name": "Cannonball",
-                    "description": null,
-                    "value": null,
-                    "stack": 1000
                 },
                 {
                     "name": "Pole",
@@ -63,7 +57,7 @@
                     "name": "Thick Pole",
                     "description": null,
                     "value": null,
-                    "stack": 1000
+                    "stack": 990
                 },
                 {
                     "name": "Pine Strip",
@@ -87,19 +81,19 @@
                     "name": "Poplar Strip",
                     "description": null,
                     "value": null,
-                    "stack": 1000
+                    "stack": 890
                 },
                 {
                     "name": "Wheat",
                     "description": null,
                     "value": null,
-                    "stack": 1000
+                    "stack": 1005
                 },
                 {
                     "name": "Flax",
                     "description": null,
                     "value": null,
-                    "stack": 996
+                    "stack": 1011
                 },
                 {
                     "name": "Linen",
@@ -129,7 +123,7 @@
                     "name": "Rabbit Body",
                     "description": "A furry rabbit body, warm to the touch. Can be used for citadel soft armors.",
                     "value": 10,
-                    "stack": 998
+                    "stack": 1003
                 },
                 {
                     "name": "Rabbit Meat",
@@ -141,49 +135,49 @@
                     "name": "Deer Parts",
                     "description": "Various parts of a deer. Some are useful for making tools and weapons.",
                     "value": 20,
-                    "stack": 2994
+                    "stack": 2996
                 },
                 {
                     "name": "Deer Skin",
                     "description": "Tough deer skin. Can be used for citadel sturdy armors.",
                     "value": 30,
-                    "stack": 3999
+                    "stack": 3986
                 },
                 {
                     "name": "Wolf Skin",
                     "description": "A skin of a wild wolf. Known for its durability and strength.",
                     "value": 50,
-                    "stack": 999
+                    "stack": 996
                 },
                 {
                     "name": "Glowing Essence",
                     "description": "An ethereal essence that glows faintly. Used in powerful magical rituals and citadel.",
                     "value": 200,
-                    "stack": 1000
+                    "stack": 999
                 },
                 {
                     "name": "Goblin Crown",
                     "description": "A powerful relic obtained from the Goblin Mother. Used to create powerful Charms.",
                     "value": 5000,
-                    "stack": 1000
+                    "stack": 994
                 },
                 {
                     "name": "Leather",
                     "description": null,
                     "value": null,
-                    "stack": 997
+                    "stack": 1013
                 },
                 {
                     "name": "Tough Leather",
                     "description": null,
                     "value": null,
-                    "stack": 997
+                    "stack": 1000
                 },
                 {
                     "name": "Leather Straps",
                     "description": null,
                     "value": null,
-                    "stack": 1000
+                    "stack": 995
                 },
                 {
                     "name": "Tough Leather Straps",
@@ -195,13 +189,13 @@
                     "name": "Rusty Spork",
                     "description": "A rusty and useless trinket",
                     "value": 100000,
-                    "stack": 1000
+                    "stack": 1002
                 }
             ],
             "trees": [
                 {
                     "name": "Pine",
-                    "stack": 1993
+                    "stack": 1988
                 },
                 {
                     "name": "Yew",
@@ -220,12 +214,12 @@
                 {
                     "name": "Ranarr",
                     "value": 25,
-                    "stack": 2004
+                    "stack": 2005
                 },
                 {
                     "name": "Spirit Weed",
                     "value": 25,
-                    "stack": 4001
+                    "stack": 4003
                 },
                 {
                     "name": "Snapdragon",
@@ -235,13 +229,13 @@
                 {
                     "name": "Bloodweed",
                     "value": 350,
-                    "stack": 1000
+                    "stack": 1001
                 }
             ],
             "ore": [
                 {
                     "name": "Iron Ore",
-                    "stack": 999
+                    "stack": 1013
                 },
                 {
                     "name": "Coal",
@@ -259,7 +253,7 @@
                     "effect_value": 50,
                     "value": 10,
                     "description": "Restores 50 stamina",
-                    "stack": 5000
+                    "stack": 4966
                 },
                 {
                     "name": "Health Potion",
@@ -267,7 +261,7 @@
                     "effect_value": 50,
                     "value": 10,
                     "description": "Restores 50 health",
-                    "stack": 2000
+                    "stack": 2001
                 },
                 {
                     "name": "Super Stamina Potion",
@@ -275,7 +269,7 @@
                     "effect_value": 250,
                     "value": 20,
                     "description": "Restores 250 stamina",
-                    "stack": 7000
+                    "stack": 1002
                 },
                 {
                     "name": "Super Health Potion",
@@ -301,15 +295,26 @@
                 "boots": null,
                 "gloves": null
             },
-            "weapons": [],
+            "weapons": [
+                {
+                    "name": "Club",
+                    "description": null,
+                    "value": 45,
+                    "stack": 1,
+                    "wtype": "Hammer",
+                    "attack_modifier": 5,
+                    "special_attack": 1,
+                    "zone_level": 5
+                }
+            ],
             "equipped_weapon": {
-                "name": "Club",
+                "name": "Voltaic Sword",
                 "description": null,
-                "value": 45,
+                "value": 190,
                 "stack": 1,
-                "wtype": "Hammer",
-                "attack_modifier": 5,
-                "special_attack": 1,
+                "wtype": "Sword",
+                "attack_modifier": 60,
+                "special_attack": 4,
                 "zone_level": 5
             },
             "shields": [],
@@ -321,27 +326,25 @@
                 "defense_modifier": 5,
                 "zone_level": 5
             },
-            "charms": [
-                {
-                    "name": "Loothaven",
-                    "description": "Gives a 15% chance to **double** your monster loot *and* drop rates of bonus loot while wearing",
-                    "value": 25000,
-                    "stack": 1
-                }
-            ],
-            "equipped_charm": null,
-            "materium": 108
+            "charms": [],
+            "equipped_charm": {
+                "name": "Loothaven",
+                "description": "Gives a 15% chance to **double** your monster loot *and* drop rates of bonus loot while wearing",
+                "value": 25000,
+                "stack": 1
+            },
+            "materium": 110
         },
         "dice_stats": {
-            "total_games": 2,
-            "games_won": 1,
-            "games_lost": 2,
-            "coppers_won": -13100
+            "total_games": 6,
+            "games_won": 2,
+            "games_lost": 4,
+            "coppers_won": -33100
         },
         "monster_kills": {
-            "Rabbit": 3654556,
+            "Rabbit": 3654563,
             "Deer": 13654553,
-            "Buck": 13654553,
+            "Buck": 13654554,
             "Wolf": 36545514,
             "Goblin": 36545513,
             "Goblin Hunter": 36545510,
@@ -350,9 +353,9 @@
             "Mother": 13654552
         },
         "shipwreck": {
-            "Poplar Strip": 25,
-            "Cannonball": 25
+            "Poplar Strip": 130,
+            "Cannonball": 0
         },
-        "location": null
+        "location": "kraken"
     }
 }
