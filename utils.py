@@ -148,7 +148,7 @@ class CommonResponses:
         embed = discord.Embed(
             title="Captain Ner0's Orders",
             description=(
-                f"Ye can't be fiddlin' with other tasks whilst we're battlin' the Kraken, {interaction.user.mention}! Keep yer eyes on the horizon and yer hands ready for battle!"),
+                f"Ye can't be fiddlin' with other tasks whilst we're battlin' the Kraken, {interaction.user.mention}! Keep yer eyes on the horizon and yer hands ready for battle!\n\n### Type `/kraken` when yer ready to enter dangerous waters..."),
             color=discord.Color.dark_gold()
         )
         embed.set_thumbnail(url=generate_urls("nero", "kraken"))

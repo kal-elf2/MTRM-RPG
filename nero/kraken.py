@@ -313,7 +313,7 @@ class FireButton(discord.ui.Button, CommonResponses):
 
             # Check if the ship is aiming in the correct general direction
             if self.battle_commands.ship_direction != self.battle_commands.kraken_direction:
-                response = f"Miss! What were ye aimin' at, {interaction.user.mention}? Ye weren't even pointing the right direction!\n\nPut down the rum and put yer good eye **on the compass**!"
+                response = f"What were ye aimin' at, {interaction.user.mention}?\nYe weren't even pointing the right direction!\n\nPut down the rum and put yer good eye **on the compass**!"
             else:
                 hit, distance_difference = check_hit(self.battle_commands.kraken_distance,
                                                      self.battle_commands.cannon_angle)
@@ -378,26 +378,34 @@ class FireButton(discord.ui.Button, CommonResponses):
         # Refresh player object from the latest player data
         self.player, self.player_data = await refresh_player_from_data(self, interaction)
 
-        if self.player.stats.zone_level < 5:
+        citadel_names = ["Sun", "Moon", "Earth", "Wind", "Stars"]
+        zone_level = self.player.stats.zone_level
+
+        if zone_level < 5:
             # Advance to the next zone
             self.player.stats.zone_level += 1
             self.player_data["stats"]["zone_level"] = self.player.stats.zone_level
+            new_zone_index = self.player.stats.zone_level - 1  # Adjust for 0-based indexing
 
             message_title = "We Had to Flee!"
             message_description = (
-                "Arr, we ran out of cannonballs and had no chance to take her down. "
-                "Luckily this citadel was here, we narrowly escaped. "
-                "I'll get started on finding a bigger ship, you start training and looting. "
-                "Be careful though, monsters here are a lot stronger than the last zone we were in..."
+                f"Arrr, {interaction.user.mention}! We were bone dry on cannonballs, and that monstrous Kraken nearly had us in its clutches. "
+                "But fear not! I steered us to this citadel just in the nick o' time. "
+                "I'll be seeking out a grander vessel to hold more powder and plunder. Ye best start honing yer skills and pillaging for loot. "
+                "Mark me words, the beasts lurking in these waters be far deadlier than any we've crossed swords with before. Keep a weather eye on the horizon and ready yer cutlass..."
             )
         else:
             # Stay in zone 5
+            new_zone_index = zone_level - 1  # Adjust for 0-based indexing
             message_title = "A Narrow Escape!"
             message_description = (
                 "We barely escaped... I could tell we weren't going to make it so I turned her around "
                 "before we got lost to the sea... try bringing more cannonballs next time. "
                 "I'll start repairing the ship. Come back when yer ready."
             )
+
+        # Determine citadel name based on the new zone level
+        citadel_name = citadel_names[new_zone_index]
 
         # Update the player data and save
         save_player_data(interaction.guild_id, self.author_id, self.player_data)
@@ -409,7 +417,9 @@ class FireButton(discord.ui.Button, CommonResponses):
             color=discord.Color.dark_gold()
         )
         embed.set_thumbnail(url=generate_urls("nero", "confused"))
-        await interaction.followup.send(embed=embed, ephemeral=True)
+        # Set the image to the citadel they are now in
+        embed.set_image(url=generate_urls("Citadel", citadel_name))
+        await interaction.followup.send(embed=embed, ephemeral=False)
 
 class SteeringView(discord.ui.View):
     def __init__(self, author_id, battle_commands, ctx, player_data):

@@ -1,41 +1,26 @@
 import discord
-from utils import load_player_data, save_player_data, CommonResponses
-from exemplars.exemplars import Exemplar
+from utils import save_player_data, CommonResponses, refresh_player_from_data
 from images.urls import generate_urls
 from emojis import get_emoji
 from nero.kraken import HuntKrakenButton
 
 class ConfirmSellView(discord.ui.View, CommonResponses):
-    def __init__(self, author_id, guild_id, player_data):
+    def __init__(self, author_id, guild_id, player_data, total_coppers_earned):
         super().__init__()
         self.author_id = author_id
         self.guild_id = guild_id
         self.player_data = player_data
+        self.total_coppers_earned = total_coppers_earned
 
     @discord.ui.button(label="Yes", style=discord.ButtonStyle.blurple, custom_id="confirm_sell_yes")
     async def confirm_sell(self, button: discord.ui.Button, interaction: discord.Interaction):
         if str(interaction.user.id) != self.author_id:
             return await self.nero_unauthorized_user_response(interaction)
 
-        player_data = load_player_data(self.guild_id, self.author_id)
-        player = Exemplar(player_data["exemplar"], player_data["stats"], player_data["inventory"])
-        sellable_categories = ["weapons", "armors", "shields", "charms", "potions"]
-        total_coppers_earned = 0
-
-        # Iterate over each category and remove items, adding their value to total coppers earned
-        for category_name in sellable_categories:
-            category_items = getattr(player.inventory, category_name, [])
-            for item in list(category_items):
-                total_coppers_earned += item.value * item.stack
-                category_items.remove(item)
-
-        player.inventory.coppers += total_coppers_earned
-        save_player_data(self.guild_id, self.author_id, player_data)
-
         # Provide feedback to the player
         sell_feedback_embed = discord.Embed(
             title="Ye Sold Yer Booty!",
-            description=f"All loot sold for {total_coppers_earned:,} {get_emoji('coppers_emoji')}\n\n***Ye be ready to face the Kraken!***",
+            description=f"All loot sold for {self.total_coppers_earned:,} {get_emoji('coppers_emoji')}\n\n***Ye be ready to face the Kraken!***",
             color=discord.Color.dark_gold()
         )
         sell_feedback_embed.set_thumbnail(url=generate_urls("nero", "kraken"))
@@ -50,7 +35,7 @@ class ConfirmSellView(discord.ui.View, CommonResponses):
 
         cancel_embed = discord.Embed(
             title="Change of heart, matey?",
-            description="Arr, looks like ye had second thoughts. Come back and see me when ye change yer mind.",
+            description="Arr, looks like ye havin' second thoughts... Come back and see me when ye change yer mind.",
             color=discord.Color.dark_gold()
         )
         cancel_embed.set_thumbnail(url=generate_urls("nero", "confused"))
@@ -67,12 +52,28 @@ class SellAllButton(discord.ui.Button, CommonResponses):
         if str(interaction.user.id) != self.author_id:
             return await self.nero_unauthorized_user_response(interaction)
 
+        # Refresh player object from the latest player data
+        player, self.player_data = await refresh_player_from_data(self, interaction)
+
+        sellable_categories = ["weapons", "armors", "shields", "charms", "potions"]
+        total_coppers_earned = 0
+
+        # Iterate over each category and remove items, adding their value to total coppers earned
+        for category_name in sellable_categories:
+            category_items = getattr(player.inventory, category_name, [])
+            for item in list(category_items):
+                total_coppers_earned += item.value * item.stack
+                category_items.remove(item)
+
+        player.inventory.coppers += total_coppers_earned
+        save_player_data(self.guild_id, self.author_id, self.player_data)
+
         # Confirmation message
         confirm_embed = discord.Embed(
             title="Confirm Sale",
-            description="Are ye sure ye want to sell all yer loot?\n\n***There ain't no going back after this, savvy?***",
+            description=f"Are ye sure ye want to sell all yer loot for {total_coppers_earned:,} {get_emoji('coppers_emoji')}?\n\n***There ain't no going back after this, savvy?***",
             color=discord.Color.dark_gold()
         )
         confirm_embed.set_thumbnail(url=generate_urls("nero", "gun"))
-        confirm_view = ConfirmSellView(self.author_id, self.guild_id, self.player_data)
+        confirm_view = ConfirmSellView(self.author_id, self.guild_id, self.player_data, total_coppers_earned)
         await interaction.response.edit_message(embed=confirm_embed, view=confirm_view)

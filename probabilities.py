@@ -43,6 +43,7 @@ death_penalty = 0.05 # 5% stat reduction upon death
 CRITICAL_HIT_CHANCE = 0.10  # 10% chance of a critical hit
 CRITICAL_HIT_MULTIPLIER = 1.5  # 1.5 times the damage for a critical hit
 base_run_chance = 0.25 # Base run chance
+base_zone_supply_requirement = 10 # How many cannonballs and poplar strips required * zone level
 
 # HP per heal
 tent_health = 25
