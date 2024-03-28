@@ -71,9 +71,9 @@ class SellAllButton(discord.ui.Button, CommonResponses):
         # Confirmation message
         confirm_embed = discord.Embed(
             title="Confirm Sale",
-            description=f"Are ye sure ye want to sell all yer loot for {total_coppers_earned:,} {get_emoji('coppers_emoji')}?\n\n***There ain't no going back after this, savvy?***",
+            description=f"Are ye sure ye want to sell all yer loot for {total_coppers_earned:,}{get_emoji('coppers_emoji')}?\n\n***There ain't no going back after this, savvy?***",
             color=discord.Color.dark_gold()
         )
-        confirm_embed.set_thumbnail(url=generate_urls("nero", "gun"))
+        confirm_embed.set_thumbnail(url=generate_urls("nero", "shop"))
         confirm_view = ConfirmSellView(self.author_id, self.guild_id, self.player_data, total_coppers_earned)
         await interaction.response.edit_message(embed=confirm_embed, view=confirm_view)

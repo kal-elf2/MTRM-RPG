@@ -17,7 +17,7 @@
             "mining_experience": 2450491,
             "woodcutting_level": 99,
             "woodcutting_experience": 2450211,
-            "zone_level": 2,
+            "zone_level": 1,
             "damage_taken": 0
         },
         "inventory": {
@@ -39,13 +39,13 @@
                     "name": "Steel",
                     "description": null,
                     "value": null,
-                    "stack": 989
+                    "stack": 973
                 },
                 {
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 21998
+                    "stack": 21974
                 },
                 {
                     "name": "Pole",
@@ -81,7 +81,7 @@
                     "name": "Poplar Strip",
                     "description": null,
                     "value": null,
-                    "stack": 890
+                    "stack": 880
                 },
                 {
                     "name": "Wheat",
@@ -190,6 +190,12 @@
                     "description": "A rusty and useless trinket",
                     "value": 100000,
                     "stack": 1002
+                },
+                {
+                    "name": "Cannonball",
+                    "description": null,
+                    "value": null,
+                    "stack": 782
                 }
             ],
             "trees": [
@@ -243,7 +249,7 @@
                 },
                 {
                     "name": "Carbon",
-                    "stack": 999
+                    "stack": 983
                 }
             ],
             "potions": [
@@ -353,9 +359,9 @@
             "Mother": 13654552
         },
         "shipwreck": {
-            "Poplar Strip": 130,
-            "Cannonball": 0
+            "Poplar Strip": 10,
+            "Cannonball": 10
         },
-        "location": "kraken"
+        "location": "citadel"
     }
 }

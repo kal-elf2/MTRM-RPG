@@ -1,5 +1,5 @@
 import discord
-from utils import load_player_data, save_player_data, send_message, CommonResponses, refresh_player_from_data
+from utils import save_player_data, load_player_data, send_message, CommonResponses, refresh_player_from_data
 from exemplars.exemplars import Exemplar
 from images.urls import generate_urls
 from emojis import get_emoji
@@ -167,7 +167,7 @@ class BattleCommands(commands.Cog):
     async def move_kraken(self, player_data):
         """Randomly moves the Kraken and notifies players of its new position."""
         self.kraken_visible = False
-        await asyncio.sleep(randint(5, 12))  # Kraken temporarily disappears
+        await asyncio.sleep(randint(5, 9))  # Kraken temporarily disappears
         await self.set_kraken_direction()  # Randomly set the new direction and distance for the Kraken
         self.kraken_visible = True
 
@@ -179,6 +179,7 @@ class BattleCommands(commands.Cog):
     async def kraken(self, ctx):
         player_data = load_player_data(ctx.guild_id, ctx.author.id)
         player = Exemplar(player_data["exemplar"], player_data["stats"], player_data["inventory"])
+        author_id = str(ctx.author.id)
 
         # Check if player's location is 'kraken'
         if player_data['location'] != 'kraken':
@@ -191,6 +192,9 @@ class BattleCommands(commands.Cog):
                 url=generate_urls("nero", "confused"))
             await ctx.respond(embed=embed, ephemeral=True)
             return
+
+        player_data["location"] = "kraken_battle"
+        save_player_data(ctx.guild_id, author_id, player_data)
 
         await ctx.respond(f"{ctx.author.mention} sails into Kraken-infested waters...")
 
@@ -318,7 +322,7 @@ class FireButton(discord.ui.Button, CommonResponses):
                 hit, distance_difference = check_hit(self.battle_commands.kraken_distance,
                                                      self.battle_commands.cannon_angle)
                 if hit:
-                    damage = calculate_damage(distance_difference)
+                    damage = calculate_damage(distance_difference, self.player.stats.zone_level)
                     self.battle_commands.kraken.take_damage(damage)
                     damage_message = f"\n\n**Ye dealt {damage} damage to the Kraken!**"
                     if damage > 300:
@@ -379,33 +383,50 @@ class FireButton(discord.ui.Button, CommonResponses):
         self.player, self.player_data = await refresh_player_from_data(self, interaction)
 
         citadel_names = ["Sun", "Moon", "Earth", "Wind", "Stars"]
-        zone_level = self.player.stats.zone_level
 
-        if zone_level < 5:
+
+        # Colors for each zone
+        color_mapping = {
+            1: 0x969696,
+            2: 0x15ce00,
+            3: 0x0096f1,
+            4: 0x9900ff,
+            5: 0xfebd0d
+        }
+
+
+        if self.player.stats.zone_level < 5:
             # Advance to the next zone
             self.player.stats.zone_level += 1
             self.player_data["stats"]["zone_level"] = self.player.stats.zone_level
+
+            embed_color = color_mapping.get(self.player.stats.zone_level)
             new_zone_index = self.player.stats.zone_level - 1  # Adjust for 0-based indexing
+
+            # Determine citadel name based on the new zone level
+            citadel_name = citadel_names[new_zone_index]
 
             message_title = "We Had to Flee!"
             message_description = (
-                f"Arrr, {interaction.user.mention}! We were bone dry on cannonballs, and that monstrous Kraken nearly had us in its clutches. "
-                "But fear not! I steered us to this citadel just in the nick o' time. "
+                f"Arrr, {interaction.user.mention}! We didn't bring enough cannonballs! \n\n"
+                "That monstrous Kraken nearly had us in its clutches, but I steered us to this citadel just in the nick o' time.\n\n"
                 "I'll be seeking out a grander vessel to hold more powder and plunder. Ye best start honing yer skills and pillaging for loot. "
                 "Mark me words, the beasts lurking in these waters be far deadlier than any we've crossed swords with before. Keep a weather eye on the horizon and ready yer cutlass..."
+                f"\n\n### Welcome to The Citadel of the {citadel_name}."
             )
         else:
             # Stay in zone 5
-            new_zone_index = zone_level - 1  # Adjust for 0-based indexing
             message_title = "A Narrow Escape!"
             message_description = (
-                "We barely escaped... I could tell we weren't going to make it so I turned her around "
-                "before we got lost to the sea... try bringing more cannonballs next time. "
-                "I'll start repairing the ship. Come back when yer ready."
+                "We barely escaped... I could tell we weren't going to make it so I turned her back around "
+                "before we got lost to the sea... try bringing more cannonballs next time.\n\n"
+                "I'll start repairing the ship. Come back and see me at the **Jolly Roger** when yer ready."
             )
+            embed_color = color_mapping.get(self.player.stats.zone_level)
+            new_zone_index = self.player.stats.zone_level - 1  # Adjust for 0-based indexing
+            citadel_name = citadel_names[new_zone_index]
 
-        # Determine citadel name based on the new zone level
-        citadel_name = citadel_names[new_zone_index]
+        #self.player_data["location"] = None
 
         # Update the player data and save
         save_player_data(interaction.guild_id, self.author_id, self.player_data)
@@ -414,9 +435,8 @@ class FireButton(discord.ui.Button, CommonResponses):
         embed = discord.Embed(
             title=message_title,
             description=message_description,
-            color=discord.Color.dark_gold()
+            color=embed_color
         )
-        embed.set_thumbnail(url=generate_urls("nero", "confused"))
         # Set the image to the citadel they are now in
         embed.set_image(url=generate_urls("Citadel", citadel_name))
         await interaction.followup.send(embed=embed, ephemeral=False)
@@ -447,12 +467,13 @@ class AimingView(discord.ui.View):
         self.player = player
         self.player_data = player_data
         self.kraken = kraken
-        self.add_item(AimButton(label="⬆️", author_id=self.author_id, battle_commands=battle_commands, angle_change=2.5,
-                                ctx=self.ctx, player_data=player_data))
+        self.add_item(AimButton(label="⬇️", author_id=self.author_id, battle_commands=battle_commands, angle_change=-2.5,
+                      ctx=self.ctx, player_data=player_data))
         self.add_item(FireButton(emoji=get_emoji('Cannonball'), author_id=self.author_id, kraken=self.kraken, battle_commands=battle_commands,
                        player=self.player, player_data=player_data, ctx=self.ctx))
-        self.add_item(AimButton(label="⬇️", author_id=self.author_id, battle_commands=battle_commands, angle_change=-2.5,
+        self.add_item(AimButton(label="⬆️", author_id=self.author_id, battle_commands=battle_commands, angle_change=2.5,
                                 ctx=self.ctx, player_data=player_data))
+
 
 # Helper function to calculate the projectile range
 def calculate_range(angle_degrees, velocity=100):
@@ -479,9 +500,9 @@ def create_monster_health_bar(current, max_health):
     empty_symbols = '◻' * (bar_length - filled_length)
     return filled_symbols + empty_symbols
 
-def calculate_damage(distance_difference):
+def calculate_damage(distance_difference, zone_level):
     accuracy = max(0, 1 - abs(distance_difference) / 100)  # Scaling factor
-    return round(100 + (accuracy * 250))  # Min damage + scaled portion of max additional damage
+    return round(100 + (accuracy * 250)) * round(1.1**zone_level) # Min damage + scaled portion of max additional damage
 
 
 class Kraken:
