@@ -543,7 +543,7 @@ class TravelRow(discord.ui.View, CommonResponses):
             embed = discord.Embed(title="Captain Ner0",
                                   description="**The coast is clear, me hearties!** Time to plunder and claim our fortunes! Onward!",
                                   color=discord.Color.dark_gold())
-            embed.set_thumbnail(url=generate_urls("nero", "gun"))
+            embed.set_thumbnail(url=generate_urls("nero", "nero"))
             await interaction.followup.send(embed=embed, ephemeral = True)
 
         player_data["location"] = None

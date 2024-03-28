@@ -408,11 +408,11 @@ class FireButton(discord.ui.Button, CommonResponses):
 
             message_title = "We Had to Flee!"
             message_description = (
-                f"Arrr, {interaction.user.mention}! We didn't bring enough cannonballs! \n\n"
+                f"Arrr, {interaction.user.mention}! Ye ran out of cannonballs! \n\n"
                 "That monstrous Kraken nearly had us in its clutches, but I steered us to this citadel just in the nick o' time.\n\n"
                 "I'll be seeking out a grander vessel to hold more powder and plunder. Ye best start honing yer skills and pillaging for loot. "
                 "Mark me words, the beasts lurking in these waters be far deadlier than any we've crossed swords with before. Keep a weather eye on the horizon and ready yer cutlass..."
-                f"\n\n### Welcome to The Citadel of the {citadel_name}."
+                f"\n\n### Welcome to Zone {self.player.stats.zone_level}:\n## The Citadel of the {citadel_name}"
             )
         else:
             # Stay in zone 5
@@ -426,7 +426,7 @@ class FireButton(discord.ui.Button, CommonResponses):
             new_zone_index = self.player.stats.zone_level - 1  # Adjust for 0-based indexing
             citadel_name = citadel_names[new_zone_index]
 
-        #self.player_data["location"] = None
+        self.player_data["location"] = None
 
         # Update the player data and save
         save_player_data(interaction.guild_id, self.author_id, self.player_data)
