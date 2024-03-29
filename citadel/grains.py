@@ -21,7 +21,7 @@ class HarvestButton(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        player, self.player_data = await refresh_player_from_data(self, self.ctx)
+        player, self.player_data = await refresh_player_from_data(self.ctx)
 
         if self.player_data["location"] != "citadel":
             await self.not_in_citadel_response(interaction)

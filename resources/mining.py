@@ -154,7 +154,7 @@ class MineButton(discord.ui.View, CommonResponses):
             return
 
         # Refresh player object from the latest player data
-        self.player, self.player_data = await refresh_player_from_data(self, interaction)
+        self.player, self.player_data = await refresh_player_from_data(interaction)
 
         await self.use_potion("Stamina Potion", interaction, self.stamina_button)
 
@@ -165,7 +165,7 @@ class MineButton(discord.ui.View, CommonResponses):
             return
 
         # Refresh player object from the latest player data
-        self.player, self.player_data = await refresh_player_from_data(self, interaction)
+        self.player, self.player_data = await refresh_player_from_data(interaction)
 
         await self.use_potion("Super Stamina Potion", interaction, self.super_stamina_button)
 
@@ -174,7 +174,7 @@ class MineButton(discord.ui.View, CommonResponses):
         await interaction.response.defer()
 
         # Refresh player object from the latest player data
-        self.player, self.player_data = await refresh_player_from_data(self, interaction)
+        self.player, self.player_data = await refresh_player_from_data(interaction)
 
         # Use the potion and check if it was used successfully
         potion_used = self.use_potion_logic(self.player, potion_name)
@@ -258,7 +258,7 @@ class MineButton(discord.ui.View, CommonResponses):
             return
 
         # Refresh player object from the latest player data
-        self.player, self.player_data = await refresh_player_from_data(self, interaction)
+        self.player, self.player_data = await refresh_player_from_data(interaction)
 
         # Check for battle flag and return if battling
         if self.player_data["location"] == "battle":
@@ -464,7 +464,7 @@ class MineButton(discord.ui.View, CommonResponses):
         # Monster encounter set in probabilities.py
         if np.random.rand() <= attack_percent and self.player_data["location"] != "battle":
             # Refresh player object from the latest player data
-            self.player, self.player_data = await refresh_player_from_data(self, interaction)
+            self.player, self.player_data = await refresh_player_from_data(interaction)
 
             self.player_data["location"] = "battle"
             save_player_data(self.guild_id, self.author_id, self.player_data)

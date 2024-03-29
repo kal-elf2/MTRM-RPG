@@ -3,7 +3,7 @@ import json
 import discord
 from discord.ext import commands
 from discord.commands import Option
-from utils import load_player_data, save_player_data, send_message, CommonResponses
+from utils import load_player_data, save_player_data, send_message, CommonResponses, refresh_player_from_data
 from exemplars.exemplars import Exemplar
 from monsters.monster import generate_monster_list, generate_monster_by_name, monster_battle, create_battle_embed, footer_text_for_embed
 from discord import Embed
@@ -258,10 +258,10 @@ def generate_battle_actions():
 
 @bot.slash_command(description="Visit the cemetery.")
 async def cemetery(ctx):
-    guild_id = ctx.guild.id
     author_id = str(ctx.author.id)
 
-    player_data = load_player_data(guild_id, author_id)
+    # Refresh player object from the latest player data
+    player, player_data = await refresh_player_from_data(ctx)
 
     if not player_data:
         embed = Embed(title="Captain Ner0",
@@ -274,10 +274,6 @@ async def cemetery(ctx):
     if player_data["location"] == "kraken" or player_data["location"] == "kraken_battle":
         await CommonResponses.during_kraken_battle_response(ctx)
         return
-
-    player = Exemplar(player_data["exemplar"],
-                      player_data["stats"],
-                      player_data["inventory"])
 
     cemetery_embed = discord.Embed()
 

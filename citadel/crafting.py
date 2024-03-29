@@ -198,7 +198,7 @@ class CraftButton(discord.ui.Button, CommonResponses):
         from utils import save_player_data, refresh_player_from_data
 
         # Refresh player object from the latest player data
-        self.player, self.player_data = await refresh_player_from_data(self, interaction)
+        self.player, self.player_data = await refresh_player_from_data(interaction)
 
         # Check if the player is not in the citadel
         if self.player_data["location"] != "citadel":
@@ -413,7 +413,7 @@ class CraftingSelect(discord.ui.Select, CommonResponses):
             return
 
         # Refresh player object from the latest player data
-        self.player, self.player_data = await refresh_player_from_data(self, interaction)
+        self.player, self.player_data = await refresh_player_from_data(interaction)
 
         # Check if the player is not in the citadel
         if self.player_data["location"] != "citadel":

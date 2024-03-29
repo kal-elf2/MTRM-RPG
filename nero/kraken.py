@@ -389,7 +389,7 @@ class FireButton(discord.ui.Button, CommonResponses):
 
     async def handle_no_cannonballs(self, interaction: discord.Interaction):
         # Refresh player object from the latest player data
-        self.player, self.player_data = await refresh_player_from_data(self, interaction)
+        self.player, self.player_data = await refresh_player_from_data(interaction)
 
         citadel_names = ["Sun", "Moon", "Earth", "Wind", "Stars"]
 

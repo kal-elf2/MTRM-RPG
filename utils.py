@@ -91,15 +91,24 @@ def update_and_save_player_data(interaction: discord.Interaction, inventory, pla
 
     save_player_data(interaction.guild.id, player_id, player_data)
 
-async def refresh_player_from_data(self, interaction):
-    from exemplars.exemplars import Exemplar
-    """Refresh the player object from the latest player data."""
-    self.player_data = load_player_data(interaction.guild_id, self.author_id)
-    self.player = Exemplar(self.player_data["exemplar"],
-                           self.player_data["stats"],
-                           self.player_data["inventory"])
 
-    return self.player, self.player_data
+async def refresh_player_from_data(context):
+    from exemplars.exemplars import Exemplar
+
+    # Determine if the context is from a command or an interaction and get the guild_id and author_id accordingly
+    if isinstance(context, commands.Context):
+        guild_id = context.guild.id
+        author_id = str(context.author.id)
+    else:  # Any other case would be an interaction
+        guild_id = context.guild_id
+        author_id = str(context.user.id)
+
+    player_data = load_player_data(guild_id, author_id)
+    player = None
+    if player_data:
+        player = Exemplar(player_data["exemplar"], player_data["stats"], player_data["inventory"])
+
+    return player, player_data
 
 class CommonResponses:
     @staticmethod

@@ -415,7 +415,7 @@ class BattleOptions(discord.ui.View, CommonResponses):
             return
 
         # Refresh player object from the latest player data
-        self.player, self.player_data = await refresh_player_from_data(self, interaction)
+        self.player, self.player_data = await refresh_player_from_data(interaction)
 
         await self.use_potion("Stamina Potion", interaction, self.stamina_button)
 
@@ -426,7 +426,7 @@ class BattleOptions(discord.ui.View, CommonResponses):
             return
 
         # Refresh player object from the latest player data
-        self.player, self.player_data = await refresh_player_from_data(self, interaction)
+        self.player, self.player_data = await refresh_player_from_data(interaction)
 
         await self.use_potion("Super Stamina Potion", interaction, self.super_stamina_button)
 
@@ -437,7 +437,7 @@ class BattleOptions(discord.ui.View, CommonResponses):
             return
 
         # Refresh player object from the latest player data
-        self.player, self.player_data = await refresh_player_from_data(self, interaction)
+        self.player, self.player_data = await refresh_player_from_data(interaction)
 
         await self.use_potion("Health Potion", interaction, self.health_button)
 
@@ -448,7 +448,7 @@ class BattleOptions(discord.ui.View, CommonResponses):
             return
 
         # Refresh player object from the latest player data
-        self.player, self.player_data = await refresh_player_from_data(self, interaction)
+        self.player, self.player_data = await refresh_player_from_data(interaction)
 
         await self.use_potion("Super Health Potion", interaction, self.super_health_button)
 

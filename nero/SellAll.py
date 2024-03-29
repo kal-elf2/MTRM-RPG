@@ -53,7 +53,7 @@ class SellAllButton(discord.ui.Button, CommonResponses):
             return await self.nero_unauthorized_user_response(interaction)
 
         # Refresh player object from the latest player data
-        player, self.player_data = await refresh_player_from_data(self, interaction)
+        player, self.player_data = await refresh_player_from_data(interaction)
 
         sellable_categories = ["weapons", "armors", "shields", "charms", "potions"]
         total_coppers_earned = 0

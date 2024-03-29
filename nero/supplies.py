@@ -125,7 +125,7 @@ class DepositButton(discord.ui.Button, CommonResponses):
             return
 
         # Refresh player object from the latest player data
-        self.player, self.player_data = await refresh_player_from_data(self, interaction)
+        self.player, self.player_data = await refresh_player_from_data(interaction)
 
         if self.player_data["location"] == "kraken":
             await self.during_kraken_battle_response(interaction)

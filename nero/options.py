@@ -61,7 +61,7 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
             return
 
         # Refresh player object from the latest player data
-        self.player, self.player_data = await refresh_player_from_data(self, interaction)
+        self.player, self.player_data = await refresh_player_from_data(interaction)
 
         if self.player_data["location"] == "kraken":
             await CommonResponses.during_kraken_battle_response(interaction)
@@ -86,7 +86,7 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
             from nero.shop import ShopCategorySelect
 
             # Refresh player object from the latest player data
-            self.player, self.player_data = await refresh_player_from_data(self, interaction)
+            self.player, self.player_data = await refresh_player_from_data(interaction)
 
             # Check if there are any items across all categories
             has_items = any(getattr(self.player.inventory, category) for category in
@@ -110,7 +110,7 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
 
         elif selected_option == "kraken":
             # Refresh player object from the latest player data
-            self.player, self.player_data = await refresh_player_from_data(self, interaction)
+            self.player, self.player_data = await refresh_player_from_data(interaction)
             self.view.ensure_reset_button()
 
             required_level = zone_level * 20
@@ -211,17 +211,16 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
             from nero.hints import create_nero_embed
 
             # Refresh player object from the latest player data
-            self.player, self.player_data = await refresh_player_from_data(self, interaction)
+            self.player, self.player_data = await refresh_player_from_data(interaction)
 
             embed, view = create_nero_embed(self.player)
-            self.view.ensure_reset_button()
             await interaction.followup.send(embed=embed, view=view, ephemeral=True)
 
         elif selected_option == "spork":
             from nero.spork import RustySporkDialogView
 
             # Refresh player object from the latest player data
-            self.player, self.player_data = await refresh_player_from_data(self, interaction)
+            self.player, self.player_data = await refresh_player_from_data(interaction)
 
             # Initialize the RustySporkDialogView with the first offer index (0 by default)
             view = RustySporkDialogView(self.player, self.author_id, self.player_data, 0)

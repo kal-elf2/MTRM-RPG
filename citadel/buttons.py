@@ -192,7 +192,7 @@ class TanneryRow(discord.ui.View, CommonResponses):
             return
 
         # Refresh player object from the latest player data
-        _, self.player_data = await refresh_player_from_data(self, self.ctx)
+        _, self.player_data = await refresh_player_from_data(self.ctx)
 
         # Check if the player is not in the citadel
         if self.player_data["location"] != "citadel":
@@ -212,7 +212,7 @@ class TanneryRow(discord.ui.View, CommonResponses):
             return
 
         # Refresh player object from the latest player data
-        _, self.player_data = await refresh_player_from_data(self, self.ctx)
+        _, self.player_data = await refresh_player_from_data(self.ctx)
 
         # Check if the player is not in the citadel
         if self.player_data["location"] != "citadel":
@@ -232,7 +232,7 @@ class TanneryRow(discord.ui.View, CommonResponses):
             return
 
         # Refresh player object from the latest player data
-        _, self.player_data = await refresh_player_from_data(self, self.ctx)
+        _, self.player_data = await refresh_player_from_data(self.ctx)
 
         # Check if the player is not in the citadel
         if self.player_data["location"] != "citadel":
@@ -279,7 +279,7 @@ class BreadRow(discord.ui.View, CommonResponses):
             return
 
         # Refresh player object from the latest player data
-        _, self.player_data = await refresh_player_from_data(self, self.ctx)
+        _, self.player_data = await refresh_player_from_data(self.ctx)
 
         # Check if the player is not in the citadel
         if self.player_data["location"] != "citadel":
@@ -300,7 +300,7 @@ class BreadRow(discord.ui.View, CommonResponses):
             return
 
         # Refresh player object from the latest player data
-        _, self.player_data = await refresh_player_from_data(self, self.ctx)
+        _, self.player_data = await refresh_player_from_data(self.ctx)
 
         # Check if the player is not in the citadel
         if self.player_data["location"] != "citadel":
@@ -321,7 +321,7 @@ class BreadRow(discord.ui.View, CommonResponses):
             return
 
         # Refresh player object from the latest player data
-        _, self.player_data = await refresh_player_from_data(self, self.ctx)
+        _, self.player_data = await refresh_player_from_data(self.ctx)
 
         # Check if the player is not in the citadel
         if self.player_data["location"] != "citadel":
@@ -351,7 +351,7 @@ class WheatRow(discord.ui.View, CommonResponses):
             return
 
         # Refresh player object from the latest player data
-        _, self.player_data = await refresh_player_from_data(self, self.ctx)
+        _, self.player_data = await refresh_player_from_data(self.ctx)
 
         # Check if the player is not in the citadel
         if self.player_data["location"] != "citadel":
@@ -377,7 +377,7 @@ class WheatRow(discord.ui.View, CommonResponses):
             return
 
         # Refresh player object from the latest player data
-        _, self.player_data = await refresh_player_from_data(self, self.ctx)
+        _, self.player_data = await refresh_player_from_data(self.ctx)
 
         # Check if the player is not in the citadel
         if self.player_data["location"] != "citadel":
@@ -405,7 +405,7 @@ class WheatRow(discord.ui.View, CommonResponses):
             return
 
         # Refresh player object from the latest player data
-        player, self.player_data = await refresh_player_from_data(self, self.ctx)
+        player, self.player_data = await refresh_player_from_data(self.ctx)
 
         # Check if the player is not in the citadel
         if self.player_data["location"] != "citadel":
@@ -471,7 +471,7 @@ class TravelRow(discord.ui.View, CommonResponses):
             return
 
         # Refresh player object from the latest player data
-        _, self.player_data = await refresh_player_from_data(self, self.ctx)
+        _, self.player_data = await refresh_player_from_data(self.ctx)
 
         # Check if the player is not in the citadel
         if self.player_data["location"] != "citadel":
@@ -502,7 +502,7 @@ class TravelRow(discord.ui.View, CommonResponses):
             return
 
         # Refresh player object from the latest player data
-        _, self.player_data = await refresh_player_from_data(self, self.ctx)
+        _, self.player_data = await refresh_player_from_data(self.ctx)
 
         # Check if the player is not in the citadel
         if self.player_data["location"] != "citadel":
@@ -528,7 +528,7 @@ class TravelRow(discord.ui.View, CommonResponses):
             return
 
         # Refresh player object from the latest player data
-        _, self.player_data = await refresh_player_from_data(self, self.ctx)
+        _, self.player_data = await refresh_player_from_data(self.ctx)
 
         if self.player_data["location"] != "citadel":
             await self.not_in_citadel_response(interaction)
