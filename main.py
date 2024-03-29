@@ -11,7 +11,6 @@ from stats import ResurrectOptions
 from monsters.battle import BattleOptions, LootOptions, SpecialAttackOptions
 from emojis import get_emoji
 from images.urls import generate_urls
-import random
 
 bot = commands.Bot(command_prefix="/", intents=discord.Intents.all())
 # Add the cogs to your bot
@@ -242,19 +241,6 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
     player_data["location"] = None
     save_player_data(guild_id, player_id, player_data)
 
-def generate_battle_actions():
-    # Define the action words for each attack category
-    grab_actions = ["stab", "slice", "pierce"]
-    mast_actions = ["fire", "hack", "jab"]
-    swallow_actions = ["boom", "thrust", "lash"]
-
-    # Randomly select one action from each category
-    selected_actions = {
-        "grab_action": random.choice(grab_actions),
-        "mast_action": random.choice(mast_actions),
-        "swallow_action": random.choice(swallow_actions),
-    }
-    return selected_actions
 
 @bot.slash_command(description="Visit the cemetery.")
 async def cemetery(ctx):
@@ -326,7 +312,4 @@ async def menu(ctx):
 
     await ctx.respond(embed=embed)
 
-
 bot.run(os.environ["DISCORD_TOKEN"])
-
-
