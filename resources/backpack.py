@@ -51,7 +51,7 @@ class BackpackCog(commands.Cog):
 
         # Display initial backpack view with Equip and Unequip buttons
         view = BackpackView(ctx)
-        await ctx.respond(f"Here's your backpack, {ctx.author.mention}:", view=view)
+        await ctx.respond(f"What would you like to do, {ctx.author.mention}?", view=view)
 
 
 class BackpackView(discord.ui.View, CommonResponses):
@@ -233,7 +233,7 @@ class BackpackView(discord.ui.View, CommonResponses):
             await generating_message.delete()
 
             # Send the generated image as an ephemeral message
-            await interaction.followup.send(content="Here's your backpack:",
+            await interaction.followup.send(content=f"Here's your backpack, {interaction.user.mention}:",
                                             file=discord.File(fp=image_binary, filename='backpack_with_items.png'),
                                             ephemeral=False)
 
