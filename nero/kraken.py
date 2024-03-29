@@ -61,7 +61,7 @@ class HuntKrakenButton(discord.ui.Button, CommonResponses):
             title="Captain Ner0's Call to Arms",
             description=(
                 "Ahoy! The dreaded Kraken lurks beneath the waves, a beast most foul and fearsome. "
-                "**I will be yer eyes on the sea**, calling out when the Kraken surfaces. "
+                "**I will be yer eye on the sea**, calling out when the Kraken surfaces. "
                 "It'll be yer duty to **turn the ship, aim the cannon, and fire with precision!** "
                 "Prepare yerself, for the battle will be fierce and the sea shows no mercy. "
                 "\n\n### When ye ready to face her, type `/kraken` to begin the battle!"

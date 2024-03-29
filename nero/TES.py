@@ -68,7 +68,7 @@ class RulesButton(discord.ui.Button):
 
         # Construct the embed with rules information
         rules_embed = discord.Embed(
-            title="Three-Eyes-Snake Rules",
+            title="Three-Eyed-Snake Rules",
             description=f"Ahoy! Heed these rules for Three Eyed Snake {interaction.user.mention}. No blubberin' later if ye be outplayed!",
             color=discord.Color.dark_gold()
         )

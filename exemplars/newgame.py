@@ -231,34 +231,40 @@ class ConfirmExemplar(discord.ui.View, CommonResponses):
         # Save player data here
         save_player_data(self.guild_id, self.author_id, self.player_data)
 
-        # Prepare a base part of the message that's common for all exemplars
-        base_message = "I'm Captain Ner0.\n\n**Welcome to Ner0's Landing**... I mean, err, Narrows Landing."
-
         # Determine the image and the specific part of the message based on the exemplar selection
         if self.player_data["exemplar"] == "elf":
             image_file, image_name = "nero", "disgust"
-            exemplar_message = "Bleh...**Another bloody elf!?** Well I suppose I can still use ye...\n\n"
+            exemplar_message = "Bleh...**Another damn elf!?** Well I suppose I can still use ye...and won't feel too bad when you get lost to the seas.\n\nYe got any spine in there, Elf? I sure hope so...Ye have quite the adventure ahead of ye..."
         else:
             image_file, image_name = "nero", "welcome"
-            exemplar_message = f"Welcome {self.player_data['exemplar'].capitalize()}!"
+            exemplar_message = f"Welcome aboard {self.player_data['exemplar'].capitalize()}! Hope yer blade is sharp and yer wits are sharper, {self.player_data['exemplar'].capitalize()}.\n\nYe have quite the adventure ahead of ye..."
 
         # Combine the specific part with the base part for the full message
-        welcome_message = f"{exemplar_message} {base_message}"
+        welcome_message = f"{exemplar_message}"
 
-        # Dynamic initialization of adventure steps
+        # Dynamic initialization of adventure steps with optional thumbnails
         adventure_steps = [
             {
-                'title': "Welcome to Ner0's Landing",
+                'title': "A Grand Adventure",
                 'description': welcome_message,
-                'file': image_file,
-                'image': image_name
+                'main_image_file': image_file,
+                'main_image_name': image_name,
+                'thumbnail_file': 'optional_thumbnail_directory',
+                'thumbnail_image': 'optional_thumbnail_filename'
             },
-            # Other steps...
+            {
+                'title': "Captain Ner0",
+                'description': "I'm Captain Ner0. I'll be adventuring along with ya in Mirandus and doin' me best to keep ye alive.",
+                'main_image_file': 'nero',
+                'main_image_name': 'welcome',
+                'thumbnail_file': 'nero',
+                'thumbnail_image': 'pfp'
+            },
             {
                 'title': "Ready for Adventure",
-                'description': f"That's about all the info ye need {interaction.user.mention}... Don't just stand there...get to lootin'!\n\nI'll be at the Citadel's Jolly Roger drinkin' me rum if ye need anythin'.\n\n### **Use `/menu` to see all the commands available to ye.**",
-                'file': 'nero',
-                'image': 'welcome'
+                 'description': f"That's about all the info ye need {interaction.user.mention}... Don't just stand there...get to lootin'!\n\nI'll be at the Jolly Roger in the `/citadel` drinkin' me rum if ye need anythin'.\n\n### **Use `/menu` to see all the commands available to ye.**",
+                'main_image_file': 'nero',
+                'main_image_name': 'welcome',
             }
         ]
 
@@ -274,7 +280,6 @@ class ConfirmExemplar(discord.ui.View, CommonResponses):
         # Create the first adventure embed and send it
         first_embed = adventure_view.create_adventure_embed(0)
         await interaction.followup.send(embed=first_embed, view=adventure_view)
-
 
 class BeginAdventureView(discord.ui.View):
     def __init__(self, author_id, adventure_steps_messages):
@@ -319,8 +324,17 @@ class BeginAdventureView(discord.ui.View):
             description=step['description'],
             color=discord.Color.blue()
         )
-        embed_image_url = generate_urls(step['file'], step['image'])
-        embed.set_image(url=embed_image_url)
+
+        # Set main image
+        if 'main_image_file' in step and 'main_image_name' in step:
+            main_image_url = generate_urls(step['main_image_file'], step['main_image_name'])
+            embed.set_image(url=main_image_url)
+
+        # Conditionally add a thumbnail if specified
+        if 'thumbnail_file' in step and 'thumbnail_image' in step:
+            thumbnail_url = generate_urls(step['thumbnail_file'], step['thumbnail_image'])
+            embed.set_thumbnail(url=thumbnail_url)
+
         return embed
 
 
