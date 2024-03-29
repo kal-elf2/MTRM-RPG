@@ -237,7 +237,7 @@ class ConfirmExemplar(discord.ui.View, CommonResponses):
             exemplar_message = "Bleh...**Another damn elf!?** Well I suppose I can still use ye...and won't feel too bad when you get lost to the seas.\n\nYe got any spine in there, Elf? I sure hope so...Ye have quite the adventure ahead of ye..."
         else:
             image_file, image_name = "nero", "welcome"
-            exemplar_message = f"Welcome aboard {self.player_data['exemplar'].capitalize()}! Hope yer blade is sharp and yer wits are sharper, {self.player_data['exemplar'].capitalize()}.\n\nYe have quite the adventure ahead of ye..."
+            exemplar_message = f"Welcome aboard, {self.player_data['exemplar'].capitalize()}! Hope yer blade is sharp and yer wits are sharper.\n\nYe have quite the adventure ahead of ye..."
 
         # Combine the specific part with the base part for the full message
         welcome_message = f"{exemplar_message}"
@@ -254,7 +254,7 @@ class ConfirmExemplar(discord.ui.View, CommonResponses):
             },
             {
                 'title': "Captain Ner0",
-                'description': "I'm Captain Ner0. I'll be adventuring along with ya in Mirandus and doin' me best to keep ye alive.",
+                'description': f"My name is Captain Ner0. I'll be adventuring alongside ye in the world of Mirandus and doin' me best to keep ye alive. \n\nNo promises though, {self.player_data['exemplar'].capitalize()}...This world is dangerous and the death lurks around every corner.",
                 'main_image_file': 'nero',
                 'main_image_name': 'welcome',
                 'thumbnail_file': 'nero',
@@ -262,7 +262,7 @@ class ConfirmExemplar(discord.ui.View, CommonResponses):
             },
             {
                 'title': "Ready for Adventure",
-                 'description': f"That's about all the info ye need {interaction.user.mention}... Don't just stand there...get to lootin'!\n\nI'll be at the Jolly Roger in the `/citadel` drinkin' me rum if ye need anythin'.\n\n### **Use `/menu` to see all the commands available to ye.**",
+                 'description': f"That's about all the info ye need {interaction.user.mention}... Don't just stand there...get to lootin'!\n\nI'll be at the Jolly Roger drinkin' me rum if ye need anythin'.\n\n### **Use `/menu` to see all the commands available to ye.**",
                 'main_image_file': 'nero',
                 'main_image_name': 'welcome',
             }
