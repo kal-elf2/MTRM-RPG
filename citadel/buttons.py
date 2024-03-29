@@ -54,21 +54,43 @@ class CitadelCog(commands.Cog, CommonResponses):
             await CommonResponses.during_kraken_battle_response(ctx)
             return
 
+        citadel_names = ["Sun", "Moon", "Earth", "Wind", "Stars"]
+        zone_level = player.stats.zone_level
+        citadel_name = citadel_names[zone_level - 1]  # Adjust for 0-based indexing
+
+        # Determine the color based on the zone level, default to a general color if zone level is out of range
+        color_mapping = {
+            1: 0x969696,
+            2: 0x15ce00,
+            3: 0x0096f1,
+            4: 0x9900ff,
+            5: 0xfebd0d
+        }
+        embed_color = color_mapping.get(zone_level)
+
+        # Send the citadel picture and name
+        embed = discord.Embed(
+            title=f"The Citadel of the {citadel_name}",
+            description=f"Ye've arrived at a place of respite and strength. What will ye do here, {ctx.user.mention}?",
+            color=embed_color
+        )
+        embed.set_image(url=generate_urls("Citadel", citadel_name))
+        await ctx.respond(embed=embed, ephemeral=False)
+
+        # Update the player location to "citadel"
         player_data["location"] = "citadel"
         save_player_data(guild_id, author_id, player_data)
 
-        # Initialize the rows with the author_id
+        # Initialize the rows with the author_id and send views
         row1 = ForgeRow(ctx, author_id=author_id)
         row2 = TanneryRow(player_data, ctx, author_id=author_id)
         row3 = BreadRow(player_data, ctx, author_id=author_id)
         row4 = WheatRow(player_data, ctx, author_id=author_id)
         row5 = TravelRow(player_data, ctx, author_id=author_id)
 
-        await ctx.respond(view=row1)
-        await ctx.send(view=row2)
-        await ctx.send(view=row3)
-        await ctx.send(view=row4)
-        await ctx.send(view=row5)
+        # Asynchronously send all views
+        for row in [row1, row2, row3, row4, row5]:
+            await ctx.send(view=row)
 
 class ForgeRow(discord.ui.View, CommonResponses):
     def __init__(self, player_data, ctx=None, author_id=None):

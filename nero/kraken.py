@@ -418,9 +418,9 @@ class FireButton(discord.ui.Button, CommonResponses):
             message_title = "We Had to Flee!"
             message_description = (
                 f"Arrr, {interaction.user.mention}! Ye ran out of cannonballs! \n\n"
-                "That monstrous Kraken nearly had us in its clutches, but I steered us to this citadel just in the nick o' time.\n\n"
+                "That monstrous Kraken nearly had us in its clutches. Luckily this citadel was here when we needed it.\n\n"
                 "I'll be seeking out a grander vessel to hold more powder and plunder. Ye best start honing yer skills and pillaging for loot. "
-                "Mark me words, the beasts lurking in these waters be far deadlier than any we've crossed swords with before. Keep a weather eye on the horizon and ready yer cutlass..."
+                "Mark me words, the beasts lurking in these waters be ***far deadlier*** than any we've crossed swords with before. Keep a weather eye on the horizon and ready yer cutlass..."
                 f"\n\n### Welcome to Zone {self.player.stats.zone_level}:\n## The Citadel of the {citadel_name}"
             )
         else:
