@@ -3,7 +3,7 @@ import json
 import discord
 from discord.ext import commands
 from discord.commands import Option
-from utils import load_player_data, save_player_data, send_message, CommonResponses
+from utils import load_player_data, save_player_data, send_message, CommonResponses, remove_player_data
 from discord.ui import Select, View
 from discord.components import SelectOption
 from exemplars.exemplars import Exemplar
@@ -126,7 +126,7 @@ class PickExemplars(Select, CommonResponses):
             f'{interaction.user.mention}, verify your selection of {self.options_dict[self.values[0]]} Exemplar below!',
             embed=embed,
             view=view,
-            ephemeral=False)
+            ephemeral=True)
 
     @staticmethod
     def generate_stats_embed(exemplar_instance):
@@ -170,6 +170,9 @@ class ConfirmExemplar(discord.ui.View, CommonResponses):
         self.exemplar_instance = exemplar_instance
 
         # Initially set up the button layout with the Select button in the middle
+        self.left_arrow = None
+        self.confirm_button = None
+        self.right_arrow = None
         self.setup_buttons()
 
     def setup_buttons(self):
@@ -237,6 +240,66 @@ class ConfirmExemplar(discord.ui.View, CommonResponses):
         # Update the message to reflect the selection has been saved and disable the buttons
         await interaction.response.edit_message(
             content=f"Your selection of {self.exemplar_instance.name} Exemplar has been saved!", view=self)
+
+        # Initialize BeginAdventureView with the adventure steps
+        adventure_view = BeginAdventureView(author_id=self.author_id, adventure_steps_messages=adventure_steps)
+
+        # Create the first adventure embed
+        first_embed = adventure_view.create_adventure_embed(0)
+
+        # Sending a new message (or you can use followup.send if you want it to be separate from the initial interaction)
+        await interaction.followup.send(embed=first_embed, view=adventure_view)
+
+adventure_steps = [
+    {'title': 'Step 1: The Journey Begins', 'description': 'Your journey starts in a small town...', 'file': 'nero', 'image': 'journey_begins'},
+    {'title': 'Step 2: The Dark Forest', 'description': 'You enter a dark forest, filled with unknown dangers...', 'file': 'nero', 'image': 'dark_forest'},
+    # Add more steps as needed
+]
+class BeginAdventureView(discord.ui.View):
+    def __init__(self, author_id, adventure_steps_messages):
+        super().__init__(timeout=None)  # Consider adding a timeout as per your game design
+        self.author_id = author_id
+        self.adventure_steps_messages = adventure_steps_messages
+        self.current_step = 0
+        self.setup_button()
+        self.right_arrow = None
+
+    def setup_button(self):
+        # Right arrow button for navigating the introduction
+        self.right_arrow = discord.ui.Button(label='▶', style=discord.ButtonStyle.green)
+        self.right_arrow.callback = self.next_step
+        self.add_item(self.right_arrow)
+
+    async def next_step(self, interaction):
+        # Ensure only the initiating user can interact
+        if str(interaction.user.id) != self.author_id:
+            await interaction.response.send_message("You are not authorized to do this!", ephemeral=True)
+            return
+
+        self.current_step += 1
+
+        if self.current_step < len(self.adventure_steps_messages):
+            # Update the embed with the next step of the adventure
+            embed = self.create_adventure_embed(self.current_step)
+            await interaction.response.edit_message(embed=embed, view=self)
+        else:
+            # If it's the last step, you might want to disable the button or move to a different part of the game
+            self.right_arrow.disabled = True
+            await interaction.response.edit_message(view=self)
+            # Here, you can call another method or class to continue the game flow
+
+    def create_adventure_embed(self, step_index):
+        step = self.adventure_steps_messages[step_index]
+        embed = discord.Embed(
+            title=step['title'],
+            description=step['description'],
+            color=discord.Color.blue()
+        )
+        # Use both `file` and `image` to generate the URL
+        embed_image_url = generate_urls(step['file'], step['image'])
+        embed.set_image(url=embed_image_url)
+        return embed
+
 
 def update_special_attack_options(battle_context):
     # Assuming battle_context has a reference to the special_attack_options_view
@@ -465,17 +528,8 @@ async def newgame(ctx):
                 await self.unauthorized_user_response(interaction)
                 return
 
-            # Integrate battle actions for Final Phase Kraken battle
-            battle_actions = generate_battle_actions()
-
-            # Explicitly remove and re-initialize player data
-            player_data = {
-                "exemplar": None,
-                "stats": None,
-                "inventory": Inventory().to_dict(),
-                "battle_actions": battle_actions,
-            }
-            save_player_data(guild_id, author_id, player_data)
+            # Remove the existing player data
+            remove_player_data(interaction.guild_id, self.author_id)
 
             # Disable the button
             button.disabled = True

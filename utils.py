@@ -66,6 +66,18 @@ def save_player_data(guild_id, player_id, updated_player_data):
     with open(f'server/player_data_{guild_id}.json', 'w') as f:
         json.dump(all_player_data, f, indent=4, cls=ExemplarJSONEncoder)
 
+def remove_player_data(guild_id, player_id):
+    with open(f'server/player_data_{guild_id}.json', 'r') as f:
+        all_player_data = json.load(f)
+
+    # Remove the player data if it exists
+    player_id_str = str(player_id)
+    if player_id_str in all_player_data:
+        del all_player_data[player_id_str]
+
+    with open(f'server/player_data_{guild_id}.json', 'w') as f:
+        json.dump(all_player_data, f, indent=4, cls=ExemplarJSONEncoder)
+
 
 async def send_message(ctx: commands.Context, embed):
     return await ctx.send(embed=embed)

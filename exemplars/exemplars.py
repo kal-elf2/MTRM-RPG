@@ -411,9 +411,9 @@ class BattleActions: # Custom final kraken battle player pass-phrase
     def from_dict(cls, data):
         battle_actions = cls()
         battle_actions.actions = {
-            "grab_action": data.get("grab_action", "stab"),
-            "mast_action": data.get("mast_action", "fire"),
-            "swallow_action": data.get("swallow_action", "boom"),
+            "grab_action": data.get("grab_action"),
+            "mast_action": data.get("mast_action"),
+            "swallow_action": data.get("swallow_action"),
         }
         return battle_actions
 
