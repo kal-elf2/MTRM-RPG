@@ -1,10 +1,55 @@
 import discord
-from utils import load_player_data, save_player_data, CommonResponses
+from utils import load_player_data, save_player_data, remove_player_data, CommonResponses
 from discord.ui import Select
 from discord.components import SelectOption
 from resources.inventory import Inventory
 from emojis import get_emoji
 from images.urls import generate_urls
+
+from discord.ext import commands
+from discord.ui import View
+
+class NewGameCog(commands.Cog, CommonResponses):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @commands.slash_command(description="Start a new game.")
+    async def newgame(self, ctx):
+        guild_id = ctx.guild.id
+        author_id = str(ctx.author.id)
+        player_data = load_player_data(guild_id, author_id)
+
+        if not player_data:
+            view = View()
+            view.add_item(PickExemplars(author_id))
+            await ctx.respond(f"{ctx.author.mention}, please choose your exemplar from the list below.", view=view)
+        else:
+            view = NewGameView(author_id)
+            await ctx.respond(
+                f"{ctx.author.mention}, you have a game in progress. Are you sure you want to erase your progress and start a new game?\n\n### **Please note: This action cannot be undone.**",
+                view=view)
+
+class NewGameView(discord.ui.View, CommonResponses):
+    def __init__(self, author_id=None):
+        super().__init__(timeout=None)
+        self.author_id = author_id
+
+    @discord.ui.button(label="New Game", custom_id="new_game", style=discord.ButtonStyle.blurple)
+    async def button1(self, button, interaction):
+        if str(interaction.user.id) != self.author_id:
+            await self.unauthorized_user_response(interaction)
+            return
+
+        remove_player_data(interaction.guild_id, self.author_id)
+
+        button.disabled = True
+        await interaction.message.edit(view=self)
+
+        view = View()
+        view.add_item(PickExemplars(author_id=self.author_id))
+        await interaction.response.send_message(
+            f"{interaction.user.mention}, your progress has been erased. Please choose your exemplar from the list below.",
+            view=view)
 
 class PickExemplars(Select, CommonResponses):
 
@@ -255,3 +300,6 @@ class BeginAdventureView(discord.ui.View):
         embed_image_url = generate_urls(step['file'], step['image'])
         embed.set_image(url=embed_image_url)
         return embed
+
+def setup(bot):
+    bot.add_cog(NewGameCog(bot))

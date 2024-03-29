@@ -3,9 +3,7 @@ import json
 import discord
 from discord.ext import commands
 from discord.commands import Option
-from utils import load_player_data, save_player_data, send_message, CommonResponses, remove_player_data
-from discord.ui import View
-from exemplars.newgame import PickExemplars
+from utils import load_player_data, save_player_data, send_message, CommonResponses
 from exemplars.exemplars import Exemplar
 from monsters.monster import generate_monster_list, generate_monster_by_name, monster_battle, create_battle_embed, footer_text_for_embed
 from discord import Embed
@@ -23,6 +21,7 @@ bot.load_extension("resources.mining")
 bot.load_extension("resources.backpack")
 bot.load_extension("citadel.buttons")
 bot.load_extension("nero.kraken")
+bot.load_extension("exemplars.newgame")
 
 guild_data = {}
 
@@ -256,51 +255,6 @@ def generate_battle_actions():
         "swallow_action": random.choice(swallow_actions),
     }
     return selected_actions
-
-@bot.slash_command(description="Start a new game.")
-async def newgame(ctx):
-    guild_id = ctx.guild.id
-    author_id = str(ctx.author.id)
-    player_data = load_player_data(guild_id, author_id)
-
-    class NewGame(discord.ui.View, CommonResponses):
-        def __init__(self, author_id=None):
-            super().__init__(timeout=None)
-            self.author_id = author_id
-
-        @discord.ui.button(label="New Game", custom_id="new_game", style=discord.ButtonStyle.blurple)
-        async def button1(self, button, interaction):
-            # Check if the user who interacted is the same as the one who initiated the view
-            # Inherited from CommonResponses class from utils
-            if str(interaction.user.id) != self.author_id:
-                await self.unauthorized_user_response(interaction)
-                return
-
-            # Remove the existing player data
-            remove_player_data(interaction.guild_id, self.author_id)
-
-            # Disable the button
-            button.disabled = True
-
-            # Update the message with the disabled button
-            await interaction.message.edit(view=self)
-
-            # Proceed with the rest of your logic
-            view = View()
-            view.add_item(PickExemplars(author_id))
-            await interaction.response.send_message(
-                f"{ctx.author.mention}, your progress has been erased. Please choose your exemplar from the list below.",
-                view=view)
-
-    if not player_data:
-        view = View()
-        view.add_item(PickExemplars(author_id))
-        await ctx.respond(f"{ctx.author.mention}, please choose your exemplar from the list below.", view=view)
-    else:
-        view = NewGame(author_id)
-        await ctx.respond(
-            f"{ctx.author.mention}, you have a game in progress. Are you sure you want to erase your progress and start a new game?\n\n### **Please note: This action cannot be undone.**",
-            view=view)
 
 @bot.slash_command(description="Visit the cemetery.")
 async def cemetery(ctx):
