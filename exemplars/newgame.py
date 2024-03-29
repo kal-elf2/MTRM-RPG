@@ -26,7 +26,7 @@ class NewGameCog(commands.Cog, CommonResponses):
         else:
             view = NewGameView(author_id)
             await ctx.respond(
-                f"{ctx.author.mention}, you have a game in progress. Are you sure you want to erase your progress and start a new game?\n\n### **Please note: This action cannot be undone.**",
+                f"You already have a game in progress, {ctx.author.mention}. Are you sure you want to erase all progress and start a new game?\n\n### 🚨🚨 **Please note: This action cannot be undone.** 🚨🚨",
                 view=view)
 
 class NewGameView(discord.ui.View, CommonResponses):
@@ -159,7 +159,6 @@ class PickExemplars(Select, CommonResponses):
 
         return embed
 
-
 class ConfirmExemplar(discord.ui.View, CommonResponses):
     def __init__(self, exemplar_instance, player_data, author_id, guild_id):
         super().__init__(timeout=None)
@@ -225,7 +224,6 @@ class ConfirmExemplar(discord.ui.View, CommonResponses):
         await interaction.response.edit_message(embed=embed, view=self)
 
     async def confirm_yes(self, interaction):
-        # Ensure only the initiating user can interact
         if str(interaction.user.id) != self.author_id:
             await self.unauthorized_user_response(interaction)
             return
@@ -233,61 +231,86 @@ class ConfirmExemplar(discord.ui.View, CommonResponses):
         # Save player data here
         save_player_data(self.guild_id, self.author_id, self.player_data)
 
-        # Disable all buttons
+        # Prepare a base part of the message that's common for all exemplars
+        base_message = "I'm Captain Ner0.\n\n**Welcome to Ner0's Landing**... I mean, err, Narrows Landing."
+
+        # Determine the image and the specific part of the message based on the exemplar selection
+        if self.player_data["exemplar"] == "elf":
+            image_file, image_name = "nero", "disgust"
+            exemplar_message = "Bleh...**Another bloody elf!?** Well I suppose I can still use ye...\n\n"
+        else:
+            image_file, image_name = "nero", "welcome"
+            exemplar_message = f"Welcome {self.player_data['exemplar'].capitalize()}!"
+
+        # Combine the specific part with the base part for the full message
+        welcome_message = f"{exemplar_message} {base_message}"
+
+        # Dynamic initialization of adventure steps
+        adventure_steps = [
+            {
+                'title': "Welcome to Ner0's Landing",
+                'description': welcome_message,
+                'file': image_file,
+                'image': image_name
+            },
+            # Other steps...
+            {
+                'title': "Ready for Adventure",
+                'description': f"That's about all the info ye need {interaction.user.mention}... Don't just stand there...get to lootin'!\n\nI'll be at the Citadel's Jolly Roger drinkin' me rum if ye need anythin'.\n\n### **Use `/menu` to see all the commands available to ye.**",
+                'file': 'nero',
+                'image': 'welcome'
+            }
+        ]
+
+        # Initialize BeginAdventureView with the dynamic adventure steps
+        adventure_view = BeginAdventureView(self.author_id, adventure_steps)
+
+        # Disable all buttons as the selection has been made and saved
         self.left_arrow.disabled = True
         self.confirm_button.disabled = True
         self.right_arrow.disabled = True
+        await interaction.response.edit_message(view=self)
 
-        # Update the message to reflect the selection has been saved and disable the buttons
-        await interaction.response.edit_message(
-            content=f"Your selection of {self.exemplar_instance.name} Exemplar has been saved!", view=self)
-
-        # Initialize BeginAdventureView with the adventure steps
-        adventure_view = BeginAdventureView(author_id=self.author_id, adventure_steps_messages=adventure_steps)
-
-        # Create the first adventure embed
+        # Create the first adventure embed and send it
         first_embed = adventure_view.create_adventure_embed(0)
-
-        # Sending a new message (or you can use followup.send if you want it to be separate from the initial interaction)
         await interaction.followup.send(embed=first_embed, view=adventure_view)
 
-adventure_steps = [
-    {'title': 'Step 1: The Journey Begins', 'description': 'Your journey starts in a small town...', 'file': 'nero', 'image': 'journey_begins'},
-    {'title': 'Step 2: The Dark Forest', 'description': 'You enter a dark forest, filled with unknown dangers...', 'file': 'nero', 'image': 'dark_forest'},
-    # Add more steps as needed
-]
+
 class BeginAdventureView(discord.ui.View):
     def __init__(self, author_id, adventure_steps_messages):
-        super().__init__(timeout=None)  # Consider adding a timeout as per your game design
+        super().__init__(timeout=None)
         self.author_id = author_id
         self.adventure_steps_messages = adventure_steps_messages
         self.current_step = 0
         self.setup_button()
-        self.right_arrow = None
 
     def setup_button(self):
-        # Right arrow button for navigating the introduction
-        self.right_arrow = discord.ui.Button(label='▶', style=discord.ButtonStyle.green)
+        self.right_arrow = discord.ui.Button(style=discord.ButtonStyle.secondary, label='▶')
         self.right_arrow.callback = self.next_step
         self.add_item(self.right_arrow)
 
     async def next_step(self, interaction):
-        # Ensure only the initiating user can interact
         if str(interaction.user.id) != self.author_id:
             await interaction.response.send_message("You are not authorized to do this!", ephemeral=True)
             return
 
+        # Increment the current step
         self.current_step += 1
 
-        if self.current_step < len(self.adventure_steps_messages):
-            # Update the embed with the next step of the adventure
+        # Check if we are now on the last message
+        if self.current_step == len(self.adventure_steps_messages) - 1:
+            # This is the last step, so disable the right arrow button for the next interaction
+            self.right_arrow.disabled = True
+            # Display the last step as an embed without waiting for another button press
+            embed = self.create_adventure_embed(self.current_step)
+            await interaction.response.edit_message(embed=embed, view=self)
+        elif self.current_step < len(self.adventure_steps_messages):
+            # There are more messages to display, so show the next step
             embed = self.create_adventure_embed(self.current_step)
             await interaction.response.edit_message(embed=embed, view=self)
         else:
-            # If it's the last step, you might want to disable the button or move to a different part of the game
-            self.right_arrow.disabled = True
+            # If the button is somehow clicked beyond the last message, just disable it without changing the message
             await interaction.response.edit_message(view=self)
-            # Here, you can call another method or class to continue the game flow
 
     def create_adventure_embed(self, step_index):
         step = self.adventure_steps_messages[step_index]
@@ -296,10 +319,10 @@ class BeginAdventureView(discord.ui.View):
             description=step['description'],
             color=discord.Color.blue()
         )
-        # Use both `file` and `image` to generate the URL
         embed_image_url = generate_urls(step['file'], step['image'])
         embed.set_image(url=embed_image_url)
         return embed
+
 
 def setup(bot):
     bot.add_cog(NewGameCog(bot))
