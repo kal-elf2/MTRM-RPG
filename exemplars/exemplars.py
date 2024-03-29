@@ -395,6 +395,28 @@ class Shipwreck:
         shipwreck.cannonball = data.get("Cannonball", 0)
         return shipwreck
 
+class BattleActions: # Custom final kraken battle player pass-phrase
+    def __init__(self):
+        # Define the action words for each attack category
+        self.actions = {
+            "grab_action": random.choice(["stab", "slice", "pierce"]),
+            "mast_action": random.choice(["fire", "hack", "jab"]),
+            "swallow_action": random.choice(["boom", "thrust", "lash"]),
+        }
+
+    def to_dict(self):
+        return self.actions
+
+    @classmethod
+    def from_dict(cls, data):
+        battle_actions = cls()
+        battle_actions.actions = {
+            "grab_action": data.get("grab_action", "stab"),
+            "mast_action": data.get("mast_action", "fire"),
+            "swallow_action": data.get("swallow_action", "boom"),
+        }
+        return battle_actions
+
 
 class PlayerStats:
     def __init__(

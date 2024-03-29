@@ -342,26 +342,32 @@
             "materium": 110
         },
         "dice_stats": {
-            "total_games": 6,
-            "games_won": 2,
-            "games_lost": 4,
-            "coppers_won": -33100
+            "total_games": 0,
+            "games_won": 0,
+            "games_lost": 0,
+            "coppers_won": 0
         },
         "monster_kills": {
-            "Rabbit": 3654563,
-            "Deer": 13654553,
-            "Buck": 13654554,
-            "Wolf": 36545514,
-            "Goblin": 36545513,
-            "Goblin Hunter": 36545510,
-            "Mega Brute": 36545511,
-            "Wisp": 36545511,
-            "Mother": 13654552
+            "Rabbit": 1,
+            "Deer": 0,
+            "Buck": 0,
+            "Wolf": 0,
+            "Goblin": 0,
+            "Goblin Hunter": 0,
+            "Mega Brute": 0,
+            "Wisp": 0,
+            "Mother": 0,
+            "Kraken": 0
         },
         "shipwreck": {
-            "Poplar Strip": 10,
-            "Cannonball": 10
+            "Poplar Strip": 0,
+            "Cannonball": 0
         },
-        "location": "citadel"
+        "battle_actions": {
+            "grab_action": "slice",
+            "mast_action": "fire",
+            "swallow_action": "thrust"
+        },
+        "location": null
     }
 }

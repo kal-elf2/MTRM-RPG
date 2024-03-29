@@ -14,6 +14,7 @@ from stats import ResurrectOptions
 from monsters.battle import BattleOptions, LootOptions, SpecialAttackOptions
 from emojis import get_emoji
 from images.urls import generate_urls
+import random
 
 bot = commands.Bot(command_prefix="/", intents=discord.Intents.all())
 # Add the cogs to your bot
@@ -75,7 +76,7 @@ class PickExemplars(Select, CommonResponses):
         }
 
     async def callback(self, interaction: discord.Interaction):
-        from exemplars.exemplars import DiceStats, MonsterKills, Shipwreck, create_exemplar
+        from exemplars.exemplars import DiceStats, MonsterKills, Shipwreck, BattleActions, create_exemplar
 
         # Ensure the correct user is interacting
         if str(interaction.user.id) != self.author_id:
@@ -94,7 +95,6 @@ class PickExemplars(Select, CommonResponses):
         # Initialize or reset the character's stats based on the chosen exemplar
         exemplar_instance = create_exemplar(self.values[0])
         player_data["stats"] = {
-            "zone_level": exemplar_instance.stats.zone_level,
             "health": exemplar_instance.stats.health,
             "max_health": exemplar_instance.stats.max_health,
             "strength": exemplar_instance.stats.strength,
@@ -110,11 +110,13 @@ class PickExemplars(Select, CommonResponses):
             "mining_experience": exemplar_instance.stats.mining_experience,
             "woodcutting_level": exemplar_instance.stats.woodcutting_level,
             "woodcutting_experience": exemplar_instance.stats.woodcutting_experience,
+            "zone_level": exemplar_instance.stats.zone_level,
         }
+        player_data["inventory"] = Inventory().to_dict()
         player_data["dice_stats"] = DiceStats().to_dict()
         player_data["monster_kills"] = MonsterKills().to_dict()
-        player_data["inventory"] = Inventory().to_dict()
         player_data["shipwreck"] = Shipwreck().to_dict()
+        player_data["battle_actions"] = BattleActions().to_dict()
         player_data["location"] = None
 
         # Generate and send the confirmation message
@@ -430,6 +432,20 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
     player_data["location"] = None
     save_player_data(guild_id, player_id, player_data)
 
+def generate_battle_actions():
+    # Define the action words for each attack category
+    grab_actions = ["stab", "slice", "pierce"]
+    mast_actions = ["fire", "hack", "jab"]
+    swallow_actions = ["boom", "thrust", "lash"]
+
+    # Randomly select one action from each category
+    selected_actions = {
+        "grab_action": random.choice(grab_actions),
+        "mast_action": random.choice(mast_actions),
+        "swallow_action": random.choice(swallow_actions),
+    }
+    return selected_actions
+
 @bot.slash_command(description="Start a new game.")
 async def newgame(ctx):
     guild_id = ctx.guild.id
@@ -449,11 +465,15 @@ async def newgame(ctx):
                 await self.unauthorized_user_response(interaction)
                 return
 
+            # Integrate battle actions for Final Phase Kraken battle
+            battle_actions = generate_battle_actions()
+
             # Explicitly remove and re-initialize player data
             player_data = {
                 "exemplar": None,
                 "stats": None,
                 "inventory": Inventory().to_dict(),
+                "battle_actions": battle_actions,
             }
             save_player_data(guild_id, author_id, player_data)
 
