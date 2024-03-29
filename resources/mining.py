@@ -664,8 +664,8 @@ class MiningCog(commands.Cog, CommonResponses):
             await self.exit_citadel_response(ctx)
             return
 
-        if player_data["location"] == "kraken":
-            await self.during_kraken_battle_response(ctx)
+        if player_data["location"] == "kraken" or player_data["location"] == "kraken_battle":
+            await CommonResponses.during_kraken_battle_response(ctx)
             return
 
         base_min_levels = {

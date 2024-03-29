@@ -181,16 +181,25 @@ class BattleCommands(commands.Cog):
         player = Exemplar(player_data["exemplar"], player_data["stats"], player_data["inventory"])
         author_id = str(ctx.author.id)
 
-        # Check if player's location is 'kraken'
+        # Check if player's location is not 'kraken'
         if player_data['location'] != 'kraken':
-            embed = discord.Embed(
-                title="Ye Be Not Ready!",
-                description="Ahoy! It seems ye are not ready to enter the waters of the Kraken. Come see me at the Jolly Roger. ",
-                color=discord.Color.dark_gold()
-            )
-            embed.set_image(
-                url=generate_urls("nero", "confused"))
-            await ctx.respond(embed=embed, ephemeral=True)
+            # Nested check if player's location is 'kraken_battle'
+            if player_data['location'] == 'kraken_battle':
+                embed = discord.Embed(
+                    title="Battle's Already Raging!",
+                    description="Ye're already clashing with the Kraken, ye salty dog! No time for gabbin'—to battle!",
+                    color=discord.Color.dark_gold()
+                )
+                embed.set_thumbnail(url=generate_urls("nero", "gun"))
+                await ctx.respond(embed=embed, ephemeral=True)
+            else:
+                embed = discord.Embed(
+                    title="Ye Be Not Ready!",
+                    description="Ahoy! It seems ye are not ready to enter the waters of the Kraken. Come see me at the Jolly Roger.",
+                    color=discord.Color.dark_gold()
+                )
+                embed.set_thumbnail(url=generate_urls("nero", "confused"))
+                await ctx.respond(embed=embed, ephemeral=True)
             return
 
         player_data["location"] = "kraken_battle"

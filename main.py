@@ -277,7 +277,7 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
         await CommonResponses.exit_citadel_response(ctx)
         return
 
-    if player_data["location"] == "kraken":
+    if player_data["location"] == "kraken" or player_data["location"] == "kraken_battle":
         await CommonResponses.during_kraken_battle_response(ctx)
         return
 
@@ -495,7 +495,7 @@ async def cemetery(ctx):
         await ctx.respond(embed=embed, ephemeral=True)
         return
 
-    if player_data["location"] == "kraken":
+    if player_data["location"] == "kraken" or player_data["location"] == "kraken_battle":
         await CommonResponses.during_kraken_battle_response(ctx)
         return
 

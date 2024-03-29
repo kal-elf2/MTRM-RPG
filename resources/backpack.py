@@ -45,7 +45,7 @@ class BackpackCog(commands.Cog):
             await ctx.respond(embed=embed, ephemeral=True)
             return
 
-        if player_data["location"] == "kraken":
+        if player_data["location"] == "kraken" or player_data["location"] == "kraken_battle":
             await CommonResponses.during_kraken_battle_response(ctx)
             return
 
