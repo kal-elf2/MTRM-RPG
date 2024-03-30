@@ -234,10 +234,10 @@ class ConfirmExemplar(discord.ui.View, CommonResponses):
         # Determine the image and the specific part of the message based on the exemplar selection
         if self.player_data["exemplar"] == "elf":
             image_file, image_name = "nero", "disgust"
-            exemplar_message = "Bleh...**Another damn elf!?** Well I suppose I can still use ye...and won't feel too bad when you get lost to the seas.\n\nYe got any spine in there, Elf? I sure hope so...Ye have quite the adventure ahead of ye..."
+            exemplar_message = "### Bleh...**Another damn elf!?**\n\nWell I suppose I can still use ye...and I won't feel too bad when ye get lost to the sea.\n\nYe got any spine in there, Elf? I sure hope so...Yer gonna need it. Ye have quite the adventure ahead of ye..."
         else:
             image_file, image_name = "nero", "welcome"
-            exemplar_message = f"Welcome aboard, {self.player_data['exemplar'].capitalize()}! Hope yer blade is sharp and yer wits are sharper.\n\nYe have quite the adventure ahead of ye..."
+            exemplar_message = f"Welcome aboard, {interaction.user.mention}! Hope yer blade is sharp and yer wits are sharper.\n\nYe have quite the adventure ahead of ye..."
 
         # Combine the specific part with the base part for the full message
         welcome_message = f"{exemplar_message}"
@@ -254,17 +254,38 @@ class ConfirmExemplar(discord.ui.View, CommonResponses):
             },
             {
                 'title': "Captain Ner0",
-                'description': f"My name is Captain Ner0. I'll be adventuring alongside ye in the world of Mirandus and doin' me best to keep ye alive. \n\nNo promises though, {self.player_data['exemplar'].capitalize()}...This world is dangerous and the death lurks around every corner.",
+                'description': f"My name be Captain Ner0. I'll be adventurin' alongside ye in the world of Mirandus and doin' me best to keep ye out of the cemetery. \n\nNo promises though, {self.player_data['exemplar'].capitalize()}...This world is dangerous and death lurks around every corner.",
                 'main_image_file': 'nero',
                 'main_image_name': 'welcome',
                 'thumbnail_file': 'nero',
                 'thumbnail_image': 'pfp'
             },
             {
+                'title': "The Kraken's Wrath",
+                'description': "Ye see, matey, besides booty and plunder, our grand quest be revenge on the monstrous Kraken that attacked me ship, swallowed it whole, and took me precious lantern.\n\nIt's no ordinary beast; it's a terror of the deep, it is! To stand a chance, ye'll need to **gather loot**, **craft mighty weapons**, and **level up**.\n\nOnly the bravest and strongest can face such a foe and live to tell the tale.",
+                'main_image_file': 'nero',
+                'main_image_name': 'kraken',
+                'thumbnail_file': 'Icons',
+                'thumbnail_image': 'Lantern of the Sun'
+            },
+            {
+                'title': "Charting Yer Course",
+                'description': "Navigatin' this world requires more than just a sturdy ship and a keen eye. Ye'll be needin' resources...and plenty of 'em.\n\nUse `/mine` to dig for precious ores, `/chop` for timber, and `/battle` to test yer mettle against the creatures of this land.\n\nGather loot, craft gear, and prepare yerself. It's a pirate's life, savvy? And it's full of danger and glory.",
+                'main_image_file': 'nero',
+                'main_image_name': 'cemetery',
+            },
+            {
                 'title': "Ready for Adventure",
                  'description': f"That's about all the info ye need {interaction.user.mention}... Don't just stand there...get to lootin'!\n\nI'll be at the Jolly Roger drinkin' me rum if ye need anythin'.\n\n### **Use `/menu` to see all the commands available to ye.**",
                 'main_image_file': 'nero',
                 'main_image_name': 'welcome',
+            },
+            {
+                'title': "The Lantern's Secret",
+                'description': "*Beyond the sea's wrath and the Kraken's dark maw, a light unyielding, in shadow's claw. Its brilliance sealed by ancient decree, in sunken depths waits a key. A prize of old, bound by the tide, where darkness and light in silence collide.\n\nYe who seeks glory, take heed and make haste, for the **Lantern of the Sun** in cryptic waters is placed. Its secret guarded, its power confined, within a vault of numbers entwined. First to conquer, first to claim, a treasure in ethers, and eternal fame.\n\nSolve me this, brave souls of the sea: When darkness devours, where will light be? In the grasp of the Kraken, or the heart of the brave, lies the path to the lantern, through the deepest wave.*",
+                'main_image_file': 'Icons',
+                'main_image_name': 'Lantern of the Sun',
+
             }
         ]
 
@@ -290,7 +311,7 @@ class BeginAdventureView(discord.ui.View):
         self.setup_button()
 
     def setup_button(self):
-        self.right_arrow = discord.ui.Button(style=discord.ButtonStyle.secondary, label='▶')
+        self.right_arrow = discord.ui.Button(style=discord.ButtonStyle.blurple, label='▶')
         self.right_arrow.callback = self.next_step
         self.add_item(self.right_arrow)
 
