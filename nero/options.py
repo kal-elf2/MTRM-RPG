@@ -117,7 +117,8 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
             if zone_level == 5:
                 required_level = 99
             requirements_met = True
-            requirements_status = []
+            stat_requirements_status = []  # Separate list for stat requirements
+            inventory_requirements_status = []  # Separate list for inventory requirements
 
             check_mark_emoji = "✅"
             cross_mark_emoji = "❌"
@@ -131,22 +132,33 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
                     status_emoji = cross_mark_emoji
                 else:
                     status_emoji = check_mark_emoji
-                requirements_status.append(
+                stat_requirements_status.append(
                     f"{status_emoji} {skill_name.capitalize()} Level: {skill_level}/{required_level}")
 
             goblin_crown_owned = self.player.inventory.get_item_quantity("Goblin Crown") > 0
             if goblin_crown_owned:
-                requirements_status.append(f"{check_mark_emoji} Goblin Crown {get_emoji('goblin_crown_emoji')}")
+                inventory_requirements_status.append(
+                    f"{check_mark_emoji} Goblin Crown {get_emoji('goblin_crown_emoji')}")
             else:
                 requirements_met = False
-                requirements_status.append(f"{cross_mark_emoji} Goblin Crown {get_emoji('goblin_crown_emoji')}")
+                inventory_requirements_status.append(
+                    f"{cross_mark_emoji} Goblin Crown {get_emoji('goblin_crown_emoji')}")
 
-            requirements_message = "\n".join(requirements_status)
+            equipment_check_passed, equipment_messages = check_equipment_requirements(self.player,
+                                                                                      self.player.stats.zone_level)
 
+            inventory_requirements_status.extend(equipment_messages)
+
+            if not equipment_check_passed:
+                requirements_met = False
+
+            # Assemble the requirements message
+            requirements_message = "Stat Requirements:\n" + "\n".join(
+                stat_requirements_status) + "\n\nInventory Requirements:\n" + "\n".join(inventory_requirements_status)
 
             if not requirements_met:
                 message_title = "Ye be lackin' in preparation, matey!"
-                message_description = f"Before ye can take on the Kraken, ye must meet these conditions:\n\n{requirements_message}\n\n'Tis risky business, Kraken huntin'. I'll be needin one of them **Goblin Crowns** as payment for the journey. I'll keep the ship ready for yer return."
+                message_description = f"Before ye can take on the Kraken, ye must meet these conditions:\n\n{requirements_message}\n\n'Tis risky business, Kraken huntin'. I'll be 'needin' one of dem **Goblin Crowns** as payment for the journey...And mark me words, sailin' into battle without a **Voltaic Sword** and **full set o' Brigandine** be like courtin' Davy Jones himself! I'll keep the ship ready for yer return."
 
                 # Create and send the embed without the button as requirements are not met
                 embed = discord.Embed(title=message_title, description=message_description,
@@ -246,6 +258,42 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
             self.view.add_item(ResetButton(self.author_id))
 
         await interaction.edit_original_response(view=self.view)
+
+def check_equipment_requirements(player, zone_level):
+    equipped_weapon = player.inventory.equipped_weapon
+    equipped_armor = player.inventory.equipped_armor
+
+    check_mark_emoji = "✅"
+    cross_mark_emoji = "❌"
+    equipment_messages = []
+
+    # Assuming get_emoji() function is globally accessible
+    zone_emoji_mapping = {
+        1: 'common_emoji',
+        2: 'uncommon_emoji',
+        3: 'rare_emoji',
+        4: 'epic_emoji',
+        5: 'legendary_emoji'
+    }
+
+    # Check Voltaic Sword requirement
+    sword_check = equipped_weapon and equipped_weapon.name == "Voltaic Sword" and equipped_weapon.zone_level == zone_level
+    sword_message = f"{check_mark_emoji if sword_check else cross_mark_emoji} Voltaic Sword {get_emoji(zone_emoji_mapping[zone_level])} (equipped)"
+    equipment_messages.append(sword_message)
+
+    # Check Brigandine Armor set requirement
+    armor_pieces = ["chest", "boots", "gloves"]
+    armor_set_check = all(
+        getattr(equipped_armor.get(armor_piece), "name", "").startswith("Brigandine") and
+        getattr(equipped_armor.get(armor_piece), "zone_level", None) == zone_level
+        for armor_piece in armor_pieces
+    )
+
+    armor_message = f"{check_mark_emoji if armor_set_check else cross_mark_emoji} Complete Brigandine Set {get_emoji(zone_emoji_mapping[zone_level])} (equipped)"
+    equipment_messages.append(armor_message)
+
+    return all(msg.startswith(check_mark_emoji) for msg in equipment_messages), equipment_messages
+
 
 class ResetButton(discord.ui.Button, CommonResponses):
     def __init__(self, author_id):

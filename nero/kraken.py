@@ -73,7 +73,6 @@ class HuntKrakenButton(discord.ui.Button, CommonResponses):
         thumbnail_url = generate_urls("nero", "kraken")
         embed.set_thumbnail(url=thumbnail_url)
 
-
         # Send the embed message as a follow-up to the interaction
         await interaction.followup.send(embed=embed, ephemeral=True)
 
@@ -87,6 +86,7 @@ class BattleCommands(commands.Cog):
         self.battle_message = None
         self.cannon_angle = 20
         self.kraken = Kraken()
+        self.ship = Ship()
 
     @staticmethod
     def find_correct_angle(distance, velocity=100):
@@ -98,7 +98,6 @@ class BattleCommands(commands.Cog):
         except ValueError:
             # Return None or an appropriate value if the distance is too great for a hit at this velocity
             return None
-
 
     async def set_kraken_direction(self):
         directions = ["N", "S", "E", "W", "NW", "NE", "SE", "SW"]
@@ -149,7 +148,6 @@ class BattleCommands(commands.Cog):
         embed.set_image(url=generate_urls("nero", "kraken"))
         embed.set_thumbnail(url=generate_urls("Kraken", self.ship_direction))
 
-
         return embed
 
     @staticmethod
@@ -174,6 +172,29 @@ class BattleCommands(commands.Cog):
         # Update the battle_message with the new Kraken position and state
         if self.battle_message:
             await self.battle_message.edit(embed=self.create_battle_embed(player_data))
+
+    async def enter_phase_2(self):
+        from nero.phase2 import RepairView
+        # Notify players of the phase transition
+        phase_2_notification = discord.Embed(
+            title="The Kraken's Fury Unleashed!",
+            description="With wounds grievous and deep, the Kraken turns its ire towards your ship, abandoning the depths for a direct assault! Prepare to defend yer vessel, mateys!",
+            color=discord.Color.red()
+        )
+        phase_2_notification.set_image(url=generate_urls("nero", "kraken"))
+
+        if self.battle_message:
+            await self.battle_message.edit(embed=phase_2_notification)
+
+        # Remove the views
+        if hasattr(self, 'steering_view_message'):
+            await self.steering_view_message.delete()
+        if hasattr(self, 'aiming_view_message'):
+            await self.aiming_view_message.delete()
+
+        # Send the new repair view
+        repair_view = RepairView(self)
+        await self.battle_message.edit(view=repair_view)
 
     @commands.slash_command(name="kraken", description="Initiate a battle with the Kraken!")
     async def kraken(self, ctx):
@@ -218,13 +239,12 @@ class BattleCommands(commands.Cog):
         # Edit the original battle_message with the updated embed
         await self.battle_message.edit(embed=self.create_battle_embed(player_data))
 
-        # Prepare views for steering and aiming
-        steering_view = SteeringView(author_id=str(ctx.author.id), battle_commands=self, ctx=ctx, player_data=player_data)
-        aiming_view = AimingView(author_id=str(ctx.author.id), battle_commands=self, ctx=ctx, player=player, player_data=player_data, kraken=self.kraken)
-
-        # Send the views in separate messages to organize them into rows
-        await ctx.send(view=steering_view)
-        await ctx.send(view=aiming_view)
+        # Prepare and send views for steering and aiming, storing references to their messages
+        self.steering_view_message = await ctx.send(
+            view=SteeringView(author_id=str(ctx.author.id), battle_commands=self, ctx=ctx, player_data=player_data))
+        self.aiming_view_message = await ctx.send(
+            view=AimingView(author_id=str(ctx.author.id), battle_commands=self, ctx=ctx, player=player,
+                            player_data=player_data, kraken=self.kraken))
 
 class SteerButton(discord.ui.Button, CommonResponses):
     def __init__(self, label, author_id, battle_commands, direction_change, ctx, player_data, disabled=False):
@@ -298,7 +318,6 @@ class MiddleSteerButton(discord.ui.Button, CommonResponses):
         # Send the embed as an ephemeral message
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
-
 class FireButton(discord.ui.Button, CommonResponses):
     def __init__(self, author_id, emoji, battle_commands, kraken, player, player_data, ctx):
         super().__init__(style=discord.ButtonStyle.secondary, disabled=False, emoji=emoji)
@@ -332,7 +351,7 @@ class FireButton(discord.ui.Button, CommonResponses):
                                                      self.battle_commands.cannon_angle)
                 if hit:
                     damage = calculate_damage(distance_difference, self.player.stats.zone_level)
-                    self.battle_commands.kraken.take_damage(damage)
+                    self.battle_commands.kraken.take_damage(damage, self.battle_commands)
                     damage_message = f"\n\n**Ye dealt {damage} damage to the Kraken!**"
                     if damage > 300:
                         response = "Bullseye! Ye could've blinded it with that shot! " + damage_message
@@ -511,16 +530,26 @@ def create_monster_health_bar(current, max_health):
 
 def calculate_damage(distance_difference, zone_level):
     accuracy = max(0, 1 - abs(distance_difference) / 100)  # Scaling factor
-    return round(100 + (accuracy * 250)) * round(1.1**zone_level) # Min damage + scaled portion of max additional damage
+    return round(5000 + (accuracy * 250)) * round(1.1**zone_level) # Min damage + scaled portion of max additional damage
 
+"""Change back to 100"""
 
 class Kraken:
     def __init__(self, max_health=20000):
         self.max_health = max_health
         self.health = max_health
+        self.phase = 1
 
-    def take_damage(self, amount):
+    def take_damage(self, amount, battle_commands):
         self.health = max(0, self.health - amount)
+        if self.health <= self.max_health / 2 and self.phase == 1:
+            self.phase = 2
+            asyncio.create_task(battle_commands.enter_phase_2())
+
+    def tentacle_slam(self, ship):
+        damage = 500
+        ship.take_damage(damage)
+        return damage
 
     def is_alive(self):
         return self.health > 0
@@ -528,6 +557,24 @@ class Kraken:
     def health_bar(self):
         return create_monster_health_bar(self.health, self.max_health)
 
+class Ship:
+    def __init__(self, max_health=10000):
+        self.max_health = max_health
+        self.health = max_health
+
+    def take_damage(self, amount):
+        self.health = max(0, self.health - amount)
+        return self.health
+
+    def repair(self, amount):
+        self.health = min(self.max_health, self.health + amount)
+        return self.health
+
+    def is_sailable(self):
+        return self.health > 0
+
+    def health_bar(self):
+        return create_monster_health_bar(self.health, self.max_health)
 
 def setup(bot):
     bot.add_cog(BattleCommands(bot))

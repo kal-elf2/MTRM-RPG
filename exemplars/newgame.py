@@ -262,7 +262,7 @@ class ConfirmExemplar(discord.ui.View, CommonResponses):
             },
             {
                 'title': "The Kraken's Wrath",
-                'description': "Besides booty and plunder, our grand quest be revenge on the monstrous Kraken that attacked me ship, swallowed it whole, and took me precious lantern.\n\nIt's no ordinary beast; it's a terror of the deep, it is! To stand a chance, ye'll need to **gather loot**, **craft mighty weapons**, and **level up**.\n\nOnly the bravest and strongest can face such a foe and live to tell the tale.",
+                'description': "Besides booty and plunder, our grand quest be **revenge on a monstrous Kraken** that attacked me ship, swallowed it whole, and took me lantern down with it.\n\nThis be no ordinary lantern, matey. Its beam, as steadfast as the northern star, be needin' no fuel nor rest, shinin' bright 'cross the shadowy reaches o' Mirandus. It's said to hold the same light that fuels the ***Citadel of the Sun***.\n\nThe Kraken ain't no ordinary beast, either; it's a terror of the deep, it is! To stand a chance, ye'll need to **gather loot**, **craft mighty weapons**, and **hoist yer experience** to new heights!\n\nOnly the bravest and strongest can face such a foe and live to tell the tale.",
                 'main_image_file': 'nero',
                 'main_image_name': 'kraken',
                 'thumbnail_file': 'Icons',
