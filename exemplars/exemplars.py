@@ -13,6 +13,7 @@ class Exemplar:
         name,
         stats,
         inventory=None,
+        battle_actions=None
     ):
         self.name = name
         self.stats = PlayerStats(
@@ -39,6 +40,7 @@ class Exemplar:
         self.monster_kills = MonsterKills()
         self.shipwreck = Shipwreck()
         self.inventory = inventory if inventory else Inventory()
+        self.battle_actions = battle_actions if battle_actions else BattleActions()
         self.equipped_weapon = None
         self.equipped_armor = None
         self.attack = 0
@@ -395,7 +397,7 @@ class Shipwreck:
         shipwreck.cannonball = data.get("Cannonball", 0)
         return shipwreck
 
-class BattleActions: # Custom final kraken battle player pass-phrase
+class BattleActions:
     def __init__(self):
         # Define the action words for each attack category
         self.actions = {
@@ -403,9 +405,17 @@ class BattleActions: # Custom final kraken battle player pass-phrase
             "mast_action": random.choice(["fire", "hack", "jab"]),
             "swallow_action": random.choice(["boom", "thrust", "lash"]),
         }
+        # Track parchment state
+        self.parchment_received = False
+        self.parchment_unveiled = False
 
     def to_dict(self):
-        return self.actions
+        # Include the new parchment state attributes in the dictionary
+        return {
+            **self.actions,
+            "parchment_received": self.parchment_received,
+            "parchment_unveiled": self.parchment_unveiled,
+        }
 
     @classmethod
     def from_dict(cls, data):
@@ -415,7 +425,19 @@ class BattleActions: # Custom final kraken battle player pass-phrase
             "mast_action": data.get("mast_action"),
             "swallow_action": data.get("swallow_action"),
         }
+        # Retrieve the parchment state from the data
+        battle_actions.parchment_received = data.get("parchment_received", False)
+        battle_actions.parchment_unveiled = data.get("parchment_unveiled", False)
         return battle_actions
+
+    # Example methods to update the parchment state
+    def receive_parchment(self):
+        self.parchment_received = True
+
+    def unveil_parchment(self):
+        if self.parchment_received:
+            self.parchment_unveiled = True
+
 
 
 class PlayerStats:
