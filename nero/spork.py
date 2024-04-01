@@ -133,7 +133,7 @@ class RustySporkGiveForFreeButton(discord.ui.Button, CommonResponses):
             description="Ye're set on givin' it away without takin' a single Copper? A rare heart ye have, indeed! Are ye certain, matey?",
             color=discord.Color.gold()
         )
-        generosity_embed.set_image(url=generate_urls('nero', 'pondering'))
+        generosity_embed.set_image(url=generate_urls('nero', 'confused'))
         generosity_view = RustySporkGenerosityConfirmationView(self.player, self.author_id, self.player_data)
         await interaction.response.edit_message(embed=generosity_embed, view=generosity_view)
 
@@ -168,10 +168,10 @@ class RustySporkGenerosityYesButton(discord.ui.Button, CommonResponses):
         generosity_confirmed_embed = discord.Embed(
             title="Aye, I'll take this curious piece off yer hands...",
             description=(
-                "In the spirit of yer grand heartiness, take this parchment in return. It's no treasure to me eyes, but perhaps ye'll find its secrets worth more than gold."),
+                "In the spirit of yer grand heartiness, take this parchment in return. It's no treasure to me eyes, but perhaps ye'll find its secrets worth more than gold.\n\n***Type `/secret` to inspect further.***"),
             color=discord.Color.dark_gold()
         )
-        generosity_confirmed_embed.set_thumbnail(url=generate_urls("nero", "intrigued"))
+        generosity_confirmed_embed.set_thumbnail(url=generate_urls("nero", "cryptic"))
         await interaction.response.edit_message(embed=generosity_confirmed_embed, view=None)
 
 class RustySporkGenerosityNoButton(discord.ui.Button, CommonResponses):

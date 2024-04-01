@@ -2,10 +2,10 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "health": 843,
+            "health": 754,
             "max_health": 1075,
             "strength": 599,
-            "stamina": 495,
+            "stamina": 435,
             "max_stamina": 503,
             "attack": 300,
             "damage": 0,
@@ -17,11 +17,11 @@
             "mining_experience": 2450491,
             "woodcutting_level": 99,
             "woodcutting_experience": 2450211,
-            "zone_level": 1,
+            "zone_level": 3,
             "damage_taken": 0
         },
         "inventory": {
-            "coppers": 184275,
+            "coppers": 184486,
             "items": [
                 {
                     "name": "Charcoal",
@@ -45,7 +45,7 @@
                     "name": "Onyx",
                     "description": "A precious black gemstone. Used in citadel magical items and potent elixirs.",
                     "value": 100,
-                    "stack": 21974
+                    "stack": 21984
                 },
                 {
                     "name": "Pole",
@@ -184,12 +184,6 @@
                     "description": null,
                     "value": null,
                     "stack": 1000
-                },
-                {
-                    "name": "Rusty Spork",
-                    "description": "A rusty and useless trinket",
-                    "value": 100000,
-                    "stack": 1002
                 },
                 {
                     "name": "Cannonball",
@@ -354,14 +348,14 @@
             "Wolf": 0,
             "Goblin": 0,
             "Goblin Hunter": 0,
-            "Mega Brute": 0,
+            "Mega Brute": 1,
             "Wisp": 0,
             "Mother": 0,
             "Kraken": 0
         },
         "shipwreck": {
-            "Poplar Strip": 0,
-            "Cannonball": 0
+            "Poplar Strip": 20,
+            "Cannonball": 15
         },
         "battle_actions": {
             "grab_action": "pierce",
@@ -370,6 +364,6 @@
             "parchment_received": false,
             "parchment_unveiled": false
         },
-        "location": null
+        "location": "citadel"
     }
 }
