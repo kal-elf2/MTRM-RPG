@@ -11,6 +11,7 @@ from images.urls import generate_urls
 #Sell your items in the shop at the jolly roger
 # you need Combat, Woodcutting, and Mining to be at level {} in this zone
 # can't take anything with you so craft/sell as much as you can
+# generosity will be rewarded
 
 class HintsManager:
     def __init__(self):

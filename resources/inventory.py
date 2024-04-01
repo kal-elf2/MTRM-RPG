@@ -226,8 +226,3 @@ class Inventory:
                         item_list.remove(item)
                     return True
         return False
-
-
-
-
-

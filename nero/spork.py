@@ -12,10 +12,10 @@ class RustySporkDialogView(discord.ui.View):
         self.current_offer = current_offer
         self.offers = [1000, 5000, 10000, 100000]
         self.dialogues = [
-            "Arrr, what's this? A **Rusty Spork** ye say? Looks like a piece o' junk to me. But I suppose I could take it off yer hands for a few coppers...",
-            "Hmmm, on second thought, maybe there's some value to it... How's about I up me offer?",
-            "Ye drive a hard bargain! How about we make it even more interesting?",
-            "Avast! Ye've twisted me arm! I'll offer ye a fortune for it!"
+            f"Arrr, what's this? A {get_emoji('Rusty Spork')}**Rusty Spork** ye say? Seems fit only for the fish, but... for a few coppers, I might just find a nook for it among me oddities...",
+            "Hold fast, me hearties! What if... aye, what if this spork were the very thing to scratch that spot on me back no hand nor hook could reach? Worth a bit more gold to ponder its possibilities...",
+            "Ye've sparked me curiosity! Imagine, this spork as the master key to the legendary locker of Davy Jones, or perhaps a utensil fit for the merfolk's feast. 'Tis a fancy worth a few more coins...",
+            "Avast, me pondering's turned to a fever! This spork, worthless to most, might just be the crowning jewel of me collection of naval nonsense. A king's ransom for it, and not a copper less!"
         ]
         self.context_messages = [
             "(*Nero interrupts eagerly*)",
@@ -49,6 +49,8 @@ class RustySporkDialogView(discord.ui.View):
             self.add_item(
                 RustySporkFinalAcceptButton(f"Accept Offer", self.player, self.author_id,
                                             self.player_data))
+            self.add_item(
+                RustySporkGiveForFreeButton("Give for Free", self.player, self.author_id, self.player_data))
 
 class RustySporkOfferButton(discord.ui.Button, CommonResponses):
     def __init__(self, label, player, author_id, player_data, next_offer, context_messages):
@@ -112,3 +114,90 @@ class RustySporkFinalAcceptButton(discord.ui.Button, CommonResponses):
             )
 
         await interaction.response.edit_message(embed=confirmation_embed, view=None)
+
+class RustySporkGiveForFreeButton(discord.ui.Button, CommonResponses):
+    def __init__(self, label, player, author_id, player_data):
+        super().__init__(style=discord.ButtonStyle.grey, label=label)
+        self.player = player
+        self.author_id = author_id
+        self.player_data = player_data
+
+    async def callback(self, interaction: discord.Interaction):
+        if str(interaction.user.id) != self.author_id:
+            await self.nero_unauthorized_user_response(interaction)
+            return
+
+        # Display the generosity confirmation dialog
+        generosity_embed = discord.Embed(
+            title="By the stars, ye're a generous soul!",
+            description="Ye're set on givin' it away without takin' a single Copper? A rare heart ye have, indeed! Are ye certain, matey?",
+            color=discord.Color.gold()
+        )
+        generosity_embed.set_image(url=generate_urls('nero', 'pondering'))
+        generosity_view = RustySporkGenerosityConfirmationView(self.player, self.author_id, self.player_data)
+        await interaction.response.edit_message(embed=generosity_embed, view=generosity_view)
+
+class RustySporkGenerosityConfirmationView(discord.ui.View):
+    def __init__(self, player, author_id, player_data):
+        super().__init__()
+        self.player = player
+        self.author_id = author_id
+        self.player_data = player_data
+        self.add_item(RustySporkGenerosityYesButton(self.player, self.author_id, self.player_data))
+        self.add_item(RustySporkGenerosityNoButton(self.player, self.author_id, self.player_data))
+
+class RustySporkGenerosityYesButton(discord.ui.Button, CommonResponses):
+    def __init__(self, player, author_id, player_data):
+        super().__init__(style=discord.ButtonStyle.blurple, label="Yes")
+        self.player = player
+        self.author_id = author_id
+        self.player_data = player_data
+
+    async def callback(self, interaction: discord.Interaction):
+        if str(interaction.user.id) != self.author_id:
+            await self.nero_unauthorized_user_response(interaction)
+            return
+
+        # Remove the Rusty Spork from the inventory
+        self.player.inventory.remove_item("Rusty Spork", 1)
+
+        # Update player data to reflect changes in inventory
+        save_player_data(interaction.guild_id, self.author_id, self.player_data)
+
+        # Show the final message from Captain Nero about receiving the special item
+        generosity_confirmed_embed = discord.Embed(
+            title="Aye, I'll take this curious piece off yer hands...",
+            description=(
+                "In the spirit of yer grand heartiness, take this parchment in return. It's no treasure to me eyes, but perhaps ye'll find its secrets worth more than gold."),
+            color=discord.Color.dark_gold()
+        )
+        generosity_confirmed_embed.set_thumbnail(url=generate_urls("nero", "intrigued"))
+        await interaction.response.edit_message(embed=generosity_confirmed_embed, view=None)
+
+class RustySporkGenerosityNoButton(discord.ui.Button, CommonResponses):
+    def __init__(self, player, author_id, player_data):
+        super().__init__(style=discord.ButtonStyle.secondary, label="No")
+        self.player = player
+        self.author_id = author_id
+        self.player_data = player_data
+
+    async def callback(self, interaction: discord.Interaction):
+        if str(interaction.user.id) != self.author_id:
+            await self.nero_unauthorized_user_response(interaction)
+            return
+
+        # Emotional refusal message from Captain Nero
+        refusal_embed = discord.Embed(
+            title="Stop Playin' with Me Emotions!",
+            description=("Yarrr, ye be a real jester, eh? Comin' here, makin' generous offers, then pullin' "
+                         "them back like the sea's tide. Come back and see me when yer feelin' like makin' a trade, "
+                         "lest ye be walkin' the plank for playin' with me heart."),
+            color=discord.Color.dark_gold()
+        )
+        refusal_embed.set_thumbnail(url=generate_urls("nero", "mad"))
+
+        # Close the view (remove all buttons)
+        for item in self.view.children:
+            item.disabled = True
+
+        await interaction.response.edit_message(embed=refusal_embed, view=self.view)
