@@ -267,7 +267,6 @@ def check_equipment_requirements(player, zone_level):
     cross_mark_emoji = "❌"
     equipment_messages = []
 
-    # Assuming get_emoji() function is globally accessible
     zone_emoji_mapping = {
         1: 'common_emoji',
         2: 'uncommon_emoji',

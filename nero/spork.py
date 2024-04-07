@@ -1,8 +1,11 @@
 import discord
-from utils import CommonResponses, save_player_data
+from utils import CommonResponses, save_player_data, refresh_player_from_data
 from emojis import get_emoji
 from images.urls import generate_urls
 from probabilities import spork_value
+from discord.ext import commands
+from discord import Embed, ButtonStyle
+
 class RustySporkDialogView(discord.ui.View):
     def __init__(self, player, author_id, player_data, current_offer=0):
         super().__init__()
@@ -30,7 +33,7 @@ class RustySporkDialogView(discord.ui.View):
         offer_formatted = "{:,.0f}".format(self.offers[offer_index])
         # Prepend the context message to the embed's description
         context_message = self.context_messages[min(offer_index, len(self.context_messages) - 1)]
-        updated_description = f"{context_message}\n\n{self.dialogues[offer_index]} \n\n**What do ye say... {offer_formatted}{get_emoji('coppers_emoji')} for it?!**"
+        updated_description = f"{context_message}\n\n{self.dialogues[offer_index]} \n\n### **What do ye say... {offer_formatted}{get_emoji('coppers_emoji')} for it?!**"
         embed.description = updated_description
         return embed
 
@@ -161,6 +164,9 @@ class RustySporkGenerosityYesButton(discord.ui.Button, CommonResponses):
         # Remove the Rusty Spork from the inventory
         self.player.inventory.remove_item("Rusty Spork", 1)
 
+        # Set parchment_received to True in the player_data
+        self.player_data['battle_actions']['parchment_received'] = True
+
         # Update player data to reflect changes in inventory
         save_player_data(interaction.guild_id, self.author_id, self.player_data)
 
@@ -201,3 +207,105 @@ class RustySporkGenerosityNoButton(discord.ui.Button, CommonResponses):
             item.disabled = True
 
         await interaction.response.edit_message(embed=refusal_embed, view=self.view)
+
+class RustySporkCog(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @commands.slash_command(description="Reveal the secrets of the parchment, if any.")
+    async def secret(self, ctx):
+
+        # Refresh player object from the latest player data
+        player, player_data = await refresh_player_from_data(ctx)
+
+        # Check if player data exists for the user
+        if not player_data:
+            embed = Embed(title="Captain Ner0",
+                          description="Arr! What be this? No record of yer adventures? Start a new game with `/newgame` before I make ye walk the plank.",
+                          color=discord.Color.dark_gold())
+            embed.set_thumbnail(url=generate_urls("nero", "confused"))
+            await ctx.respond(embed=embed, ephemeral=True)
+            return
+
+        if not player_data['battle_actions'].get('parchment_received', False):
+            embed = Embed(title="Captain Ner0",
+                          description="Yarrr, it seems ye haven't got any secrets to unveil just yet. Perhaps there's something ye've missed along the way?",
+                          color=discord.Color.dark_gold())
+            embed.set_thumbnail(url=generate_urls("nero", "confused"))
+            await ctx.respond(embed=embed, ephemeral=True)
+            return
+
+        # Display parchment with unveil option if materium is sufficient
+        embed = Embed(title="Parchment",
+                      description="The parchment glows faintly, hinting at secrets untold.\n\n 20 Materium will unveil its mysteries...",
+                      color=discord.Color.dark_gold())
+        embed.set_image(url=generate_urls("nero", "cryptic"))
+
+        # Check if parchment already unveiled
+        if player_data['battle_actions'].get('parchment_unveiled', False):
+            secrets = [
+                player_data['battle_actions']['grab_action'],
+                player_data['battle_actions']['mast_action'],
+                player_data['battle_actions']['swallow_action'],
+            ]
+            secret_message = ', '.join(secrets)
+            embed.description = f"The parchment's secrets have already been revealed: {secret_message}"
+            await ctx.respond(embed=embed)
+        else:
+            view = UnveilParchmentView(player, player_data, str(ctx.author.id), ctx.guild.id)
+            await ctx.respond(embed=embed, view=view, ephemeral=True)
+
+
+class UnveilParchmentView(discord.ui.View):
+    def __init__(self, player, player_data, author_id, guild_id):
+        super().__init__()
+        self.player = player
+        self.player_data = player_data
+        self.author_id = author_id
+        self.guild_id = guild_id
+
+        enough_materium = player.inventory.materium >= 20
+
+        # Initialize the button with the correct attributes
+        self.unveil_button = discord.ui.Button(
+            label="20 MTRM",
+            style=ButtonStyle.blurple,
+            emoji=get_emoji('Materium'),  # Assuming get_emoji is a predefined function
+            custom_id="unveil_parchment",
+            disabled=not enough_materium
+        )
+        # Link the callback function directly using a method reference
+        self.unveil_button.callback = self.unveil_parchment_callback
+        self.add_item(self.unveil_button)
+
+    async def unveil_parchment_callback(self, interaction: discord.Interaction):
+        # Check if enough Materium is available (consider race conditions)
+        if self.player.inventory.materium >= 20:
+            self.player.inventory.materium -= 20
+            self.player_data['battle_actions']['parchment_unveiled'] = True
+            secrets = [
+                self.player_data['battle_actions'].get('grab_action', 'Unknown'),
+                self.player_data['battle_actions'].get('mast_action', 'Unknown'),
+                self.player_data['battle_actions'].get('swallow_action', 'Unknown'),
+            ]
+            secret_message = ', '.join(secrets)
+
+            # Assuming save_player_data is a function that exists elsewhere in your code
+            save_player_data(self.guild_id, self.author_id, self.player_data)
+
+            # Disable the button after use
+            self.unveil_button.disabled = True
+            # Ensure the view reflects the button's new state
+            await interaction.response.edit_message(view=self)
+
+            # Notify the user about the unveiled secrets
+            await interaction.followup.send(
+                content=f"The parchment reveals its secrets: {secret_message}",
+                ephemeral=True
+            )
+        else:
+            # Handle the case where Materium is insufficient
+            await interaction.response.send_message("Insufficient Materium.", ephemeral=True)
+
+def setup(bot):
+    bot.add_cog(RustySporkCog(bot))

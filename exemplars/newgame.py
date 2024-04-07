@@ -144,7 +144,6 @@ class PickExemplars(Select, CommonResponses):
         specialty = weapon_specialty.get(exemplar_instance.name.lower())
         embed = discord.Embed(color=discord.Color.blue(), title=f"{exemplar_instance.name} Exemplar Stats")
 
-        # Assuming there's a function to generate URLs for exemplars' thumbnails
         embed.set_image(url=generate_urls("exemplars", exemplar_instance.name))
 
         embed.add_field(name="⚔️ Combat Level", value=str(stats.combat_level), inline=True)

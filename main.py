@@ -3,8 +3,7 @@ import json
 import discord
 from discord.ext import commands
 from discord.commands import Option
-from utils import load_player_data, save_player_data, send_message, CommonResponses, refresh_player_from_data
-from exemplars.exemplars import Exemplar
+from utils import save_player_data, send_message, CommonResponses, refresh_player_from_data
 from monsters.monster import generate_monster_list, generate_monster_by_name, monster_battle, create_battle_embed, footer_text_for_embed
 from discord import Embed
 from stats import ResurrectOptions
@@ -21,6 +20,7 @@ bot.load_extension("resources.backpack")
 bot.load_extension("citadel.buttons")
 bot.load_extension("nero.kraken")
 bot.load_extension("exemplars.newgame")
+bot.load_extension("nero.spork")
 
 guild_data = {}
 
@@ -46,9 +46,7 @@ async def setchannel(ctx):
 
     await ctx.respond(f'{ctx.channel.name} Channel set. Please use "newgame" command to start a new adventure! .')
 
-
 def update_special_attack_options(battle_context):
-    # Assuming battle_context has a reference to the special_attack_options_view
     if battle_context.special_attack_options_view:
         battle_context.special_attack_options_view.update_button_states()
 
@@ -60,8 +58,8 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
     guild_id = ctx.guild.id
     player_id = str(ctx.author.id)
 
-    # Load only the specific player's data
-    player_data = load_player_data(guild_id, player_id)
+    # Refresh player object from the latest player data
+    player, player_data = await refresh_player_from_data(ctx)
 
     if not player_data:
         embed = Embed(title="Captain Ner0",
@@ -70,10 +68,6 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
         embed.set_thumbnail(url=generate_urls("nero", "confused"))
         await ctx.respond(embed=embed, ephemeral=True)
         return
-
-    player = Exemplar(player_data["exemplar"],
-                      player_data["stats"],
-                      player_data["inventory"])
 
     if player.stats.health <= 0:
         embed = Embed(title="Captain Ner0",

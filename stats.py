@@ -3,7 +3,7 @@ import math
 import discord
 from discord import Embed
 from discord.ext import commands
-from utils import load_player_data, load_all_player_data, save_player_data, CommonResponses
+from utils import load_player_data, load_all_player_data, save_player_data, CommonResponses, refresh_player_from_data
 from exemplars.exemplars import Exemplar
 from emojis import get_emoji
 from images.urls import generate_urls
@@ -585,10 +585,8 @@ class ResurrectOptions(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        self.player_data = load_player_data(interaction.guild.id, self.author_id)
-        self.player = Exemplar(self.player_data["exemplar"],
-                               self.player_data["stats"],
-                               self.player_data["inventory"])
+        # Refresh player object from the latest player data
+        self.player, self.player_data = await refresh_player_from_data(interaction)
 
         if self.player.stats.health > 0:
             # Player is not dead
@@ -629,10 +627,8 @@ class ResurrectOptions(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        self.player_data = load_player_data(interaction.guild.id, self.author_id)
-        self.player = Exemplar(self.player_data["exemplar"],
-                               self.player_data["stats"],
-                               self.player_data["inventory"])
+        # Refresh player object from the latest player data
+        self.player, self.player_data = await refresh_player_from_data(interaction)
 
         if self.player.stats.health > 0:
             # Player is not dead

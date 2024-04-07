@@ -128,7 +128,7 @@ def generate_backpack_image(interaction):
 
                 # Drawing the quantity on the image in the top right corner of the charm
                 text_width, text_height = draw.textsize(str(charm.stack),
-                                                        font=font)  # charm.stack is assumed to be the quantity of charms
+                                                        font=font)
                 draw.text((adjusted_x_offset + square_size - text_width - 5, adjusted_y_offset + 5), str(charm.stack),
                           fill="white", font=font)
 
