@@ -12,7 +12,7 @@ from emojis import get_emoji
 from images.urls import generate_urls
 
 bot = commands.Bot(command_prefix="/", intents=discord.Intents.all())
-# Add the cogs to your bot
+# Add the cogs to the bot
 bot.load_extension("stats")
 bot.load_extension("resources.woodcutting")
 bot.load_extension("resources.mining")

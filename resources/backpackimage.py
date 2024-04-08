@@ -287,10 +287,10 @@ def generate_backpack_image(interaction):
                     base_img.paste(arrow_bg_square, (int(arrow_x_offset), int(arrow_y_offset)), arrow_bg_square)
 
                     # Define the text to be added
-                    text_to_add = "∞"  # Replace with your desired text
+                    text_to_add = "∞"
 
-                    # Setting font for the text. Use the same font and size as the rest of your code.
-                    font = ImageFont.truetype("arial.ttf", 22)  # Adjust the font and size as needed
+                    # Setting font for the text.
+                    font = ImageFont.truetype("arial.ttf", 22)  # Adjust the font and size
 
                     # Calculate the position to place the text in the top right corner of the arrow box
                     text_width, text_height = draw.textsize(text_to_add, font=font)

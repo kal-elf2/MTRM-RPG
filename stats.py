@@ -352,7 +352,6 @@ class MonsterKillsDropdown(discord.ui.Select, CommonResponses):
         self.author_id = author_id
         self.guild_id = guild_id
 
-        # Dynamically generate options based on the monsters in your game
         options = [
             discord.SelectOption(label="Rabbit", value="Rabbit"),
             discord.SelectOption(label="Deer", value="Deer"),
@@ -528,7 +527,6 @@ class RichListDropdown(discord.ui.Select, CommonResponses):
         # Send the embed as an ephemeral message
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
-
 class ResetButton(discord.ui.Button, CommonResponses):
     def __init__(self, author_id, guild_id):
         self.author_id = author_id
@@ -579,8 +577,6 @@ class ResurrectOptions(discord.ui.View, CommonResponses):
     mtrm = get_emoji('Materium')
     async def use_mtrm_callback(self, interaction):
 
-        # Check if the user who interacted is the same as the one who initiated the view
-        # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
@@ -621,8 +617,6 @@ class ResurrectOptions(discord.ui.View, CommonResponses):
 
     async def resurrect_callback(self, interaction):
 
-        # Check if the user who interacted is the same as the one who initiated the view
-        # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
@@ -743,7 +737,6 @@ class ResurrectOptions(discord.ui.View, CommonResponses):
 
     @staticmethod
     async def not_dead_response(interaction):
-        # Static method to handle the response when the player is not dead
         nero_embed = discord.Embed(
             title="Captain Ner0",
             description="HEY! Those be MY buttons! LEAVE 'EM BE!",

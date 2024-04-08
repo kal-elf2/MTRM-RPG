@@ -212,7 +212,7 @@ class RustySporkCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.slash_command(description="Reveal the secrets of the parchment, if any.")
+    @commands.slash_command(description="Reveal secrets that have been gathered.")
     async def secret(self, ctx):
 
         # Refresh player object from the latest player data
@@ -270,7 +270,7 @@ class UnveilParchmentView(discord.ui.View):
         self.unveil_button = discord.ui.Button(
             label="20 MTRM",
             style=ButtonStyle.blurple,
-            emoji=get_emoji('Materium'),  # Assuming get_emoji is a predefined function
+            emoji=get_emoji('Materium'),
             custom_id="unveil_parchment",
             disabled=not enough_materium
         )
@@ -279,33 +279,35 @@ class UnveilParchmentView(discord.ui.View):
         self.add_item(self.unveil_button)
 
     async def unveil_parchment_callback(self, interaction: discord.Interaction):
-        # Check if enough Materium is available (consider race conditions)
-        if self.player.inventory.materium >= 20:
-            self.player.inventory.materium -= 20
-            self.player_data['battle_actions']['parchment_unveiled'] = True
-            secrets = [
-                self.player_data['battle_actions'].get('grab_action', 'Unknown'),
-                self.player_data['battle_actions'].get('mast_action', 'Unknown'),
-                self.player_data['battle_actions'].get('swallow_action', 'Unknown'),
-            ]
-            secret_message = ', '.join(secrets)
+        # Deduct Materium and update the battle actions
+        self.player.inventory.materium -= 20
+        self.player_data['battle_actions']['parchment_unveiled'] = True
+        secrets = [
+            self.player_data['battle_actions'].get('grab_action', 'Unknown'),
+            self.player_data['battle_actions'].get('mast_action', 'Unknown'),
+            self.player_data['battle_actions'].get('swallow_action', 'Unknown'),
+        ]
+        secret_message = ', '.join(secrets)
 
-            # Assuming save_player_data is a function that exists elsewhere in your code
-            save_player_data(self.guild_id, self.author_id, self.player_data)
+        save_player_data(self.guild_id, self.author_id, self.player_data)
 
-            # Disable the button after use
-            self.unveil_button.disabled = True
-            # Ensure the view reflects the button's new state
-            await interaction.response.edit_message(view=self)
+        # Disable the button after use
+        self.unveil_button.disabled = True
 
-            # Notify the user about the unveiled secrets
-            await interaction.followup.send(
-                content=f"The parchment reveals its secrets: {secret_message}",
-                ephemeral=True
-            )
-        else:
-            # Handle the case where Materium is insufficient
-            await interaction.response.send_message("Insufficient Materium.", ephemeral=True)
+        # Ensure the view reflects the button's new state
+        await interaction.response.edit_message(view=self)
+
+        # Craft a cryptic message for the unveiled secrets
+        epic_message = (
+            f"As the ink fades and the truths emerge, the shadows whisper of a force beneath the waves. "
+            f"In the abyss where darkness dwells, the Kraken stirs, its eyes like voids. "
+            f"The secret to quell the beast lies within: {secret_message}. "
+            f"Three keys to bind the tempest's might, whispered by the ancients, now yours to wield. "
+            f"Use them when the sea turns wrathful, for only then can the storm be silenced."
+        )
+
+        # Notify the user about the unveiled secrets with the epic message
+        await interaction.followup.send(content=epic_message, ephemeral=True)
 
 def setup(bot):
     bot.add_cog(RustySporkCog(bot))
