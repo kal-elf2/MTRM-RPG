@@ -86,6 +86,11 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
         await CommonResponses.during_kraken_battle_response(ctx)
         return
 
+    # Check for battle flag and return if battling
+    if player_data["location"] == "battle":
+        await CommonResponses.ongoing_battle_response(ctx)
+        return
+
     player_data["location"] = "battle"
     save_player_data(guild_id, player_id, player_data)
 

@@ -47,6 +47,11 @@ class LootOptions(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
+        # Check for battle flag and return if battling
+        if self.player_data["location"] == "battle":
+            await CommonResponses.ongoing_battle_response(interaction)
+            return
+
         try:
             # Acknowledge the interaction
             await interaction.response.defer()
@@ -85,13 +90,8 @@ class LootOptions(discord.ui.View, CommonResponses):
         # Defer the response
         await interaction.response.defer()
 
-        from exemplars.exemplars import Exemplar
-
-        # Reload the latest player data
-        self.player_data = load_player_data(self.guild_id, self.author_id)
-        self.player = Exemplar(self.player_data["exemplar"],
-                               self.player_data["stats"],
-                               self.player_data["inventory"])
+        # Refresh player object from the latest player data
+        self.player, self.player_data = await refresh_player_from_data(interaction)
 
         # Extract loot items and messages from the battle outcome
         loot = self.battle_outcome[3]
@@ -348,11 +348,7 @@ async def start_battle(ctx, monster, player_data, player, author_id, guild_id, b
     save_player_data(guild_id, author_id, player_data)
 
 def use_potion_logic(player, potion_name):
-    """
-    Handles the logic of using a potion.
-    :param player: Exemplar object representing the player
-    :param potion_name: Name of the potion being used
-    """
+
     potion = next((p for p in player.inventory.potions if p.name == potion_name), None)
     if potion and potion.stack > 0:
         # Apply the potion effect

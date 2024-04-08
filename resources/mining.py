@@ -10,7 +10,6 @@ from resources.ore import ORE_TYPES, Ore
 from resources.herb import HERB_TYPES
 from resources.materium import Materium
 from stats import ResurrectOptions
-from exemplars.exemplars import Exemplar
 from utils import load_player_data, save_player_data, send_message, CommonResponses, refresh_player_from_data
 from monsters.monster import create_battle_embed, monster_battle, generate_monster_by_name, footer_text_for_embed
 from monsters.battle import BattleOptions, LootOptions
@@ -633,9 +632,9 @@ class MiningCog(commands.Cog, CommonResponses):
     async def mine(self, ctx,
                    ore_type: Option(str, "Type of ore to mine", choices=['Iron Ore', 'Coal', 'Carbon'],
                                      required=True)):
-        guild_id = ctx.guild.id
-        author_id = str(ctx.author.id)
-        player_data = load_player_data(guild_id, author_id)
+
+        # Refresh player object from the latest player data
+        player, player_data = await refresh_player_from_data(ctx)
 
         # Check if player data exists for the user
         if not player_data:
@@ -645,10 +644,6 @@ class MiningCog(commands.Cog, CommonResponses):
             embed.set_thumbnail(url=generate_urls("nero", "confused"))
             await ctx.respond(embed=embed, ephemeral=True)
             return
-
-        player = Exemplar(player_data["exemplar"],
-                          player_data["stats"],
-                          player_data["inventory"])
 
         # Check the player's health before starting a battle
         if player.stats.health <= 0:
@@ -742,7 +737,7 @@ class MiningCog(commands.Cog, CommonResponses):
         embed.set_footer(text=footer)
 
         # Create the view and send the response
-        view = MineButton(ctx, player, ore_type, player_data, guild_id, author_id, embed)
+        view = MineButton(ctx, player, ore_type, player_data, ctx.guild.id, str(ctx.author.id), embed)
 
         await ctx.respond(embed=embed, view=view)
 

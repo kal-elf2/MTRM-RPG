@@ -10,7 +10,6 @@ from resources.herb import HERB_TYPES
 from resources.tree import TREE_TYPES, Tree
 from resources.materium import Materium
 from stats import ResurrectOptions
-from exemplars.exemplars import Exemplar
 from emojis import get_emoji
 from utils import load_player_data, save_player_data, send_message, CommonResponses, refresh_player_from_data
 from monsters.monster import create_battle_embed, monster_battle, generate_monster_by_name
@@ -36,7 +35,6 @@ tree_emoji_mapping = {
 with open("level_data.json", "r") as f:
     LEVEL_DATA = json.load(f)
 
-
 def generate_random_monster(tree_type):
     monster_chances = {}
     if tree_type == "Pine":
@@ -52,7 +50,6 @@ def generate_random_monster(tree_type):
     probabilities = list(monster_chances.values())
 
     return np.random.choice(monsters, p=probabilities)
-
 
 def attempt_herb_drop(zone_level):
     if random.random() < herb_drop_percent:
@@ -74,8 +71,6 @@ def attempt_herb_drop(zone_level):
 
     return None
 
-
-# Function to handle MTRM drop
 def attempt_mtrm_drop(zone_level):
     base_mtrm_drop_rate = mtrm_drop_percent
     mtrm_drop_rate = min(base_mtrm_drop_rate * zone_level, 1)  # Adjust the drop rate based on zone level and cap at 1
@@ -109,7 +104,6 @@ def footer_text_for_woodcutting_embed(ctx, player, player_level, zone_level, tre
         footer_text = f"🪓 Woodcut Level:\u00A0\u00A0{woodcutting_level}\u00A0\u00A0|\u00A0\u00A0✅ Success Rate:\u00A0\u00A0{success_percentage:.1f}%"
 
     return footer_text
-
 
 # View class for Harvest button
 class HarvestButton(discord.ui.View, CommonResponses):
@@ -635,9 +629,10 @@ class WoodcuttingCog(commands.Cog, CommonResponses):
     async def chop(self, ctx,
                    tree_type: Option(str, "Type of tree to chop", choices=['Pine', 'Yew', 'Ash', 'Poplar'],
                                      required=True)):
-        guild_id = ctx.guild.id
-        author_id = str(ctx.author.id)
-        player_data = load_player_data(guild_id, author_id)
+
+        # Refresh player object from the latest player data
+        player, player_data = await refresh_player_from_data(ctx)
+
 
         # Check if player data exists for the user
         if not player_data:
@@ -647,10 +642,6 @@ class WoodcuttingCog(commands.Cog, CommonResponses):
             embed.set_thumbnail(url=generate_urls("nero", "confused"))
             await ctx.respond(embed=embed, ephemeral=True)
             return
-
-        player = Exemplar(player_data["exemplar"],
-                          player_data["stats"],
-                          player_data["inventory"])
 
         # Check the player's health before starting a battle
         if player.stats.health <= 0:
@@ -746,7 +737,7 @@ class WoodcuttingCog(commands.Cog, CommonResponses):
         embed.set_footer(text=footer)
 
         # Create the view and send the response
-        view = HarvestButton(ctx, player, tree_type, player_data, guild_id, author_id, embed)
+        view = HarvestButton(ctx, player, tree_type, player_data, ctx.guild_id, str(ctx.author.id), embed)
 
         await ctx.respond(embed=embed, view=view)
 
