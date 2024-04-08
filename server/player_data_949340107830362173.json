@@ -2,7 +2,7 @@
     "807063811852206090": {
         "exemplar": "elf",
         "stats": {
-            "health": 565,
+            "health": 50,
             "max_health": 1075,
             "strength": 599,
             "stamina": 381,
@@ -365,7 +365,7 @@
                 "value": 25000,
                 "stack": 1
             },
-            "materium": 61
+            "materium": 41
         },
         "dice_stats": {
             "total_games": 0,
@@ -396,6 +396,6 @@
             "parchment_received": true,
             "parchment_unveiled": true
         },
-        "location": "citadel"
+        "location": null
     }
 }
