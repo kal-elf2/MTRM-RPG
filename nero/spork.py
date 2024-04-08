@@ -53,7 +53,7 @@ class RustySporkDialogView(discord.ui.View):
                 RustySporkFinalAcceptButton(f"Accept Offer", self.player, self.author_id,
                                             self.player_data))
             self.add_item(
-                RustySporkGiveForFreeButton("Give for Free", self.player, self.author_id, self.player_data))
+                RustySporkGiveForFreeButton("Give it Away", self.player, self.author_id, self.player_data))
 
 class RustySporkOfferButton(discord.ui.Button, CommonResponses):
     def __init__(self, label, player, author_id, player_data, next_offer, context_messages):
@@ -237,7 +237,7 @@ class RustySporkCog(commands.Cog):
 
         # Display parchment with unveil option if materium is sufficient
         embed = Embed(title="Parchment",
-                      description="The parchment glows faintly, hinting at secrets untold.\n\n 20 Materium will unveil its mysteries...",
+                      description=f"The parchment glows faintly, hinting at secrets untold.\n\n**{get_emoji('Materium')} 20 Materium will unveil its mysteries...**",
                       color=discord.Color.dark_gold())
         embed.set_image(url=generate_urls("nero", "cryptic"))
 
@@ -248,13 +248,28 @@ class RustySporkCog(commands.Cog):
                 player_data['battle_actions']['mast_action'],
                 player_data['battle_actions']['swallow_action'],
             ]
-            secret_message = ', '.join(secrets)
-            embed.description = f"The parchment's secrets have already been revealed: {secret_message}"
-            await ctx.respond(embed=embed)
+            secret_message = '... '.join(secrets)
+
+            # Craft a reminder of the unveiled secrets
+            reminder_message = Embed(
+                title="Whispers of Fate Resound",
+                description=(
+                    f"*The secrets once veiled by shadow and time have been laid bare, their power entrusted to you. "
+                    f"As the tides of destiny converge, remember the words that pierce the darkness:\n## **{secret_message}**\n\n "
+                    f"These are not merely words, but keys to the final lock, the last stand against the abyssal maw. "
+                    f"The Kraken waits in the deep, its challenge unending. "
+                    f"Arm yourself with this knowledge, for the storm's eye watches, and the final battle draws near.*"
+                ),
+                color=discord.Color.dark_gold()
+            )
+            reminder_message.set_thumbnail(
+                url=generate_urls("nero", "cryptic"))
+
+            await ctx.respond(embed=reminder_message, ephemeral=True)
+
         else:
             view = UnveilParchmentView(player, player_data, str(ctx.author.id), ctx.guild.id)
             await ctx.respond(embed=embed, view=view, ephemeral=True)
-
 
 class UnveilParchmentView(discord.ui.View):
     def __init__(self, player, player_data, author_id, guild_id):
@@ -268,7 +283,7 @@ class UnveilParchmentView(discord.ui.View):
 
         # Initialize the button with the correct attributes
         self.unveil_button = discord.ui.Button(
-            label="20 MTRM",
+            label="Reveal Secret",
             style=ButtonStyle.blurple,
             emoji=get_emoji('Materium'),
             custom_id="unveil_parchment",
@@ -282,12 +297,13 @@ class UnveilParchmentView(discord.ui.View):
         # Deduct Materium and update the battle actions
         self.player.inventory.materium -= 20
         self.player_data['battle_actions']['parchment_unveiled'] = True
+
         secrets = [
-            self.player_data['battle_actions'].get('grab_action', 'Unknown'),
-            self.player_data['battle_actions'].get('mast_action', 'Unknown'),
-            self.player_data['battle_actions'].get('swallow_action', 'Unknown'),
+            self.player_data['battle_actions'].get('grab_action'),
+            self.player_data['battle_actions'].get('mast_action'),
+            self.player_data['battle_actions'].get('swallow_action'),
         ]
-        secret_message = ', '.join(secrets)
+        secret_message = '... '.join(secrets)
 
         save_player_data(self.guild_id, self.author_id, self.player_data)
 
@@ -297,17 +313,22 @@ class UnveilParchmentView(discord.ui.View):
         # Ensure the view reflects the button's new state
         await interaction.response.edit_message(view=self)
 
-        # Craft a cryptic message for the unveiled secrets
-        epic_message = (
-            f"As the ink fades and the truths emerge, the shadows whisper of a force beneath the waves. "
-            f"In the abyss where darkness dwells, the Kraken stirs, its eyes like voids. "
-            f"The secret to quell the beast lies within: {secret_message}. "
-            f"Three keys to bind the tempest's might, whispered by the ancients, now yours to wield. "
-            f"Use them when the sea turns wrathful, for only then can the storm be silenced."
+        embed = Embed(
+            title="The Echoes of the Deep",
+            description=(
+                f"*As the ink fades and the truths emerge, the shadows whisper of a force beneath the waves. "
+                f"In the abyss where darkness dwells, the Kraken stirs, its eyes like voids. "
+                f"The secret to quell the beast lies within:\n## **{secret_message}**\n\n"
+                f"Three keys to bind the tempest's might, whispered by the ancients, now yours to wield. "
+                f"Use them when the sea turns wrathful, for only then can the storm be silenced.*\n\n"
+                f"*Revisit at any time with `/secret`.*"
+            ),
+            color=discord.Color.dark_gold()
         )
+        embed.set_thumbnail(url=generate_urls("nero", "cryptic"))
 
-        # Notify the user about the unveiled secrets with the epic message
-        await interaction.followup.send(content=epic_message, ephemeral=True)
+        # Send the embed in a follow-up message
+        await interaction.followup.send(embed=embed, ephemeral=True)
 
 def setup(bot):
     bot.add_cog(RustySporkCog(bot))
