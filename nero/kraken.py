@@ -340,8 +340,11 @@ class FireButton(discord.ui.Button, CommonResponses):
         await interaction.response.defer()
 
         cannonball_count = self.player_data['shipwreck'].get('Cannonball', 0)
+        phase_transition_required = False
+
         if cannonball_count > 0:
             self.player_data['shipwreck']['Cannonball'] -= 1
+            cannonball_count -= 1
 
             # Check if the ship is aiming in the correct general direction
             if self.battle_commands.ship_direction != self.battle_commands.kraken_direction:
@@ -351,7 +354,7 @@ class FireButton(discord.ui.Button, CommonResponses):
                                                      self.battle_commands.cannon_angle)
                 if hit:
                     damage = calculate_damage(distance_difference, self.player.stats.zone_level)
-                    self.battle_commands.kraken.take_damage(damage, self.battle_commands)
+                    phase_transition_required = self.battle_commands.kraken.take_damage(damage)
                     damage_message = f"\n\n**Ye dealt {damage} damage to the Kraken!**"
                     if damage > 300:
                         response = "Bullseye! Ye could've blinded it with that shot! " + damage_message
@@ -396,12 +399,14 @@ class FireButton(discord.ui.Button, CommonResponses):
             # Edit the original message with the updated embed
             await self.battle_commands.battle_message.edit(embed=existing_embed)
 
-            # Optional: Move the Kraken or handle the end of the battle if the Kraken is defeated
-            if self.battle_commands.kraken.is_alive():
+            if phase_transition_required:
+                await asyncio.sleep(2)
+                await self.battle_commands.enter_phase_2()
+            elif cannonball_count > 0:
                 asyncio.create_task(self.battle_commands.move_kraken(self.player_data))
             else:
-                # Handle victory conditions, if applicable
-                pass
+                await self.handle_no_cannonballs(interaction)
+
         else:
             # Player has run out of cannonballs
             await self.handle_no_cannonballs(interaction)
@@ -467,6 +472,7 @@ class FireButton(discord.ui.Button, CommonResponses):
         )
         # Set the image to the citadel they are now in
         embed.set_image(url=generate_urls("Citadel", citadel_name))
+        await asyncio.sleep(2)
         await interaction.followup.send(embed=embed, ephemeral=False)
 
 class SteeringView(discord.ui.View):
@@ -540,11 +546,12 @@ class Kraken:
         self.health = max_health
         self.phase = 1
 
-    def take_damage(self, amount, battle_commands):
+    def take_damage(self, amount):
         self.health = max(0, self.health - amount)
         if self.health <= self.max_health / 2 and self.phase == 1:
             self.phase = 2
-            asyncio.create_task(battle_commands.enter_phase_2())
+            return True  # Signal that phase transition is required
+        return False  # No phase transition needed
 
     def tentacle_slam(self, ship):
         damage = 500

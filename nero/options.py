@@ -277,7 +277,7 @@ def check_equipment_requirements(player, zone_level):
 
     # Check Voltaic Sword requirement
     sword_check = equipped_weapon and equipped_weapon.name == "Voltaic Sword" and equipped_weapon.zone_level == zone_level
-    sword_message = f"{check_mark_emoji if sword_check else cross_mark_emoji} Voltaic Sword {get_emoji(zone_emoji_mapping[zone_level])} (equipped)"
+    sword_message = f"{check_mark_emoji if sword_check else cross_mark_emoji} {get_emoji(zone_emoji_mapping[zone_level])} Voltaic Sword (equipped) {get_emoji('Voltaic Sword')}"
     equipment_messages.append(sword_message)
 
     # Check Brigandine Armor set requirement
@@ -288,7 +288,7 @@ def check_equipment_requirements(player, zone_level):
         for armor_piece in armor_pieces
     )
 
-    armor_message = f"{check_mark_emoji if armor_set_check else cross_mark_emoji} Complete Brigandine Set {get_emoji(zone_emoji_mapping[zone_level])} (equipped)"
+    armor_message = f"{check_mark_emoji if armor_set_check else cross_mark_emoji} {get_emoji(zone_emoji_mapping[zone_level])} Complete Brigandine Set (equipped) {get_emoji('Brigandine Armor')}{get_emoji('Brigandine Gloves')}{get_emoji('Brigandine Boots')}"
     equipment_messages.append(armor_message)
 
     return all(msg.startswith(check_mark_emoji) for msg in equipment_messages), equipment_messages
