@@ -7,6 +7,7 @@ import asyncio
 from discord.ext import commands
 from random import choice, randint
 import math
+import random
 
 class HuntKrakenButton(discord.ui.Button, CommonResponses):
     def __init__(self, guild_id, player_data, author_id):
@@ -536,7 +537,7 @@ def create_monster_health_bar(current, max_health):
 
 def calculate_damage(distance_difference, zone_level):
     accuracy = max(0, 1 - abs(distance_difference) / 100)  # Scaling factor
-    return round(5000 + (accuracy * 250)) * round(1.1**zone_level) # Min damage + scaled portion of max additional damage
+    return round(100 + (accuracy * 250)) * round(1.1**zone_level) # Min damage + scaled portion of max additional damage
 
 """Change back to 100"""
 
@@ -554,9 +555,11 @@ class Kraken:
         return False  # No phase transition needed
 
     def tentacle_slam(self, ship):
-        damage = 500
-        ship.take_damage(damage)
-        return damage
+        ship_parts = ["Mast", "Hull", "Helm"]
+        part = random.choice(ship_parts)
+        damage = random.randint(1, 3)
+        ship.take_damage(part, damage)
+        return part, damage
 
     def is_alive(self):
         return self.health > 0
@@ -565,23 +568,41 @@ class Kraken:
         return create_monster_health_bar(self.health, self.max_health)
 
 class Ship:
-    def __init__(self, max_health=10000):
-        self.max_health = max_health
-        self.health = max_health
+    def __init__(self, mast_max_health=5, hull_max_health=10, helm_max_health=3):
+        self.mast_max_health = mast_max_health
+        self.hull_max_health = hull_max_health
+        self.helm_max_health = helm_max_health
 
-    def take_damage(self, amount):
-        self.health = max(0, self.health - amount)
-        return self.health
+        self.mast_health = mast_max_health
+        self.hull_health = hull_max_health
+        self.helm_health = helm_max_health
 
-    def repair(self, amount):
-        self.health = min(self.max_health, self.health + amount)
-        return self.health
+    def take_damage(self, part, amount):
+        if part == "Mast":
+            self.mast_health = max(0, self.mast_health - amount)
+        elif part == "Hull":
+            self.hull_health = max(0, self.hull_health - amount)
+        elif part == "Helm":
+            self.helm_health = max(0, self.helm_health - amount)
+
+    def repair(self, part, amount):
+        if part == "Mast":
+            self.mast_health = min(self.mast_max_health, self.mast_health + amount)
+        elif part == "Hull":
+            self.hull_health = min(self.hull_max_health, self.hull_health + amount)
+        elif part == "Helm":
+            self.helm_health = min(self.helm_max_health, self.helm_health + amount)
 
     def is_sailable(self):
-        return self.health > 0
+        return all(health > 0 for health in [self.mast_health, self.hull_health, self.helm_health])
 
-    def health_bar(self):
-        return create_monster_health_bar(self.health, self.max_health)
+    def get_health(self, part):
+        if part == "Mast":
+            return self.mast_health
+        elif part == "Hull":
+            return self.hull_health
+        elif part == "Helm":
+            return self.helm_health
 
 def setup(bot):
     bot.add_cog(BattleCommands(bot))
