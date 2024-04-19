@@ -429,6 +429,6 @@
             "parchment_received": true,
             "parchment_unveiled": true
         },
-        "location": "citadel"
+        "location": null
     }
 }

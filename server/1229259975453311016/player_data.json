@@ -14,9 +14,9 @@
             "combat_level": 1,
             "combat_experience": 0,
             "mining_level": 1,
-            "mining_experience": 38,
+            "mining_experience": 36,
             "woodcutting_level": 1,
-            "woodcutting_experience": 57,
+            "woodcutting_experience": 54,
             "zone_level": 1,
             "damage_taken": 4
         },
@@ -71,7 +71,7 @@
             "parchment_received": false,
             "parchment_unveiled": false
         },
-        "location": "citadel"
+        "location": null
     },
     "1126166245906059345": {
         "exemplar": "elf",

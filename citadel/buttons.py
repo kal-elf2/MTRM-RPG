@@ -7,11 +7,73 @@ from images.urls import generate_urls
 from citadel.grains import HarvestButton
 from discord import Embed
 from utils import CommonResponses, load_player_data, save_player_data, refresh_player_from_data
+import random
 
 class CitadelCog(commands.Cog, CommonResponses):
     def __init__(self, bot):
         self.bot = bot
 
+    @commands.slash_command(description="Exit Citadel.")
+    async def exit(self, ctx: discord.ApplicationContext):
+        from probabilities import brute_percent
+        from citadel.brute import mega_brute_encounter
+
+        guild_id = ctx.guild.id
+        player_id = str(ctx.user.id)
+
+        # Refresh player object from the latest player data
+        player, player_data = await refresh_player_from_data(ctx)
+
+        if not player_data:
+            embed = discord.Embed(title="Captain Ner0",
+                                  description="Arr! What be this? Ye don't appear in me ledger. Start a new game with `/newgame` before ye can exit.",
+                                  color=discord.Color.dark_gold())
+            embed.set_thumbnail(url=generate_urls("nero", "confused"))
+            await ctx.respond(embed=embed, ephemeral=True)
+            return
+
+        if player_data["location"] == "citadel":
+            will_encounter_brute = random.random() <= brute_percent
+
+            # Defer the response because there might be a delay due to suspense buildup
+            await ctx.defer(ephemeral=True)
+
+            if will_encounter_brute:
+                # Prepare the suspenseful message for brute encounter
+                embed = discord.Embed(title="Captain Ner0",
+                                      description="Hmmm... do you hear that?",
+                                      color=discord.Color.dark_gold())
+                embed.set_thumbnail(url=generate_urls("nero", "confused"))
+
+                # Send the suspenseful message as a deferred response
+                await ctx.followup.send(embed=embed, ephemeral=True)
+
+                await asyncio.sleep(2.5)  # Wait for suspense to build
+
+                # Update the embed for the brute encounter
+                embed.description = "Arrr! Ye better leg it, ye pointy-eared scallywags! **BRUTE AT THE GATE!**"
+                embed.set_thumbnail(url=generate_urls("nero", "laugh"))
+                await ctx.followup.send(embed=embed, ephemeral=True)
+
+                # Handle the brute encounter (this should involve whatever mega_brute_encounter does)
+                await mega_brute_encounter(player_data, ctx, ctx, guild_id, player_id)
+
+            else:
+                # Prepare and send the "coast is clear" message directly
+                embed = discord.Embed(title="Captain Ner0",
+                                      description="**The coast is clear, me hearties!** Time to plunder and claim our fortunes! Onward!",
+                                      color=discord.Color.dark_gold())
+                embed.set_thumbnail(url=generate_urls("nero", "nero"))
+                await ctx.followup.send(embed=embed, ephemeral=True)
+
+            # Regardless of encounter, update the player location to None
+            player_data["location"] = None
+            save_player_data(guild_id, player_id, player_data)
+
+            return
+
+        # If not in the Citadel, inform the user
+        await ctx.respond(f"{ctx.user.mention}, ye cannot exit as ye are not in the Citadel.", ephemeral=True)
 
     @commands.slash_command(description="Visit the Citadel!")
     async def citadel(self, ctx):
@@ -570,7 +632,6 @@ class TravelRow(discord.ui.View, CommonResponses):
 
         player_data["location"] = None
         save_player_data(self.guild_id, self.author_id, player_data)
-
 
 def setup(bot):
     bot.add_cog(CitadelCog(bot))

@@ -25,8 +25,6 @@ bot.load_extension("nero.kraken")
 bot.load_extension("exemplars.newgame")
 bot.load_extension("nero.spork")
 
-guild_data = {}
-
 @bot.event
 async def on_ready():
     # await bot.sync_commands()
@@ -160,7 +158,6 @@ class PrivateGameView(View):
 
         # Stop the view to prevent further interactions
         self.stop()
-
 
 @bot.slash_command(description="Start a private game session.")
 async def private(ctx):
