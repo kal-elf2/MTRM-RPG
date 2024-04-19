@@ -128,10 +128,13 @@ class PrivateGameView(View):
                             t.name.startswith(f"{interaction.user.display_name}-private") and not t.archived]
 
         if existing_threads:
-            # If there's an existing active thread, inform the user and provide a link
             thread = existing_threads[0]  # Get the first active thread
-            await interaction.response.send_message(
-                f"You already have an active private session here: {thread.mention}", ephemeral=True)
+            # Ensure the user is added back with permissions to read and send messages
+            await thread.add_user(interaction.user)
+            button.disabled = True
+            await interaction.response.edit_message(view=self)
+            await interaction.followup.send(
+                f"You already have an active private session here: {thread.mention}. You've been added back to it, so feel free to continue your adventure!", ephemeral=True)
             return
 
         # Generate a unique identifier using the current timestamp
@@ -144,18 +147,20 @@ class PrivateGameView(View):
             auto_archive_duration=4320,  # 3 days
             type=discord.ChannelType.private_thread
         )
+        # Add the user to the thread explicitly, even if they're the creator, to handle any permissions issues preemptively
+        await thread.add_user(interaction.user)
         await thread.send(f"{interaction.user.mention} your private game session is ready! Come play in here!")
 
         # Update the button to be disabled and update the original message
         button.disabled = True
-        await interaction.response.edit_message(
-            view=self)  # Update if this is the first response, otherwise use followup
+        await interaction.response.edit_message(view=self)  # This updates the message if it's the first response
 
         # Inform the user with a follow-up message
         await interaction.followup.send(f"Private thread created: {thread.mention}", ephemeral=True)
 
         # Stop the view to prevent further interactions
         self.stop()
+
 
 @bot.slash_command(description="Start a private game session.")
 async def private(ctx):
