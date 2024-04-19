@@ -10,6 +10,7 @@ from resources.tree import Tree
 from discord.ext import commands
 import random
 from images.urls import generate_urls
+import os
 
 
 class ExemplarJSONEncoder(json.JSONEncoder):
@@ -34,50 +35,60 @@ class ExemplarJSONEncoder(json.JSONEncoder):
             return super().default(obj)
 
 def load_player_data(guild_id, player_id):
-    with open(f'server/player_data_{guild_id}.json', 'r') as f:
+    file_path = f'server/{guild_id}/player_data.json'
+    with open(file_path, 'r') as f:
         all_player_data = json.load(f)
 
-    # Convert player_id to string to ensure consistent dictionary key handling
     player_id_str = str(player_id)
     if player_id_str in all_player_data:
         player_data = all_player_data[player_id_str]
         player_data["inventory"] = Inventory.from_dict(player_data["inventory"])
         return player_data
     else:
-        return None  # Player data not found
+        return None
 
 def load_all_player_data(guild_id):
-    with open(f'server/player_data_{guild_id}.json', 'r') as f:
+    file_path = f'server/{guild_id}/player_data.json'
+    with open(file_path, 'r') as f:
         all_player_data = json.load(f)
 
     for player_id, player_info in all_player_data.items():
-        # Ensure that the inventory is properly converted from dict to Inventory objects
         player_info["inventory"] = Inventory.from_dict(player_info["inventory"])
-
     return all_player_data
 
 def save_player_data(guild_id, player_id, updated_player_data):
-    with open(f'server/player_data_{guild_id}.json', 'r') as f:
+    file_path = f'server/{guild_id}/player_data.json'
+    with open(file_path, 'r') as f:
         all_player_data = json.load(f)
 
-    # Update the specific player's data
     all_player_data[str(player_id)] = updated_player_data
 
-    with open(f'server/player_data_{guild_id}.json', 'w') as f:
+    with open(file_path, 'w') as f:
         json.dump(all_player_data, f, indent=4, cls=ExemplarJSONEncoder)
 
 def remove_player_data(guild_id, player_id):
-    with open(f'server/player_data_{guild_id}.json', 'r') as f:
+    file_path = f'server/{guild_id}/player_data.json'
+    with open(file_path, 'r') as f:
         all_player_data = json.load(f)
 
-    # Remove the player data if it exists
     player_id_str = str(player_id)
     if player_id_str in all_player_data:
         del all_player_data[player_id_str]
 
-    with open(f'server/player_data_{guild_id}.json', 'w') as f:
+    with open(file_path, 'w') as f:
         json.dump(all_player_data, f, indent=4, cls=ExemplarJSONEncoder)
 
+def load_server_settings(guild_id):
+    settings_file = f'server/{guild_id}/server_settings.json'
+    if os.path.exists(settings_file):
+        with open(settings_file, 'r') as f:
+            return json.load(f)
+    return {}  # Return empty dict if file doesn't exist
+
+def save_server_settings(guild_id, settings_data):
+    settings_file = f'server/{guild_id}/server_settings.json'
+    with open(settings_file, 'w') as f:
+        json.dump(settings_data, f, indent=4)
 
 async def send_message(ctx: commands.Context, embed):
     return await ctx.send(embed=embed)

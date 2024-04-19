@@ -10,6 +10,9 @@ from stats import ResurrectOptions
 from monsters.battle import BattleOptions, LootOptions, SpecialAttackOptions
 from emojis import get_emoji
 from images.urls import generate_urls
+from discord import ButtonStyle
+from discord.ui import View
+import datetime
 
 bot = commands.Bot(command_prefix="/", intents=discord.Intents.all())
 # Add the cogs to the bot
@@ -29,22 +32,171 @@ async def on_ready():
     # await bot.sync_commands()
     print(f'We have logged in as {bot.user}')
 
-@bot.slash_command()
-async def setchannel(ctx):
-    guild_id = ctx.guild.id
+@bot.event
+async def on_guild_join(guild):
+    # Overwrites to restrict the bot to operate within this category only
+    category_overwrites = {
+        guild.default_role: discord.PermissionOverwrite(read_messages=False),
+        guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True),
+    }
 
-    if guild_id not in guild_data:
-        guild_data[guild_id] = {
-            "channel_id": ctx.channel.id,
-            "player_data": {}
+    # Create a category with specific overwrites
+    category = await guild.create_category("☠️ Nero's Landing ☠️", overwrites=category_overwrites)
+
+    # Determine the admin or owner for special permissions
+    admin_role = discord.utils.get(guild.roles, name="Admin")
+    if admin_role:
+        admin_overwrites = {
+            guild.default_role: discord.PermissionOverwrite(read_messages=False),
+            guild.me: discord.PermissionOverwrite(read_messages=True),
+            admin_role: discord.PermissionOverwrite(read_messages=True)
         }
-
-        with open(f'server/player_data_{guild_id}.json', 'w') as f:
-            json.dump(guild_data[guild_id]["player_data"], f)
+        recipient = admin_role.mention
     else:
-        guild_data[guild_id]["channel_id"] = ctx.channel.id
+        admin_overwrites = {
+            guild.default_role: discord.PermissionOverwrite(read_messages=False),
+            guild.me: discord.PermissionOverwrite(read_messages=True),
+            guild.owner: discord.PermissionOverwrite(read_messages=True)
+        }
+        recipient = guild.owner.mention
 
-    await ctx.respond(f'{ctx.channel.name} Channel set. Please use "newgame" command to start a new adventure! .')
+    # Create the public 'town-square' channel with modified permissions for @everyone
+    town_square_overwrites = {
+        guild.default_role: discord.PermissionOverwrite(read_messages=True, use_application_commands=True),  # Allow everyone to read messages and use application commands
+        guild.me: discord.PermissionOverwrite(send_messages=True, read_messages=True, use_application_commands=True)  # Bot can send and read messages, and use commands
+    }
+    town_square_channel = await guild.create_text_channel("town-square", overwrites=town_square_overwrites, category=category)
+
+    # Create the setup channel with more restricted access
+    setup_channel = await guild.create_text_channel('Neros Landing Setup', overwrites=admin_overwrites, category=category)
+
+    # Send a setup message
+    await setup_channel.send(f"Game setup here: {recipient}")
+
+    # Initialize directory and files for server-specific data
+    guild_id = guild.id
+    directory_path = f'server/{guild_id}'
+    player_data_file = f'{directory_path}/player_data.json'
+    settings_file = f'{directory_path}/server_settings.json'
+
+    os.makedirs(directory_path, exist_ok=True)
+
+    # Initialize player data
+    if not os.path.exists(player_data_file):
+        with open(player_data_file, 'w') as f:
+            json.dump({}, f)  # Initially empty
+
+    # Initialize server settings if not already set
+    if not os.path.exists(settings_file):
+        server_settings = {
+            "custom_emojis": {},
+            "difficulty": "normal"
+        }
+        with open(settings_file, 'w') as f:
+            json.dump(server_settings, f, indent=4)
+
+    # Create Nero embed for town-square
+    nero_embed = discord.Embed(
+        title="Captain Nero",
+        description="Welcome scallywags! Use `/newgame` to begin your adventure!",
+        color=discord.Color.dark_gold()
+    )
+    nero_embed.set_image(url=generate_urls("nero", "welcome"))
+
+    # Send the embed and pin it
+    welcome_message = await town_square_channel.send(embed=nero_embed)
+    await welcome_message.pin()
+
+@bot.event
+async def on_application_command_error(ctx, error):
+    if isinstance(error, commands.MissingRole):
+        await ctx.respond("You must be an admin to use this command.", ephemeral=True)
+    elif isinstance(error, commands.MissingPermissions):
+        await ctx.respond("You do not have the necessary permissions to execute this command.", ephemeral=True)
+    else:
+        await ctx.respond("An error occurred while processing the command.", ephemeral=True)
+
+class PrivateGameView(View):
+    def __init__(self, user_id: str):
+        super().__init__()
+        self.user_id = user_id
+
+    @discord.ui.button(label="Secret Cove", style=ButtonStyle.blurple, emoji="🔒", custom_id="private_play")
+    async def play_privately(self, button, interaction):
+        # Retrieve active threads in the channel that are not archived and match the naming convention
+        existing_threads = [t for t in interaction.channel.threads if
+                            t.name.startswith(f"{interaction.user.display_name}-private") and not t.archived]
+
+        if existing_threads:
+            # If there's an existing active thread, inform the user and provide a link
+            thread = existing_threads[0]  # Get the first active thread
+            await interaction.response.send_message(
+                f"You already have an active private session here: {thread.mention}", ephemeral=True)
+            return
+
+        # Generate a unique identifier using the current timestamp
+        timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+        thread_name = f"{interaction.user.display_name}-private-{timestamp}"
+
+        # Create a private thread in the channel the command was used
+        thread = await interaction.channel.create_thread(
+            name=thread_name,
+            auto_archive_duration=4320,  # 3 days
+            type=discord.ChannelType.private_thread
+        )
+        await thread.send(f"{interaction.user.mention} your private game session is ready! Come play in here!")
+
+        # Update the button to be disabled and update the original message
+        button.disabled = True
+        await interaction.response.edit_message(
+            view=self)  # Update if this is the first response, otherwise use followup
+
+        # Inform the user with a follow-up message
+        await interaction.followup.send(f"Private thread created: {thread.mention}", ephemeral=True)
+
+        # Stop the view to prevent further interactions
+        self.stop()
+
+@bot.slash_command(description="Start a private game session.")
+async def private(ctx):
+
+    # Refresh player object from the latest player data
+    _, player_data = await refresh_player_from_data(ctx)
+
+    if not player_data:
+        embed = Embed(title="Captain Ner0",
+                      description="Arr! What be this? No record of yer adventures? Start a new game with `/newgame` before I make ye walk the plank.",
+                      color=discord.Color.dark_gold())
+        embed.set_thumbnail(url=generate_urls("nero", "confused"))
+        await ctx.respond(embed=embed, ephemeral=True)
+        return
+
+    # Determine the image and the specific part of the message based on the exemplar selection
+    if player_data["exemplar"] == "elf":
+        image_url = generate_urls("nero", "laugh")
+        description = ("Of course ye want to play privately... yer an elf! "
+                       "Skulking about like a leaf in the wind. "
+                       "Well, if ye insist on hiding like yer kin, click the button below. "
+                       "Let's see if ye can prove yer worth away from prying eyes!")
+    else:
+        image_url = generate_urls("nero", "confused")
+        description = ("Arr! Playing privately, are we? What's the matter, scared of a little company? "
+                       "Ye're acting just like those elf cowards. "
+                       "Well, if ye insist on hiding from prying eyes, click the button below. ")
+
+    # Create the ephemeral embed message asking if they want to create a private thread
+    embed = Embed(
+        title="Captain Ner0's Shadowy Invitation",
+        description=description,
+        color=discord.Color.dark_gold()
+    )
+    embed.set_thumbnail(url=image_url)
+
+    # Instantiate the view with the ID of the user who invoked the command
+    view = PrivateGameView(user_id=ctx.user.id)
+
+    # Send the ephemeral message with the button to the user
+    await ctx.respond(embed=embed, view=view, ephemeral=True)
 
 def update_special_attack_options(battle_context):
     if battle_context.special_attack_options_view:
