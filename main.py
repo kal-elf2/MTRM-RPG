@@ -145,7 +145,6 @@ async def on_application_command_error(ctx, error):
     else:
         await ctx.respond("An error occurred while processing the command.", ephemeral=True)
 
-
 def update_special_attack_options(battle_context):
     if battle_context.special_attack_options_view:
         battle_context.special_attack_options_view.update_button_states()
