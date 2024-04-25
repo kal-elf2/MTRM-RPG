@@ -71,6 +71,25 @@ async def on_guild_join(guild):
     # Send a setup message
     await setup_channel.send(f"Game setup here: {recipient}")
 
+    # Send instructions on setting up channel permissions
+    embed = discord.Embed(
+        title="🛠️ Setup Nero's Landing Bot 🛠️",
+        description="To ensure that the Nero's Landing bot operates correctly and only within designated channels, please follow the steps below.",
+        color=discord.Color.blue()
+    )
+    embed.add_field(name="- Step 1: Go to Server Settings",
+                    value="Navigate to the 'Server Settings' of your Discord server.", inline=False)
+    embed.add_field(name="- Step 2: Integrations", value="Click on 'Integrations' to access bot settings.", inline=False)
+    embed.add_field(name="- Step 3: Select Nero's Landing",
+                    value="Find 'Nero's Landing' in the list of integrations and select it.", inline=False)
+    embed.add_field(name="- Step 4: Adjust Channel Permissions", value="Set 'All Channels' to ❌ to deny default access.",
+                    inline=False)
+    embed.add_field(name="- Step 5: Add Game Channels",
+                    value="Add only the channels where you want Nero's Landing to operate by enabling permissions specifically for those channels.",
+                    inline=False)
+    embed.set_footer(text="This configuration helps maintain order and ensures the bot functions only where needed.\nNote: this may take a few minutes to take effect.")
+    await setup_channel.send(embed=embed)
+
     # Initialize directory and files for server-specific data
     guild_id = guild.id
     directory_path = f'server/{guild_id}'
