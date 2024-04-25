@@ -85,7 +85,7 @@ async def on_guild_join(guild):
     embed.add_field(name="- Step 5: Add Game Channels",
                     value="Add only the channels where you want Nero's Landing to operate by enabling permissions specifically for those channels.",
                     inline=False)
-    embed.set_footer(text="This configuration helps maintain order and ensures the bot functions only where needed.\nNote: this may take a few minutes to take effect.")
+    embed.set_footer(text="This configuration helps maintain order and ensures the bot functions only where needed.")
     await setup_channel.send(embed=embed)
 
     # Send admin commands embed
