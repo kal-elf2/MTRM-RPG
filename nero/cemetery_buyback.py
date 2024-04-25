@@ -12,21 +12,30 @@ class NeroView(discord.ui.View, CommonResponses):
         self.author_id = author_id
         self.player = player
         self.saved_inventory = saved_inventory
-        self.cost = buyback_cost * self.player.stats.zone_level
+        self.total_item_value = self.calculate_total_inventory_value(saved_inventory)
+        self.cost = min(self.total_item_value / 2, buyback_cost * self.player.stats.zone_level)
+
+    @staticmethod
+    def calculate_total_inventory_value(inventory):
+        sellable_categories = ["weapons", "armors", "shields", "charms", "potions"]
+        total_value = 0
+        for category in sellable_categories:
+            category_items = getattr(inventory, category, [])
+            for item in category_items:
+                total_value += item.value * item.stack
+        print(total_value)
+        return total_value
 
     async def handle_buy_back(self, player_inventory, inventory_slots):
+        player_inventory.coppers -= self.cost  # Deduct the correct cost
 
-        player_inventory.coppers -= self.cost
-
+        # Proceed with merging items back to the inventory
         self.merge_items_from_saved_inventory(player_inventory, inventory_slots)
-
         self.player_data['inventory'] = player_inventory
         save_player_data(self.interaction.guild.id, self.author_id, self.player_data)
 
-        cost = buyback_cost * self.player.stats.zone_level
-        formatted_cost = f"{cost:,}"  # Format the number with commas
-
-        return f"Ha! Well done! I added a bottle of Rum too! Wait, I drank that. Never mind! Thanks for the **{formatted_cost}**{get_emoji('coppers_emoji')}, matey.\n\n**Your items have been restored.** Check yer pockets!"
+        formatted_cost = f"{self.cost:,}"  # Use the previously determined cost
+        return f"Ha! Well done! I added a bottle of Rum too! Wait, I drank that. Never mind! Thanks for the **{formatted_cost}** {get_emoji('coppers_emoji')}, matey.\n\n**Your items have been restored.** Check yer pockets!"
 
     @discord.ui.button(label="Yes", style=discord.ButtonStyle.primary)
     async def yes_button(self, button, interaction):

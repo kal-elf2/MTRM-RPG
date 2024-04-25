@@ -8,7 +8,7 @@ from exemplars.exemplars import Exemplar
 from emojis import get_emoji
 from images.urls import generate_urls
 import copy
-from probabilities import buyback_cost, death_penalty
+from probabilities import death_penalty
 import asyncio
 
 def load_level_data():
@@ -715,8 +715,8 @@ class ResurrectOptions(discord.ui.View, CommonResponses):
             from nero.cemetery_buyback import NeroView
             nero_view = NeroView(interaction, self.player_data, self.author_id, self.player, saved_inventory)
 
-            cost = buyback_cost * self.player.stats.zone_level
-            formatted_cost = f"{cost:,}"  # Format the number with commas
+            # Use the cost calculated in NeroView
+            formatted_cost = f"{nero_view.cost:,}"  # Format the number with commas using the cost from NeroView
             formatted_coppers = f"{self.player.inventory.coppers:,}"  # Format player's coppers with commas
 
             thumbnail_url = generate_urls("nero", "cemetery")
