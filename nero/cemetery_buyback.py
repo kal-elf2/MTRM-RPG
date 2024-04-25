@@ -1,6 +1,6 @@
 import discord
 from probabilities import buyback_cost
-from utils import save_player_data, load_player_data, CommonResponses
+from utils import save_player_data, CommonResponses, refresh_player_from_data
 from images.urls import generate_urls
 from emojis import get_emoji
 
@@ -13,7 +13,10 @@ class NeroView(discord.ui.View, CommonResponses):
         self.player = player
         self.saved_inventory = saved_inventory
         self.total_item_value = self.calculate_total_inventory_value(saved_inventory)
-        self.cost = min(self.total_item_value / 2, buyback_cost * self.player.stats.zone_level)
+        # Calculate the half of the total item value and then use round to make it a whole number
+        half_value = round(self.total_item_value / 2)
+        # Use min to decide the lesser cost between half the item value and buyback cost multiplied by zone level
+        self.cost = min(half_value, buyback_cost * self.player.stats.zone_level)
 
     @staticmethod
     def calculate_total_inventory_value(inventory):
@@ -39,21 +42,13 @@ class NeroView(discord.ui.View, CommonResponses):
 
     @discord.ui.button(label="Yes", style=discord.ButtonStyle.primary)
     async def yes_button(self, button, interaction):
-
         # Check if the user who interacted is the same as the one who initiated the view
-        # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        from exemplars.exemplars import Exemplar
-
-        # Reinitialize the player object with the current state from player_data
-        guild_id = interaction.guild.id
-        current_player_data = load_player_data(guild_id, self.author_id)
-        self.player = Exemplar(current_player_data["exemplar"],
-                               current_player_data["stats"],
-                               current_player_data["inventory"])
+        # Refresh player object from the latest player data
+        self.player, self.player_data = await refresh_player_from_data(interaction)
 
         # Check available space and coppers before proceeding with buyback
         player_inventory = self.player.inventory
@@ -66,7 +61,6 @@ class NeroView(discord.ui.View, CommonResponses):
             additional_slots_needed = required_space - available_space
             slots_message = "slot" if additional_slots_needed == 1 else "slots"
 
-            # Create the embed
             thumbnail_url = generate_urls("nero", "confused")
             nero_embed = discord.Embed(
                 title="Captain Ner0",
@@ -74,13 +68,22 @@ class NeroView(discord.ui.View, CommonResponses):
                 color=discord.Color.dark_gold()
             )
             nero_embed.set_thumbnail(url=thumbnail_url)
-
-            # Send the embed as an ephemeral message
             await interaction.response.send_message(embed=nero_embed, ephemeral=True)
             return
 
+        if self.cost == 0:
+            # Handle the case when there is no cost for buyback
+            thumbnail_url = generate_urls("nero", "welcome")
+            nero_embed = discord.Embed(
+                title="Captain Ner0's Generosity",
+                description=f"Here's yer goods, {interaction.user.mention}. Be more careful next time, will ye?",
+                color=discord.Color.dark_gold()
+            )
+            nero_embed.set_thumbnail(url=thumbnail_url)
+            await interaction.message.edit(embed=nero_embed, view=None)
+            return
+
         if player_inventory.coppers < self.cost:
-            # Create the embed
             thumbnail_url = generate_urls("nero", "confused")
             nero_embed = discord.Embed(
                 title="Captain Ner0",
@@ -88,17 +91,8 @@ class NeroView(discord.ui.View, CommonResponses):
                 color=discord.Color.dark_gold()
             )
             nero_embed.set_thumbnail(url=thumbnail_url)
-
-            # Send the embed as an ephemeral message
             await interaction.response.send_message(embed=nero_embed, ephemeral=True)
             return
-
-        # Reinitialize the player object with the current state from player_data
-        guild_id = interaction.guild.id
-        current_player_data = load_player_data(guild_id, self.author_id)
-        self.player = Exemplar(current_player_data["exemplar"],
-                               current_player_data["stats"],
-                               current_player_data["inventory"])
 
         # Now handle the buyback with the updated player object
         message = await self.handle_buy_back(player_inventory, inventory_slots)

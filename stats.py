@@ -720,12 +720,23 @@ class ResurrectOptions(discord.ui.View, CommonResponses):
             formatted_coppers = f"{self.player.inventory.coppers:,}"  # Format player's coppers with commas
 
             thumbnail_url = generate_urls("nero", "cemetery")
+            if nero_view.cost == 0:
+                description_text = (
+                    f"Well, well... Look who's back, {interaction.user.mention}! Seems you've been through the wringer, but alas, "
+                    "the goods you're clutching onto don't carry much weight in coppers. No matter—"
+                    "I'll hand 'em back to ya for free. Here's yer stuff, not a single copper needed!"
+                )
+            else:
+                description_text = (
+                    f"Well, well... Look who's back. {interaction.user.mention} musta got too close to a critter with **TEETH!** "
+                    f"I happen'd to come across some fine gear and wouldn't mind offloadin' it on ye, for a price. "
+                    f"How's about **{formatted_cost}**{get_emoji('coppers_emoji')}?\n\n"
+                    f"**Backpack**: {formatted_coppers}{get_emoji('coppers_emoji')}"
+                )
+
             nero_embed = discord.Embed(
                 title="Captain Ner0",
-                description=f"Well, well...Look who's back. {interaction.user.mention} musta got too close to a critter with **TEETH!**"
-                            f" I happen'd to come across some fine gear and wouldn't mind offloadin' it on ye, for a price."
-                            f" Hows about **{formatted_cost}**{get_emoji('coppers_emoji')}?\n\n"
-                            f"**Backpack**: {formatted_coppers}{get_emoji('coppers_emoji')}",
+                description=description_text,
                 color=discord.Color.dark_gold()
             )
             nero_embed.set_thumbnail(url=thumbnail_url)
