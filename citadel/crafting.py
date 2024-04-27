@@ -174,7 +174,7 @@ class CraftingStation:
 
         return recipe.result
 
-class CraftButtonView(discord.ui.View):
+class CraftView(discord.ui.View):
     def __init__(self, player, player_data, station, selected_recipe, guild_id, author_id, disabled=True):
         super().__init__()
         self.player = player
@@ -205,11 +205,18 @@ class CraftButton(discord.ui.Button, CommonResponses):
             await self.not_in_citadel_response(interaction)
             return
 
-        # Use the CraftingStation's craft method
-        crafted_item = self.station.craft(self.selected_recipe.result.name, self.player, self.player_data,
-                                          self.guild_id, self.author_id)
+        # Verify that the player has all required ingredients, prevents multi-window duplication cheese
+        for ingredient, quantity in self.selected_recipe.ingredients:
+            available_quantity = self.player.inventory.get_item_quantity(ingredient.name)
+            if available_quantity < quantity:
+                await interaction.response.send_message("Missing ingredients. Please refresh crafting window.",
+                                                        ephemeral=True)
+                return
 
-        # If crafted_item is a string, it indicates an error message.
+        # Proceed with crafting if all ingredients are available
+        crafted_item = self.station.craft(self.selected_recipe.result.name, self.player, self.player_data, self.guild_id, self.author_id)
+
+        # If crafted_item is a string, it indicates an error message, handle accordingly
         if isinstance(crafted_item, str):
             await interaction.response.send_message(crafted_item, ephemeral=True)
             return  # Exit early since crafting failed.
@@ -538,7 +545,7 @@ class CraftingSelect(discord.ui.Select, CommonResponses):
 
                 embed.description += stamina_message
 
-            view = CraftButtonView(self.player, self.player_data, self.crafting_station, selected_recipe, self.guild_id, self.author_id,
+            view = CraftView(self.player, self.player_data, self.crafting_station, selected_recipe, self.guild_id, self.author_id,
                                    disabled=not can_craft)
             message = await interaction.response.send_message(embed=embed, ephemeral=True, view=view)
             view.message = message
