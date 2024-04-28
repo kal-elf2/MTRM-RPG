@@ -53,7 +53,6 @@ class BackpackCog(commands.Cog):
         view = BackpackView(ctx)
         await ctx.respond(f"What would you like to do, {ctx.author.mention}?", view=view)
 
-
 class BackpackView(discord.ui.View, CommonResponses):
     def __init__(self, ctx):
         super().__init__(timeout=None)
@@ -70,9 +69,22 @@ class BackpackView(discord.ui.View, CommonResponses):
                                self.player_data["inventory"])
 
         self.inventory = self.player.inventory
+        self.refresh_player_data()
 
+    def refresh_player_data(self):
+        """Refreshes player data and inventory from the database."""
+        self.player_data = load_player_data(self.guild_id, self.author_id)
+        self.player = Exemplar(self.player_data["exemplar"],
+                               self.player_data["stats"],
+                               self.player_data["inventory"])
+        self.inventory = self.player.inventory
 
-    def unequip_add_item_type_select(self, action_type):
+    async def refresh_and_update_view(self, interaction, content):
+        """Refreshes the player data and updates the view."""
+        self.refresh_player_data()
+        await interaction.response.edit_message(content=content, view=self)
+
+    async def unequip_add_item_type_select(self, action_type):
         # Always present all the options
         options = [
             discord.SelectOption(label="Weapon", value="Weapon"),
@@ -80,6 +92,9 @@ class BackpackView(discord.ui.View, CommonResponses):
             discord.SelectOption(label="Shield", value="Shield"),
             discord.SelectOption(label='Charm', value="Charm")
         ]
+
+        # Refresh player object from the latest player data
+        self.player, self.player_data = await refresh_player_from_data(self.ctx)
 
         if self.item_type_select:
             self.remove_item(self.item_type_select)
@@ -87,7 +102,7 @@ class BackpackView(discord.ui.View, CommonResponses):
         self.item_type_select = UnequipTypeSelect(action_type, options, self.author_id)
         self.add_item(self.item_type_select)
 
-    def equip_add_item_type_select(self, action_type):
+    async def equip_add_item_type_select(self, action_type):
         # Always present all the options
         options = [
             discord.SelectOption(label="Weapon", value="Weapon"),
@@ -96,32 +111,14 @@ class BackpackView(discord.ui.View, CommonResponses):
             discord.SelectOption(label='Charm', value="Charm")
         ]
 
+        # Refresh player object from the latest player data
+        self.player, self.player_data = await refresh_player_from_data(self.ctx)
+
         if self.item_type_select:
             self.remove_item(self.item_type_select)
 
         self.item_type_select = EquipTypeSelect(action_type, options, self.author_id)
         self.add_item(self.item_type_select)
-
-    def update_item_select_options(self):
-        if self.item_type_select:
-            selected_type = self.item_type_select.values[0]
-
-            items = getattr(self.player.inventory, selected_type.lower() + "s", [])
-
-            self.item_type_select.options.clear()
-
-            for item in items:
-                option = discord.SelectOption(label=item.name, value=item.name, emoji=getattr(item, "emoji", None))
-                self.item_type_select.options.append(option)
-
-    async def refresh_view(self, action_type):
-        # Load the player's updated data
-        self.player_data = load_player_data(self.ctx.guild.id, self.author_id)
-        self.player.inventory = self.player_data["inventory"]
-
-        if self.original_selection:
-            # This will set the dropdown back to the originally selected type
-            self.equip_add_item_type_select(f"{action_type}")
 
     @discord.ui.button(label="Equip", custom_id="backpack_equip", style=discord.ButtonStyle.primary, emoji="⚔️")
     async def equip(self, button, interaction):
@@ -131,11 +128,10 @@ class BackpackView(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        # Refresh player object from the latest player data
-        self.player, self.player_data = await refresh_player_from_data(interaction)
+        self.refresh_player_data()
 
         # Open the select menu for item types for the Equip action
-        self.equip_add_item_type_select("equip")
+        await self.equip_add_item_type_select("equip")
         await interaction.response.edit_message(content="Choose an item type to equip:", view=self)
 
     @discord.ui.button(label="Unequip", custom_id="backpack_unequip", style=discord.ButtonStyle.blurple, emoji="⛔")
@@ -146,11 +142,10 @@ class BackpackView(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        # Refresh player object from the latest player data
-        self.player, self.player_data = await refresh_player_from_data(interaction)
+        self.refresh_player_data()
 
         # Open the select menu for item types for the Unequip action
-        self.unequip_add_item_type_select("unequip")
+        await self.unequip_add_item_type_select("unequip")
         await interaction.response.edit_message(content="Choose an item type to unequip:", view=self)
 
 
@@ -166,8 +161,7 @@ class BackpackView(discord.ui.View, CommonResponses):
         def sort_items(items, order):
             return sorted(items, key=lambda item: (getattr(item, 'zone_level', 0), order.index(item.name)))
 
-        # Refresh player object from the latest player data
-        self.player, self.player_data = await refresh_player_from_data(interaction)
+        self.refresh_player_data()
 
         order = {
             "items": [
@@ -214,8 +208,7 @@ class BackpackView(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        # Refresh player object from the latest player data
-        self.player, self.player_data = await refresh_player_from_data(interaction)
+        self.refresh_player_data()
 
         # Defer the response to prevent the interaction from timing out
         await interaction.response.defer()
@@ -420,6 +413,7 @@ class EquipTypeSelect(discord.ui.Select, CommonResponses):
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
+
         view: BackpackView = self.view
         inventory = view.inventory
         selected_value = interaction.data['values'][0]
