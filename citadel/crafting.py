@@ -274,7 +274,12 @@ class EmbedGenerator:
                 else:
                     embed.set_footer(text=f"+1 {self.crafted_item.name}\n{item_count} in backpack")
         else:
-            embed.set_footer(text=f"{item_count} in backpack {zone_rarity_identifier}")
+            if self.selected_recipe.result.name not in ["Bread", "Trencher"]:
+                if isinstance(self.crafted_item, (Armor, Weapon, Shield)):
+                    embed.set_footer(
+                        text=f"{item_count} in backpack {zone_rarity_identifier}")
+                else:
+                    embed.set_footer(text=f"{item_count} in backpack")
 
     def add_stamina_bar(self):
         stamina_progress = stamina_bar(self.player.stats.stamina, self.player.stats.max_stamina)
