@@ -175,21 +175,29 @@ class CraftingStation:
         return recipe.result
 
 class CraftView(discord.ui.View):
-    def __init__(self, player, player_data, station, selected_recipe, guild_id, author_id, disabled=True):
+    def __init__(self, player, player_data, station, selected_recipe, crafted_item, guild_id, author_id, disabled=True, show_added_to_backpack=True):
         super().__init__()
         self.player = player
-        self.disabled = disabled
         self.player_data = player_data
-        self.message = None
         self.author_id = author_id
+        self.disabled = disabled
+        self.crafted_item = crafted_item
+        self.message = None
+
+        # Adjust here to control footer text based on the context
+        self.embed_generator = EmbedGenerator(player, selected_recipe, crafted_item, player.stats.zone_level, show_added_to_backpack)
+
+        # Add craft and refresh buttons to the view
         self.add_item(CraftButton(disabled, station, selected_recipe, player, player_data, guild_id, author_id))
+        self.add_item(RefreshButton())
 
 class EmbedGenerator:
-    def __init__(self, player, selected_recipe, crafted_item, zone_level):
+    def __init__(self, player, selected_recipe, crafted_item, zone_level, show_added_to_backpack=True):
         self.player = player
         self.selected_recipe = selected_recipe
         self.crafted_item = crafted_item
         self.zone_level = zone_level
+        self.show_added_to_backpack = show_added_to_backpack
 
     def generate_embed(self):
         zone_emoji_mapping = {
@@ -258,11 +266,15 @@ class EmbedGenerator:
 
     def set_footer(self, embed, zone_rarity_identifier):
         item_count = self.player.inventory.get_item_quantity(self.crafted_item.name, getattr(self.crafted_item, 'zone_level', None))
-        if self.selected_recipe.result.name not in ["Bread", "Trencher"]:
-            if isinstance(self.crafted_item, (Armor, Weapon, Shield)):
-                embed.set_footer(text=f"+1 {self.crafted_item.name} {zone_rarity_identifier}\n{item_count} in backpack")
-            else:
-                embed.set_footer(text=f"+1 {self.crafted_item.name}\n{item_count} in backpack")
+
+        if self.show_added_to_backpack:
+            if self.selected_recipe.result.name not in ["Bread", "Trencher"]:
+                if isinstance(self.crafted_item, (Armor, Weapon, Shield)):
+                    embed.set_footer(text=f"+1 {self.crafted_item.name}\n{item_count} in backpack {zone_rarity_identifier}")
+                else:
+                    embed.set_footer(text=f"+1 {self.crafted_item.name}\n{item_count} in backpack")
+        else:
+            embed.set_footer(text=f"{item_count} in backpack {zone_rarity_identifier}")
 
     def add_stamina_bar(self):
         stamina_progress = stamina_bar(self.player.stats.stamina, self.player.stats.max_stamina)
@@ -287,6 +299,44 @@ class CraftHandler:
             return None, crafted_item  # Returns error message if crafting failed.
         return crafted_item, None
 
+class RefreshButton(discord.ui.Button, CommonResponses):
+    def __init__(self):
+        super().__init__(style=discord.ButtonStyle.secondary, label="🔄")
+
+    async def callback(self, interaction: discord.Interaction):
+
+        craft_view = self.view
+
+        # Refresh player object from the latest player data
+        craft_view.player, craft_view.player_data = await refresh_player_from_data(interaction)
+
+        # Check if the player is not in the citadel
+        if craft_view.player_data["location"] != "citadel":
+            await self.not_in_citadel_response(interaction)
+            return
+
+        # Recheck material availability
+        can_craft_again = True
+        for ingredient, quantity in craft_view.embed_generator.selected_recipe.ingredients:
+            available_quantity = craft_view.player.inventory.get_item_quantity(ingredient.name)
+            if available_quantity < quantity:
+                can_craft_again = False
+                break
+
+        # Find the craft button in the view and update its disabled state
+        for item in craft_view.children:
+            if isinstance(item, CraftButton):
+                item.disabled = not can_craft_again
+
+        # Update embed generator without adding to backpack info
+        craft_view.embed_generator = EmbedGenerator(craft_view.player,
+                                                    craft_view.embed_generator.selected_recipe,
+                                                    craft_view.crafted_item, craft_view.player.stats.zone_level,
+                                                    show_added_to_backpack=False)
+
+        # Regenerate the embed with the updated crafted item
+        new_embed = craft_view.embed_generator.generate_embed()
+        await interaction.response.edit_message(embed=new_embed, view=craft_view)
 
 class CraftButton(discord.ui.Button, CommonResponses):
     def __init__(self, disabled, station, selected_recipe, player, player_data, guild_id, author_id):
@@ -317,9 +367,11 @@ class CraftButton(discord.ui.Button, CommonResponses):
                 await interaction.response.send_message("Missing ingredients. Please refresh crafting window.", ephemeral=True)
                 return
 
-        # Proceed with crafting if all ingredients are available
-        crafted_item = self.station.craft(self.selected_recipe.result.name, self.player, self.player_data, self.guild_id, self.author_id)
+        crafted_item= self.station.craft(self.selected_recipe.result.name, self.player, self.player_data,
+                                                 self.guild_id, self.author_id)
 
+        # Update the view with the new crafted item
+        self.view.crafted_item = crafted_item
         # If crafted_item is a string, it indicates an error message, handle accordingly
         if isinstance(crafted_item, str):
             await interaction.response.send_message(crafted_item, ephemeral=True)
@@ -346,6 +398,10 @@ class CraftButton(discord.ui.Button, CommonResponses):
 
         # Disable the button if crafting cannot continue
         self.disabled = not can_craft_again
+
+        # Update the view with the new crafted item
+        self.view.crafted_item = crafted_item
+        self.view.embed_generator.crafted_item = crafted_item
 
         # Generate and send the embed
         embed_generator = EmbedGenerator(self.player, self.selected_recipe, crafted_item, self.player.stats.zone_level)
@@ -552,11 +608,20 @@ class CraftingSelect(discord.ui.Select, CommonResponses):
 
                 embed.description += stamina_message
 
-            view = CraftView(self.player, self.player_data, self.crafting_station, selected_recipe, self.guild_id, self.author_id,
-                                   disabled=not can_craft)
+            # Initialize CraftView with the crafted item
+            view = CraftView(
+                player=self.player,
+                player_data=self.player_data,
+                station=self.crafting_station,
+                selected_recipe=selected_recipe,
+                crafted_item=selected_recipe.result,
+                guild_id=self.guild_id,
+                author_id=self.author_id,
+                disabled=not can_craft
+            )
+
             message = await interaction.response.send_message(embed=embed, ephemeral=True, view=view)
             view.message = message
-
 
 def create_crafting_stations(interaction, station_name=None):
     from utils import load_player_data
