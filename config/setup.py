@@ -16,7 +16,7 @@ class PrivateGameView(View, CommonResponses):
     @discord.ui.button(label="Secret Cove", style=ButtonStyle.blurple, emoji="🔒", custom_id="private_play")
     async def play_privately(self, button, interaction):
 
-        if str(interaction.user.id) != self.author_id:
+        if interaction.user.id != self.author_id:
             return await self.nero_unauthorized_user_response(interaction)
 
         # Retrieve active threads in the channel that are not archived and match the naming convention
