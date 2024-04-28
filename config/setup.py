@@ -126,7 +126,7 @@ class SetupCog(commands.Cog, CommonResponses):
             image_url = generate_urls("nero", "laugh")
             description = (f"Of course ye want to play privately, {ctx.user.mention}. Yer a *bloody elf*! "
                            "Skulking about like a leaf in the wind. "
-                           "Well, if ye insist on hiding like yer kin, click the button below. "
+                           "Well, if ye insist on hiding, click the button below. "
                            "Let's see if ye can prove yer worth away from prying eyes!")
         else:
             image_url = generate_urls("nero", "laugh")
