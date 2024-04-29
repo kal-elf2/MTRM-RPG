@@ -19,6 +19,7 @@ class HuntKrakenButton(discord.ui.Button, CommonResponses):
         # Initialize the player from player_data
         self.player = Exemplar(self.player_data["exemplar"],
                                self.player_data["stats"],
+                               self.guild_id,
                                self.player_data["inventory"])
 
     async def callback(self, interaction: discord.Interaction):

@@ -10,6 +10,7 @@ from stats import ResurrectOptions
 from monsters.battle import BattleOptions, LootOptions, SpecialAttackOptions
 from emojis import get_emoji
 from images.urls import generate_urls
+from probabilities import default_settings
 
 bot = commands.Bot(command_prefix="/", intents=discord.Intents.all())
 # Add the cogs to the bot
@@ -117,12 +118,8 @@ async def on_guild_join(guild):
 
     # Initialize server settings if not already set
     if not os.path.exists(settings_file):
-        server_settings = {
-            "custom_emojis": {},
-            "difficulty": "normal"
-        }
         with open(settings_file, 'w') as f:
-            json.dump(server_settings, f, indent=4)
+            json.dump(default_settings, f, indent=4)
 
     # Create Nero embed for town-square
     nero_embed = discord.Embed(
@@ -227,7 +224,7 @@ async def battle(ctx, monster: Option(str, "Pick a monster to battle.", choices=
     special_attack_options_view.special_attack_message = special_attack_message
 
     # Start the monster attack task and receive its outcome
-    battle_result = await monster_battle(battle_context)
+    battle_result = await monster_battle(battle_context, guild_id)
 
     if battle_result is None:
         # Save the player's current stats

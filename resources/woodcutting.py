@@ -11,11 +11,10 @@ from resources.tree import TREE_TYPES, Tree
 from resources.materium import Materium
 from stats import ResurrectOptions
 from emojis import get_emoji
-from utils import load_player_data, save_player_data, send_message, CommonResponses, refresh_player_from_data
+from utils import load_player_data, save_player_data, send_message, CommonResponses, refresh_player_from_data, get_server_setting
 from monsters.monster import create_battle_embed, monster_battle, generate_monster_by_name
 from monsters.battle import BattleOptions, LootOptions, footer_text_for_embed
 from images.urls import generate_urls
-from probabilities import herb_drop_percent, mtrm_drop_percent, attack_percent, woodcleaver_percent
 
 # Woodcutting experience points for each tree type
 WOODCUTTING_EXPERIENCE = {
@@ -51,8 +50,8 @@ def generate_random_monster(tree_type):
 
     return np.random.choice(monsters, p=probabilities)
 
-def attempt_herb_drop(zone_level):
-    if random.random() < herb_drop_percent:
+def attempt_herb_drop(zone_level, guild_id):
+    if random.random() < get_server_setting(guild_id, 'herb_drop_percent'):
         # Base weights
         weights = [40, 40, 10, 10]
 
@@ -71,8 +70,8 @@ def attempt_herb_drop(zone_level):
 
     return None
 
-def attempt_mtrm_drop(zone_level):
-    base_mtrm_drop_rate = mtrm_drop_percent
+def attempt_mtrm_drop(zone_level, guild_id):
+    base_mtrm_drop_rate = get_server_setting(guild_id, 'mtrm_drop_percent')
     mtrm_drop_rate = min(base_mtrm_drop_rate * zone_level, 1)  # Adjust the drop rate based on zone level and cap at 1
 
     if random.random() < mtrm_drop_rate:
@@ -86,7 +85,7 @@ def footer_text_for_woodcutting_embed(ctx, player, player_level, zone_level, tre
     player_data = load_player_data(guild_id, author_id)
 
     # Use the provided WoodcuttingCog method to calculate the success probability
-    probability = WoodcuttingCog.calculate_probability(player, player_level, zone_level, tree_type)
+    probability = WoodcuttingCog.calculate_probability(player, player_level, zone_level, tree_type, guild_id)
     success_percentage = probability * 100  # Convert to percentage for display
 
     woodcutting_level = player_data["stats"]["woodcutting_level"]
@@ -97,7 +96,7 @@ def footer_text_for_woodcutting_embed(ctx, player, player_level, zone_level, tre
         if success_percentage >= 100:
             footer_text = f"🪓 Woodcut Level:\u00A0\u00A0{woodcutting_level}\u00A0\u00A0|\u00A0\u00A0✅ Success Rate: 100% (Max)"
         else:
-            adjusted_percentage = min(success_percentage + woodcleaver_percent * 100, 100)
+            adjusted_percentage = min(success_percentage + get_server_setting(guild_id, 'woodcleaver_percent') * 100, 100)
             charm_boost = round(adjusted_percentage - success_percentage)
             footer_text = f"🪓 Woodcut Level:\u00A0\u00A0{woodcutting_level}\u00A0\u00A0|\u00A0\u00A0✅ Success Rate:\u00A0\u00A0{success_percentage:.1f}% (+{charm_boost}%)"
     else:
@@ -297,7 +296,7 @@ class HarvestButton(discord.ui.View, CommonResponses):
             return
 
         # Calculate probability using the zone level and the tree type
-        success_prob = WoodcuttingCog.calculate_probability(self.player, player_level, self.player.stats.zone_level, self.tree_type)
+        success_prob = WoodcuttingCog.calculate_probability(self.player, player_level, self.player.stats.zone_level, self.tree_type, self.guild_id)
         success = random.random() < success_prob
 
         zone_level = self.player.stats.zone_level
@@ -336,13 +335,13 @@ class HarvestButton(discord.ui.View, CommonResponses):
             messages = messages or []
 
             # Attempt herb drop
-            herb_dropped = attempt_herb_drop(zone_level)
+            herb_dropped = attempt_herb_drop(zone_level, self.guild_id)
             if herb_dropped:
                 self.player.inventory.add_item_to_inventory(herb_dropped, amount=1)
                 message += f"\n{get_emoji(herb_dropped.name)} You also **found some {herb_dropped.name}!**"
 
             # Attempt MTRM drop
-            mtrm_dropped = attempt_mtrm_drop(zone_level)
+            mtrm_dropped = attempt_mtrm_drop(zone_level, self.guild_id)
             if mtrm_dropped:
                 self.player.inventory.add_item_to_inventory(mtrm_dropped, amount=1)
                 message += f"\n{get_emoji('Materium')} You also **found some Materium!**"
@@ -458,7 +457,7 @@ class HarvestButton(discord.ui.View, CommonResponses):
             await interaction.message.edit(embed=self.embed, view=self)
 
         # Monster encounter set in probabilities.py
-        if np.random.rand() <= attack_percent and self.player_data["location"] != "battle":
+        if np.random.rand() <= get_server_setting(interaction.guild_id, 'attack_percent') and self.player_data["location"] != "battle":
 
             # Refresh player object from the latest player data
             self.player, self.player_data = await refresh_player_from_data(interaction)
@@ -501,7 +500,7 @@ class HarvestButton(discord.ui.View, CommonResponses):
             special_attack_options_view.battle_options_msg = battle_options_msg
             special_attack_options_view.special_attack_message = special_attack_message
 
-            battle_result = await monster_battle(battle_context)
+            battle_result = await monster_battle(battle_context, interaction.guild_id)
 
             if battle_result is None:
                 # Save the player's current stats
@@ -598,7 +597,7 @@ class WoodcuttingCog(commands.Cog, CommonResponses):
         self.bot = bot
 
     @staticmethod
-    def calculate_probability(player, player_level, zone_level, tree_type):
+    def calculate_probability(player, player_level, zone_level, tree_type, guild_id):
         base_min_levels = {
             "Pine": 0,
             "Yew": 5,
@@ -621,7 +620,7 @@ class WoodcuttingCog(commands.Cog, CommonResponses):
 
         # Check if the player has the Stonebreaker charm equipped
         if player.inventory.equipped_charm and player.inventory.equipped_charm.name == "Woodcleaver":
-            probability += woodcleaver_percent  # Increase probability by if Woodcleaver is equipped
+            probability += get_server_setting(guild_id, 'woodcleaver_percent')  # Increase probability by if Woodcleaver is equipped
 
         return min(1, probability)  # Ensure it doesn't exceed 100%
 

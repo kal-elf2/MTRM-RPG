@@ -3,7 +3,7 @@ import discord
 import json
 import random
 from emojis import get_emoji
-from utils import save_player_data, load_player_data, CommonResponses, refresh_player_from_data
+from utils import save_player_data, load_player_data, CommonResponses, refresh_player_from_data, get_server_setting
 from images.urls import generate_urls
 import asyncio
 
@@ -180,8 +180,7 @@ class LootOptions(discord.ui.View, CommonResponses):
             await interaction.edit_original_response(view=self)
 
 async def start_battle(ctx, monster, player_data, player, author_id, guild_id, battle_embed):
-    from monsters.monster import BattleContext
-    from monsters.monster import monster_battle
+    from monsters.monster import BattleContext, monster_battle
     from stats import ResurrectOptions
 
     # Check if player data exists for the user
@@ -239,7 +238,7 @@ async def start_battle(ctx, monster, player_data, player, author_id, guild_id, b
     special_attack_options_view.special_attack_message = special_attack_message
 
     # Start the monster attack task and receive its outcome
-    battle_result = await monster_battle(battle_context)
+    battle_result = await monster_battle(battle_context, guild_id=guild_id)
 
     if battle_result is None:
         # Save the player's current stats
@@ -410,9 +409,6 @@ class BattleOptions(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        # Refresh player object from the latest player data
-        self.player, self.player_data = await refresh_player_from_data(interaction)
-
         await self.use_potion("Stamina Potion", interaction, self.stamina_button)
 
     async def super_stamina_button_callback(self, interaction):
@@ -420,9 +416,6 @@ class BattleOptions(discord.ui.View, CommonResponses):
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
-
-        # Refresh player object from the latest player data
-        self.player, self.player_data = await refresh_player_from_data(interaction)
 
         await self.use_potion("Super Stamina Potion", interaction, self.super_stamina_button)
 
@@ -432,9 +425,6 @@ class BattleOptions(discord.ui.View, CommonResponses):
             await self.nero_unauthorized_user_response(interaction)
             return
 
-        # Refresh player object from the latest player data
-        self.player, self.player_data = await refresh_player_from_data(interaction)
-
         await self.use_potion("Health Potion", interaction, self.health_button)
 
     async def super_health_button_callback(self, interaction):
@@ -442,9 +432,6 @@ class BattleOptions(discord.ui.View, CommonResponses):
         if str(interaction.user.id) != self.author_id:
             await self.nero_unauthorized_user_response(interaction)
             return
-
-        # Refresh player object from the latest player data
-        self.player, self.player_data = await refresh_player_from_data(interaction)
 
         await self.use_potion("Super Health Potion", interaction, self.super_health_button)
 
@@ -588,7 +575,7 @@ class SpecialAttackOptions(discord.ui.View, CommonResponses):
         await interaction.response.defer()
 
         # Calculate the dynamic run chance
-        run_chance = calculate_run_chance(self.player, self.battle_context.monster.health, self.battle_context.monster.max_health)
+        run_chance = calculate_run_chance(self.player, self.battle_context.monster.health, self.battle_context.monster.max_health, interaction.guild_id)
 
         # Successful escape
         if random.random() < run_chance:
@@ -686,7 +673,7 @@ class SpecialAttackOptions(discord.ui.View, CommonResponses):
         is_unarmed = attack_level == 1 and self.battle_context.player.inventory.equipped_weapon is None
 
         # Perform the attack with the unarmed check
-        await player_attack_task(self.battle_context, attack_level, is_unarmed=is_unarmed)
+        await player_attack_task(self.battle_context, attack_level, guild_id=interaction.guild_id, is_unarmed=is_unarmed)
 
         # After monster's health changes, update the battle embed
         new_footer_text = footer_text_for_embed(self.ctx, self.monster, self.player)
@@ -711,8 +698,9 @@ class SpecialAttackOptions(discord.ui.View, CommonResponses):
         except discord.NotFound:
             pass
 
-def calculate_run_chance(player, monster_health, monster_max_health):
-    from probabilities import base_run_chance
+def calculate_run_chance(player, monster_health, monster_max_health, guild_id):
+
+    base_run_chance = get_server_setting(guild_id, 'base_run_chance')
 
     # Calculate base run chance
     if monster_health > monster_max_health * 0.5:
@@ -860,7 +848,7 @@ def footer_text_for_embed(ctx, monster=None, player=None):
 
     # Calculate and append the run chance if the monster is not defeated
     if monster and not monster.is_defeated():
-        run_chance = calculate_run_chance(player, monster.health, monster.max_health)
+        run_chance = calculate_run_chance(player, monster.health, monster.max_health, guild_id)
         run_chance_percent = round(run_chance * 100)  # Convert to percentage
         footer_text += f" ~~ 💨 Run {run_chance_percent}%"
 

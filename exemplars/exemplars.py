@@ -4,6 +4,7 @@ import json
 import discord
 from emojis import get_emoji
 
+
 with open("level_data.json", "r") as f:
     LEVEL_DATA = json.load(f)
 
@@ -12,9 +13,11 @@ class Exemplar:
         self,
         name,
         stats,
+        guild_id,
         inventory=None,
         battle_actions=None
     ):
+        self.guild_id = guild_id
         self.name = name
         self.stats = PlayerStats(
             stats["health"],
@@ -77,7 +80,7 @@ class Exemplar:
         self.stats.armor = total_defense
 
     def update_total_damage(self):
-        from probabilities import weapon_specialty_bonus
+        from utils import get_server_setting
         """
         Updates the 'damage' attribute of the player's stats based
         on the attack_modifier of the equipped weapon. Applies a specialty bonus
@@ -97,7 +100,7 @@ class Exemplar:
 
             # Check if equipped weapon matches player's exemplar specialty
             if weapon_specialty.get(self.name) == self.inventory.equipped_weapon.wtype:
-                specialty_bonus = int(self.inventory.equipped_weapon.attack_modifier * weapon_specialty_bonus)
+                specialty_bonus = int(self.inventory.equipped_weapon.attack_modifier * get_server_setting(self.guild_id, 'weapon_specialty_bonus'))
 
             # Update damage with the potential specialty bonus
             self.stats.damage = self.inventory.equipped_weapon.attack_modifier + specialty_bonus
@@ -502,7 +505,7 @@ class PlayerStats:
         self.defense = update
 
 class Human(Exemplar):
-    def __init__(self):
+    def __init__(self, guild_id):
         human_stats = {
             "zone_level": 1,
             "health": 100,
@@ -521,10 +524,10 @@ class Human(Exemplar):
             "woodcutting_level": 1,
             "woodcutting_experience": 0
         }
-        super().__init__("Human", stats=human_stats)
+        super().__init__("Human", stats=human_stats, guild_id=guild_id)
 
 class Dwarf(Exemplar):
-    def __init__(self):
+    def __init__(self, guild_id):
         dwarf_stats = {
             "zone_level": 1,
             "health": 110,
@@ -543,10 +546,10 @@ class Dwarf(Exemplar):
             "woodcutting_level": 1,
             "woodcutting_experience": 0
         }
-        super().__init__("Dwarf", stats=dwarf_stats)
+        super().__init__("Dwarf", stats=dwarf_stats, guild_id=guild_id)
 
 class Orc(Exemplar):
-    def __init__(self):
+    def __init__(self, guild_id):
         orc_stats = {
             "zone_level": 1,
             "health": 120,
@@ -565,10 +568,10 @@ class Orc(Exemplar):
             "woodcutting_level": 1,
             "woodcutting_experience": 0
         }
-        super().__init__("Orc", stats=orc_stats)
+        super().__init__("Orc", stats=orc_stats, guild_id=guild_id)
 
 class Halfling(Exemplar):
-    def __init__(self):
+    def __init__(self, guild_id):
         halfling_stats = {
             "zone_level": 1,
             "health": 90,
@@ -587,10 +590,10 @@ class Halfling(Exemplar):
             "woodcutting_level": 1,
             "woodcutting_experience": 0
         }
-        super().__init__("Halfling", stats=halfling_stats)
+        super().__init__("Halfling", stats=halfling_stats, guild_id=guild_id)
 
 class Elf(Exemplar):
-    def __init__(self):
+    def __init__(self, guild_id):
         elf_stats = {
             "zone_level": 1,
             "health": 95,
@@ -609,9 +612,9 @@ class Elf(Exemplar):
             "woodcutting_level": 1,
             "woodcutting_experience": 0
         }
-        super().__init__("Elf", stats=elf_stats)
+        super().__init__("Elf", stats=elf_stats, guild_id=guild_id)
 
-def create_exemplar(exemplar_name):
+def create_exemplar(exemplar_name, guild_id):
     exemplar_classes = {
         "human": Human,
         "dwarf": Dwarf,
@@ -620,8 +623,9 @@ def create_exemplar(exemplar_name):
         "elf": Elf
     }
 
-    if exemplar_name not in exemplar_classes:
+    if exemplar_name.lower() not in exemplar_classes:
         return None
 
-    exemplar_instance = exemplar_classes[exemplar_name.lower()]()
+    # Create an instance of the appropriate class by passing guild_id
+    exemplar_instance = exemplar_classes[exemplar_name.lower()](guild_id=guild_id)
     return exemplar_instance

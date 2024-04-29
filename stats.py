@@ -3,12 +3,11 @@ import math
 import discord
 from discord import Embed
 from discord.ext import commands
-from utils import load_player_data, load_all_player_data, save_player_data, CommonResponses, refresh_player_from_data
+from utils import load_player_data, load_all_player_data, save_player_data, CommonResponses, refresh_player_from_data, get_server_setting
 from exemplars.exemplars import Exemplar
 from emojis import get_emoji
 from images.urls import generate_urls
 import copy
-from probabilities import death_penalty
 import asyncio
 
 def load_level_data():
@@ -492,7 +491,7 @@ class RichListDropdown(discord.ui.Select, CommonResponses):
         # Initialize player objects and sort based on the selected category
         sorted_players = []
         for player_id, data in player_data.items():
-            player = Exemplar(data["exemplar"], data["stats"], data["inventory"])
+            player = Exemplar(data["exemplar"], data["stats"], self.guild_id, data["inventory"])
             sorted_players.append((player_id, player))
 
         # Select the category
@@ -552,6 +551,7 @@ class ResurrectOptions(discord.ui.View, CommonResponses):
 
         self.player = Exemplar(player_data["exemplar"],
                                player_data["stats"],
+                               interaction.guild_id,
                                player_data["inventory"])
 
         # Create the MTRM button, disabled if Materium is 0
@@ -629,7 +629,7 @@ class ResurrectOptions(discord.ui.View, CommonResponses):
             return await self.not_dead_response(interaction)
 
         # Apply the penalty since the user doesn't have enough MTRM
-        levels_decreased, zone_level_decreased = await apply_penalty(self.player_data)
+        levels_decreased, zone_level_decreased = await apply_penalty(self.player_data, interaction.guild_id)
 
         # Update player data for death penalty
         player_inventory = self.player_data['inventory']
@@ -756,7 +756,7 @@ class ResurrectOptions(discord.ui.View, CommonResponses):
         nero_embed.set_thumbnail(url=generate_urls("nero", "confused"))
         await interaction.response.send_message(embed=nero_embed, ephemeral=True)
 
-async def apply_penalty(player_data):
+async def apply_penalty(player_data, guild_id):
     stats = player_data["stats"]
     levels_decreased = {}
     # Will tell us if we need to return to previous zone based on level penalty
@@ -764,6 +764,7 @@ async def apply_penalty(player_data):
 
     player = Exemplar(player_data["exemplar"],
                       player_data["stats"],
+                      guild_id,
                       player_data["inventory"])
 
     new_combat_level = None
@@ -772,7 +773,7 @@ async def apply_penalty(player_data):
         original_level = stats[f"{original_skill_name}_level"]
 
         # Apply the penalty
-        new_exp = max(0, math.floor(stats[skill] * (1 - death_penalty)))
+        new_exp = max(0, math.floor(stats[skill] * (1 - get_server_setting(guild_id, 'death_penalty'))))
         stats[skill] = new_exp  # Update the experience in player_data
 
         # Recalculate the level based on the new experience

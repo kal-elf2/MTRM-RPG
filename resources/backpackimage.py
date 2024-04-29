@@ -23,6 +23,7 @@ def generate_backpack_image(interaction):
 
     player = Exemplar(player_data["exemplar"],
                       player_data["stats"],
+                      guild_id,
                       player_data["inventory"])
 
     with Session() as session:  # Start a session

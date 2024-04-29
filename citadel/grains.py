@@ -4,7 +4,6 @@ from resources.item import Item
 from utils import save_player_data, CommonResponses, refresh_player_from_data
 import asyncio
 
-
 class HarvestButton(discord.ui.View, CommonResponses):
     def __init__(self, ctx, crop, player_data, author_id, guild_id):
         super().__init__(timeout=None)
@@ -32,6 +31,7 @@ class HarvestButton(discord.ui.View, CommonResponses):
         save_player_data(self.guild_id, self.author_id, self.player_data)
 
         crop_count = player.inventory.get_item_quantity(self.crop)
+        formatted_crop_count = "{:,}".format(crop_count)
         crop_url = generate_urls("Citadel", self.crop)
 
         embed = discord.Embed(
@@ -40,7 +40,7 @@ class HarvestButton(discord.ui.View, CommonResponses):
             color=discord.Color.green()
         )
         embed.set_thumbnail(url=crop_url)
-        embed.set_footer(text=f"+1 {self.crop}\n{crop_count} in backpack")
+        embed.set_footer(text=f"+1 {self.crop}\n{formatted_crop_count} in backpack")
 
         # Disable the button
         button.disabled = True

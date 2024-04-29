@@ -10,8 +10,7 @@ from resources.tree import Tree
 from discord.ext import commands
 import random
 from images.urls import generate_urls
-import os
-
+import logging
 
 class ExemplarJSONEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -78,12 +77,20 @@ def remove_player_data(guild_id, player_id):
     with open(file_path, 'w') as f:
         json.dump(all_player_data, f, indent=4, cls=ExemplarJSONEncoder)
 
-def load_server_settings(guild_id):
-    settings_file = f'server/{guild_id}/server_settings.json'
-    if os.path.exists(settings_file):
-        with open(settings_file, 'r') as f:
-            return json.load(f)
-    return {}  # Return empty dict if file doesn't exist
+logger = logging.getLogger(__name__)
+
+def get_server_setting(guild_id, setting_name):
+    settings_path = f'server/{guild_id}/server_settings.json'
+    try:
+        with open(settings_path, 'r') as f:
+            settings = json.load(f)
+        return settings.get(setting_name)
+    except FileNotFoundError:
+        logger.error(f"Settings file not found for guild ID {guild_id}.")
+        return None
+    except json.JSONDecodeError:
+        logger.error(f"JSON decoding error in settings file for guild ID {guild_id}.")
+        return None
 
 def save_server_settings(guild_id, settings_data):
     settings_file = f'server/{guild_id}/server_settings.json'
@@ -102,7 +109,6 @@ def update_and_save_player_data(interaction: discord.Interaction, inventory, pla
 
     save_player_data(interaction.guild.id, player_id, player_data)
 
-
 async def refresh_player_from_data(context):
     from exemplars.exemplars import Exemplar
 
@@ -117,7 +123,7 @@ async def refresh_player_from_data(context):
     player_data = load_player_data(guild_id, author_id)
     player = None
     if player_data:
-        player = Exemplar(player_data["exemplar"], player_data["stats"], player_data["inventory"])
+        player = Exemplar(player_data["exemplar"], player_data["stats"], guild_id=guild_id, inventory=player_data["inventory"])
 
     return player, player_data
 

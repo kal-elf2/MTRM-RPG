@@ -1,6 +1,6 @@
 import discord
 from images.urls import generate_urls
-from utils import save_player_data, CommonResponses, refresh_player_from_data
+from utils import save_player_data, CommonResponses, refresh_player_from_data, get_server_setting
 from emojis import get_emoji
 import asyncio
 
@@ -15,8 +15,6 @@ class HealTentButton(discord.ui.View, CommonResponses):
 
     @discord.ui.button(label="Heal", custom_id="heal", style=discord.ButtonStyle.blurple)
     async def heal(self, button, interaction):
-
-        from probabilities import tent_health
 
         # Inherited from CommonResponses class from utils
         if str(interaction.user.id) != self.author_id:
@@ -40,7 +38,7 @@ class HealTentButton(discord.ui.View, CommonResponses):
 
         # Heal the player
         previous_health = self.player.stats.health
-        self.player.stats.health = min(self.player.stats.health + tent_health, self.player.stats.max_health)
+        self.player.stats.health = min(self.player.stats.health + get_server_setting(interaction.guild_id, 'tent_health'), self.player.stats.max_health)
         actual_healed_amount = self.player.stats.health - previous_health
 
         # Update the player_data with the modified player stats

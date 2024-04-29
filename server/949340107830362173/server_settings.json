@@ -1,4 +1,24 @@
 {
-    "custom_emojis": {},
-    "difficulty": "normal"
+    "mtrm_drop_percent": 0.01,
+    "herb_drop_percent": 0.15,
+    "potion_drop_percent": 0.1,
+    "spork_chance": 0.001,
+    "spork_value": 100000,
+    "attack_percent": 0.075,
+    "brute_percent": 0.05,
+    "stonebreaker_percent": 0.15,
+    "woodcleaver_percent": 0.15,
+    "loothaven_percent": 0.15,
+    "ironhide_percent": 0.15,
+    "ironhide_multiplier": 2,
+    "mightstone_multiplier": 2,
+    "buyback_cost": 5000,
+    "weapon_specialty_bonus": 0.05,
+    "death_penalty": 0.05,
+    "CRITICAL_HIT_CHANCE": 0.1,
+    "CRITICAL_HIT_MULTIPLIER": 1.5,
+    "base_run_chance": 0.25,
+    "base_zone_supply_requirement": 10,
+    "tent_health": 25,
+    "unarmed_damaged_reduction": 0.05
 }

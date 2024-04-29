@@ -20,6 +20,7 @@ async def mega_brute_encounter(player_data, ctx, interaction, guild_id, author_i
 
     player = Exemplar(player_data["exemplar"],
                       player_data["stats"],
+                      guild_id,
                       player_data["inventory"])
 
     monster = generate_monster_by_name('Mega Brute', player.stats.zone_level)
@@ -52,7 +53,7 @@ async def mega_brute_encounter(player_data, ctx, interaction, guild_id, author_i
     special_attack_options_view.battle_options_msg = battle_options_msg
     special_attack_options_view.special_attack_message = special_attack_message
 
-    battle_result = await monster_battle(battle_context)
+    battle_result = await monster_battle(battle_context, guild_id)
 
     if battle_result is None:
         # Save the player's current stats

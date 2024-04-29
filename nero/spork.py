@@ -1,8 +1,7 @@
 import discord
-from utils import CommonResponses, save_player_data, refresh_player_from_data
+from utils import CommonResponses, save_player_data, refresh_player_from_data, get_server_setting
 from emojis import get_emoji
 from images.urls import generate_urls
-from probabilities import spork_value
 from discord.ext import commands
 from discord import Embed, ButtonStyle
 
@@ -50,10 +49,10 @@ class RustySporkDialogView(discord.ui.View):
         else:
             # Add a final accept button
             self.add_item(
-                RustySporkFinalAcceptButton(f"Accept Offer", self.player, self.author_id,
+                RustySporkFinalAcceptButton(f"Accept Coppers", self.player, self.author_id,
                                             self.player_data))
             self.add_item(
-                RustySporkGiveForFreeButton("Give it Away", self.player, self.author_id, self.player_data))
+                RustySporkGiveForFreeButton("Give it for Free", self.player, self.author_id, self.player_data))
 
 class RustySporkOfferButton(discord.ui.Button, CommonResponses):
     def __init__(self, label, player, author_id, player_data, next_offer, context_messages):
@@ -97,9 +96,9 @@ class RustySporkFinalAcceptButton(discord.ui.Button, CommonResponses):
 
         successful_sell = self.player.inventory.sell_item("Rusty Spork", 1)
         if successful_sell:
-            self.player.inventory.add_coppers(spork_value)
+            self.player.inventory.add_coppers(get_server_setting(interaction.guild_id, 'spork_value'))
             save_player_data(interaction.guild_id, self.author_id, self.player_data)
-            formatted_spork_value = "{:,.0f}".format(spork_value)
+            formatted_spork_value = "{:,.0f}".format(get_server_setting(interaction.guild_id, 'spork_value'))
             confirmation_embed = discord.Embed(
                 title="Transaction Complete",
                 description=f"Ahoy! A treasure beyond measure! I know just where this will fit on me ship.\n\nCaptain Nero gleefully snatches the {get_emoji('Rusty Spork')} Rusty Spork and **tosses you a hefty bag of {formatted_spork_value}{get_emoji('coppers_emoji')}**",

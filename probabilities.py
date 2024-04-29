@@ -1,52 +1,35 @@
-# Base percentages for various drop rates. These can be adjusted as needed.
+# This dictionary stores the default settings for game mechanics.
+# Each setting has a comment indicating its original value and purpose.
 
-#LOOT DROPS
-# Original value: 0.01 (1% chance)
-mtrm_drop_percent = 0.01
-# Original value: 0.15 (15% chance)
-herb_drop_percent = 0.15
-# Original value: 0.10 (10% chance)
-potion_drop_percent = 0.10
-# Original value: 0.001 (.1% chance)
-spork_chance = 0.001
-# Original value: 100000
-spork_value = 100000
+default_settings = {
+    # Base percentages for various drop rates
+    "mtrm_drop_percent": 0.01,  # 1% chance, loot drop
+    "herb_drop_percent": 0.15,  # 15% chance, loot drop
+    "potion_drop_percent": 0.10,  # 10% chance, loot drop
+    "spork_chance": 0.001,  # 0.1% chance, rare item drop
+    "spork_value": 100000,  # value of spork item
 
-# ATTACKS
-# Original value: 0.075 (7.5% chance)
-attack_percent = 0.075
-# Original value: 0.05 (5% chance)
-brute_percent = 0.05
+    # Attack probabilities
+    "attack_percent": 0.075,  # 7.5% chance, monster attack
+    "brute_percent": 0.05,  # 5% chance, citadel exit brute attack
 
-#CHARMS
-# Original value: 0.15 (15% chance)
-stonebreaker_percent = 0.15
-# Original value: 0.15 (15% chance)
-woodcleaver_percent = 0.15
-# Original value: 0.15 (15% chance)
-loothaven_percent = 0.15
-# Original value: 0.15 (15% chance)
-ironhide_percent = 0.15
-# Original value: 2 (double run multiplier)
-ironhide_multiplier = 2
-# Original value: 2 (double multiplier)
-mightstone_multiplier = 2
+    # Charms probabilities
+    "stonebreaker_percent": 0.15,  # 15% chance, specific charm effect
+    "woodcleaver_percent": 0.15,  # 15% chance, specific charm effect
+    "loothaven_percent": 0.15,  # 15% chance, specific charm effect
+    "ironhide_percent": 0.15,  # 15% chance, specific charm effect
+    "ironhide_multiplier": 2,  # double run multiplier
+    "mightstone_multiplier": 2,  # double multiplier
 
-# Nero's death buyback item base cost:
-buyback_cost = 5000
-
-# Weapon specialty bonus to damage: (5%)
-weapon_specialty_bonus = 0.05
-
-# Constants
-death_penalty = 0.05 # 5% stat reduction upon death
-CRITICAL_HIT_CHANCE = 0.10  # 10% chance of a critical hit
-CRITICAL_HIT_MULTIPLIER = 1.5  # 1.5 times the damage for a critical hit
-base_run_chance = 0.25 # Base run chance
-base_zone_supply_requirement = 10 # How many cannonballs and poplar strips required * zone level
-
-# HP per heal
-tent_health = 25
-
-# Unarmed damage_reduction (95% reduction)
-unarmed_damaged_reduction = 0.05
+    # Other settings
+    "buyback_cost": 5000,  # max cost per zone, Nero's death buyback
+    "weapon_specialty_bonus": 0.05,  # 5% bonus to damage for weapon specialty
+    "death_penalty": 0.05,  # 5% stat reduction upon death
+    "CRITICAL_HIT_CHANCE": 0.10,  # 10% chance of a critical hit
+    "CRITICAL_HIT_MULTIPLIER": 1.5,  # 1.5 times the damage for a critical hit
+    "base_run_chance": 0.25,  # base chance to run away
+    "base_zone_supply_requirement": 10,  # base supply requirement * zone level
+    "tent_health": 25,  # HP per heal from tent
+    "unarmed_damaged_reduction": 0.05  # 95% damage reduction when unarmed
+}
+# get_server_setting(guild_id, '')

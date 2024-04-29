@@ -3,7 +3,7 @@ import discord
 from discord import Embed
 import copy
 from exemplars.exemplars import Exemplar
-from utils import load_player_data, update_and_save_player_data, save_player_data, CommonResponses, refresh_player_from_data
+from utils import load_player_data, update_and_save_player_data, save_player_data, CommonResponses, refresh_player_from_data, get_server_setting
 from images.urls import generate_urls
 from citadel.crafting import Armor
 import io
@@ -66,6 +66,7 @@ class BackpackView(discord.ui.View, CommonResponses):
         self.player_data = load_player_data(self.guild_id, self.author_id)
         self.player = Exemplar(self.player_data["exemplar"],
                                self.player_data["stats"],
+                               self.guild_id,
                                self.player_data["inventory"])
 
         self.inventory = self.player.inventory
@@ -76,6 +77,7 @@ class BackpackView(discord.ui.View, CommonResponses):
         self.player_data = load_player_data(self.guild_id, self.author_id)
         self.player = Exemplar(self.player_data["exemplar"],
                                self.player_data["stats"],
+                               self.guild_id,
                                self.player_data["inventory"])
         self.inventory = self.player.inventory
 
@@ -505,7 +507,6 @@ class EquipTypeSelect(discord.ui.Select, CommonResponses):
 
     async def handle_item_equipping(self, interaction, inventory, item_name):
         from citadel.crafting import Weapon
-        from probabilities import weapon_specialty_bonus
         selected_item = self.find_item_by_name(inventory, item_name)
 
         if not selected_item:
@@ -533,7 +534,7 @@ class EquipTypeSelect(discord.ui.Select, CommonResponses):
             # Check for specialty bonus and append the message
             if isinstance(selected_item, Weapon) and selected_item.wtype == weapon_specialty.get(self.view.player.name):
                 # Convert the bonus to an integer percentage value
-                bonus_percentage = int(weapon_specialty_bonus * 100)
+                bonus_percentage = int(get_server_setting(interaction.guild_id, 'weapon_specialty_bonus') * 100)
                 # Format the message with the integer percentage
                 specialty_bonus_message = f"\n\n**{self.view.player.name.capitalize()} weapon bonus activated!** Your {selected_item.name} grants you an extra *{bonus_percentage}% damage bonus*."
                 embed_to_send.description += specialty_bonus_message

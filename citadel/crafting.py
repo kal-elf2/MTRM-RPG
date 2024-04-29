@@ -7,8 +7,7 @@ from exemplars.exemplars import Exemplar
 from resources.ore import Ore
 from resources.potion import Potion
 from resources.materium import Materium
-from probabilities import stonebreaker_percent, woodcleaver_percent, loothaven_percent, mightstone_multiplier, ironhide_percent, ironhide_multiplier, CRITICAL_HIT_CHANCE, CRITICAL_HIT_MULTIPLIER
-from utils import CommonResponses, refresh_player_from_data
+from utils import CommonResponses, refresh_player_from_data, get_server_setting
 
 class Weapon(Item):
     def __init__(self, name, wtype, attack_modifier, special_attack, value, zone_level, description=None, stack=1):
@@ -261,25 +260,33 @@ class EmbedGenerator:
         ingredients_list = []
         for ingredient, quantity in self.selected_recipe.ingredients:
             available_quantity = self.player.inventory.get_item_quantity(ingredient.name)
-            ingredients_list.append(f"{'✅' if available_quantity >= quantity else '❌'} {ingredient.name} {available_quantity}/{quantity}")
+            # Format the quantities with commas
+            formatted_available = "{:,}".format(available_quantity)
+            formatted_required = "{:,}".format(quantity)
+            ingredients_list.append(
+                f"{'✅' if available_quantity >= quantity else '❌'} {ingredient.name} {formatted_available}/{formatted_required}"
+            )
         return ingredients_list
 
     def set_footer(self, embed, zone_rarity_identifier):
-        item_count = self.player.inventory.get_item_quantity(self.crafted_item.name, getattr(self.crafted_item, 'zone_level', None))
+        item_count = self.player.inventory.get_item_quantity(self.crafted_item.name,
+                                                             getattr(self.crafted_item, 'zone_level', None))
+        formatted_item_count = "{:,}".format(item_count)  # Format the item count with commas
 
         if self.show_added_to_backpack:
             if self.selected_recipe.result.name not in ["Bread", "Trencher"]:
                 if isinstance(self.crafted_item, (Armor, Weapon, Shield)):
-                    embed.set_footer(text=f"+1 {self.crafted_item.name}\n{item_count} in backpack {zone_rarity_identifier}")
+                    embed.set_footer(
+                        text=f"+1 {self.crafted_item.name}\n{formatted_item_count} in backpack {zone_rarity_identifier}")
                 else:
-                    embed.set_footer(text=f"+1 {self.crafted_item.name}\n{item_count} in backpack")
+                    embed.set_footer(text=f"+1 {self.crafted_item.name}\n{formatted_item_count} in backpack")
         else:
             if self.selected_recipe.result.name not in ["Bread", "Trencher"]:
                 if isinstance(self.crafted_item, (Armor, Weapon, Shield)):
                     embed.set_footer(
-                        text=f"{item_count} in backpack {zone_rarity_identifier}")
+                        text=f"{formatted_item_count} in backpack {zone_rarity_identifier}")
                 else:
-                    embed.set_footer(text=f"{item_count} in backpack")
+                    embed.set_footer(text=f"{formatted_item_count} in backpack")
 
     def add_stamina_bar(self):
         stamina_progress = stamina_bar(self.player.stats.stamina, self.player.stats.max_stamina)
@@ -426,6 +433,7 @@ class CraftingSelect(discord.ui.Select, CommonResponses):
         self.player_data = load_player_data(self.guild_id, self.author_id)
         self.player = Exemplar(self.player_data["exemplar"],
                                self.player_data["stats"],
+                               self.guild_id,
                                self.player_data["inventory"])
 
 
@@ -558,9 +566,15 @@ class CraftingSelect(discord.ui.Select, CommonResponses):
                 available_quantity = self.player.inventory.get_item_quantity(ingredient.name)
                 if available_quantity < required_quantity:
                     can_craft = False
-                    ingredients_list.append(f"❌ {ingredient.name} {available_quantity}/{required_quantity}")
+                    # Format the quantities with commas
+                    formatted_available = "{:,}".format(available_quantity)
+                    formatted_required = "{:,}".format(required_quantity)
+                    ingredients_list.append(f"❌ {ingredient.name} {formatted_available}/{formatted_required}")
                 else:
-                    ingredients_list.append(f"✅ {ingredient.name} {available_quantity}/{required_quantity}")
+                    # Format the quantities with commas
+                    formatted_available = "{:,}".format(available_quantity)
+                    formatted_required = "{:,}".format(required_quantity)
+                    ingredients_list.append(f"✅ {ingredient.name} {formatted_available}/{formatted_required}")
 
             # Construct the embed message.
             message_content = "\n".join(ingredients_list)
@@ -590,7 +604,9 @@ class CraftingSelect(discord.ui.Select, CommonResponses):
 
             # Setting the footer with crafted item count in backpack, except for Bread and Trencher
             if selected_recipe.result.name not in ["Bread", "Trencher"]:
-                footer_text = f"{crafted_item_count} in backpack"
+                formatted_crafted_item_count = "{:,}".format(
+                    crafted_item_count)  # Format the crafted item count with commas
+                footer_text = f"{formatted_crafted_item_count} in backpack"
 
                 # Check if the item class is Armor, Weapon, or Shield and adjust the footer text
                 if isinstance(selected_recipe.result, (Armor, Weapon, Shield)):
@@ -636,6 +652,7 @@ def create_crafting_stations(interaction, station_name=None):
     player_data = load_player_data(guild_id, author_id)
     player = Exemplar(player_data["exemplar"],
                       player_data["stats"],
+                      guild_id,
                       player_data["inventory"])
 
     # Get zone level from player stats
@@ -752,19 +769,19 @@ def create_crafting_stations(interaction, station_name=None):
 
     # Charms
     woodcrafters_charm = Charm("Woodcleaver",
-                               description=f"Increase woodcutting success rate by {int(round(woodcleaver_percent * 100))}% while wearing",
+                               description=f"Increase woodcutting success rate by {int(round(get_server_setting(guild_id, 'woodcleaver_percent') * 100))}% while wearing",
                                value=25000)
     miners_charm = Charm("Stonebreaker",
-                         description=f"Increase mining success rate by {int(round(stonebreaker_percent * 100))}% while wearing",
+                         description=f"Increase mining success rate by {int(round(get_server_setting(guild_id, 'stonebreaker_percent') * 100))}% while wearing",
                          value=25000)
     lootmasters_charm = Charm("Loothaven",
-                              description=f"Gives a {int(round(loothaven_percent * 100))}% chance to **double** your monster loot *and* drop rates of bonus loot while wearing",
+                              description=f"Gives a {int(round(get_server_setting(guild_id, 'loothaven_percent') * 100))}% chance to **double** your monster loot *and* drop rates of bonus loot while wearing",
                               value=25000)
     strength_charm = Charm("Mightstone",
-                           description=f"Doubles your critical hit chance *and* damage multiplier (**{int(round((mightstone_multiplier * CRITICAL_HIT_CHANCE) * 100))}%** and **{int(CRITICAL_HIT_MULTIPLIER * 2)}x**) while wearing",
+                           description=f"Doubles your critical hit chance *and* damage multiplier (**{int(round((get_server_setting(guild_id, 'mightstone_multiplier') * get_server_setting(guild_id, 'CRITICAL_HIT_CHANCE')) * 100))}%** and **{int(get_server_setting(guild_id, 'CRITICAL_HIT_MULTIPLIER') * 2)}x**) while wearing",
                            value=25000)
     defenders_charm = Charm("Ironhide",
-                            description=f"Increases your chance to **evade all attacks** by {int(round(ironhide_percent * 100))}% and **run chance** by **{int(ironhide_multiplier)}x** while wearing",
+                            description=f"Increases your chance to **evade all attacks** by {int(round(get_server_setting(guild_id, 'ironhide_percent') * 100))}% and **run chance** by **{int(get_server_setting(guild_id, 'ironhide_multiplier'))}x** while wearing",
                             value=25000)
 
     # Potions

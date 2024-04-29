@@ -4,7 +4,7 @@ from resources.potion import POTION_LIST
 from resources.materium import Materium
 from resources.item import Item
 from emojis import get_emoji
-from probabilities import mtrm_drop_percent, potion_drop_percent, herb_drop_percent, loothaven_percent, spork_chance
+from utils import get_server_setting
 
 class Loot:
     def __init__(self, name, rarity, value):
@@ -84,18 +84,18 @@ monster_difficulty_multiplier = {
     'Mother': 30
 }
 
-def generate_zone_loot(player, zone_level, monster_drop=None, name=None):
+def generate_zone_loot(player, zone_level, guild_id, monster_drop=None, name=None):
     loot_messages = []
     loot = []
     rusty_spork_dropped = False
 
     # Check if the player has the Loothaven charm equipped
-    loothaven_effect = (player.inventory.equipped_charm and player.inventory.equipped_charm.name == "Loothaven") and random.random() < loothaven_percent
+    loothaven_effect = (player.inventory.equipped_charm and player.inventory.equipped_charm.name == "Loothaven") and random.random() < get_server_setting(guild_id, 'loothaven_percent')
 
     # Doubling the drop rates if Loothaven charm is active
-    herb_drop_chance = herb_drop_percent * (2 if loothaven_effect else 1)
-    materium_drop_chance = mtrm_drop_percent * zone_level * (2 if loothaven_effect else 1)
-    potion_drop_chance = potion_drop_percent * zone_level * (2 if loothaven_effect else 1)
+    herb_drop_chance = get_server_setting(guild_id, 'herb_drop_percent') * (2 if loothaven_effect else 1)
+    materium_drop_chance = get_server_setting(guild_id, 'mtrm_drop_percent') * zone_level * (2 if loothaven_effect else 1)
+    potion_drop_chance = get_server_setting(guild_id, 'potion_drop_percent') * zone_level * (2 if loothaven_effect else 1)
 
     # Coppers drop
     monster_multiplier = monster_difficulty_multiplier.get(name, 1)  # Get the multiplier for the monster or default to 1
@@ -194,10 +194,9 @@ def generate_zone_loot(player, zone_level, monster_drop=None, name=None):
                 f"{get_emoji(item_emoji_mapping.get(item.name, ''))} You found **{final_quantity} {item_name_plural}**!")
 
         # Rusty Spork drop logic
-        if random.random() < spork_chance:
+        if random.random() < get_server_setting(guild_id, 'spork_chance'):
             rusty_spork_dropped = True
-            from probabilities import spork_value
-            spork_dropped = Item("Rusty Spork", description="A rusty and useless trinket", value=spork_value)
+            spork_dropped = Item("Rusty Spork", description="A rusty and useless trinket", value=get_server_setting(guild_id, 'spork_value'))
             spork_count = 2 if loothaven_effect else 1
             for _ in range(spork_count):
                 loot.append(('items', [(spork_dropped, 1)]))  # Each drop is 1 item, even if doubled

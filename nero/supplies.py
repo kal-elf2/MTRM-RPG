@@ -1,8 +1,7 @@
 import discord
-from utils import save_player_data, CommonResponses, refresh_player_from_data
+from utils import save_player_data, CommonResponses, refresh_player_from_data, get_server_setting
 from emojis import get_emoji
 from images.urls import generate_gif_urls, generate_urls
-from probabilities import base_zone_supply_requirement
 
 class StockCaravelButton(discord.ui.Button, CommonResponses):
     def __init__(self, guild_id, player, player_data, author_id):
@@ -54,11 +53,11 @@ class StockSupplies:
         cannonball_shipwreck = self.player_data['shipwreck'].get('Cannonball', 0)
 
         if zone_level < 5:
-            required_amount = base_zone_supply_requirement * zone_level
+            required_amount = get_server_setting(interaction.guild_id, 'base_zone_supply_requirement') * zone_level
             max_deposit_text = f"({required_amount} Required)"
         else:
             required_amount = float('inf')  # Effectively no maximum
-            max_deposit_text = f"(Minimum: {zone_level * base_zone_supply_requirement})"
+            max_deposit_text = f"(Minimum: {zone_level * get_server_setting(interaction.guild_id, 'base_zone_supply_requirement')})"
 
         embed = discord.Embed(
             title=f"{ship_name} Supplies",
@@ -136,7 +135,7 @@ class DepositButton(discord.ui.Button, CommonResponses):
         initial_cannonball_count_shipwreck = self.player_data['shipwreck'].get('Cannonball', 0)
 
         zone_level = self.player.stats.zone_level
-        required_minimum = base_zone_supply_requirement * zone_level
+        required_minimum = get_server_setting(interaction.guild_id, 'base_zone_supply_requirement') * zone_level
         ship_name = TravelSelectDropdown.ship_names.get(zone_level, "Ship")
         ship_gif_url = generate_gif_urls("ships", ship_name)
 
@@ -154,7 +153,7 @@ class DepositButton(discord.ui.Button, CommonResponses):
         embed_color = color_mapping.get(zone_level)
 
         current_amount = self.player_data.get('shipwreck', {}).get(self.item_name, 0)
-        required_amount = base_zone_supply_requirement * zone_level if zone_level < 5 else float('inf')
+        required_amount = get_server_setting(interaction.guild_id, 'base_zone_supply_requirement') * zone_level if zone_level < 5 else float('inf')
 
         # Check if adding the items exceeds the maximum allowed
         if current_amount + self.amount > required_amount and zone_level < 5:
@@ -231,7 +230,7 @@ class DepositButton(discord.ui.Button, CommonResponses):
             await interaction.followup.send(embed=nero_embed, ephemeral=False)
 
         # Proceed with updating the supply counts and button states
-        max_deposit_text = f"(Minimum: {zone_level * base_zone_supply_requirement})" if zone_level == 5 else f"({required_amount} Required)"
+        max_deposit_text = f"(Minimum: {zone_level * get_server_setting(interaction.guild_id, 'base_zone_supply_requirement')})" if zone_level == 5 else f"({required_amount} Required)"
         embed = discord.Embed(title=f"{ship_name} Supplies", color=embed_color)
         embed.set_image(url=ship_gif_url)
         embed.add_field(

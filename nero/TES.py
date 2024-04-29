@@ -42,6 +42,7 @@ class PlayButton(discord.ui.Button):
         player_data = load_player_data(interaction.guild.id, str(interaction.user.id))
         player = Exemplar(player_data["exemplar"],
                           player_data["stats"],
+                          interaction.guild_id,
                           player_data["inventory"])
 
         discord_file = await generate_game_image(interaction, player)
@@ -455,8 +456,6 @@ class GameView(discord.ui.View, CommonResponses):
             # Clear all fields in the embed except for the title
             self.embed.clear_fields()
             self.embed.description = ''
-
-        # print(f"Current Round: {self.current_round}")
 
     def reset_dice_states(self):
         # Reset the selected_dice array and update button styles

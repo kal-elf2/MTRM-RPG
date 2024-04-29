@@ -6,7 +6,7 @@ from citadel.crafting import CraftingSelect, create_crafting_stations
 from images.urls import generate_urls
 from citadel.grains import HarvestButton
 from discord import Embed
-from utils import CommonResponses, load_player_data, save_player_data, refresh_player_from_data
+from utils import CommonResponses, load_player_data, save_player_data, refresh_player_from_data, get_server_setting
 import random
 
 class CitadelCog(commands.Cog, CommonResponses):
@@ -15,7 +15,6 @@ class CitadelCog(commands.Cog, CommonResponses):
 
     @commands.slash_command(description="Exit Citadel.")
     async def exit(self, ctx: discord.ApplicationContext):
-        from probabilities import brute_percent
         from citadel.brute import mega_brute_encounter
 
         guild_id = ctx.guild.id
@@ -33,7 +32,7 @@ class CitadelCog(commands.Cog, CommonResponses):
             return
 
         if player_data["location"] == "citadel":
-            will_encounter_brute = random.random() <= brute_percent
+            will_encounter_brute = random.random() <= get_server_setting(guild_id, "brute_percent")
 
             # Defer the response because there might be a delay due to suspense buildup
             await ctx.defer(ephemeral=True)
@@ -96,6 +95,7 @@ class CitadelCog(commands.Cog, CommonResponses):
 
         player = Exemplar(player_data["exemplar"],
                           player_data["stats"],
+                          guild_id,
                           player_data["inventory"])
 
         # Check the player's health before starting a battle
@@ -525,7 +525,6 @@ class TravelRow(discord.ui.View, CommonResponses):
 
     @discord.ui.button(label="🏴‍☠️ Jolly Roger", custom_id="citadel_travel", style=discord.ButtonStyle.blurple)
     async def travel(self, button, interaction):
-        from exemplars.exemplars import Exemplar
         from nero.options import JollyRogerView
 
         if str(interaction.user.id) != self.author_id:
@@ -533,19 +532,14 @@ class TravelRow(discord.ui.View, CommonResponses):
             return
 
         # Refresh player object from the latest player data
-        _, self.player_data = await refresh_player_from_data(self.ctx)
+        player, self.player_data = await refresh_player_from_data(self.ctx)
 
         # Check if the player is not in the citadel
         if self.player_data["location"] != "citadel":
             await self.not_in_citadel_response(interaction)
             return
 
-        player_data = load_player_data(interaction.guild.id, str(interaction.user.id))
-        player = Exemplar(player_data["exemplar"],
-                          player_data["stats"],
-                          player_data["inventory"])
-
-        view = JollyRogerView(self.guild_id, player, player_data, self.author_id)
+        view = JollyRogerView(self.guild_id, player, self.player_data, self.author_id)
 
         nero_embed = discord.Embed(
             title="Captain Ner0",
@@ -582,7 +576,7 @@ class TravelRow(discord.ui.View, CommonResponses):
 
     @discord.ui.button(label="🚪 Exit", custom_id="citadel_exit", style=discord.ButtonStyle.blurple)
     async def exit(self, button, interaction):
-        from probabilities import brute_percent
+
         from citadel.brute import mega_brute_encounter
 
         if str(interaction.user.id) != self.author_id:
@@ -597,7 +591,7 @@ class TravelRow(discord.ui.View, CommonResponses):
             return
 
         # Determine if the brute encounter will happen
-        will_encounter_brute = np.random.rand() <= brute_percent
+        will_encounter_brute = np.random.rand() <= get_server_setting(interaction.guild_id, "brute_percent")
 
         await interaction.response.defer()
 

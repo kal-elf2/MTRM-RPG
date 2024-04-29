@@ -6,8 +6,8 @@ from monsters.battle import create_battle_embed, footer_text_for_embed
 import asyncio
 from resources.item import Item
 import math
-from probabilities import CRITICAL_HIT_CHANCE, CRITICAL_HIT_MULTIPLIER, ironhide_percent, mightstone_multiplier, unarmed_damaged_reduction
 from emojis import get_emoji
+from utils import get_server_setting
 
 class Monster:
     def __init__(self, name, health, max_health, attack, stamina, experience_reward, weak_against, strong_against, attack_speed, drop):
@@ -73,11 +73,11 @@ def generate_monster_list():
     ]
     return monster_names
 
-def calculate_hit_probability(attacker_attack, defender_defense, player=None):
+def calculate_hit_probability(attacker_attack, defender_defense, guild_id, player=None):
     # Check if player is wearing the Ironhide charm
     if player and player.inventory.equipped_charm and player.inventory.equipped_charm.name == "Ironhide":
-        base_hit_probability = 0.75 - ironhide_percent  # Decrease base hit chance
-        min_hit_chance = 0.4 - ironhide_percent  # Decrease minimum hit chance
+        base_hit_probability = 0.75 - get_server_setting(guild_id, 'ironhide_percent')  # Decrease base hit chance
+        min_hit_chance = 0.4 - get_server_setting(guild_id, 'ironhide_percent')  # Decrease minimum hit chance
     else:
         base_hit_probability = 0.75  # Standard base hit chance
         min_hit_chance = 0.4  # Standard minimum hit chance
@@ -89,8 +89,7 @@ def calculate_hit_probability(attacker_attack, defender_defense, player=None):
     # Return the final hit probability, ensuring it's within the defined range
     return min(max(hit_probability, min_hit_chance), max_hit_chance)
 
-
-def calculate_damage(player, attacker_attack, defender_defense, is_critical_hit=False):
+def calculate_damage(player, attacker_attack, defender_defense, guild_id, is_critical_hit=False):
     attack_defense_ratio = attacker_attack / (defender_defense + 1)
 
     # Cap the ratio between 0.5 and 1.5 for more balanced gameplay
@@ -107,11 +106,11 @@ def calculate_damage(player, attacker_attack, defender_defense, is_critical_hit=
 
     # Apply critical hit multiplier if applicable
     if is_critical_hit:
-        crit_multiplier = CRITICAL_HIT_MULTIPLIER
+        crit_multiplier = get_server_setting(guild_id, 'CRITICAL_HIT_MULTIPLIER')
         # Check if player is the actual player and has Mightstone equipped
         if hasattr(player,
                    'inventory') and player.inventory.equipped_charm and player.inventory.equipped_charm.name == "Mightstone":
-            crit_multiplier *= mightstone_multiplier  # Increases critical hit by factor of mightstone_multiplier
+            crit_multiplier *= get_server_setting(guild_id, 'mightstone_multiplier')  # Increases critical hit by factor of mightstone_multiplier
         damage_dealt = round(damage_dealt * crit_multiplier)
 
     return damage_dealt
@@ -152,21 +151,21 @@ class BattleContext:
         battle_embed = create_battle_embed(self.user, self.player, self.monster, footer_text_for_embed(self.ctx, self.monster, self.player), self.battle_messages)
         await self.message.edit(embed=battle_embed)
 
-async def player_attack_task(battle_context, attack_level, is_unarmed=False):
+async def player_attack_task(battle_context, attack_level, guild_id, is_unarmed=False):
 
-    hit_probability = calculate_hit_probability(battle_context.player.stats.attack * attack_level, battle_context.monster.defense)
+    hit_probability = calculate_hit_probability(battle_context.player.stats.attack * attack_level, battle_context.monster.defense, guild_id)
 
     # Total attack == player's attack + weapon damage
     total_player_attack = battle_context.player.stats.attack + battle_context.player.stats.damage
 
     # Adjust critical hit chance if Mightstone is equipped
-    crit_chance = CRITICAL_HIT_CHANCE * mightstone_multiplier if battle_context.player.inventory.equipped_charm and battle_context.player.inventory.equipped_charm.name == "Mightstone" else CRITICAL_HIT_CHANCE
+    crit_chance = get_server_setting(guild_id, 'CRITICAL_HIT_CHANCE') * get_server_setting(guild_id, 'mightstone_multiplier') if battle_context.player.inventory.equipped_charm and battle_context.player.inventory.equipped_charm.name == "Mightstone" else get_server_setting(guild_id, 'CRITICAL_HIT_CHANCE')
     is_critical_hit = random.random() < crit_chance
 
     if random.random() < hit_probability:
         # Check if the player is unarmed and apply damage nerf
         if is_unarmed:
-            damage_reduction_multiplier = unarmed_damaged_reduction
+            damage_reduction_multiplier = get_server_setting(guild_id, 'unarmed_damaged_reduction')
         else:
             damage_reduction_multiplier = 1  # No reduction
 
@@ -198,13 +197,13 @@ async def player_attack_task(battle_context, attack_level, is_unarmed=False):
     try:
         await battle_context.special_attack_message.edit(view=battle_context.special_attack_options_view)
     except discord.NotFound:
-        print("Failed to edit message: Message not found.")
+        pass
 
     # Check if monster is defeated and return control to the caller
     if battle_context.monster.is_defeated():
         return
 
-async def monster_attack_task(battle_context):
+async def monster_attack_task(battle_context, guild_id):
     attack_speed_modifier = calculate_attack_speed_modifier(battle_context.monster.attack)
 
     # Total defense == player's defense + armor
@@ -214,7 +213,7 @@ async def monster_attack_task(battle_context):
         hit_probability = calculate_hit_probability(battle_context.monster.attack, battle_context.player.stats.defense, battle_context.player)
 
         # Determine if it's a critical hit
-        is_critical_hit = random.random() < CRITICAL_HIT_CHANCE
+        is_critical_hit = random.random() < get_server_setting(guild_id, 'CRITICAL_HIT_CHANCE')
 
         # Check if the attack hits
         if random.random() < hit_probability:
@@ -241,9 +240,9 @@ def generate_evasion_message(player, monster, user):
     else:
         return f"{user.mention} ***evaded*** the {monster.name}'s attack!"
 
-async def monster_battle(battle_context):
+async def monster_battle(battle_context, guild_id):
     # Execute the monster's attack task using the battle context
-    monster_attack = asyncio.create_task(monster_attack_task(battle_context))
+    monster_attack = asyncio.create_task(monster_attack_task(battle_context, guild_id=guild_id))
 
     # Await the completion of the monster attack task
     await monster_attack
@@ -256,7 +255,7 @@ async def monster_battle(battle_context):
     if battle_context.monster.is_defeated():
         # Handle monster defeat
         loot, loot_messages, loothaven_effect, rusty_spork_dropped = generate_zone_loot(
-            battle_context.player, battle_context.zone_level, battle_context.monster.drop, battle_context.monster.name
+            battle_context.player, battle_context.zone_level, guild_id, battle_context.monster.drop, battle_context.monster.name
         )
 
         # Store the rusty_spork_dropped flag in the battle context for later use

@@ -94,7 +94,7 @@ class PickExemplars(Select, CommonResponses):
         player_data["exemplar"] = self.values[0]
 
         # Initialize or reset the character's stats based on the chosen exemplar
-        exemplar_instance = create_exemplar(self.values[0])
+        exemplar_instance = create_exemplar(self.values[0], interaction.guild_id)
         player_data["stats"] = {
             "health": exemplar_instance.stats.health,
             "max_health": exemplar_instance.stats.max_health,
@@ -215,7 +215,7 @@ class ConfirmExemplar(discord.ui.View, CommonResponses):
         from exemplars.exemplars import create_exemplar
         # Update the exemplar instance based on the new index
         exemplar_name = self.exemplar_list[self.current_exemplar_index].lower()
-        self.exemplar_instance = create_exemplar(exemplar_name)
+        self.exemplar_instance = create_exemplar(exemplar_name, interaction.guild_id)
         self.player_data["exemplar"] = exemplar_name
         # Update stats and the confirm button label to reflect the new selection
         embed = PickExemplars.generate_stats_embed(self.exemplar_instance)

@@ -52,6 +52,7 @@ class DisplayItemsSelect(discord.ui.Select, CommonResponses):
         self.player_data = load_player_data(self.guild_id, self.author_id)
         self.player = Exemplar(self.player_data["exemplar"],
                                self.player_data["stats"],
+                               self.guild_id,
                                self.player_data["inventory"])
         self.zone_rarity = {
             1: '(Common)',
@@ -111,7 +112,7 @@ class RefreshShopButton(discord.ui.Button, CommonResponses):
         guild_id = interaction.guild.id
         author_id = str(interaction.user.id)
         player_data = load_player_data(guild_id, author_id)
-        player = Exemplar(player_data["exemplar"], player_data["stats"], player_data["inventory"])
+        player = Exemplar(player_data["exemplar"], player_data["stats"], guild_id, player_data["inventory"])
 
         # Check if there are any items across all categories
         has_items = any(getattr(player.inventory, category) for category in ["weapons", "armors", "shields", "charms", "potions"])

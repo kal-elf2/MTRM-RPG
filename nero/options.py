@@ -1,8 +1,7 @@
 import discord
 from emojis import get_emoji
-from utils import CommonResponses, refresh_player_from_data
+from utils import CommonResponses, refresh_player_from_data, get_server_setting
 from images.urls import generate_urls
-from probabilities import base_zone_supply_requirement
 
 class JollyRogerView(discord.ui.View):
     def __init__(self, guild_id, player, player_data, author_id):
@@ -38,7 +37,7 @@ class TravelSelectDropdown(discord.ui.Select, CommonResponses):
                                      emoji=f"{get_emoji('Rusty Spork')}"))
 
         # Dynamic requirements based on zone level
-        required_amount = base_zone_supply_requirement * zone_level
+        required_amount = get_server_setting(guild_id, 'base_zone_supply_requirement') * zone_level
         poplar_strip = self.player_data.get("shipwreck", {}).get("Poplar Strip", 0)
         cannonball = self.player_data.get("shipwreck", {}).get("Cannonball", 0)
 
@@ -315,6 +314,7 @@ class ResetButton(discord.ui.Button, CommonResponses):
         # Reinitialize player with the fresh data
         player = Exemplar(player_data["exemplar"],
                           player_data["stats"],
+                          guild_id,
                           player_data["inventory"])
 
         # Reset the Jolly Roger view

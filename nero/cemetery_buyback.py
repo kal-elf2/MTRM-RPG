@@ -1,6 +1,5 @@
 import discord
-from probabilities import buyback_cost
-from utils import save_player_data, CommonResponses, refresh_player_from_data
+from utils import save_player_data, CommonResponses, refresh_player_from_data, get_server_setting
 from images.urls import generate_urls
 from emojis import get_emoji
 
@@ -16,7 +15,7 @@ class NeroView(discord.ui.View, CommonResponses):
         # Calculate the half of the total item value and then use round to make it a whole number
         half_value = round(self.total_item_value / 2)
         # Use min to decide the lesser cost between half the item value and buyback cost multiplied by zone level
-        self.cost = min(half_value, buyback_cost * self.player.stats.zone_level)
+        self.cost = min(half_value, get_server_setting(interaction.guild_id, 'buyback_cost') * self.player.stats.zone_level)
 
     @staticmethod
     def calculate_total_inventory_value(inventory):
@@ -26,7 +25,6 @@ class NeroView(discord.ui.View, CommonResponses):
             category_items = getattr(inventory, category, [])
             for item in category_items:
                 total_value += item.value * item.stack
-        print(total_value)
         return total_value
 
     async def handle_buy_back(self, player_inventory, inventory_slots):
