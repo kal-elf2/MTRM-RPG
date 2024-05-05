@@ -106,7 +106,7 @@ def calculate_damage(player, attacker_attack, defender_defense, guild_id, is_cri
 
     # Apply critical hit multiplier if applicable
     if is_critical_hit:
-        crit_multiplier = get_server_setting(guild_id, 'CRITICAL_HIT_MULTIPLIER')
+        crit_multiplier = get_server_setting(guild_id, 'critical_hit_multiplier')
         # Check if player is the actual player and has Mightstone equipped
         if hasattr(player,
                    'inventory') and player.inventory.equipped_charm and player.inventory.equipped_charm.name == "Mightstone":
@@ -159,7 +159,7 @@ async def player_attack_task(battle_context, attack_level, guild_id, is_unarmed=
     total_player_attack = battle_context.player.stats.attack + battle_context.player.stats.damage
 
     # Adjust critical hit chance if Mightstone is equipped
-    crit_chance = get_server_setting(guild_id, 'CRITICAL_HIT_CHANCE') * get_server_setting(guild_id, 'mightstone_multiplier') if battle_context.player.inventory.equipped_charm and battle_context.player.inventory.equipped_charm.name == "Mightstone" else get_server_setting(guild_id, 'CRITICAL_HIT_CHANCE')
+    crit_chance = get_server_setting(guild_id, 'critical_hit_chance') * get_server_setting(guild_id, 'mightstone_multiplier') if battle_context.player.inventory.equipped_charm and battle_context.player.inventory.equipped_charm.name == "Mightstone" else get_server_setting(guild_id, 'CRITICAL_HIT_CHANCE')
     is_critical_hit = random.random() < crit_chance
 
     if random.random() < hit_probability:
@@ -213,7 +213,7 @@ async def monster_attack_task(battle_context, guild_id):
         hit_probability = calculate_hit_probability(battle_context.monster.attack, battle_context.player.stats.defense, battle_context.player)
 
         # Determine if it's a critical hit
-        is_critical_hit = random.random() < get_server_setting(guild_id, 'CRITICAL_HIT_CHANCE')
+        is_critical_hit = random.random() < get_server_setting(guild_id, 'critical_hit_chance')
 
         # Check if the attack hits
         if random.random() < hit_probability:

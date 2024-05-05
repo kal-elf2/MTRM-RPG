@@ -5,14 +5,14 @@
             "health": 897,
             "max_health": 1065,
             "strength": 593,
-            "stamina": 435,
+            "stamina": 434,
             "max_stamina": 498,
             "attack": 297,
             "damage": 5,
             "defense": 201,
             "armor": 81,
             "combat_level": 98,
-            "combat_experience": 2330499,
+            "combat_experience": 2330508,
             "mining_level": 98,
             "mining_experience": 2328196,
             "woodcutting_level": 98,
@@ -21,7 +21,7 @@
             "damage_taken": 0
         },
         "inventory": {
-            "coppers": 151899,
+            "coppers": 151904,
             "items": [
                 {
                     "name": "Charcoal",
@@ -129,7 +129,7 @@
                     "name": "Rabbit Body",
                     "description": "A furry rabbit body, warm to the touch. Can be used for citadel soft armors.",
                     "value": 10,
-                    "stack": 1005
+                    "stack": 1006
                 },
                 {
                     "name": "Rabbit Meat",
@@ -273,7 +273,7 @@
                     "effect_value": 50,
                     "value": 10,
                     "description": "Restores 50 health",
-                    "stack": 1996
+                    "stack": 1997
                 },
                 {
                     "name": "Super Stamina Potion",
@@ -460,7 +460,7 @@
                 "value": 25000,
                 "stack": 1
             },
-            "materium": 804
+            "materium": 805
         },
         "dice_stats": {
             "total_games": 4,
@@ -469,7 +469,7 @@
             "coppers_won": -10000
         },
         "monster_kills": {
-            "Rabbit": 6,
+            "Rabbit": 7,
             "Deer": 0,
             "Buck": 2,
             "Wolf": 4,
@@ -491,6 +491,6 @@
             "parchment_received": true,
             "parchment_unveiled": true
         },
-        "location": "battle"
+        "location": null
     }
 }

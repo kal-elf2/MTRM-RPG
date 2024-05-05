@@ -77,8 +77,8 @@ def remove_player_data(guild_id, player_id):
     with open(file_path, 'w') as f:
         json.dump(all_player_data, f, indent=4, cls=ExemplarJSONEncoder)
 
-logger = logging.getLogger(__name__)
 
+# Get single setting from server
 def get_server_setting(guild_id, setting_name):
     settings_path = f'server/{guild_id}/server_settings.json'
     try:
@@ -92,10 +92,36 @@ def get_server_setting(guild_id, setting_name):
         logger.error(f"JSON decoding error in settings file for guild ID {guild_id}.")
         return None
 
+
+
+logger = logging.getLogger(__name__)
+
+# Get all server settings for setup.py modal
+def load_server_settings(guild_id):
+    settings_path = f'server/{guild_id}/server_settings.json'
+    logger.debug(f"Attempting to load settings from {settings_path}")
+    try:
+        with open(settings_path, 'r') as f:
+            settings = json.load(f)
+        logger.debug("Settings loaded successfully")
+        return settings
+    except FileNotFoundError:
+        logger.error(f"Settings file not found for guild ID {guild_id}.")
+        return None
+    except json.JSONDecodeError:
+        logger.error(f"JSON decoding error in settings file for guild ID {guild_id}.")
+        return None
+
 def save_server_settings(guild_id, settings_data):
     settings_file = f'server/{guild_id}/server_settings.json'
-    with open(settings_file, 'w') as f:
-        json.dump(settings_data, f, indent=4)
+    logger.debug(f"Attempting to save settings to {settings_file}")
+    try:
+        with open(settings_file, 'w') as f:
+            json.dump(settings_data, f, indent=4)
+        logger.debug("Settings saved successfully")
+    except Exception as e:
+        logger.error(f"Failed to save settings: {e}")
+
 
 async def send_message(ctx: commands.Context, embed):
     return await ctx.send(embed=embed)

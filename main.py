@@ -11,6 +11,7 @@ from monsters.battle import BattleOptions, LootOptions, SpecialAttackOptions
 from emojis import get_emoji
 from images.urls import generate_urls
 from probabilities import default_settings
+import logging
 
 bot = commands.Bot(command_prefix="/", intents=discord.Intents.all())
 # Add the cogs to the bot
@@ -65,43 +66,53 @@ async def on_guild_join(guild):
     town_square_channel = await guild.create_text_channel("town-square", overwrites=town_square_overwrites, category=category)
 
     # Create the setup channel with more restricted access
-    setup_channel = await guild.create_text_channel('Neros Landing Setup', overwrites=admin_overwrites, category=category)
+    setup_channel = await guild.create_text_channel('Neros Landing Setup', overwrites=admin_overwrites,
+                                                    category=category)
 
     # Send a setup message
     await setup_channel.send(f"Game setup here: {recipient}")
 
-    # Send instructions on setting up channel permissions
-    embed = discord.Embed(
+    # Send instructions on setting up channel permissions and pin it
+    setup_instructions_embed = discord.Embed(
         title="🛠️ Setup Nero's Landing Bot 🛠️",
-        description="To ensure that the Nero's Landing bot operates correctly and only within designated channels, please follow the steps below.",
+        description="To ensure that the Nero's Landing bot operates only within designated channels, please follow the steps below.",
         color=discord.Color.blue()
     )
-    embed.add_field(name="- Step 1: Go to Server Settings",
-                    value="Navigate to the 'Server Settings' of your Discord server.", inline=False)
-    embed.add_field(name="- Step 2: Integrations", value="Click on 'Integrations' to access bot settings.", inline=False)
-    embed.add_field(name="- Step 3: Select Nero's Landing",
-                    value="Find 'Nero's Landing' in the list of integrations and select it.", inline=False)
-    embed.add_field(name="- Step 4: Adjust Channel Permissions", value="Set 'All Channels' to ❌ to deny default access.",
-                    inline=False)
-    embed.add_field(name="- Step 5: Add Game Channels",
-                    value="Add only the channels where you want Nero's Landing to operate by enabling permissions specifically for those channels.",
-                    inline=False)
-    embed.set_footer(text="This configuration helps maintain order and ensures the bot functions only where needed.")
-    await setup_channel.send(embed=embed)
+    setup_instructions_embed.add_field(name="- Step 1: Go to Server Settings",
+                                       value="Navigate to the 'Server Settings' of your Discord server.", inline=False)
+    setup_instructions_embed.add_field(name="- Step 2: Integrations",
+                                       value="Click on 'Integrations' to access bot settings.", inline=False)
+    setup_instructions_embed.add_field(name="- Step 3: Select Nero's Landing",
+                                       value="Find 'Nero's Landing' in the list of integrations and select it.",
+                                       inline=False)
+    setup_instructions_embed.add_field(name="- Step 4: Adjust Channel Permissions",
+                                       value="Set 'All Channels' to ❌ to deny default access.",
+                                       inline=False)
+    setup_instructions_embed.add_field(name="- Step 5: Add Game Channels",
+                                       value="Add only the channels where you want Nero's Landing to operate by enabling permissions specifically for those channels.",
+                                       inline=False)
+    setup_instructions_embed.set_footer(
+        text="This configuration helps maintain order and ensures the bot functions only where intended.")
+    setup_message = await setup_channel.send(embed=setup_instructions_embed)
+    await setup_message.pin()
 
-    # Send admin commands embed
+    # Send admin commands embed and pin it
     admin_commands_embed = discord.Embed(
         title="🛡️ Admin Slash Commands 🛡️",
-        description="Here are the slash commands available exclusively for admins and the server owner:",
+        description="Here are slash commands available exclusively for admins and the server owner:",
         color=discord.Color.gold()
     )
     admin_commands_embed.add_field(name="`/teleport`",
                                    value="Teleport a player to neutral ground. Use this command to resolve issues where a player might get stuck in a game location.",
                                    inline=False)
+    admin_commands_embed.add_field(name="`/settings`",
+                                   value="Manage game server settings. Adjust cautiously to avoid impacting active gameplay fairness.",
+                                   inline=False)
     # Add more admin commands here as needed
     admin_commands_embed.set_footer(
         text="Use these commands responsibly to manage game settings and player interactions.")
-    await setup_channel.send(embed=admin_commands_embed)
+    admin_commands_message = await setup_channel.send(embed=admin_commands_embed)
+    await admin_commands_message.pin()
 
     # Initialize directory and files for server-specific data
     guild_id = guild.id
@@ -135,12 +146,22 @@ async def on_guild_join(guild):
 
 @bot.event
 async def on_application_command_error(ctx, error):
+    logger = logging.getLogger(__name__)
+    # Log the error details for debugging
+    logger.error(f"An error occurred: {error}")
+    logger.debug(f"Error type: {type(error).__name__}, Error details: {error}")
+
     if isinstance(error, commands.MissingRole):
         await ctx.respond("You must be an admin to use this command.", ephemeral=True)
     elif isinstance(error, commands.MissingPermissions):
         await ctx.respond("You do not have the necessary permissions to execute this command.", ephemeral=True)
+    elif isinstance(error, commands.CommandInvokeError):
+        # Handle specific internal command invocation errors
+        logger.error(f"Command invocation failed: {error.original}")
+        await ctx.respond(f"An internal error occurred: {error.original}", ephemeral=True)
     else:
-        await ctx.respond("An error occurred while processing the command.", ephemeral=True)
+        # Generic error response if not one of the above
+        await ctx.respond(f"An error occurred while processing the command: {error}", ephemeral=True)
 
 def update_special_attack_options(battle_context):
     if battle_context.special_attack_options_view:

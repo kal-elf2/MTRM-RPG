@@ -25,8 +25,8 @@ default_settings = {
     "buyback_cost": 5000,  # max cost per zone, Nero's death buyback
     "weapon_specialty_bonus": 0.05,  # 5% bonus to damage for weapon specialty
     "death_penalty": 0.05,  # 5% stat reduction upon death
-    "CRITICAL_HIT_CHANCE": 0.10,  # 10% chance of a critical hit
-    "CRITICAL_HIT_MULTIPLIER": 1.5,  # 1.5 times the damage for a critical hit
+    "critical_hit_chance": 0.10,  # 10% chance of a critical hit
+    "critical_hit_multiplier": 1.5,  # 1.5 times the damage for a critical hit
     "base_run_chance": 0.25,  # base chance to run away
     "base_zone_supply_requirement": 10,  # base supply requirement * zone level
     "tent_health": 25,  # HP per heal from tent
