@@ -333,5 +333,53 @@ class SetupCog(commands.Cog, CommonResponses):
         view = SettingsView(ctx.guild.id)
         await ctx.respond("Change game difficulty settings:", view=view, ephemeral=True)
 
+    @commands.slash_command(name="resetsettings", description="Reset all game settings to their default values.")
+    @commands.has_permissions(administrator=True)
+    async def reset_settings(self, ctx):
+        class ResetSettingsConfirmation(discord.ui.View):
+            def __init__(self):
+                super().__init__()
+
+            @discord.ui.button(label="Confirm", style=discord.ButtonStyle.blurple)
+            async def confirm(self, button: discord.ui.Button, interaction: discord.Interaction):
+                # Disable all buttons
+                for item in self.children:
+                    if isinstance(item, discord.ui.Button):
+                        item.disabled = True
+
+                # Acknowledge the interaction with updated buttons
+                await interaction.response.edit_message(view=self)
+
+                # Handle the confirmation logic
+                # Load settings, check, and reset to defaults as needed
+                settings_data = load_server_settings(interaction.guild_id)
+                if settings_data is None:
+                    await interaction.followup.send("Settings file could not be found or loaded.", ephemeral=True)
+                else:
+                    save_server_settings(interaction.guild_id, default_settings)
+                    await interaction.followup.send("All settings have been reset to default values.", ephemeral=True)
+                self.stop()
+
+            @discord.ui.button(label="Cancel", style=discord.ButtonStyle.grey)
+            async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
+                # Disable all buttons
+                for item in self.children:
+                    if isinstance(item, discord.ui.Button):
+                        item.disabled = True
+
+                # Acknowledge the interaction with updated buttons
+                await interaction.response.edit_message(view=self)
+
+                # Send a cancellation message
+                await interaction.followup.send("Settings reset cancelled.", ephemeral=True)
+                self.stop()
+
+        confirmation_view = ResetSettingsConfirmation()
+        await ctx.respond("Are you sure you want to reset all settings to their default values?",
+                          view=confirmation_view, ephemeral=True)
+
+        # Wait for user interaction
+        await confirmation_view.wait()
+
 def setup(bot):
     bot.add_cog(SetupCog(bot))

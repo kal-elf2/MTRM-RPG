@@ -108,7 +108,9 @@ async def on_guild_join(guild):
     admin_commands_embed.add_field(name="`/settings`",
                                    value="Manage game server settings. Adjust cautiously to avoid impacting active gameplay fairness.",
                                    inline=False)
-    # Add more admin commands here as needed
+    admin_commands_embed.add_field(name="`/resetsettings`",
+                                   value="Reset all game settings to their default values.",
+                                   inline=False)
     admin_commands_embed.set_footer(
         text="Use these commands responsibly to manage game settings and player interactions.")
     admin_commands_message = await setup_channel.send(embed=admin_commands_embed)
