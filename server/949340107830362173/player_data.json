@@ -5,7 +5,7 @@
             "health": 897,
             "max_health": 1065,
             "strength": 593,
-            "stamina": 434,
+            "stamina": 498,
             "max_stamina": 498,
             "attack": 297,
             "damage": 5,
@@ -21,25 +21,25 @@
             "damage_taken": 0
         },
         "inventory": {
-            "coppers": 151904,
+            "coppers": 152370,
             "items": [
                 {
                     "name": "Charcoal",
                     "description": null,
                     "value": null,
-                    "stack": 925
+                    "stack": 916
                 },
                 {
                     "name": "Iron",
                     "description": null,
                     "value": null,
-                    "stack": 995
+                    "stack": 997
                 },
                 {
                     "name": "Steel",
                     "description": null,
                     "value": null,
-                    "stack": 887
+                    "stack": 877
                 },
                 {
                     "name": "Onyx",
@@ -63,7 +63,7 @@
                     "name": "Thick Pole",
                     "description": null,
                     "value": null,
-                    "stack": 960
+                    "stack": 953
                 },
                 {
                     "name": "Pine Strip",
@@ -81,7 +81,7 @@
                     "name": "Ash Strip",
                     "description": null,
                     "value": null,
-                    "stack": 990
+                    "stack": 970
                 },
                 {
                     "name": "Poplar Strip",
@@ -93,7 +93,7 @@
                     "name": "Wheat",
                     "description": null,
                     "value": null,
-                    "stack": 1001
+                    "stack": 951
                 },
                 {
                     "name": "Flax",
@@ -117,13 +117,13 @@
                     "name": "Venison",
                     "description": null,
                     "value": null,
-                    "stack": 1000
+                    "stack": 985
                 },
                 {
                     "name": "Sinew",
                     "description": null,
                     "value": null,
-                    "stack": 1000
+                    "stack": 980
                 },
                 {
                     "name": "Rabbit Body",
@@ -135,7 +135,7 @@
                     "name": "Rabbit Meat",
                     "description": null,
                     "value": null,
-                    "stack": 1000
+                    "stack": 985
                 },
                 {
                     "name": "Deer Parts",
@@ -159,7 +159,7 @@
                     "name": "Glowing Essence",
                     "description": "An ethereal essence that glows faintly. Used in powerful magical rituals and citadel.",
                     "value": 200,
-                    "stack": 997
+                    "stack": 996
                 },
                 {
                     "name": "Goblin Crown",
@@ -183,7 +183,7 @@
                     "name": "Leather Straps",
                     "description": null,
                     "value": null,
-                    "stack": 975
+                    "stack": 970
                 },
                 {
                     "name": "Tough Leather Straps",
@@ -215,7 +215,7 @@
                 },
                 {
                     "name": "Ash",
-                    "stack": 991
+                    "stack": 976
                 },
                 {
                     "name": "Poplar",
@@ -247,15 +247,15 @@
             "ore": [
                 {
                     "name": "Iron Ore",
-                    "stack": 1017
+                    "stack": 1013
                 },
                 {
                     "name": "Coal",
-                    "stack": 990
+                    "stack": 986
                 },
                 {
                     "name": "Carbon",
-                    "stack": 970
+                    "stack": 972
                 }
             ],
             "potions": [
@@ -293,35 +293,7 @@
                 }
             ],
             "limit": 49,
-            "armors": [
-                {
-                    "name": "Padded Armor",
-                    "description": null,
-                    "value": 44,
-                    "stack": 1,
-                    "defense_modifier": 6,
-                    "armor_type": "chest",
-                    "zone_level": 1
-                },
-                {
-                    "name": "Brigandine Boots",
-                    "description": null,
-                    "value": 125,
-                    "stack": 1,
-                    "defense_modifier": 25,
-                    "armor_type": "boots",
-                    "zone_level": 1
-                },
-                {
-                    "name": "Brigandine Gloves",
-                    "description": null,
-                    "value": 125,
-                    "stack": 1,
-                    "defense_modifier": 45,
-                    "armor_type": "gloves",
-                    "zone_level": 1
-                }
-            ],
+            "armors": [],
             "equipped_armor": {
                 "chest": {
                     "name": "Brigandine Armor",
@@ -353,33 +325,13 @@
             },
             "weapons": [
                 {
-                    "name": "Long Sword",
-                    "description": null,
-                    "value": 100,
-                    "stack": 1,
-                    "wtype": "Sword",
-                    "attack_modifier": 25,
-                    "special_attack": 2,
-                    "zone_level": 5
-                },
-                {
                     "name": "Voltaic Sword",
                     "description": null,
                     "value": 190,
-                    "stack": 1,
+                    "stack": 2,
                     "wtype": "Sword",
                     "attack_modifier": 60,
                     "special_attack": 4,
-                    "zone_level": 5
-                },
-                {
-                    "name": "Short Spear",
-                    "description": null,
-                    "value": 72,
-                    "stack": 1,
-                    "wtype": "Spear",
-                    "attack_modifier": 15,
-                    "special_attack": 1,
                     "zone_level": 5
                 },
                 {
@@ -400,6 +352,16 @@
                     "wtype": "Hammer",
                     "attack_modifier": 5,
                     "special_attack": 1,
+                    "zone_level": 5
+                },
+                {
+                    "name": "Champion Bow",
+                    "description": null,
+                    "value": 155,
+                    "stack": 4,
+                    "wtype": "Bow",
+                    "attack_modifier": 35,
+                    "special_attack": 3,
                     "zone_level": 5
                 }
             ],
@@ -491,6 +453,6 @@
             "parchment_received": true,
             "parchment_unveiled": true
         },
-        "location": null
+        "location": "citadel"
     }
 }

@@ -327,7 +327,18 @@ class RefreshButton(discord.ui.Button, CommonResponses):
             await self.not_in_citadel_response(interaction)
             return
 
-        # Recheck material availability
+        # Check if stamina is full only for Bread or Trencher
+        if craft_view.crafted_item and craft_view.crafted_item.name in ["Bread", "Trencher"]:
+            if craft_view.player.stats.stamina >= craft_view.player.stats.max_stamina:
+                for item in craft_view.children:
+                    if isinstance(item, CraftButton):
+                        item.disabled = True  # Disable crafting if stamina is full
+                # Update the view immediately if no crafting is possible
+                new_embed = craft_view.embed_generator.generate_embed()
+                await interaction.response.edit_message(embed=new_embed, view=craft_view)
+                return
+
+        # Recheck material availability for other items
         can_craft_again = True
         for ingredient, quantity in craft_view.embed_generator.selected_recipe.ingredients:
             available_quantity = craft_view.player.inventory.get_item_quantity(ingredient.name)
