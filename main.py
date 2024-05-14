@@ -137,7 +137,7 @@ async def on_guild_join(guild):
     # Create Nero embed for town-square
     nero_embed = discord.Embed(
         title="Captain Nero",
-        description="Welcome scallywags! Use `/newgame` to begin your adventure!",
+        description="Ahoy, ye sea dogs and hearties! Chart yer course with `/newgame` to embark on a grand voyage!\n\nShould the crew grow too large and rowdy, call `/private` to parley in yer own secluded cove.",
         color=discord.Color.dark_gold()
     )
     nero_embed.set_image(url=generate_urls("nero", "welcome"))

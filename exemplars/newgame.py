@@ -26,30 +26,43 @@ class NewGameCog(commands.Cog, CommonResponses):
         else:
             view = NewGameView(author_id)
             await ctx.respond(
-                f"You already have a game in progress, {ctx.author.mention}. Are you sure you want to erase all progress and start a new game?\n\n### 🚨🚨 **Please note: This action cannot be undone.** 🚨🚨",
-                view=view)
+                f"## 🚨 **Please note: This action cannot be undone.** 🚨\n\nYou already have a game in progress, {ctx.author.mention}. Are you sure you want to erase all progress and start a new game?\n\u200B",
+                view=view, ephemeral=True)
 
-class NewGameView(discord.ui.View, CommonResponses):
+class NewGameView(discord.ui.View):
     def __init__(self, author_id=None):
         super().__init__(timeout=None)
         self.author_id = author_id
 
-    @discord.ui.button(label="New Game", custom_id="new_game", style=discord.ButtonStyle.blurple)
-    async def button1(self, button, interaction):
+    @discord.ui.button(label="New Game", custom_id="new_game", style=discord.ButtonStyle.red)
+    async def button_new_game(self, button, interaction):
         if str(interaction.user.id) != self.author_id:
-            await self.unauthorized_user_response(interaction)
+            await interaction.response.send_message("You are not authorized to perform this action.", ephemeral=True)
             return
+
+        # Disable all buttons in this view after interaction
+        for item in self.children:
+            item.disabled = True
+        await interaction.response.edit_message(view=self)
 
         remove_player_data(interaction.guild_id, self.author_id)
 
-        button.disabled = True
-        await interaction.message.edit(view=self)
-
-        view = View()
-        view.add_item(PickExemplars(author_id=self.author_id))
-        await interaction.response.send_message(
+        new_view = View()
+        new_view.add_item(PickExemplars(author_id=self.author_id))
+        await interaction.followup.send(
             f"{interaction.user.mention}, your progress has been erased. Please choose your exemplar from the list below.",
-            view=view)
+            view=new_view)
+
+    @discord.ui.button(label="Cancel", custom_id="cancel_game", style=discord.ButtonStyle.gray)
+    async def button_cancel(self, button, interaction):
+        if str(interaction.user.id) != self.author_id:
+            await interaction.response.send_message("You are not authorized to perform this action.", ephemeral=True)
+            return
+
+        # Disable all buttons in this view after interaction
+        for item in self.children:
+            item.disabled = True
+        await interaction.response.edit_message(view=self)
 
 class PickExemplars(Select, CommonResponses):
 
