@@ -278,7 +278,9 @@ class Phase2:
                 self.custom_view.enable_sword_button()
                 self.custom_view.enable_repair_button()
 
+                # Update the ship's health part and ensure 0 is displayed if it reaches 0
                 if self.battle_commands.ship.get_health(part) <= 0:
+                    await self.battle_commands.battle_message.edit(embed=self.create_phase2_battle_embed())
                     await self.handle_ship_destruction(part)
                     return
 
