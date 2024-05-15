@@ -66,9 +66,9 @@ class HuntKrakenButton(discord.ui.Button, CommonResponses):
                 "**I will be yer eye on the sea**, calling out when the Kraken surfaces. "
                 "It'll be yer duty to **turn the ship, aim the cannon, and fire with precision!** "
                 "Prepare yerself, for the battle will be fierce and the sea shows no mercy. "
-                "\n\n### When ye ready to face her, type `/kraken` to begin the battle!"
+                "\n\n### Type `/kraken` to begin the battle!"
             ),
-            color=discord.Color.dark_gold()
+            color=discord.Color.red()
         )
 
         # Set the thumbnail to the "kraken" image
@@ -89,6 +89,7 @@ class BattleCommands(commands.Cog):
         self.cannon_angle = 20
         self.kraken = Kraken()
         self.ship = Ship()
+        self.author_id = None
 
     @staticmethod
     def find_correct_angle(distance, velocity=100):
@@ -125,7 +126,7 @@ class BattleCommands(commands.Cog):
         # Calculate the distance the cannonball will travel
         cannonball_travel_distance = calculate_range(self.cannon_angle, 100)  # Using default velocity of 100
 
-        embed = discord.Embed(title=f"{get_emoji('kraken')} There She Blows {get_emoji('kraken')}", description=description, color=discord.Color.dark_gold())
+        embed = discord.Embed(title=f"{get_emoji('kraken')} There She Blows {get_emoji('kraken')}", description=description, color=discord.Color.red())
 
         # Kraken's health formatted with commas
         kraken_current_health_formatted = f"{self.kraken.health:,}"
@@ -156,10 +157,10 @@ class BattleCommands(commands.Cog):
     def send_initial_embed():
         """Generates the battle embed based on the current state."""
         embed = discord.Embed(
-            title="To Battle Stations!",
-            description=f"Steady, matey...\n\nReady the cannons and keep your eye on the horizon.\n\n"
-                        "**When I call out her position, aim true and fire!**",
-            color=discord.Color.dark_gold()
+            title="Steady, matey...",
+            description=f"Ready the cannons and keep your eye on the horizon.\n\n"
+                        f"**### When I call out her position, {get_emoji('helm')} aim true and {get_emoji('Cannonball')} fire!**",
+            color=discord.Color.red()
         )
         embed.set_image(url=generate_urls("Kraken", "Looking"))
         return embed
@@ -175,34 +176,16 @@ class BattleCommands(commands.Cog):
         if self.battle_message:
             await self.battle_message.edit(embed=self.create_battle_embed(player_data))
 
-    async def enter_phase_2(self):
-        from nero.phase2 import RepairView
-        # Notify players of the phase transition
-        phase_2_notification = discord.Embed(
-            title="The Kraken's Fury Unleashed!",
-            description="With wounds grievous and deep, the Kraken turns its ire towards your ship, abandoning the depths for a direct assault! Prepare to defend yer vessel, mateys!",
-            color=discord.Color.red()
-        )
-        phase_2_notification.set_image(url=generate_urls("nero", "kraken"))
-
-        if self.battle_message:
-            await self.battle_message.edit(embed=phase_2_notification)
-
-        # Remove the views
-        if hasattr(self, 'steering_view_message'):
-            await self.steering_view_message.delete()
-        if hasattr(self, 'aiming_view_message'):
-            await self.aiming_view_message.delete()
-
-        # Send the new repair view
-        repair_view = RepairView(self)
-        await self.battle_message.edit(view=repair_view)
+    async def enter_phase_2(self, player_data):
+        from nero.phase2 import Phase2
+        phase2 = Phase2(self, player_data, self.author_id)
+        await phase2.enter_phase_2()
 
     @commands.slash_command(name="kraken", description="Initiate a battle with the Kraken!")
     async def kraken(self, ctx):
         player_data = load_player_data(ctx.guild_id, ctx.author.id)
         player = Exemplar(player_data["exemplar"], player_data["stats"], player_data["inventory"])
-        author_id = str(ctx.author.id)
+        self.author_id = str(ctx.author.id)
 
         # Check if player's location is not 'kraken'
         if player_data['location'] != 'kraken':
@@ -226,7 +209,7 @@ class BattleCommands(commands.Cog):
             return
 
         player_data["location"] = "kraken_battle"
-        save_player_data(ctx.guild_id, author_id, player_data)
+        save_player_data(ctx.guild_id, self.author_id, player_data)
 
         await ctx.respond(f"{ctx.author.mention} sails into Kraken-infested waters...")
 
@@ -313,7 +296,7 @@ class MiddleSteerButton(discord.ui.Button, CommonResponses):
             title="Captain Nero's Bellow",
             description=(
                 f"Keep yer eyes on the compass, {interaction.user.mention}! Use the ⬅️ and ➡️ buttons to steer the ship! We've no time for dalliance!"),
-            color=discord.Color.dark_gold()
+            color=discord.Color.red()
         )
         embed.set_thumbnail(url=generate_urls("nero", "confused"))
 
@@ -403,7 +386,7 @@ class FireButton(discord.ui.Button, CommonResponses):
 
             if phase_transition_required:
                 await asyncio.sleep(2)
-                await self.battle_commands.enter_phase_2()
+                await self.battle_commands.enter_phase_2(self.player_data)
             elif cannonball_count > 0:
                 asyncio.create_task(self.battle_commands.move_kraken(self.player_data))
             else:
@@ -440,6 +423,12 @@ class FireButton(discord.ui.Button, CommonResponses):
 
             # Determine citadel name based on the new zone level
             citadel_name = citadel_names[new_zone_index]
+
+            # Reset Poplar Strips and Cannonballs to 0 for next zone
+            self.player_data['shipwreck']['Poplar Strip'] = 0
+            self.player_data['shipwreck']['Cannonball'] = 0
+            # Update the player data and save
+            save_player_data(interaction.guild_id, str(interaction.user.id), self.player_data)
 
             message_title = "We Had to Flee!"
             message_description = (
@@ -538,7 +527,7 @@ def create_monster_health_bar(current, max_health):
 
 def calculate_damage(distance_difference, zone_level):
     accuracy = max(0, 1 - abs(distance_difference) / 100)  # Scaling factor
-    return round(100 + (accuracy * 250)) * round(1.1**zone_level) # Min damage + scaled portion of max additional damage
+    return round(5000 + (accuracy * 250)) * round(1.1**zone_level) # Min damage + scaled portion of max additional damage
 
 """Change back to 100"""
 
@@ -569,7 +558,7 @@ class Kraken:
         return create_monster_health_bar(self.health, self.max_health)
 
 class Ship:
-    def __init__(self, mast_max_health=5, hull_max_health=10, helm_max_health=3):
+    def __init__(self, mast_max_health=15, hull_max_health=20, helm_max_health=8):
         self.mast_max_health = mast_max_health
         self.hull_max_health = hull_max_health
         self.helm_max_health = helm_max_health
@@ -604,6 +593,14 @@ class Ship:
             return self.hull_health
         elif part == "Helm":
             return self.helm_health
+
+    def get_max_health(self, part):
+        if part == "Mast":
+            return self.mast_max_health
+        elif part == "Hull":
+            return self.hull_max_health
+        elif part == "Helm":
+            return self.helm_max_health
 
 def setup(bot):
     bot.add_cog(BattleCommands(bot))

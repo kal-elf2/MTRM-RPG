@@ -287,7 +287,7 @@ def check_equipment_requirements(player, zone_level):
         for armor_piece in armor_pieces
     )
 
-    armor_message = f"{check_mark_emoji if armor_set_check else cross_mark_emoji} {get_emoji(zone_emoji_mapping[zone_level])} Complete Brigandine Set (equipped) {get_emoji('Brigandine Armor')}{get_emoji('Brigandine Gloves')}{get_emoji('Brigandine Boots')}"
+    armor_message = f"{check_mark_emoji if armor_set_check else cross_mark_emoji} {get_emoji(zone_emoji_mapping[zone_level])} Full Brigandine Set (equipped) {get_emoji('Brigandine Armor')}{get_emoji('Brigandine Gloves')}{get_emoji('Brigandine Boots')}"
     equipment_messages.append(armor_message)
 
     return all(msg.startswith(check_mark_emoji) for msg in equipment_messages), equipment_messages
