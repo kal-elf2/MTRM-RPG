@@ -90,6 +90,7 @@ class BattleCommands(commands.Cog):
         self.kraken = Kraken()
         self.ship = Ship()
         self.author_id = None
+        self.guild_id = None
 
     @staticmethod
     def find_correct_angle(distance, velocity=100):
@@ -176,9 +177,9 @@ class BattleCommands(commands.Cog):
         if self.battle_message:
             await self.battle_message.edit(embed=self.create_battle_embed(player_data))
 
-    async def enter_phase_2(self, player_data):
+    async def enter_phase_2(self, player_data, user):
         from nero.phase2 import Phase2
-        phase2 = Phase2(self, player_data, self.author_id)
+        phase2 = Phase2(self, player_data, user)
         await phase2.enter_phase_2()
 
     @commands.slash_command(name="kraken", description="Initiate a battle with the Kraken!")
@@ -186,6 +187,7 @@ class BattleCommands(commands.Cog):
         player_data = load_player_data(ctx.guild_id, ctx.author.id)
         player = Exemplar(player_data["exemplar"], player_data["stats"], player_data["inventory"])
         self.author_id = str(ctx.author.id)
+        self.guild_id = ctx.guild_id
 
         # Check if player's location is not 'kraken'
         if player_data['location'] != 'kraken':
@@ -386,7 +388,7 @@ class FireButton(discord.ui.Button, CommonResponses):
 
             if phase_transition_required:
                 await asyncio.sleep(2)
-                await self.battle_commands.enter_phase_2(self.player_data)
+                await self.battle_commands.enter_phase_2(self.player_data, self.ctx.author)
             elif cannonball_count > 0:
                 asyncio.create_task(self.battle_commands.move_kraken(self.player_data))
             else:
