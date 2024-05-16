@@ -129,14 +129,14 @@ class RepairButton(discord.ui.Button, CommonResponses):
             return
 
         player_data = self.custom_view.player_data
-        poplar_count = player_data['shipwreck'].get('Poplar Strip', 0)
+        poplar_count = player_data['shipwreck'].get('Poplar Strip')
 
         if poplar_count > 0:
             player_data['shipwreck']['Poplar Strip'] -= 1
             self.custom_view.phase2.battle_commands.ship.repair(self.custom_view.selected_part, 1)
 
             # Update the button label with the new Poplar Strip count
-            poplar_count = player_data['shipwreck'].get('Poplar Strip', 0)
+            poplar_count = player_data['shipwreck'].get('Poplar Strip')
             self.label = f"{poplar_count}"
             save_player_data(interaction.guild_id, str(interaction.user.id), player_data)
 
@@ -240,7 +240,7 @@ class SwordButton(discord.ui.Button, CommonResponses):
         # Disable the button to prevent spamming
         self.disabled = True
         await interaction.response.edit_message(view=self.custom_view)
-        await asyncio.sleep(1.5)  # Disable for 1 second
+        await asyncio.sleep(2)
         self.disabled = False
 
         # Refresh player object from the latest player data
@@ -260,7 +260,8 @@ class SwordButton(discord.ui.Button, CommonResponses):
 
         if random.random() < hit_probability:
             # Calculate the damage
-            damage = calculate_damage(player, player.stats.attack, 1, interaction.guild_id, is_critical_hit)
+            damage_float = calculate_damage(player, player.stats.attack, 1, interaction.guild_id, is_critical_hit) * 0.35
+            damage = round(damage_float)
             self.custom_view.phase2.battle_commands.kraken.health = max(0, self.custom_view.phase2.battle_commands.kraken.health - damage)
 
             # Create response message
@@ -275,12 +276,15 @@ class SwordButton(discord.ui.Button, CommonResponses):
         self.custom_view.phase2.add_attack_message(response)
         await self.custom_view.phase2.battle_commands.battle_message.edit(embed=self.custom_view.phase2.create_phase2_battle_embed())
 
-        # Check if we need to transition to phase 3
+        # Check if we need to transition to phase 3 or next zone
         kraken_health = self.custom_view.phase2.battle_commands.kraken.health
         kraken_max_health = self.custom_view.phase2.battle_commands.kraken.max_health
         if kraken_health <= 0.05 * kraken_max_health:
-            await self.custom_view.phase2.end_battle()
-            await self.enter_phase_3(interaction)
+            if player.stats.zone_level < 5:
+                await self.custom_view.phase2.handle_ship_destruction(exit_early=True)  # Force early exit to ensure player reaches zone 5 for final kraken phase
+            else:
+                await self.custom_view.phase2.end_battle()  # End the battle properly
+                await self.enter_phase_3(interaction)
         else:
             # Re-enable the button and update the view
             await interaction.edit_original_response(view=self.custom_view)
@@ -347,7 +351,7 @@ class Phase2:
                 # Update the ship's health part and ensure 0 is displayed if it reaches 0
                 if self.battle_commands.ship.get_health(part) <= 0:
                     await self.battle_commands.battle_message.edit(embed=self.create_phase2_battle_embed())
-                    await self.handle_ship_destruction(part)
+                    await self.handle_ship_destruction(part=part)
                     return
 
                 await self.battle_commands.battle_message.edit(embed=self.create_phase2_battle_embed())
@@ -393,10 +397,10 @@ class Phase2:
     async def end_battle(self):
         self.battle_ended = True
         self.custom_view.disable_all_buttons()
-        # await interaction.edit_original_response(view=self.custom_view)
-        await self.battle_commands.battle_message.edit(view=None)
+        #await interaction.edit_original_response(view=self.custom_view)  # Update the view to reflect button disable state
+        await self.battle_commands.battle_message.edit(view=None)  # Remove the button views
 
-    async def handle_ship_destruction(self, part):
+    async def handle_ship_destruction(self, part=None, exit_early=None):
         await self.end_battle()
 
         # Refresh player object from the latest player data
@@ -421,13 +425,22 @@ class Phase2:
             citadel_name = citadel_names[zone_level - 1]
 
             message_title = "We Had to Flee!"
-            message_description = (
-                f"Arrr, {self.user.mention}! The ship's {part} has been destroyed!\n\n"
-                "That monstrous Kraken nearly had us in its clutches. Just before we lost control, I managed to point her in the right direction and we made it to safety at this citadel.\n\n"
-                "I'll be seeking out a grander vessel to hold more powder and plunder. Ye best start honing yer skills and pillaging for loot. "
-                "Mark me words, the beasts lurking in these waters be ***far deadlier*** than any we've crossed swords with before. Keep a weather eye on the horizon and ready yer cutlass..."
-                f"\n\n### Welcome to Zone {zone_level}:\n## The Citadel of the {citadel_name}"
-            )
+            if exit_early:
+                message_description = (
+                    f"Arrr, {self.user.mention}! The ship couldn't take much more!\n\n"
+                    "That monstrous Kraken nearly had us in its clutches. Just before we lost control, I managed to point her in the right direction and we made it to safety at this citadel.\n\n"
+                    "I'll be seeking out a grander vessel to hold more powder and plunder. Ye best start honing yer skills and pillaging for loot. "
+                    "Mark me words, the beasts lurking in these waters be ***far deadlier*** than any we've crossed swords with before. Keep a weather eye on the horizon and ready yer cutlass..."
+                    f"\n\n### Welcome to Zone {zone_level}:\n## The Citadel of the {citadel_name}"
+                )
+            else:
+                message_description = (
+                    f"Arrr, {self.user.mention}! The ship's {part} has been destroyed!\n\n"
+                    "That monstrous Kraken nearly had us in its clutches. Just before we lost control, I managed to point her in the right direction and we made it to safety at this citadel.\n\n"
+                    "I'll be seeking out a grander vessel to hold more powder and plunder. Ye best start honing yer skills and pillaging for loot. "
+                    "Mark me words, the beasts lurking in these waters be ***far deadlier*** than any we've crossed swords with before. Keep a weather eye on the horizon and ready yer cutlass..."
+                    f"\n\n### Welcome to Zone {zone_level}:\n## The Citadel of the {citadel_name}"
+                )
             embed_color = color_mapping.get(zone_level)
 
         else:
