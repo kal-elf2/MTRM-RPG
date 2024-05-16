@@ -91,6 +91,7 @@ class BattleCommands(commands.Cog):
         self.ship = Ship()
         self.author_id = None
         self.guild_id = None
+        self.interaction = None
 
     @staticmethod
     def find_correct_angle(distance, velocity=100):
@@ -179,7 +180,7 @@ class BattleCommands(commands.Cog):
 
     async def enter_phase_2(self, player_data, user):
         from nero.phase2 import Phase2
-        phase2 = Phase2(self, player_data, user)
+        phase2 = Phase2(self, player_data, self.guild_id, user, self.interaction)
         await phase2.enter_phase_2()
 
     @commands.slash_command(name="kraken", description="Initiate a battle with the Kraken!")
@@ -188,6 +189,7 @@ class BattleCommands(commands.Cog):
         player = Exemplar(player_data["exemplar"], player_data["stats"], player_data["inventory"])
         self.author_id = str(ctx.author.id)
         self.guild_id = ctx.guild_id
+        self.interaction = ctx.interaction
 
         # Check if player's location is not 'kraken'
         if player_data['location'] != 'kraken':

@@ -1,17 +1,28 @@
 import discord
 import random
 import asyncio
-from utils import save_player_data, CommonResponses, refresh_player_from_data
+from utils import save_player_data, CommonResponses, refresh_player_from_data, get_server_setting
 from emojis import get_emoji
 from images.urls import generate_urls
+from monsters.monster import calculate_hit_probability, calculate_damage
 
 class RepairView(discord.ui.View):
-    def __init__(self, phase2, player_data, author_id):
+
+    def __init__(self, phase2, player_data, guild_id, author_id):
         super().__init__()
+        from exemplars.exemplars import Exemplar
+
         self.phase2 = phase2
         self.player_data = player_data
         self.selected_part = None
+        self.guild_id = guild_id
         self.author_id = author_id
+
+        # Initialize the player from player_data
+        self.player = Exemplar(self.player_data["exemplar"],
+                               self.player_data["stats"],
+                               self.guild_id,
+                               self.player_data["inventory"])
 
         # Create part buttons
         self.mast_button = PartButton("Mast", self, user=self.author_id)
@@ -148,6 +159,8 @@ class RepairButton(discord.ui.Button, CommonResponses):
         if not interaction.response.is_done():
             await interaction.response.defer()
 
+        await self.custom_view.phase2.end_battle()
+
         # Refresh player object from the latest player data
         self.custom_view.player, self.custom_view.player_data = await refresh_player_from_data(interaction)
         player_data = self.custom_view.player_data
@@ -194,7 +207,7 @@ class RepairButton(discord.ui.Button, CommonResponses):
                 "before we got lost to the sea... try bringing more Poplar Strips next time.\n\n"
                 "I'll start repairing the ship. Come back and see me at the **Jolly Roger** when yer ready."
             )
-            embed_color = color_mapping.get(player.stats.zone_level)
+            embed_color = 0xff0000
             new_zone_index = player.stats.zone_level - 1  # Adjust for 0-based indexing
             citadel_name = citadel_names[new_zone_index]
 
@@ -223,17 +236,70 @@ class SwordButton(discord.ui.Button, CommonResponses):
         if interaction.user.id != self.user.id:
             await self.nero_unauthorized_user_response(interaction)
             return
-        # Implement the logic for when the player uses the sword to attack the Kraken
-        await interaction.response.send_message("You used the sword to attack the Kraken!", ephemeral=True)
+
+        # Disable the button to prevent spamming
+        self.disabled = True
+        await interaction.response.edit_message(view=self.custom_view)
+        await asyncio.sleep(1.5)  # Disable for 1 second
+        self.disabled = False
+
+        # Refresh player object from the latest player data
+        player, _ = await refresh_player_from_data(interaction)
+
+        # Simplified hit probability (no defense considered)
+        hit_probability = calculate_hit_probability(player.stats.attack, 1, interaction.guild_id)
+
+        # Adjust critical hit chance
+        crit_chance = get_server_setting(interaction.guild_id, 'critical_hit_chance')
+        equipped_charm = player.inventory.equipped_charm
+
+        if equipped_charm and equipped_charm.name == "Mightstone":
+            crit_chance *= get_server_setting(interaction.guild_id, 'mightstone_multiplier')
+
+        is_critical_hit = random.random() < crit_chance
+
+        if random.random() < hit_probability:
+            # Calculate the damage
+            damage = calculate_damage(player, player.stats.attack, 1, interaction.guild_id, is_critical_hit)
+            self.custom_view.phase2.battle_commands.kraken.health = max(0, self.custom_view.phase2.battle_commands.kraken.health - damage)
+
+            # Create response message
+            if is_critical_hit:
+                response = f"{interaction.user.mention} dealt {damage} damage to the Kraken! ***Critical hit!***"
+            else:
+                response = f"{interaction.user.mention} dealt {damage} damage to the Kraken!"
+        else:
+            response = f"The Kraken evaded the attack of {interaction.user.mention}!"
+
+        # Add attack message to the list and update the embed
+        self.custom_view.phase2.add_attack_message(response)
+        await self.custom_view.phase2.battle_commands.battle_message.edit(embed=self.custom_view.phase2.create_phase2_battle_embed())
+
+        # Check if we need to transition to phase 3
+        kraken_health = self.custom_view.phase2.battle_commands.kraken.health
+        kraken_max_health = self.custom_view.phase2.battle_commands.kraken.max_health
+        if kraken_health <= 0.05 * kraken_max_health:
+            await self.custom_view.phase2.end_battle()
+            await self.enter_phase_3(interaction)
+        else:
+            # Re-enable the button and update the view
+            await interaction.edit_original_response(view=self.custom_view)
+
+    async def enter_phase_3(self, interaction):
+        from nero.phase3 import Phase3
+        phase3 = Phase3(self.custom_view.phase2.battle_commands, self.custom_view.phase2.player_data, self.user)
+        await phase3.enter_phase_3(interaction)
 
 class Phase2:
-    def __init__(self, battle_commands, player_data, user):
+    def __init__(self, battle_commands, player_data, guild_id, user, interaction):
         self.battle_commands = battle_commands
         self.player_data = player_data
         self.custom_view = None
         self.attack_messages = []
+        self.guild_id = guild_id
         self.user = user
         self.battle_ended = False
+        self.interaction = interaction
 
     async def enter_phase_2(self):
         # Remove the views from Phase 1
@@ -259,7 +325,7 @@ class Phase2:
         await asyncio.sleep(5)  # Short delay before starting phase 2
 
         # Send the new repair and attack view
-        self.custom_view = RepairView(self, self.player_data, self.user)
+        self.custom_view = RepairView(self, self.player_data, self.guild_id, self.user)
         await self.battle_commands.battle_message.edit(view=self.custom_view)
 
         # Start the Kraken attack loop
@@ -327,12 +393,26 @@ class Phase2:
     async def end_battle(self):
         self.battle_ended = True
         self.custom_view.disable_all_buttons()
-        await self.battle_commands.battle_message.edit(view=self.custom_view)
+        # await interaction.edit_original_response(view=self.custom_view)
+        await self.battle_commands.battle_message.edit(view=None)
 
     async def handle_ship_destruction(self, part):
         await self.end_battle()
 
+        # Refresh player object from the latest player data
+        self.custom_view.player, self.player_data = await refresh_player_from_data(self.interaction)
+
         citadel_names = ["Sun", "Moon", "Earth", "Wind", "Stars"]
+
+        # Colors for each zone
+        color_mapping = {
+            1: 0x969696,
+            2: 0x15ce00,
+            3: 0x0096f1,
+            4: 0x9900ff,
+            5: 0xfebd0d
+        }
+
         zone_level = self.player_data["stats"]["zone_level"]
         if zone_level < 5:
             # Advance to the next zone
@@ -348,6 +428,7 @@ class Phase2:
                 "Mark me words, the beasts lurking in these waters be ***far deadlier*** than any we've crossed swords with before. Keep a weather eye on the horizon and ready yer cutlass..."
                 f"\n\n### Welcome to Zone {zone_level}:\n## The Citadel of the {citadel_name}"
             )
+            embed_color = color_mapping.get(zone_level)
 
         else:
             citadel_name = citadel_names[zone_level - 1]
@@ -357,11 +438,12 @@ class Phase2:
                 "We barely escaped... I could tell we weren't going to make it, so I turned her back around before we got lost to the sea. Try bringing more resources next time.\n\n"
                 "I'll start repairing the ship. Come back and see me at the **Jolly Roger** when yer ready."
             )
+            embed_color = 0xff0000
 
         self.player_data["location"] = None
         save_player_data(self.battle_commands.guild_id, str(self.user.id), self.player_data)
 
-        embed = discord.Embed(title=message_title, description=message_description, color=0xff0000)
+        embed = discord.Embed(title=message_title, description=message_description, color=embed_color)
         embed.set_image(url=generate_urls("Citadel", citadel_name))
         await asyncio.sleep(2)
         await self.battle_commands.battle_message.channel.send(embed=embed)

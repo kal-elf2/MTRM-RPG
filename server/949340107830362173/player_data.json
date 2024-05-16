@@ -17,7 +17,7 @@
             "mining_experience": 2328196,
             "woodcutting_level": 98,
             "woodcutting_experience": 2327928,
-            "zone_level": 5,
+            "zone_level": 4,
             "damage_taken": 0
         },
         "inventory": {
@@ -51,7 +51,7 @@
                     "name": "Cannonball",
                     "description": null,
                     "value": null,
-                    "stack": 696
+                    "stack": 672
                 },
                 {
                     "name": "Pole",
@@ -87,7 +87,7 @@
                     "name": "Poplar Strip",
                     "description": null,
                     "value": null,
-                    "stack": 800
+                    "stack": 762
                 },
                 {
                     "name": "Wheat",
@@ -302,7 +302,7 @@
                     "stack": 1,
                     "defense_modifier": 70,
                     "armor_type": "chest",
-                    "zone_level": 5
+                    "zone_level": 4
                 },
                 "boots": {
                     "name": "Brigandine Boots",
@@ -311,7 +311,7 @@
                     "stack": 1,
                     "defense_modifier": 25,
                     "armor_type": "boots",
-                    "zone_level": 5
+                    "zone_level": 4
                 },
                 "gloves": {
                     "name": "Brigandine Gloves",
@@ -320,7 +320,7 @@
                     "stack": 1,
                     "defense_modifier": 45,
                     "armor_type": "gloves",
-                    "zone_level": 5
+                    "zone_level": 4
                 }
             },
             "weapons": [
@@ -373,7 +373,7 @@
                 "wtype": "Sword",
                 "attack_modifier": 60,
                 "special_attack": 4,
-                "zone_level": 5
+                "zone_level": 4
             },
             "shields": [],
             "equipped_shield": {
@@ -443,8 +443,8 @@
             "Kraken": 0
         },
         "shipwreck": {
-            "Poplar Strip": 50,
-            "Cannonball": 54
+            "Poplar Strip": 40,
+            "Cannonball": 40
         },
         "battle_actions": {
             "grab_action": "pierce",
